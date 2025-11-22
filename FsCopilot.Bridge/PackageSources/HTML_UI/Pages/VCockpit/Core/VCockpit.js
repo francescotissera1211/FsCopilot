@@ -5,6 +5,7 @@ var handler = null;
 Include.addImports([
     '/FsCopilot/common.js',
     '/FsCopilot/network.js',
+    '/FsCopilot/events.js',
     '/FsCopilot/watcher.js',
     '/FsCopilot/handler.js'
 ]);
