@@ -21,6 +21,7 @@ public class MainViewModel : ReactiveObject, IDisposable
     private bool _showTakeControl;
     private bool _newProfileAvailable;
     private ViewErrors _errors = ViewErrors.None;
+    private bool _forceRelay = false;
 
     private string Aircraft
     {
@@ -71,6 +72,11 @@ public class MainViewModel : ReactiveObject, IDisposable
         set => this.RaiseAndSetIfChanged(ref _newProfileAvailable, value);
     }
 
+    public bool forceRelay
+    {
+        get => _forceRelay;
+        set => this.RaiseAndSetIfChanged(ref _forceRelay, value);
+    }
     public string PeerId { get; init; }
     public string ClientName { get; init; }
 
@@ -213,7 +219,7 @@ public class MainViewModel : ReactiveObject, IDisposable
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
 
                 masterSwitch.Join();
-                result = await net.Connect(ConnectionCode, cts.Token);
+                result = await net.Connect(ConnectionCode, cts.Token,forceRelay);
             }
             finally
             {

@@ -112,6 +112,7 @@
                                  IsEnabled="{Binding IsBusy, Converter={StaticResource Inverse}}"
                                  Watermark="Client code"
                                  Text="{Binding ConnectionCode}" />
+                        <CheckBox IsChecked="{Binding forceRelay}">ForceRelay</CheckBox>
                     </DockPanel>
 
                     <TextBlock Classes="Note"
