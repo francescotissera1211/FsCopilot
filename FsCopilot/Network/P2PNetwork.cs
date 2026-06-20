@@ -185,7 +185,7 @@ public sealed class P2PNetwork : INetwork, IDisposable
         var targetPeer = parts.Skip(1).First(p => p != _peerId);
         Log.Debug("[Peer2Peer] NAT {Peer} -> {Address}",targetPeer, endpoint);
 
-        var peer = _net.Connect(endpoint, $"{_peerId}|{targetPeer}|{_codecs.Schema}"); 
+        var peer = _net.Connect(endpoint, $"{_peerId}|{targetPeer}|{_codecs.Schema}");
         if (peer == null) return; // already awaiting
         peer.Tag = targetPeer;
     }
@@ -310,10 +310,8 @@ public sealed class P2PNetwork : INetwork, IDisposable
         }
     }
 
-    public async Task<ConnectionResult> Connect(string target, CancellationToken ct, bool forcerelay)
+    public async Task<ConnectionResult> Connect(string target, CancellationToken ct)
     {
-        /*if(forcerelay)
-            return ConnectionResult.Failed; // shouldn't be here?*/
         if (target.Trim().Equals(_peerId, StringComparison.OrdinalIgnoreCase)) return ConnectionResult.Failed;
         // Already connected?
         var peers = new List<NetPeer>();

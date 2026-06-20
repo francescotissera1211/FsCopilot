@@ -164,7 +164,7 @@ public sealed class RelayNetwork : INetwork, IDisposable
         }
     }
 
-    public async Task<ConnectionResult> Connect(string target, CancellationToken ct, bool forcerelay)
+    public async Task<ConnectionResult> Connect(string target, CancellationToken ct)
     {
         if (target.Trim().Equals(_peerId, StringComparison.OrdinalIgnoreCase)) return ConnectionResult.Failed;
         

@@ -42,25 +42,22 @@ public sealed class HybridNetwork : INetwork, IDisposable
         _relay.Dispose();
     }
 
-    public async Task<ConnectionResult> Connect(string target, CancellationToken ct, bool forcerelay)
+    public async Task<ConnectionResult> Connect(string target, CancellationToken ct)
     {
         // 1) Try Direct with timeout = 5s (implemented here, not inside P2PNetwork)
-        if(!forcerelay)
-        {
-            using var directCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            directCts.CancelAfter(DirectAttemptTimeout);
-            
-            var directResult = await _p2p.Connect(target, directCts.Token,forcerelay).ConfigureAwait(false);
-            if (directResult == ConnectionResult.Success)
-                return ConnectionResult.Success;
-            
-            // If caller cancelled - stop here
-            if (ct.IsCancellationRequested)
-                return ConnectionResult.Failed;
-        }
+        using var directCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        directCts.CancelAfter(DirectAttemptTimeout);
+        
+        var directResult = await _p2p.Connect(target, directCts.Token).ConfigureAwait(false);
+        if (directResult == ConnectionResult.Success)
+            return ConnectionResult.Success;
+        
+        // If caller cancelled - stop here
+        if (ct.IsCancellationRequested)
+            return ConnectionResult.Failed;
 
         // 2) Fallback to Relay (use original token, no hidden timeout)
-        return await _relay.Connect(target, ct, forcerelay).ConfigureAwait(false);
+        return await _relay.Connect(target, ct).ConfigureAwait(false);
     }
 
     public void Disconnect()
