@@ -63,19 +63,7 @@ sealed class Program
     public static AppBuilder BuildAvaloniaApp(string[] args)
     {
         var isDev = args.Any(a => string.Equals(a, "--dev", StringComparison.OrdinalIgnoreCase));
-        var iscustomserver = args.Any(a => string.Equals(a, "--server", StringComparison.OrdinalIgnoreCase));
-        string serverip = "";
-        for (int i = 0; i< args.Length; i++)
-        {
-            if (args[i].Equals("--server", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
-            {
-                serverip = args[i + 1];
-                break;
-            }
-        }
         // var isExperimental = args.Any(a => string.Equals(a, "--experimental", StringComparison.OrdinalIgnoreCase));
-        var peerId = Random.String(8);
-        var name = Environment.UserName;
 
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
@@ -84,28 +72,35 @@ sealed class Program
                 {
                     services.AddSingleton(new SimClient(!isDev ? "FS Copilot" : "FS Copilot DEV"));
                     services.AddSingleton<SetupViewModel>();
+                    services.AddSingleton<LoginViewModel>();
                     services.AddSingleton(new Updater("http://p2p.fscopilot.com:2320"));
                     
                     if (!isDev)
                     {
-                        if(iscustomserver)
-                            services.AddSingleton<INetwork>(new HybridNetwork(serverip, peerId, name));
-                        else
-                            services.AddSingleton<INetwork>(new HybridNetwork("p2p.fscopilot.com", peerId, name));
+                        services.AddSingleton<INetwork>(sp =>
+                        {
+                            var cfg = ConnectionConfig.Load();
+                            var host = cfg.ServerAddress;
+                            return new HybridNetwork(host, cfg.PeerId, cfg.Username);
+                        });
                         // services.AddSingleton<INetwork>(!isExperimental
                         //     ? new P2PNetwork("p2p.fscopilot.com", peerId, name)
                         //     : new HybridNetwork("p2p.fscopilot.com", peerId, name));
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();
-                        services.AddSingleton(sp => new MainViewModel(
-                            peerId,
-                            name,
-                            sp.GetRequiredService<INetwork>(),
-                            sp.GetRequiredService<SimClient>(),
-                            sp.GetRequiredService<MasterSwitch>(),
-                            sp.GetRequiredService<Coordinator>(),
-                            sp.GetRequiredService<Updater>()
-                        ));
+                        services.AddSingleton(sp =>
+                        {
+                            var cfg = ConnectionConfig.Load();
+                            return new MainViewModel(
+                                cfg.PeerId,
+                                cfg.Username,
+                                sp.GetRequiredService<INetwork>(),
+                                sp.GetRequiredService<SimClient>(),
+                                sp.GetRequiredService<MasterSwitch>(),
+                                sp.GetRequiredService<Coordinator>(),
+                                sp.GetRequiredService<Updater>()
+                            );
+                        });
                     }
                     else
                     {
