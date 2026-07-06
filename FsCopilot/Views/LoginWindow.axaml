@@ -111,7 +111,7 @@
             </TextBlock>
 
             <TextBlock Classes="label"
-                       Text="服务器地址" />
+                       Text="Server Address" />
 
             <TextBox Classes="input"
                      Text="{Binding ServerAddress}"
@@ -121,11 +121,11 @@
                      CaretBrush="#AAAAAA" />
 
             <TextBlock Classes="label"
-                       Text="用户名" />
+                       Text="Username" />
 
             <TextBox Classes="input"
                      Text="{Binding Username}"
-                     Watermark="输入你的用户名"
+                     Watermark="By default will be your System username"
                      SelectionBrush="#333333"
                      SelectionForegroundBrush="#CCCCCC"
                      CaretBrush="#AAAAAA" />
@@ -135,7 +135,7 @@
 
             <TextBox Classes="input"
                      Text="{Binding PeerId}"
-                     Watermark="输入8位识别码"
+                     Watermark="8 letter Peerid"
                      SelectionBrush="#333333"
                      SelectionForegroundBrush="#CCCCCC"
                      CaretBrush="#AAAAAA" />
@@ -145,7 +145,7 @@
                        Text="{Binding ErrorMessage}" />
 
             <Button Classes="cta"
-                    Content="连接"
+                    Content="Save Setting and Connect"
                     Command="{Binding ConnectCommand}"
                     IsEnabled="{Binding CanConnect}"
                     HorizontalAlignment="Center" />
