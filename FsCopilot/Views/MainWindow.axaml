@@ -160,6 +160,14 @@
                         <TextBlock DockPanel.Dock="Left"
                                    Classes="CardTitle"
                                    Text="Onboard" />
+                        <Button DockPanel.Dock="Right"
+                                Classes="ResetStats"
+                                Content="Reset Stats"
+                                FontSize="10"
+                                Margin="0,0,4,0"
+                                Padding="6,2"
+                                Command="{Binding ResetPacketLossCommand}"
+                                IsEnabled="{Binding Connected}" />
                     </DockPanel>
 
                     <ScrollViewer Classes="Connections"
@@ -217,6 +225,9 @@
                                                         <TextBlock Foreground="#94a3b8"
                                                                    FontSize="11"
                                                                    Text="{Binding Ping, StringFormat='PING: ~{0} ms'}" />
+                                                        <TextBlock Foreground="#94a3b8"
+                                                                   FontSize="11"
+                                                                   Text="{Binding PacketLoss, StringFormat='LOSS: {0:F1}%'}" />
                                                         <Border Classes="Direct"
                                                                 IsVisible="{Binding IsDirect}">
                                                             <TextBlock Classes="Direct"

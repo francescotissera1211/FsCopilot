@@ -90,6 +90,7 @@ public class MainViewModel : ReactiveObject, IDisposable
     public ReactiveCommand<Unit, Unit> LeaveCommand { get; }
     public ReactiveCommand<Unit, Unit> TakeControlCommand { get; }
     public ReactiveCommand<Unit, Unit> DownloadProfileCommand { get; }
+    public ReactiveCommand<Unit, Unit> ResetPacketLossCommand { get; }
 
     public MainViewModel(string peerId,
         string name,
@@ -173,6 +174,7 @@ public class MainViewModel : ReactiveObject, IDisposable
                     PeerId: peer.PeerId,
                     Name: string.IsNullOrWhiteSpace(peer.Name) ? "Unknown" : peer.Name,
                     Ping: peer.Ping,
+                    PacketLoss: peer.PacketLoss,
                     IsDirect: peer.Transport == Peer.TransportKind.Direct,
                     HasSeparatorAfter: i++ < peers.Count - 1
                 ));
@@ -240,6 +242,11 @@ public class MainViewModel : ReactiveObject, IDisposable
 
         TakeControlCommand = ReactiveCommand.Create(masterSwitch.TakeControl);
 
+        ResetPacketLossCommand = ReactiveCommand.Create(() =>
+        {
+            net.ResetPacketLoss();
+        });
+
         DownloadProfileCommand = ReactiveCommand.CreateFromTask(async ct =>
         {
             if (definitions.Value == null) return;
@@ -265,17 +272,28 @@ public class MainViewModel : ReactiveObject, IDisposable
         BridgeMismatch  = 0b_0100_0000
     }
 
-    public record Connection(string PeerId, string Name, int Ping, bool IsDirect, bool HasSeparatorAfter)
+    public record Connection(string PeerId, string Name, int Ping, float PacketLoss, bool IsDirect, bool HasSeparatorAfter)
     {
         public int QualityLevel
         {
             get
             {
-                if (Ping > 800) return 5;
-                if (Ping > 400) return 4;
-                if (Ping > 200) return 3;
-                if (Ping > 100) return 2;
-                return 1;
+                // Quality: 1=excellent, 5=poor. Combines ping and packet loss.
+                var level = 1;
+
+                // Ping-based levels
+                if (Ping > 800) level = Math.Max(level, 5);
+                else if (Ping > 400) level = Math.Max(level, 4);
+                else if (Ping > 200) level = Math.Max(level, 3);
+                else if (Ping > 100) level = Math.Max(level, 2);
+
+                // Packet loss degrades quality further
+                if (PacketLoss > 20f) level = Math.Max(level, 5);
+                else if (PacketLoss > 10f) level = Math.Max(level, 4);
+                else if (PacketLoss > 5f) level = Math.Max(level, 3);
+                else if (PacketLoss > 2f) level = Math.Max(level, 2);
+
+                return level;
             }
         }
     }
