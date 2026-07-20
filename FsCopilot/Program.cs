@@ -19,7 +19,7 @@ sealed class Program
     {
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-        
+
         var isDev = args.Any(a => string.Equals(a, "--dev", StringComparison.OrdinalIgnoreCase));
         var isDebug = args.Any(a => string.Equals(a, "--debug", StringComparison.OrdinalIgnoreCase));
         var version = Assembly.GetEntryAssembly()?
@@ -66,6 +66,15 @@ sealed class Program
         // var isExperimental = args.Any(a => string.Equals(a, "--experimental", StringComparison.OrdinalIgnoreCase));
         var peerId = Random.String(8);
         var name = Environment.UserName;
+        var relayNetwork = args.Any(a => string.Equals(a, "--relay", StringComparison.OrdinalIgnoreCase));
+        var p2pNetwork = args.Any(a => string.Equals(a, "--p2p", StringComparison.OrdinalIgnoreCase));
+        var server = "p2p.fscopilot.com";
+        var serverIndex = Array.FindIndex(args, a =>
+                string.Equals(a, "--server", StringComparison.OrdinalIgnoreCase));
+        if (serverIndex >= 0 && serverIndex + 1 < args.Length)
+        {
+            server = args[serverIndex + 1];
+        }
 
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
@@ -75,13 +84,20 @@ sealed class Program
                     services.AddSingleton(new SimClient(!isDev ? "FS Copilot" : "FS Copilot DEV"));
                     services.AddSingleton<SetupViewModel>();
                     services.AddSingleton(new Updater("http://p2p.fscopilot.com:2320"));
-                    
+
                     if (!isDev)
                     {
-                        services.AddSingleton<INetwork>(new HybridNetwork("p2p.fscopilot.com", peerId, name));
-                        // services.AddSingleton<INetwork>(!isExperimental
-                        //     ? new P2PNetwork("p2p.fscopilot.com", peerId, name)
-                        //     : new HybridNetwork("p2p.fscopilot.com", peerId, name));
+                        if (p2pNetwork) {
+                            services.AddSingleton<INetwork>(new P2PNetwork(server, peerId, name));
+                        }
+                        else if (relayNetwork)
+                        {
+                            services.AddSingleton<INetwork>(new RelayNetwork(server, peerId, name));
+                        }
+                        else
+                        {
+                            services.AddSingleton<INetwork>(new HybridNetwork(server, peerId, name));
+                        }
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();
                         services.AddSingleton(sp => new MainViewModel(
