@@ -30,7 +30,7 @@ var globalInstrumentListener = RegisterViewListener("JS_LISTENER_INSTRUMENTS");
 
 /* FS Copilot Integration */
 var hook = null;
-var templateToLoad = null;
+var templatesToLoad = [];
 var jsLoaded = false;
 
 (function() {
@@ -59,9 +59,12 @@ Include.addImports(['/FsCopilot/pointer.js'], () =>
 Include.addImports(['/FsCopilot/bus.js'], () =>
 Include.addImports(['/FsCopilot/events.js'], () =>
 Include.addImports(['/FsCopilot/hook.js'], () => {
-    console.log('[Hook] References loaded.');
+    console.log('[Hook] References loaded; ' + templatesToLoad.length + ' instrument(s) waited.');
     jsLoaded = true;
-    if (templateToLoad != null) hook = new Hook(templateToLoad);
+    while (templatesToLoad.length > 0) {
+        try { hook = new Hook(templatesToLoad.shift()); }
+        catch (error) { console.error(error); }
+    }
 }))))))));
 /* End of FS Copilot Integration */
 
@@ -197,7 +200,7 @@ class VCockpitPanel extends HTMLElement {
                 catch (error) { console.error(error); }
             }
             else {
-                templateToLoad = template;
+                templatesToLoad.push(template);
             }
             /* End of FS Copilot Integration */
         }
