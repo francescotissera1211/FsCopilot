@@ -99,7 +99,7 @@ public class Coordinator : IDisposable
                     .Sample(TimeSpan.FromMilliseconds(50))))
             .Subscribe(interact => _net.SendAll(_screens.ToPeer(interact) with { From = _clientName }, unreliable: interact.Event == "mousemove")));
         _d.Add(_net.Stream<Interact>()
-            .Where(i => !Listed(_pointer.Instruments, i.Instrument))
+            .Where(i => !Listed(_ignore, i.Instrument) && !Listed(_pointer.Instruments, i.Instrument))
             .Subscribe(update =>
             {
                 var local = _screens.FromPeer(update);
