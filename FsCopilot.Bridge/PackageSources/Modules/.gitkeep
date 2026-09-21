@@ -1,0 +1,3 @@
+Keep this folder: the MSFS package definition (PackageDefinitions/fscopilot-bridge.xml,
+asset group "modules") and the FsCopilotWasm PostBuildEvent both expect PackageSources/Modules
+to exist. FsCopilot.wasm itself is a build artifact and is ignored by git.

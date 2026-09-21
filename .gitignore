@@ -271,4 +271,8 @@ __pycache__/
 
 FsCopilot.Bridge/_PackageInt
 FsCopilot.Bridge/Packages
-FsCopilot.Bridge/PackageSources/Modules
+# The wasm binary is a build artifact (copied here by FsCopilotWasm.vcxproj PostBuildEvent),
+# but the directory itself must exist for the package builder (asset group "modules") and for
+# the post build copy step, so it is kept in the repository with a placeholder.
+FsCopilot.Bridge/PackageSources/Modules/*
+!FsCopilot.Bridge/PackageSources/Modules/.gitkeep

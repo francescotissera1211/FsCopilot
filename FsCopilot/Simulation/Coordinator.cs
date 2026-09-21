@@ -11,6 +11,8 @@ public class Coordinator : IDisposable
     private readonly SimClient _sim;
     private readonly CompositeDisposable _d = new();
     private CompositeDisposable _cSubs = new();
+    private readonly string _clientName;
+    private readonly ScreenSync _screens;
     private HashSet<string> _ignore = [];
 
     public Coordinator(SimClient sim, INetwork net, MasterSwitch masterSwitch)
@@ -18,6 +20,7 @@ public class Coordinator : IDisposable
         _net = net;
         _masterSwitch = masterSwitch;
         _sim = sim;
+        _clientName = ConnectionConfig.Load().Username;
         var sw = Stopwatch.StartNew();
 
         Span<byte> sessionBytes = stackalloc byte[8];
@@ -44,11 +47,40 @@ public class Coordinator : IDisposable
             surfaces.TimeMs = (uint)sw.ElapsedMilliseconds;
         })));
 
+        // Screens whose cursor and input are shared. ScreenSync resolves Definitions/screens.yaml
+        // against the displays reported by the bridge (display order is derived from creation time,
+        // panel names are not stable) and pushes the result back to the bridge.
+        _screens = new ScreenSync(sim);
+        _d.Add(_screens);
+
         _d.Add(_sim.Interactions
             .Where(i => !_ignore.Contains(i.Instrument))
-            .Subscribe(interact => _net.SendAll(interact)));
+            // Pointer moves are only shared for the configured screens and sampled to 20 fps, so a
+            // moving mouse cannot flood the link. Clicks of those screens are shared only when the
+            // configuration asks for it (by default the simulator generates them), other events keep
+            // their original behavior.
+            .Where(_screens.Forward)
+            .GroupBy(i => i.Instrument)
+            .SelectMany(group => group
+                .Where(i => i.Event != "mousemove")
+                .Merge(group
+                    .Where(i => i.Event == "mousemove")
+                    .Sample(TimeSpan.FromMilliseconds(50))))
+            .Subscribe(interact => _net.SendAll(_screens.ToPeer(interact) with { From = _clientName }, unreliable: interact.Event == "mousemove")));
         _d.Add(_net.Stream<Interact>()
-            .Subscribe(update => _sim.Set(update)));
+            .Subscribe(update =>
+            {
+                var local = _screens.FromPeer(update);
+                if (local is null)
+                {
+                    // The peer pointed at a display this machine does not have (different add-ons or
+                    // aircraft): better to do nothing than to click on the wrong display.
+                    Log.Debug("[Coordinator] Ignoring {Event} for unknown display {Instrument}", update.Event, update.Instrument);
+                    return;
+                }
+
+                _sim.Set(local);
+            }));
     }
 
     public void Dispose()
@@ -210,6 +242,12 @@ public class Coordinator : IDisposable
             bw.Write(packet.Id);
             bw.Write(packet.Value != null);
             if (packet.Value != null) bw.Write(packet.Value);
+            bw.Write(packet.X.HasValue);
+            if (packet.X.HasValue) bw.Write(packet.X.Value);
+            bw.Write(packet.Y.HasValue);
+            if (packet.Y.HasValue) bw.Write(packet.Y.Value);
+            bw.Write(packet.From != null);
+            if (packet.From != null) bw.Write(packet.From);
         }
 
         public Interact Decode(BinaryReader br)
@@ -219,7 +257,13 @@ public class Coordinator : IDisposable
             var id = br.ReadString();
             var hasValue = br.ReadBoolean();
             var value = hasValue ? br.ReadString() : null;
-            return new(instrument, @event, id, value);
+            var hasX = br.ReadBoolean();
+            var x = hasX ? br.ReadDouble() : (double?)null;
+            var hasY = br.ReadBoolean();
+            var y = hasY ? br.ReadDouble() : (double?)null;
+            var hasFrom = br.ReadBoolean();
+            var from = hasFrom ? br.ReadString() : null;
+            return new(instrument, @event, id, value, x, y, from);
         }
     }
 

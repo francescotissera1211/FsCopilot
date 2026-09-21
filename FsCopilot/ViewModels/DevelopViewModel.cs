@@ -20,6 +20,7 @@ using ReactiveUI;
 public class DevelopViewModel : ReactiveObject, IDisposable
 {
     private readonly CompositeDisposable _d = new();
+    private readonly Dictionary<string, ScreenEvent> _discovered = new(StringComparer.OrdinalIgnoreCase);
     // private readonly SimClient _sim;
     private readonly Subject<Unit> _reload = new();
     private readonly SerialDisposable _recording = new();
@@ -30,6 +31,9 @@ public class DevelopViewModel : ReactiveObject, IDisposable
     private bool _isRecording;
     private string _search = string.Empty;
     private Node? _foundNode;
+    private string? _selectedScreen;
+    private string _screenX = "0.5";
+    private string _screenY = "0.5";
 
     public string Loaded
     {
@@ -53,6 +57,40 @@ public class DevelopViewModel : ReactiveObject, IDisposable
     public ReactiveCommand<Unit, Unit> ReloadCommand { get; }
     public ReactiveCommand<Unit, Unit> RecordCommand { get; }
     public ReactiveCommand<Unit, Unit> PlayCommand { get; }
+
+    /// <summary>Instrument identifiers reported by the bridge (screen discovery).</summary>
+    public ObservableCollection<string> ScreenNames { get; } = [];
+
+    /// <summary>Screen messages received from the bridge: info, hit, moved, clicked.</summary>
+    public ObservableCollection<ScreenEvent> Screens { get; } = [];
+
+    /// <summary>Instrument identifier to address, "*" (empty) targets every screen of the aircraft.</summary>
+    public string? SelectedScreen
+    {
+        get => _selectedScreen;
+        set => this.RaiseAndSetIfChanged(ref _selectedScreen, value);
+    }
+
+    /// <summary>Pointer position inside the screen, normalized [0..1].</summary>
+    public string ScreenX
+    {
+        get => _screenX;
+        set => this.RaiseAndSetIfChanged(ref _screenX, value);
+    }
+
+    /// <summary>Pointer position inside the screen, normalized [0..1].</summary>
+    public string ScreenY
+    {
+        get => _screenY;
+        set => this.RaiseAndSetIfChanged(ref _screenY, value);
+    }
+
+    public ReactiveCommand<Unit, Unit> ScreenInfoCommand { get; }
+    public ReactiveCommand<Unit, Unit> ScreenProbeCommand { get; }
+    public ReactiveCommand<Unit, Unit> ScreenMoveCommand { get; }
+    public ReactiveCommand<Unit, Unit> ScreenClickCommand { get; }
+    public ReactiveCommand<Unit, Unit> ScreenPeerMoveCommand { get; }
+    public ReactiveCommand<Unit, Unit> ScreenPeerClickCommand { get; }
 
     public string Search
     {
@@ -167,6 +205,52 @@ public class DevelopViewModel : ReactiveObject, IDisposable
 
             return;
         });
+
+        // ---- screen discovery / remote pointer test (DU2, DU4, DU6, DU7, DU8, ...) ----
+        ScreenInfoCommand = ReactiveCommand.Create(() => sim.SendScreen("info", SelectedScreen ?? "*"));
+        ScreenProbeCommand = ReactiveCommand.Create(() => sim.SendScreen("probe", SelectedScreen ?? "*", Point(ScreenX), Point(ScreenY)));
+        ScreenMoveCommand = ReactiveCommand.Create(() => sim.SendScreen("move", SelectedScreen ?? "*", Point(ScreenX), Point(ScreenY)));
+        ScreenClickCommand = ReactiveCommand.Create(() => sim.SendScreen("click", SelectedScreen ?? "*", Point(ScreenX), Point(ScreenY)));
+
+        // Simulates the other pilot pointing/clicking, so the shared pointer can be checked with a
+        // single machine (in dev mode there is no Coordinator and therefore no peer).
+        ScreenPeerMoveCommand = ReactiveCommand.Create(() => sim.Set(new Interact(
+            SelectedScreen ?? "*", "mousemove", string.Empty, null, Point(ScreenX), Point(ScreenY), "Co-pilot")));
+        ScreenPeerClickCommand = ReactiveCommand.Create(() => sim.Set(new Interact(
+            SelectedScreen ?? "*", "mouseup", string.Empty, null, Point(ScreenX), Point(ScreenY), "Co-pilot")));
+
+        // Same as the Coordinator in normal mode: resolves screens.yaml against the displays reported
+        // by the bridge and pushes the shared list back, so the bridge reports mouse moves.
+        new ScreenSync(sim).DisposeWith(_d);
+
+        sim.Screens
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(ev =>
+            {
+                if (ev.Action == "info")
+                {
+                    // keep the discovery record and show the derived display order (#N in the list)
+                    _discovered[ev.Instrument] = ev;
+                    ev = Simulation.Screens.Ordered(_discovered.Values)
+                             .FirstOrDefault(x => x.Instrument.Equals(ev.Instrument, StringComparison.OrdinalIgnoreCase))
+                         ?? ev;
+
+                    var known = Screens.FirstOrDefault(s => s.Action == "info" && s.Instrument == ev.Instrument);
+                    if (known is not null) Screens.Remove(known);
+                    if (!ScreenNames.Contains(ev.Instrument)) ScreenNames.Add(ev.Instrument);
+                }
+
+                Screens.Insert(0, ev);
+                while (Screens.Count > 100) Screens.RemoveAt(Screens.Count - 1);
+            })
+            .DisposeWith(_d);
+
+        return;
+
+        static double Point(string text) =>
+            double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var v)
+                ? Math.Clamp(v, 0, 1)
+                : 0.5;
     }
 
     public void Dispose()

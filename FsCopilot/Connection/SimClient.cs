@@ -38,6 +38,7 @@ public class SimClient : IDisposable
     public IObservable<string> Aircraft => _consumer.Aircraft.ObserveOn(TaskPoolScheduler.Default);
     public IObservable<bool> Conflict => _conflict.ObserveOn(TaskPoolScheduler.Default);
     public IObservable<Interact> Interactions { get; }
+    public IObservable<ScreenEvent> Screens { get; }
     // public IObservable<SimConfig> Config { get; }
 
     public SimClient(string appName)
@@ -107,8 +108,33 @@ public class SimClient : IDisposable
 
        Interactions = socketMessages
            .Where(json => json.String("type").Equals("interact"))
-            .Select(json => new Interact(json.String("instrument"), json.String("event"), json.String("id"), json.StringOrNull("value")))
+            .Select(json => new Interact(
+                json.String("instrument"),
+                json.String("event"),
+                json.String("id"),
+                json.StringOrNull("value"),
+                json.DoubleOrNull("x"),
+                json.DoubleOrNull("y"),
+                json.StringOrNull("from")))
             .Replay(0).RefCount();
+
+       Screens = socketMessages
+           .Where(json => json.String("type").Equals("screen"))
+           .Select(json => new ScreenEvent(
+               json.String("action"),
+               json.String("instrument"),
+               json.Double("x"),
+               json.Double("y"),
+               json.Double("w"),
+               json.Double("h"),
+               json.Bool("interactive"),
+               (json.String("detail") + Extra(json)).Trim(),
+               json.String("title"),
+               json.String("gauge"),
+               json.String("guid"),
+               (long)json.Double("t")))
+           .Do(ev => Log.Debug("[SimConnect] SCREEN {Action} {Gauge} {Instrument} {W}x{H} {Detail}", ev.Action, ev.Gauge, ev.Instrument, ev.W, ev.H, ev.Detail))
+           .Replay(0).RefCount();
 
        _conflict = Stream("L:YourControlsPanelId", "number")
            .Select(value => Convert.ToInt32(value) > 0)
@@ -116,6 +142,14 @@ public class SimClient : IDisposable
            .Replay(0).RefCount();
 
        return;
+
+       static string Extra(JsonElement json)
+       {
+           var wasm = json.String("wasm");
+           var keys = json.String("keys");
+           return (wasm.Length > 0 ? " wasm=" + wasm : string.Empty) +
+                  (keys.Length > 0 ? " keys=" + keys : string.Empty);
+       }
 
        DEF RegisterClientStruct<T>(string name, bool producer)
        {
@@ -203,15 +237,55 @@ public class SimClient : IDisposable
 
     public void Set(Interact interact)
     {
-        var msg = Envelope("interact", writer =>
-        {
-            writer.WriteString("instrument", interact.Instrument);
-            writer.WriteString("event", interact.Event);
-            writer.WriteString("id", interact.Id);
-            writer.WriteString("value", interact.Value);
-        });
-        _producer.Post(sim => sim.SetClientData(_commBusDefId, _commBusDefId, SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT, 0, new StrMsg { Msg = msg }));
+        Send(Envelope("interact", writer => WriteInteract(writer, interact)));
     }
+
+    /// <summary>
+    /// Sends a screen level message to the bridge: discovery (info/probe) or a remote pointer test
+    /// (move/click). Pass an instrument identifier, or "*" to address every screen of the aircraft.
+    /// </summary>
+    public void SendScreen(string action, string instrument, double x = 0, double y = 0)
+    {
+        var msg = Envelope("screen", writer =>
+        {
+            writer.WriteString("action", action);
+            writer.WriteString("instrument", instrument);
+            writer.WriteNumber("x", Math.Round(x, 5));
+            writer.WriteNumber("y", Math.Round(y, 5));
+        });
+        Send(msg);
+    }
+
+    private static void WriteInteract(Utf8JsonWriter writer, Interact interact)
+    {
+        writer.WriteString("instrument", interact.Instrument);
+        writer.WriteString("event", interact.Event);
+        writer.WriteString("id", interact.Id);
+        writer.WriteString("value", interact.Value);
+        if (interact.X.HasValue) writer.WriteNumber("x", Math.Round(interact.X.Value, 5));
+        if (interact.Y.HasValue) writer.WriteNumber("y", Math.Round(interact.Y.Value, 5));
+        if (!string.IsNullOrEmpty(interact.From)) writer.WriteString("from", interact.From);
+    }
+
+    /// <summary>
+    /// Tells the bridge which screens carry a shared pointer (panel names, gauge names or full
+    /// addresses as reported by the discovery mode) and whether their clicks are shared.
+    /// </summary>
+    public void SendScreens(IEnumerable<string> screens, bool shareClicks = false)
+    {
+        var msg = Envelope("screens", writer =>
+        {
+            writer.WriteStartArray("list");
+            foreach (var screen in screens) writer.WriteStringValue(screen);
+            writer.WriteEndArray();
+            writer.WriteBoolean("clicks", shareClicks);
+        });
+
+        Send(msg);
+    }
+
+    private void Send(string msg) =>
+        _producer.Post(sim => sim.SetClientData(_commBusDefId, _commBusDefId, SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT, 0, new StrMsg { Msg = msg }));
 
     public void Execute(string expression)
     {
