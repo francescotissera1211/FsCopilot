@@ -14,9 +14,9 @@ with the point we send when its own raycast hits no display?** If it presses the
 displays can be synced whenever the receiving pilot's cursor is elsewhere, behind a gate
 that holds the press while it is not.
 
-**Status, 2026-09-23:** the A380 is reachable, the A350 is not. The A380 presses at the
+**Status, 2026-09-24:** the A380 is reachable; the A350 not yet. The A380 presses at the
 coordinates once `WASM_MOUSE_OVER`/`WASM_MOUSE_ENTER` tell the sim the cursor is on that
-display; the A350 ignores the coordinates. See [docs/log.md](docs/log.md).
+display. The A350 pressed nothing without the enter wrapper, and has not been tried with it. See [docs/log.md](docs/log.md).
 
 | File | What it is |
 | --- | --- |

@@ -180,16 +180,31 @@ function fireSource(seq, x, y, guid) {
     step(function () { send("mousemove", X, Y, 0); send("mousedown", X, Y, 1); send("mouseup", X, Y, 0); send("click", X, Y, 0) })
     return { calls: calls }
   }
+  // mouseenter/mouseleave do not bubble, and WasmSimCanvas binds them on the canvas itself
+  function onCanvas(type) { var hold = target; target = canvas; send(type, X, Y, 0); target = hold }
+  function press() { send("mousemove", X, Y, 0); send("mousedown", X, Y, 1); send("mouseup", X, Y, 0); send("click", X, Y, 0) }
   if (SEQ === "enter") {
-    // mouseenter/mouseleave do not bubble, and WasmSimCanvas binds them on the canvas itself
-    step(function () {
-      var hold = target
-      send("mouseover", X, Y, 0)
-      target = canvas; send("mouseenter", X, Y, 0); target = hold
-      send("mousemove", X, Y, 0); send("mousedown", X, Y, 1); send("mouseup", X, Y, 0); send("click", X, Y, 0)
-      target = canvas; send("mouseleave", X, Y, 0); target = hold
-    })
+    step(function () { send("mouseover", X, Y, 0); onCanvas("mouseenter"); press(); onCanvas("mouseleave") })
     return { calls: calls }
+  }
+  if (SEQ === "entertrail") {
+    // enter, then 10 moves at 20 Hz from 120 px up-left, then press and leave: for a module
+    // whose cursor has to travel to the point rather than jump
+    var trail = window.__WP01_FIRE = { done: false, calls: calls }
+    step(function () { send("mouseover", X - 120, Y - 120, 0); onCanvas("mouseenter") })
+    var k = 0
+    var t = setInterval(function () {
+      try {
+        k++
+        var f = k / 10
+        step(function () { send("mousemove", Math.round(X - 120 * (1 - f)), Math.round(Y - 120 * (1 - f)), 0) })
+        if (k < 10) return
+        clearInterval(t)
+        step(function () { press(); onCanvas("mouseleave") })
+        trail.done = true
+      } catch (e) { clearInterval(t); trail.error = String(e); trail.done = true }
+    }, 50)
+    return { pending: true }
   }
   // xray: the inspector cannot await a Promise, so finish into a global
   var out = window.__WP01_FIRE = { done: false, calls: calls }
