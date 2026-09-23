@@ -5,6 +5,12 @@
     Depends on: 03-scope
     Decides:    that this surface is closed, and what would have to change to open it
 
+> **Amended 2026-09-23.** Closed for the A350 only. The A380 module presses at the
+> coordinates on `WASM_MOUSE_DOWN`, once `WASM_MOUSE_OVER`/`WASM_MOUSE_ENTER` tell the sim the
+> cursor is on that display. The "Is this iniBuilds-specific?" section below is wrong: the
+> discarding is in the A350 module, not the sim. See the 2026-09-23 entry in
+> `record/wasm-pointer/docs/log.md`.
+
 Written after the surface was closed, so that nobody re-derives it. The A350, A400M,
 PMDG and every other display declared as
 `WasmInstrument/WasmInstrument.html?wasm_module=…&wasm_gauge=…` is out of reach for

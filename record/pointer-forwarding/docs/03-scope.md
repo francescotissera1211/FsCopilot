@@ -1,5 +1,9 @@
 # Reach
 
+> **Amended 2026-09-23.** The WASM row is per aircraft: the A380 is reachable with an
+> enter-wrapped press, the A350 is not. See the 2026-09-23 entry in
+> `record/wasm-pointer/docs/log.md`.
+
     Purpose:    Which cockpit surfaces pointer forwarding can address, and which it cannot.
     Depends on: 01-problem, 02-approach
     Decides:    the surface taxonomy, and which questions gate which aircraft

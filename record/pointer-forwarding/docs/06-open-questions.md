@@ -89,11 +89,11 @@ graphics settings. Low risk — normalising is free insurance either way.
 ## Gate C — how far does it reach?
 
 ### Q05 · Does `WasmInstrument.html` route DOM input into the WASM module?
-**Status:** CLOSED, negative · **Probes:** `p01`, `p06`, `p07` · **Answered by** "Same-tick injection loses too" in [build/log.md](build/log.md)
+**Status:** REOPENED, per aircraft · **Probes:** `p01`, `p06`, `p07` here; `record/wasm-pointer/probes/p01` · **Answered by** the 2026-09-23 entry in `record/wasm-pointer/docs/log.md`
 
-It routes the events but not the targeting. Hover belongs to the sim, the press latches onto
-whatever the receiving pilot is pointing at, and the cursor has no writable position anywhere.
-Full write-up in [07-wasm-surface](07-wasm-surface.md).
+It routes the events, and whether the coordinates select the target depends on the module.
+The A380 presses at the coordinates once the display is told the cursor entered it. The A350
+ignores them. Original write-up, now amended, in [07-wasm-surface](07-wasm-surface.md).
 
 ### Q06 · Can a `coui://` page reach into a cross-origin iframe?
 **Status:** open · **Probe:** `probes/p04-iframe.js` — needs an aircraft with a genuine cross-origin panel (Fenix). The A350 EFB turned out to be plain HTML DOM with only an `about:blank` viewer iframe, so it does not test this.
@@ -237,8 +237,8 @@ list to A and B and re-link them.
 ## Settled
 
 - **Q00 — yes.** MSFS hosts a WebKit inspector on 127.0.0.1:19999; probes run over the wire.
-- **Q05 — no, permanently.** WASM displays cannot be driven by injected input. See
-  [07-wasm-surface](07-wasm-surface.md).
+- **Q05 — per aircraft** (reopened 2026-09-23). The A380 is driven by an enter-wrapped press;
+  the A350 is not. See `record/wasm-pointer/docs/log.md`.
 - **Q01 — mouse events only.** `PointerEvent` does not exist in Coherent GT.
 - **Q02 — yes.** Real cockpit input is trusted; VCockpit.js's own synthetic events are not.
 - **Q03 — YES.** A synthetic mouse click at captured coordinates opened a dropdown on the
