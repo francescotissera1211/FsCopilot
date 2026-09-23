@@ -5,10 +5,11 @@
     Depends on: 03-scope
     Decides:    that this surface is closed, and what would have to change to open it
 
-> **Amended 2026-09-23.** Closed for the A350 only. The A380 module presses at the
+> **Amended 2026-09-23.** No longer closed. The A380 module presses at the
 > coordinates on `WASM_MOUSE_DOWN`, once `WASM_MOUSE_OVER`/`WASM_MOUSE_ENTER` tell the sim the
 > cursor is on that display. The "Is this iniBuilds-specific?" section below is wrong: the
-> discarding is in the A350 module, not the sim. See the 2026-09-23 entry in
+> A380 shows the sim does pass the coordinates through. The A350 has not been tried with the
+> enter wrapper yet. See the 2026-09-23 entry in
 > `record/wasm-pointer/docs/log.md`.
 
 Written after the surface was closed, so that nobody re-derives it. The A350, A400M,
