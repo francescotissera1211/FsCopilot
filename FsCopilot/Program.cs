@@ -100,7 +100,10 @@ sealed class Program
                 services =>
                 {
                     services.AddSingleton(Settings.Load());
-                    services.AddSingleton(trafficOptions);
+                    // Read when traffic is first used, which is after Connection settings has saved.
+                    services.AddSingleton(_ => ConnectionConfig.Load().ShareGroundVehicles && !trafficOptions.Ground
+                        ? trafficOptions with { Ground = true }
+                        : trafficOptions);
                     services.AddSingleton(new SimClient(!isDev ? "FS Copilot" : "FS Copilot DEV"));
                     var panelServer = new PanelServer();
                     services.AddSingleton(panelServer);
@@ -116,9 +119,17 @@ sealed class Program
                             var cfg = ConnectionConfig.Load();
                             var host = serverOverride ?? cfg.ServerAddress;
                             var peerId = peerIdOverride ?? cfg.PeerId;
-                            if (p2pNetwork) return new P2PNetwork(host, peerId, cfg.Username);
-                            if (relayNetwork) return new RelayNetwork(host, peerId, cfg.Username);
-                            return new HybridNetwork(host, peerId, cfg.Username, direct);
+                            // A command-line switch wins for this run; otherwise Connection settings decides.
+                            var mode = p2pNetwork ? ConnectionModes.Direct
+                                : relayNetwork || !direct ? ConnectionModes.Relay
+                                : ConnectionModes.Normalize(cfg.ConnectionMode);
+                            Log.Information("[Application] Server {Host}, connection type {Mode}", host, mode);
+                            return mode switch
+                            {
+                                ConnectionModes.Direct => new P2PNetwork(host, peerId, cfg.Username),
+                                ConnectionModes.Relay => new HybridNetwork(host, peerId, cfg.Username, direct: false),
+                                _ => new HybridNetwork(host, peerId, cfg.Username)
+                            };
                         });
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();

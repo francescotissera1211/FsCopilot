@@ -1,11 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FsCopilot.ViewModels"
+        xmlns:a11y="using:FsCopilot.Accessibility"
         x:Class="FsCopilot.Views.LoginWindow"
         x:DataType="vm:LoginViewModel"
         Title="FS Copilot - Connection settings"
         Width="500"
-        Height="480"
+        Height="720"
         CanResize="False"
         Background="Black"
         WindowStartupLocation="CenterScreen"
@@ -92,17 +93,19 @@
     </Window.Styles>
 
     <Grid Background="Black">
+        <ScrollViewer>
         <StackPanel HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="0"
                     Margin="60,32">
 
             <TextBlock Text="FS Copilot"
+                       AutomationProperties.HeadingLevel="1"
                        HorizontalAlignment="Center"
                        FontSize="42"
                        FontWeight="SemiBold"
                        TextAlignment="Center"
-                       Margin="0,0,0,28">
+                       Margin="0,0,0,8">
                 <TextBlock.Foreground>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                         <GradientStop Color="White" Offset="0" />
@@ -111,48 +114,94 @@
                 </TextBlock.Foreground>
             </TextBlock>
 
-            <TextBlock Classes="label"
-                       Text="Server Address" />
+            <TextBlock Text="Connection settings"
+                       AutomationProperties.HeadingLevel="2"
+                       HorizontalAlignment="Center"
+                       Foreground="#CCCCCC"
+                       FontSize="18"
+                       Margin="0,0,0,20" />
 
-            <TextBox Classes="input"
-                     AutomationProperties.Name="Server Address"
+            <TextBlock x:Name="ServerLabel"
+                       Classes="label"
+                       Text="Server address" />
+            <TextBox x:Name="ServerBox"
+                     Classes="input"
+                     AutomationProperties.Name="Server address"
+                     AutomationProperties.LabeledBy="{Binding #ServerLabel}"
+                     AutomationProperties.IsRequiredForForm="True"
+                     AutomationProperties.HelpText="Host name of the FS Copilot server. The default is p2p.fscopilot.com."
                      Text="{Binding ServerAddress}"
                      Watermark="p2p.fscopilot.com"
                      SelectionBrush="#333333"
                      SelectionForegroundBrush="#CCCCCC"
                      CaretBrush="#AAAAAA" />
 
-            <TextBlock Classes="label"
+            <TextBlock x:Name="UsernameLabel"
+                       Classes="label"
                        Text="Username" />
-
             <TextBox Classes="input"
                      AutomationProperties.Name="Username"
+                     AutomationProperties.LabeledBy="{Binding #UsernameLabel}"
+                     AutomationProperties.IsRequiredForForm="True"
+                     AutomationProperties.HelpText="The name your crew sees beside your client code."
                      Text="{Binding Username}"
                      Watermark="By default will be your System username"
                      SelectionBrush="#333333"
                      SelectionForegroundBrush="#CCCCCC"
                      CaretBrush="#AAAAAA" />
 
-            <TextBlock Classes="label"
-                       Text="Peer ID" />
-
+            <TextBlock x:Name="PeerIdLabel"
+                       Classes="label"
+                       Text="Peer ID (your client code)" />
             <TextBox Classes="input"
-                     AutomationProperties.Name="Peer ID"
+                     AutomationProperties.Name="Peer ID, your client code"
+                     AutomationProperties.LabeledBy="{Binding #PeerIdLabel}"
+                     AutomationProperties.IsRequiredForForm="True"
+                     AutomationProperties.HelpText="Exactly 8 letters or digits. Your crew types this code to join you. Keep it the same so they can reuse it."
+                     MaxLength="8"
                      Text="{Binding PeerId}"
-                     Watermark="8 letter Peerid"
+                     Watermark="8 letters or digits"
                      SelectionBrush="#333333"
                      SelectionForegroundBrush="#CCCCCC"
                      CaretBrush="#AAAAAA" />
 
+            <TextBlock x:Name="ModeLabel"
+                       Classes="label"
+                       Text="Connection type" />
+            <ComboBox AutomationProperties.Name="Connection type"
+                      AutomationProperties.LabeledBy="{Binding #ModeLabel}"
+                      AutomationProperties.HelpText="Automatic tries a direct link first and uses the relay if that fails. Choose relay only if direct links keep failing on your network."
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding ConnectionModeOptions}"
+                      SelectedItem="{Binding ConnectionMode}" />
+
+            <CheckBox Margin="0,16,0,0"
+                      Foreground="White"
+                      AutomationProperties.HelpText="When you host AI traffic, also share ground vehicles such as tugs and fuel trucks."
+                      IsChecked="{Binding ShareGroundVehicles}"
+                      Content="Share ground vehicles when hosting traffic" />
+
             <TextBlock Classes="error"
+                       AutomationProperties.LiveSetting="Assertive"
                        IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                        Text="{Binding ErrorMessage}" />
 
             <Button Classes="cta"
-                    Content="Save Setting and Connect"
+                    IsDefault="True"
+                    AutomationProperties.HelpText="Saves these settings and opens FS Copilot. Enter also saves."
+                    Content="Save settings and connect"
                     Command="{Binding ConnectCommand}"
-                    IsEnabled="{Binding CanConnect}"
                     HorizontalAlignment="Center" />
+
+            <TextBlock Foreground="#888888"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       Margin="0,16,0,0"
+                       Text="{Binding ConfigPath, StringFormat='Saved to {0}'}" />
+
+            <a11y:LiveAnnouncer />
         </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Window>
