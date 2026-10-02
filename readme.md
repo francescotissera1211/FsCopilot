@@ -9,10 +9,38 @@
 
 # 🛫 FS Copilot
 
+> **This is a combined fork.** It merges [upstream FS Copilot](https://github.com/yury-sch/FsCopilot) (1.2.1, 2026-04-16) with the work found on every public fork as of 2026-10-02, and ships every aircraft profile in the build. See [What this fork adds](#-what-this-fork-adds).
+
+
 **FS Copilot** is a companion app for **Microsoft Flight Simulator 2024** that lets multiple pilots control the same aircraft together — in real time.
 Fly as a real crew. 👨‍✈️👩‍✈️
 
 ![FS Copilot](https://raw.githubusercontent.com/yury-sch/FsCopilot/refs/heads/main/preview.png)
+
+## 🔀 What this fork adds
+
+Merged from the public forks of FS Copilot (each fork's own commits are kept, with their authors):
+
+| Source | What it brings |
+| --- | --- |
+| [xray447](https://github.com/xray447/FsCopilot) `new_master` | Server address, username and peer ID in a login window (saved to `%LOCALAPPDATA%\FsCopilot\config.json`); packet-loss readout per peer with Reset Stats; iniBuilds A380 MFD/ND pointer and click sync (`Definitions/screens.yaml`); one-script relay server setup for Debian |
+| [Johnsmz13](https://github.com/Johnsmz13/FsCopilot) `main` | Command-line network choice: `--server <host>`, `--p2p` (direct only), bare `--relay` (relay only) |
+| [xiprox](https://github.com/xiprox/FsCopilot) `pointer-forwarding` ([upstream PR #35](https://github.com/yury-sch/FsCopilot/pull/35)) | Pointer gesture sync for panels the element path cannot reach (opt in per profile with `pointer:`), sync-state overlays, acknowledged replay after a reconnect, a peer that left told apart from a peer that was lost |
+| xiprox `ahead-traffic-atc` | Share AI traffic and ATC audio with the crew (ATC & Traffic card); relay protocol v2 |
+| xiprox `dev-var-replay`, `ahead-modules`, `ahead-debug-symbols`, `ahead-devex` | Variable replay in dev mode; GTNXi, RDR1150XL and KFC 150 modules; debug symbols in Debug builds |
+| xiprox `ahead-pointer-forwarding` | VCockpit.js fix for multi-instrument panels; the profile ignore list applied to inbound input; the Synaptic A220 profile |
+| xiprox `ahead-record` | Research and build notes under `record/` |
+| [LocatedInSpace](https://github.com/LocatedInSpace/FsCopilot) `main` | PA-28-236 Dakota autopilot rework, kept in `Definitions/experimental/` (its author marked it as probably not working) |
+
+[3617luke](https://github.com/3617luke/FsCopilot) carries two of Yury's commits that upstream already has. The other forks have no commits of their own.
+
+**Profiles:** `Definitions/` holds all 81 profiles from the FS Copilot profile server (2026-10-02), the seven FSS Boeing 727 profiles the server no longer serves, and the fork profiles above.
+
+**Who you can fly with:** FS Copilot refuses a peer whose packet set differs from its own, and every fork above adds packets. This build only connects to other people running this build, not stock FS Copilot or a single fork.
+
+**Relay:** the default server is upstream's `p2p.fscopilot.com`. Direct links work through it. This build speaks xiprox's relay protocol v2, which that server does not serve, so a crew that cannot link directly needs a v2 relay entered in the login window (or `--server <host>`). xiprox runs one at `fscrelay.ihsan.dev`. `FsCopilot.Discovery` in this repository builds one.
+
+**Updates:** the update check reads this repository's releases.
 
 ## 💡 How It Works
 
