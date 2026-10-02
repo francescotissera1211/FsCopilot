@@ -19,7 +19,7 @@ sealed class Program
     {
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-        
+
         var isDev = args.Any(a => string.Equals(a, "--dev", StringComparison.OrdinalIgnoreCase));
         var isDebug = args.Any(a => string.Equals(a, "--debug", StringComparison.OrdinalIgnoreCase));
         var version = Assembly.GetEntryAssembly()?
@@ -64,6 +64,17 @@ sealed class Program
     {
         var isDev = args.Any(a => string.Equals(a, "--dev", StringComparison.OrdinalIgnoreCase));
         // var isExperimental = args.Any(a => string.Equals(a, "--experimental", StringComparison.OrdinalIgnoreCase));
+        // Transport and server overrides (Johnsmz13): --p2p forces direct links only, --relay forces
+        // relay only, --server <host> overrides the server saved in the login window (xray447).
+        var relayNetwork = args.Any(a => string.Equals(a, "--relay", StringComparison.OrdinalIgnoreCase));
+        var p2pNetwork = args.Any(a => string.Equals(a, "--p2p", StringComparison.OrdinalIgnoreCase));
+        string? serverOverride = null;
+        var serverIndex = Array.FindIndex(args, a =>
+                string.Equals(a, "--server", StringComparison.OrdinalIgnoreCase));
+        if (serverIndex >= 0 && serverIndex + 1 < args.Length)
+        {
+            serverOverride = args[serverIndex + 1];
+        }
 
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
@@ -74,18 +85,17 @@ sealed class Program
                     services.AddSingleton<SetupViewModel>();
                     services.AddSingleton<LoginViewModel>();
                     services.AddSingleton(new Updater("http://p2p.fscopilot.com:2320"));
-                    
+
                     if (!isDev)
                     {
                         services.AddSingleton<INetwork>(sp =>
                         {
                             var cfg = ConnectionConfig.Load();
-                            var host = cfg.ServerAddress;
+                            var host = serverOverride ?? cfg.ServerAddress;
+                            if (p2pNetwork) return new P2PNetwork(host, cfg.PeerId, cfg.Username);
+                            if (relayNetwork) return new RelayNetwork(host, cfg.PeerId, cfg.Username);
                             return new HybridNetwork(host, cfg.PeerId, cfg.Username);
                         });
-                        // services.AddSingleton<INetwork>(!isExperimental
-                        //     ? new P2PNetwork("p2p.fscopilot.com", peerId, name)
-                        //     : new HybridNetwork("p2p.fscopilot.com", peerId, name));
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();
                         services.AddSingleton(sp =>
