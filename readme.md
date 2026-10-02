@@ -25,7 +25,7 @@ FS Copilot's public forks each added something, and none of it reached upstream.
 
 1. Download `FsCopilot_v<version>.zip` from this repository's [Releases](../../releases) and unzip it anywhere, for example next to your other add-ons.
 2. Run `FsCopilot.exe`.
-3. The first window is **Connection settings**: server address, your name and your peer ID. The defaults are fine. Choose **Save Setting and Connect**. These are saved to `%LOCALAPPDATA%\FsCopilot\config.json`, and the window shows them again on every start so you can change them.
+3. The first window is **Connection settings**. The defaults are fine; press **Enter** or choose **Save settings and connect**. It opens on every start, so you can change any setting there. See [Settings](#settings).
 4. On first run the **Setup** window offers **Install**. It copies the `fscopilot-bridge` package into your MSFS Community folder (and removes YourControls if it finds it, because the two conflict). Then choose **Continue**.
 5. Upgrading from stock FS Copilot: close it, run this build, and choose **Install** when Setup asks. The bridge in your Community folder is replaced.
 
@@ -40,11 +40,16 @@ Everyone in the session must run **this build**. FS Copilot compares the list of
 - If the direct attempt fails, the app falls back to the **relay**. Both apps keep a connection to the server, and the server forwards every packet between them. A direct link fails when a router or ISP won't allow hole punching: carrier-grade NAT (common on mobile, satellite and some fibre ISPs), symmetric NAT, strict firewalls, or a server that does not introduce the two peers.
 - The relay carries everything the direct link carries: cockpit sync, pointer sync, traffic and ATC audio. It only adds latency, roughly the round trip to the server (about 100 ms from Europe to `p2p.fscopilot.com`). The connection list on the main window shows `direct` or `relay` for each peer, with its ping and packet loss.
 - **Two relay protocols, both handled automatically.** This build speaks xiprox's relay protocol v2, which keeps traffic and ATC audio apart from control messages so they survive the relay. Upstream's server `p2p.fscopilot.com` speaks v1. The app recognises a v1 relay from its first reply and switches to v1 for the session, so the default server works without changing anything. A v2 relay (for example xiprox's `fscrelay.ihsan.dev`, or one you host) can be entered in Connection settings.
-- Seen on 2026-10-02: from one test machine, upstream's server answered the direct attempt with `NOT_FOUND` for both this build and stock 1.2.1, and the relay carried the session (about 100 ms, 0% loss). If your log shows `[Peer2Peer] REJ … NOT_FOUND`, that is the server's answer, not a fault in your setup. The relay takes over on its own.
+- **Which server?** Keep the default, `p2p.fscopilot.com`. On 2026-10-02 both servers were tested with this build's own network code, sending 100 packets of every kind at small and full size through each relay:
+  - **`p2p.fscopilot.com` (default):** every kind and size arrived, using the automatic v1 fallback.
+  - **`fscrelay.ihsan.dev` (xiprox's server, also up):** everything arrived except the largest unreliable packets, which were 1 byte over the limit. That was a budget bug in the traffic/ATC code, now fixed, and it never affected real traffic batches (1008 bytes at most) or voice frames (about 60 bytes).
+
+  Upstream's is the official, long-running server and needs nothing set. A direct link between two copies on *one* computer can't be tested (both servers behaved the same there), so direct links are best judged on a real two-house session; the relay takes over whenever one fails.
+- **Connection type** in Connection settings: **Automatic** (direct, then relay) is right for nearly everyone. Choose **Relay only** if joins keep taking several seconds or failing on your network, or **Direct link only** to keep traffic off the server.
 
 ### Features added by this fork
 
-**Connection settings window** (xray447): choose the server, your display name and a fixed peer ID that stays the same between sessions, so your crew can keep your code. All three fields and both windows are labelled for screen readers.
+**Connection settings window** (xray447, extended here): choose the server, your display name, a fixed peer ID that stays the same between sessions so your crew can keep your code, the connection type, and whether to share ground vehicles.
 
 **Packet loss per peer** (xray447): each peer in the onboard list shows `LOSS: n%` beside its ping. **Reset Stats** clears the counters.
 
@@ -81,17 +86,54 @@ Everyone in the session must run **this build**. FS Copilot compares the list of
 - A peer that is still handshaking is not shown as connected.
 - A peer that left is told apart from one whose link was lost.
 
+### Settings
+
+Everything is set in windows; the command line is only for one-off overrides.
+
+| Where | Setting | Saved in |
+| --- | --- | --- |
+| Connection settings (opens at every start) | Server address, username, peer ID (exactly 8 letters or digits), connection type (Automatic / Direct link only / Relay only), share ground vehicles when hosting traffic | `%LOCALAPPDATA%\FsCopilot\config.json` |
+| Main window, ATC & Traffic, while you share ATC | ATC audio source app | `settings.json` beside `FsCopilot.exe` |
+| Main window, ATC & Traffic, while you receive ATC | Mute and volume of the received ATC audio | `settings.json` beside `FsCopilot.exe` |
+
+Connection settings checks the fields when you save and says what is wrong ("Peer ID must be exactly 8 letters or digits"), instead of greying the button out. If `config.json` can't be written, it says so and stays open. Changes take effect the next time you press Save, which happens at every start.
+
+### Accessibility
+
+Built for screen readers and tested on 2026-10-02 with Windows UI Automation (the interface NVDA, JAWS and Narrator use):
+
+- **Every control has a name and a hint.** Every button, box, switch, list, slider and picker has a spoken name. Most also carry a hint saying what it does (NVDA: NVDA+Tab reads it). Decorative icons and images are hidden.
+- **Headings.** Each window title is heading level 1, and the cards (Connection, ATC & Traffic, Onboard) are level 2. Press H in browse mode to jump between them.
+- **Spoken updates.** These are spoken as they happen:
+  - joining, joined, and why a join failed;
+  - who joined or left, and over which link;
+  - who has the controls, whenever that changes;
+  - errors, such as the sim not running or the bridge missing;
+  - a newer aircraft profile being available;
+  - ATC and traffic sharing starting or stopping;
+  - Setup progress;
+  - copying your code.
+
+  They use UI Automation notification events, which NVDA, JAWS and Narrator read. Avalonia, the UI toolkit, doesn't raise live-region events on Windows, so they would otherwise stay silent.
+- **Keyboard.**
+  - Focus starts in a useful place: the first field in Connection settings, the action button in Setup, the client code box in the main window, and Open GitHub in the update message.
+  - Enter submits Connection settings and joins from the code box. Escape closes the update message.
+  - Tab follows reading order.
+- **Onboard list.** Each pilot is one list item, read as "name, code, direct link or relay, connection quality", with ping and packet loss as its description. Arrow keys move between pilots. The rows update in place, so the reader doesn't lose its spot as ping changes.
+- **Readable codes.** Codes are spelled out ("Q F Q Y E C T D"). **Copy code** puts yours on the clipboard to paste into a message.
+- **Readable values.** The ATC volume slider reads as a percentage. The mute button is named for what it will do ("Mute received ATC audio" or "Unmute received ATC audio").
+
 ### Command-line options
 
 | Option | What it does |
 | --- | --- |
-| `--server <host>` | Use this server (matchmaking and relay) instead of the one in Connection settings. |
+| `--server <host>` | Use this server (matchmaking and relay) for this run instead of the one in Connection settings. |
 | `--relay <host>` | The same, xiprox's spelling. |
-| `--relay` (no host after it) | Relay only: never try a direct link (Johnsmz13). |
+| `--relay` (no host after it) | Relay only for this run (Johnsmz13); the same as Connection type "Relay only". |
 | `--no-direct` | Relay only (xiprox's spelling, keeps both transports loaded). |
-| `--p2p` | Direct links only: never use the relay. |
+| `--p2p` | Direct links only for this run; the same as Connection type "Direct link only". |
 | `--peer-id <id>` | Use this peer ID for this run instead of the saved one. |
-| `--traffic-ground` | Share ground vehicles along with AI aircraft. |
+| `--traffic-ground` | Share ground vehicles for this run; the same as the Connection settings check box. |
 | `--traffic-offset <nm>,<deg>` / `--traffic-shadow <m>` | Test aids: place received traffic away from the originals so two copies can run against one sim. |
 | `--dev` | Open the Develop window instead of a session. |
 | `--debug` | Verbose log (`log` beside the exe). |
@@ -124,7 +166,7 @@ Five served profiles include modules under misspelled names (TBM 850, A330, Belu
 | [xiprox/fsc-editor](https://github.com/xiprox/fsc-editor) corpus | A350, A400M, PA-24 profiles, newer A220 profile |
 | [LocatedInSpace](https://github.com/LocatedInSpace/FsCopilot) `main` | Experimental PA-28 Dakota rework |
 | [degroat-c/pmdg737-fscopilot](https://github.com/degroat-c/pmdg737-fscopilot) | Experimental PMDG 737-800 conversion |
-| This fork | v1 relay fallback, module aliases, screen-reader labels, bundled profiles, update check pointed at this repository |
+| This fork | v1 relay fallback, the relay packet budget fix, connection type and ground-vehicle settings, the accessibility work, module aliases, bundled profiles, update check pointed at this repository |
 
 [3617luke](https://github.com/3617luke/FsCopilot) holds two of Yury's commits that upstream already has. harrycollin, art-drobanov, coisasgamer4, kpolkowski, grzegorzkibitz, demendet, lLeolau and code-dev1324's FsCopilot-V2 have no changes of their own.
 
