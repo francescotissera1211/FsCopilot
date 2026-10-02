@@ -1,0 +1,608 @@
+# Original author: https://discord.com/channels/1454265644416765974/1493623971017654302/1494769696468111470
+# Updated: 2026-04-17 18:41:10
+
+# FlySimware LEAR 35A - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: DKgolnut
+# Special Thanks: 
+# Date: 4/17/2026
+
+# Known Issues:
+  # 4/17/2026
+   # - all internal and external functions are working. 
+   # - I added partial Breakers on Pilot door panel to validate they worked. I will continue to add more breakers over the next couple weeks. 
+   # - TDS GTN750XI is none functional due to them not allowing vars to be exposed.
+# FIXES:
+  # 4/17/2026
+   # - N/A until others fly the plane and report back
+
+# Added:
+  #  - 
+include:
+  - modules/AS_GNS430.yaml
+  - modules/AS_GNS530.yaml
+#  - modules/fuel.yaml
+  - modules/payload.yaml
+master:
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, Position 16k
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  - get: A:ELEVATOR TRIM PCT, percent scaler 16k # TRIM
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: L:XMLVAR_ElevatorTrim_Switch_1    
+  - get: A:AILERON TRIM PCT, percent scaler 16k # TRIM
+    set: (>K:AILERON_TRIM_SET_EX1)
+  - get: A:RUDDER TRIM PCT, percent scaler 16k # TRIM
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: B:HANDLING_RudderTrim_1, Number
+  - get: L:XMLVAR_RudderTrim_Switch_1, Number
+  - get: L:ADI_GA_BUTTON, Bool # ADI GA BUTTON
+    set: (>K:AUTO_THROTTLE_TO_GA)
+  - get: A:FLAPS HANDLE INDEX, Number # FLAPS
+    set: |
+      switch (value) {
+          case  0: return '0 (>K:FLAPS_CONTINUOUS_SET)'
+          case  1: return '5461 (>K:FLAPS_CONTINUOUS_SET)'
+          case  2: return '10922 (>K:FLAPS_CONTINUOUS_SET)'
+          case  3: return '16383 (>K:FLAPS_CONTINUOUS_SET)'
+          default: return ''
+      }
+shared:
+#   #############  CoPILOT PANELS - Right Arm #############
+#   ## Master warning ##
+  - get: L:GENERIC_LEAR_SW_MASTER_RESET2_1
+#   #############  CoPILOT PANELS - Front Upper #############
+#   ## DME CONFIG - CoPilot ##
+  - get: L:GENERIC_DME_TEST_1
+  - get: L:XMLVAR_DME_MODE1A_Position
+  - get: L:DME_MODE1A
+  - get: L:XMLVAR_DME_MODE2A_Position
+  - get: L:DME_MODE2A
+#  - # Airspeed Bug - CoPilot
+  - get: L:GENERIC_LEAR_AIRSPEED_KNOB_R
+#   ## RMI - CoPilot ##
+  - get: L:GENERIC_RMI_BUTTON3_1
+  - get: L:GENERIC_RMI_BUTTON4_1
+#   ## Landing Gear Panel ##
+  - get: L:GENERIC_Momentary_LEAR_SW_GEAR_TEST
+  - get: L:XMLVAR_GEAR_BRT_KNOB_Position
+  - get: L:LANDING_GEAR_Gear
+    set: (>K:GEAR_SET)
+  - get: L:GENERIC_CABIN_TEMP_SWITCH
+    set: (>B:GENERIC_CABIN_TEMP_SWITCH_Set)
+#   ## HSI - CoPilot ##
+#  - # Course Knob
+  - get: L:INSTRUMENT_Course_2
+    set: (>K:VOR2_SET)
+  - get: B:INSTRUMENT_Heading_Bug_2, Number
+    set: (>B:INSTRUMENT_Heading_Bug_2_Set)
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees
+    set: "`${Math.round((value % 360) * 16384 / 360)} (>K:AP_HEADING_BUG_SET_EX1)`"
+  - get: L:XMLVAR_HSI_MODE_SELECTOR_2_Position, Number
+    set: (>B:GENERIC_HSI_MODE_SELECTOR_2_Set)
+#   ## Altitude Indicator - CoPilot ##
+  - get: L:ALERTER_DIAL_DIGITAL_CUSTOM_R_sec
+  - get: A:KOHLSMAN SETTING MB:0, Millibars # BARO
+    set: "`0 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # ALTIMETER CALIBRATION
+    set: "`2 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # ALTIMETER CALIBRATION
+    set: "`3 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING STD:1, Bool
+    set: "value ? '1 (>K:BAROMETRIC_STD_PRESSURE)' : ''"
+  - get: A:KOHLSMAN SETTING STD:2, Bool
+    set: "value ? '2 (>K:BAROMETRIC_STD_PRESSURE)' : ''"
+#   ## RADAR ALTITUDE - CoPilot ##
+  - get: L:GENERIC_RADAR_TEST_SW_1
+  - get: A:DECISION HEIGHT, Feet
+    set: "value > current ? '0 (>K:INCREASE_DECISION_HEIGHT)' : '0 (>K:DECREASE_DECISION_HEIGHT)'"
+#  - # ELT ARM/ON SW
+  - get: L:GENERIC_ELT_TRANSMITTER
+#   ## Light Dimmers - CoPilot ##
+  - get: L:XMLVAR_LEAR_LTS_PEDESTAL_Position
+  - get: L:XMLVAR_LEAR_LTS_EL_R_Position
+  - get: L:XMLVAR_LEAR_LTS_PNL_R_Position
+  - get: L:XMLVAR_LEAR_LTS_MAP_R_Position
+#   ## MAP LIGHT MOVEMENT - CoPilot ##
+  - get: L:Map_Light_Drag_Nozzle_CoPilot1_Horizontal
+  - get: L:Map_Light_Drag_Nozzle_CoPilot1_Vertical
+#  - # Wing Inspection Light
+  - get: L:GENERIC_WING_INSPECTION_SWITCH
+#   #############  CoPILOT PANELS - Front Lower #############
+#   ## Presurization Panel ##
+  - get: L:GENERIC_Momentary_LEAR_CABIN_PRESS_ROCKER, Number
+    set: |
+      switch (value) {
+        case 0:
+          return '0 (>B:GENERIC_LEAR_CABIN_PRESS_ROCKER_Up)';
+        case 1:
+          return '1 (>B:GENERIC_LEAR_CABIN_PRESS_ROCKER_Center)';
+        case 2:
+          return '2 (>B:GENERIC_LEAR_CABIN_PRESS_ROCKER_Down)';
+        default: return ''
+      }
+  - get: L:XMLVAR_LEAR_CABIN_CLIMB_RATE_Position
+  - get: L:XMLVAR_LEAR_CABIN_PRESSURE_KNOB_Position
+  - get: L:GENERIC_LEAR_CABIN_AUTO_SW, Number
+    set: (>B:GENERIC_LEAR_CABIN_AUTO_SW_Toggle)
+  - get: L:GENERIC_CABIN_AIR_MODE
+#   ## Climate Control Panel ##
+  - get: L:GENERIC_LEAR_TEMP_AUTO_1
+  - get: L:XMLVAR_LEAR_TEMP_CONTROL_Position
+  - get: L:GENERIC_Momentary_LEAR_TEMP_FAN
+#   ## LIGHTING PANEL - CoPilot ##
+  - get: L:GENERIC_Momentary_LEAR_SW_BLEED_L
+  - get: L:GENERIC_Momentary_LEAR_SW_BLEED_R
+  - get: B:GENERIC_SWITCH_RECOG_LIGHT, Bool
+    set: (>B:GENERIC_SWITCH_RECOG_LIGHT_Toggle)
+  - get: B:GENERIC_SWITCH_STROBE_LIGHT, Bool
+    set: (>B:GENERIC_SWITCH_STROBE_LIGHT_Toggle)
+  - get: B:GENERIC_SWITCH_NAV_LIGHT, Bool
+    set: (>B:GENERIC_SWITCH_NAV_LIGHT_Toggle)
+  - get: B:GENERIC_SWITCH_BEACON_LIGHT, Bool
+    set: (>B:GENERIC_SWITCH_BEACON_LIGHT_Toggle)
+  - get: L:GENERIC_Momentary_LEAR_SW_SLAVE_LR2
+  - get: L:GENERIC_LEAR_SW_SLAVE_FREE2
+#   #############  GLARESHIELD PANELS #############
+#   ## Fire System Functions ##
+  - get: L:GENERIC_LEAR_BOTTLE1_ENG1
+  - get: L:GENERIC_LEAR_BOTTLE2_ENG1
+  - get: L:GENERIC_LEAR_FIRE_HANDLE1
+  - get: L:GENERIC_LEAR_BOTTLE1_ENG2
+  - get: L:GENERIC_LEAR_BOTTLE2_ENG2
+  - get: L:GENERIC_LEAR_FIRE_HANDLE2
+#   ## THrust Reverser Functions ##
+  - get: L:GENERIC_Momentary_LEAR_SW_REV_L
+  - get: L:GENERIC_Momentary_LEAR_SW_REV_R
+#   ## AutoPilot Roll MODES Functions ##
+  - get: L:GENERIC_LEAR_AP_HDG_1
+  - get: K:AP_PANEL_HEADING_HOLD
+#    cancel hEvnet
+  - get: L:GENERIC_LEAR_AP_BNC_1
+  - get: K:AP_MAX_BANK_DEC
+  - get: L:GENERIC_LEAR_AP_NAV_1
+  - get: K:AP_NAV1_HOLD
+  - get: L:GENERIC_LEAR_AP_BC_1
+  - get: K:AP_BC_HOLD
+  - get: L:GENERIC_LEAR_AP_LVL_1
+  - get: K:AP_WING_LEVELER
+ #   ## AutoPilot AFCSS Functions ##   
+  - get: L:AUTOPILOT_LIGHT_TEST
+  - get: L:GENERIC_LEAR_AP_ENG_1
+  - get: K:AP_MASTER
+  - get: L:GENERIC_LEAR_AP_SFT_1
+  - get: L:MODE_SFT
+#   ## AutoPilot PITCH MODES Functions ##
+  - get: L:GENERIC_LEAR_AP_VS_1
+  - get: K:AP_PANEL_VS_HOLD
+  - get: K:FLIGHT_LEVEL_CHANGE_ON
+  - get: K:AP_MANAGED_SPEED_IN_MACH_TOGGLE
+  - get: L:GENERIC_LEAR_AP_GS_1
+  - get: K:AP_APR_HOLD
+  - get: L:GENERIC_LEAR_AP_ALTSEL_1
+  - get: K:AP_ALT_HOLD
+#   #############  MISCELLENEOUS ITEMS #############
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+  - get: L:GENERIC_LEAR_STEER_ON_PILOT_1
+  - get: L:AP_PITCH_REF
+  - get: L:GENERIC_Manuv_RP_Switch_Pilot_1
+  - get: L:GENERIC_Pitch_Sync_Switch_Pilot_1
+  - get: L:GENERIC_LEAR_STEER_ON_COPILOT_1
+  - get: L:GENERIC_Manuv_RP_Switch_CoPilot_1
+  - get: L:GENERIC_Pitch_Sync_Switch_CoPilot_1
+#   ## TABLET VISIBILITY & POWER ##
+  - get: L:SHOW_HIDE_EFB
+  - get: L:EFB_PUSH_POWER
+  - get: L:EFB_BRIGHTNESS
+#   ## TABLET CONFIGUTATION SCREEN ##
+#  - # EQUIPMENT
+  - get: L:EFB_PUSH_CHOCKS
+  - get: L:EFB_PUSH_ECOVER
+  - get: L:EFB_PUSH_PCOVER
+  - get: L:EFB_PUSH_FCOVER
+  - get: L:EFB_PUSH_GPU
+  - get: L:EFB_PUSH_DIGITAL_SOUND
+#  - # LIGHTS
+  - get: L:GENERIC_LEAR_SW_LTS_STEP
+  - get: L:GENERIC_LEAR_SW_LTS_CABIN
+  - get: L:GENERIC_LEAR_SW_LTS_DIM
+  - get: L:GENERIC_LEAR_SW_LTS_BAGGAGE
+#  - # CABIN DOORS
+  - get: A:INTERACTIVE POINT OPEN:2, Percent
+  - get: A:INTERACTIVE POINT GOAL:2, Percent
+  - get: L:LEAR_DOORHANDLE_TOP
+  - get: L:LEAR_DOORHANDLE_BOTTOM
+  - get: L:LEAR_DOORHANDLE_MOTOR
+  - get: L:LEAR_DOOR_TOP_OPEN_CLOSE
+  - get: L:LEAR_DOOR_BOTTOM_OPEN_CLOSE
+#  - # COCKPIT DOOR
+  - get: L:COCKPIT_DOOR_DIVIDER
+  - get: L:GENERIC_LEAR_DOOR_DIVIDER_HANDLE
+#  - # CABIN TABLES
+  - get: L:GENERIC_LEAR_TABLE_FOLD_1_HANDLE
+  - get: L:GENERIC_LEAR_TABLE_FOLD_2_HANDLE
+  - get: L:GENERIC_LEAR_TABLE_FOLD_3_HANDLE
+#  - # CABIN SHADES
+  - get: L:GENERIC_LEAR_CURTAIN
+  - get: L:GENERIC_LEAR_CURTAIN1
+  - get: L:GENERIC_LEAR_CURTAIN2
+  - get: L:GENERIC_LEAR_CURTAIN3
+  - get: L:GENERIC_LEAR_CURTAIN4
+  - get: L:GENERIC_LEAR_CURTAIN5
+  - get: L:GENERIC_LEAR_CURTAIN6
+  - get: L:GENERIC_LEAR_CURTAIN7
+  - get: L:GENERIC_LEAR_CURTAIN8
+  - get: L:GENERIC_LEAR_CURTAIN9
+  - get: L:GENERIC_LEAR_CURTAIN10
+  - get: L:GENERIC_LEAR_CURTAIN11
+#   ## TABLET PAYLOAD SCREEN ##
+#  - # SEATS - Characters
+  - get: L:PLOT
+  - get: L:COPLOT
+  - get: L:JOHN
+  - get: L:MARY
+  - get: L:JULIE
+  - get: L:RICKB
+  - get: L:RICKN
+  - get: L:MARY
+  - get: L:DORITHY
+  - get: L:ALICIA
+  - get: L:JAKE
+  - get: L:WILL
+  - get: L:CINDYB
+  - get: L:CINDYT
+  - get: L:BOBBY
+#  - # BAGGAGE
+  - get: L:LUGGAGE_1
+  - get: L:LUGGAGE_2
+  - get: L:LUGGAGE_3
+  - get: L:LUGGAGE_4
+  - get: L:LUGGAGE_5
+#   ## TABLET WEIGHT & BALANCE SCREEN ##
+#  - # FUEL
+  - get: L:STORED_LEFT_TIP_FUEL   
+  - get: L:STORED_RIGHT_TIP_FUEL
+  - get: L:STORED_FUSELAGE_FUEL
+  - get: L:STORED_LEFT_WING_FUEL
+  - get: L:STORED_RIGHT_WING_FUEL
+#   ## TABLET CHECKLIST SCREEN ##
+  - get: L:CHECKLIST_COUNT
+  - get: L:CHECKLIST_ACTIVE
+#   ## TABLET SETTINGS SCREEN ##
+#  - # SOUNDS
+  - get: L:TRIM_CLACKER_DISABLED
+  - get: L:N2_CLACKER_DISABLED
+  - get: L:EFB_INVERTER_DISABLED
+  - get: L:EFB_AVIONICS_DISABLE
+  - get: L:EFB_DISABLE_SOUND
+#  - # OPTIONS
+  - get: L:PAYLOAD_SYNC
+  - get: L:SAVE_FUEL_STATE
+  - get: L:SHOW_PASSENGERS
+#  - # UNITS
+  - get: L:METRIC_TRUE
+  - get: L:DAVTRON_TWENTYFOUR_TWELVE
+#  - # FUEL Quantity/Weight
+  - get: L:FUEL_WEIGHT_TRUE
+#   ############# PASSENGER CABIN LIGHTS #############
+  - get: L:GENERIC_LEAR_SW_LTS_PASS1
+  - get: L:GENERIC_LEAR_SW_LTS_PASS2
+  - get: L:GENERIC_LEAR_SW_LTS_PASS3
+  - get: L:GENERIC_LEAR_SW_LTS_PASS4
+  - get: L:GENERIC_LEAR_SW_LTS_PASS5
+  - get: L:GENERIC_LEAR_SW_LTS_PASS6
+  - get: L:GENERIC_LEAR_SW_LTS_PASS7
+  - get: L:GENERIC_LEAR_SW_LTS_PASS8
+  - get: L:GENERIC_LEAR_SW_LTS_PASS9
+  - get: L:GENERIC_LEAR_SW_LTS_PASS10
+#   #############  PEDISTAL - Quadrant Area #############
+  - get: L:GA_MOMENTARY_BUTTON
+  - get: L:GENERIC_LEAR_EMER_BRAKE
+  - get: L:GENERIC_LEAR_EMER_GEAR
+  - get: L:GENERIC_LEAR_SW_SYNC_1
+  - get: L:GENERIC_LEAR_SW_TURB_1
+  - get: K:PARKING_BRAKE_SET
+  - get: K:SPOILERS_SET
+#   #############  PEDISTAL - MIDDLE #############
+#   ## FUEL TANK PANEL ##
+  - get: L:XMLVAR_LEAR_FUEL_SEL_Position
+  - get: L:GENERIC_LEAR_FUEL_RESET
+  - get: L:GENERIC_LEAR_FUEL_MAINPUMP1_1
+  - get: L:GENERIC_LEAR_FUEL_MAINPUMP2_1
+  - get: L:GENERIC_LEAR_FUEL_SECPUMP1_1
+  - get: L:GENERIC_LEAR_FUEL_SECPUMP2_1
+  - get: L:GENERIC_LEAR_FUEL_JTSN_1
+  - get: L:GENERIC_LEAR_FUEL_XFEED_1
+  - get: L:GENERIC_Momentary_LEAR_FUEL_XFER
+#   #############  PEDISTAL - Lower Left ROW #############
+#   ## FUEL TANK PANEL ##
+  - get: L:GENERIC_LEAR_STEER_LOCK_1
+  - get: L:GENERIC_Momentary_LEAR_TRIM_PRI_SEC
+#   #############  PEDISTAL - Lower MIDDLE ROWs #############
+#   ## YAW DAMPER CONFIG PANEL ##
+  - get: L:GENERIC_LEAR_YAW_PRI_PWR
+  - get: L:GENERIC_LEAR_YAW_PRI_ENG
+  - get: L:GENERIC_LEAR_YAW_TEST
+  - get: L:GENERIC_LEAR_YAW_SEC_PWR
+  - get: L:GENERIC_LEAR_YAW_SEC_ENG
+#   ## COM 1 Radio PANEL ##
+  - get: L:COM_ON2
+  - get: L:XMLVAR_COLLINS_COM_POWER2_Position
+  - get: L:GENERIC_COM2_TEST_1
+  - get: L:XMLVAR_COM2_WHOLE_TUNER_Position
+  - get: L:XMLVAR_COM2_FRACT_TUNER_Position
+#   ## NAV 2 Radio PANEL ##
+  - get: L:NAV_ON2
+  - get: L:XMLVAR_COLLINS_NAV_POWER2_POSITION
+  - get: L:GENERIC_NAV2_TEST_1
+  - get: L:XMLVAR_NAV2_WHOLE_TUNER_Position
+  - get: L:XMLVAR_NAV2_FRACT_TUNER_Position
+#   ## ADF 1 Radio PANEL ##
+  - get: L:ADF_ON1
+  - get: L:XMLVAR_COLLINS_ADF_POWER1_POSITION
+  - get: L:GENERIC_ADF1_TEST_1
+  - get: K:ADF1_WHOLE_INC
+  - get: K:ADF1_WHOLE_DEC
+  - get: K:ADF1_RADIO_TENTHS_INC
+  - get: K:ADF1_RADIO_TENTHS_DEC
+  - get: K:ADF1_RADIO_SWAP
+#   ## ADF 2 Radio PANEL ##
+  - get: L:ADF_ON2
+  - get: L:XMLVAR_COLLINS_ADF2_POWER2_POSITION
+  - get: L:GENERIC_ADF2_TEST_1
+  - get: K:ADF2_WHOLE_INC
+  - get: K:ADF2_WHOLE_DEC
+  - get: K:ADF2_RADIO_TENTHS_INC
+  - get: K:ADF2_RADIO_TENTHS_DEC
+  - get: K:ADF2_RADIO_SWAP
+#   #############  PILOT PANELS LEFT ARM #############
+#   ## LIGHTING DIMMERS ##
+  - get: L:XMLVAR_LEAR_LTS_PNL_L_Position
+  - get: L:XMLVAR_LEAR_LTS_EL_L_Position
+  - get: L:XMLVAR_LEAR_LTS_FLOOD_L_Position
+  - get: L:XMLVAR_LEAR_LTS_HSI_Position
+  - get: L:XMLVAR_LEAR_LTS_MAP_L_Position
+#   ## MAP LIGHT MOVEMENT -PILOT ##
+  - get: I:Map_Light_Drag_Nozzle_Pilot1_Horizontal
+  - get: I:Map_Light_Drag_Nozzle_Pilot1_Vertical
+#   ## MIC HEADPHONE ##
+  - get: L:HEADSET_FILTER
+  - get: L:GENERIC_HEADSET_FILTER
+#   #############  PILOT PANELS - FRONT UPPER #############
+#  - # MASTER WARNING
+  - get: L:GENERIC_LEAR_SW_MASTER_RESET1_1
+#   ## CHRONOMETER ##
+  - get: L:GENERIC_Momentary_DAVTRON_SWITCH_SET
+  - get: L:GENERIC_Momentary_DAVTRON_SWITCH_DIM
+  - get: L:GENERIC_Momentary_DAVTRON_SWITCH_FT
+  - get: L:GENERIC_Momentary_DAVTRON_SWITCH_STOP
+#  - # AIRSPEED BUG - PILOT
+  - get: L:GENERIC_LEAR_AIRSPEED_KNOB_L
+#   ## RMI - PILOT ##
+  - get: L:GENERIC_RMI_BUTTON1_1
+  - get: L:GENERIC_RMI_BUTTON2_1
+  - get: L:AS530_CDI_Push
+#  - # MARKER NAV TEST
+  - get: L:GENERIC_LEAR_SW_MARKER_TEST_1
+#   ## HSI- PILOT ##
+  - get: L:INSTRUMENT_Course_1
+    set: (>K:VOR1_SET)  
+#  - # ANNUNCIATION TEST
+  - get: L:L35A_TEST
+#  - # Altitude Bar
+  - get: A:ATTITUDE BARS POSITION, Percent # ATTITUDE CALIBRATION
+    set: (>B:INSTRUMENT_Attitude_Indicator_Bars_Set) 
+  - get: B:INSTRUMENT_Attitude_Indicator_Cage, Bool
+    set: (>B:INSTRUMENT_Attitude_Indicator_Cage_Toggle)
+#  - # Altitude Indicator - Pilot
+  - get: L:ALERTER_DIGITAL
+  - get: L:ALERTER_DIAL_DIGITAL_CUSTOM_L_sec
+  - get: L:INSTRUMENT_Altimeter_1
+#   ## DME CONFIG PANEL - PILOT ##
+  - get: L:GENERIC_DME_TEST_2
+  - get: L:XMLVAR_DME_MODE1_Position
+  - get: L:DME_MODE1
+  - get: L:XMLVAR_DME_MODE2_Position
+  - get: L:DME_MODE2
+#   #############  PILOT PANELS - FRONT LOWER #############
+##  - # AUDIO PANEL ##
+  - get: L:GENERIC_Momentary_LEAR_SW_AUDIO_PASS_SPKR1
+#  - get: A:COM RECIEVE:1; Bool
+#    set: (>K:COM1_RECIEVE_SELECT)
+#  - get: A:COM RECIEVE:2; Bool
+#    set: (>K:COM2_RECIEVE_SELECT)
+  - get: A:NAV SOUND:1; Bool
+    set: (>B:GENERIC_LEAR_SW_AUDIO_NAV1_Toggle)
+  - get: A:NAV SOUND:2; Bool
+    set: (>B:GENERIC_LEAR_SW_AUDIO_NAV2_Toggle)
+  - get: A:ADF SOUND:1, Bool
+    set: (>B:GENERIC_LEAR_SW_AUDIO_ADF1_Toggle)
+  - get: A:ADF SOUND:2, Bool
+    set: (>B:GENERIC_LEAR_SW_AUDIO_ADF2_Toggle)
+  - get: A:NAV SOUND:3, Bool
+    set: (>B:GENERIC_LEAR_SW_AUDIO_DME1_Toggle)
+  - get: A:MARKER SOUND:1, Bool
+    set: (>B:GENERIC_LEAR_SW_AUDIO_MKR1_Toggle)
+  - get: L:GENERIC_Momentary_LEAR_SW_AUDIO_PHONE1
+  - get: L:XMLVAR_LEAR_SW_AUDIO_SPKR_VOL1_Position
+  - get: L:XMLVAR_LEAR_SW_AUDIO_MSTR_VOL1_Position
+  - get: L:XMLVAR_LEAR_SW_AUDIO_TRANS1_Position
+    set: |
+      switch (value) {
+        case 0:
+          return '0 (>B:GENERIC_LEAR_SW_AUDIO_TRANS1_0) 0 (>K:PILOT_TRANSMITTER_SET)';
+        case 1:
+          return '1 (>B:GENERIC_LEAR_SW_AUDIO_TRANS1_1) 1 (>K:PILOT_TRANSMITTER_SET)';
+        case 2:
+          return '2 (>B:GENERIC_LEAR_SW_AUDIO_TRANS1_2)';
+        case 3:
+          return '3 (>B:GENERIC_LEAR_SW_AUDIO_TRANS1_3)';
+        case 4:
+          return '4 (>B:GENERIC_LEAR_SW_AUDIO_TRANS1_4)';          
+        default: return ''
+      }
+##  - # DE-ICE and MISC SWITCHES PANEL ##
+  - get: L:GENERIC_Momentary_LEAR_WSHLD_HEAT
+  - get: L:GENERIC_Momentary_LEAR_WSHLD_RADOME
+  - get: L:GENERIC_Momentary_LEAR_SW_STATIC_SOURCE
+    set: |
+      switch (value) {
+        case 0:
+          return '(>B:GENERIC_LEAR_SW_STATIC_SOURCE_Up)';
+        case 1:
+          return '(>B:GENERIC_LEAR_SW_STATIC_SOURCE_Center)';
+        case 2:
+          return '(>B:GENERIC_LEAR_SW_STATIC_SOURCE_Down)';
+        default: return ''
+      }
+  - get: A:STRUCTURAL DEICE SWITCH:1, Bool
+    set: (>B:GENERIC_DEICE_Switch_Airframe_Toggle)
+  - get: A:PITOT HEAT SWITCH:1, Bool
+    set: (>B:GENERIC_LEAR_PITOT_L_Toggle)
+  - get: A:PITOT HEAT SWITCH:2, Bool
+    set: (>B:GENERIC_LEAR_PITOT_R_Toggle)
+  - get: L:GENERIC_LEAR_NACHEAT_L
+  - get: L:GENERIC_LEAR_NACHEAT_R
+  - get: B:ELECTRICAL_Avionics_Master, Bool 
+    set: (>B:ELECTRICAL_Avionics_Master_Toggle)
+#  - get: A:MARKER BEACON_SENSITIVITY HIGH:1, Bool
+  - get: B:GENERIC_LEAR_SW_MARKER_HI_Set
+  - get: L:GENERIC_LEAR_SW_RADIO_ALT_1
+  - get: L:GENERIC_LEAR_SW_AUTOPILOT
+  - get: L:GENERIC_LEAR_SW_SLAVE_FREE1
+  - get: L:GENERIC_LEAR_SW_SLAVE_FREE2
+  - get: L:GENERIC_Momentary_LEAR_SW_SLAVE_LR1
+    set: |
+      switch (value) {
+        case 0:
+          return '0 (>B:GENERIC_LEAR_SW_SLAVE_LR1_Up)';
+        case 1:
+          return '1 (>B:GENERIC_LEAR_SW_SLAVE_LR1_Center)';
+        case 2:
+          return '2 (>B:GENERIC_LEAR_SW_SLAVE_LR1_Down)';
+        default: return ''
+      }
+  - get: L:GENERIC_LEAR_SW_AC_BUS
+  - get: L:GENERIC_Momentary_LEAR_SW_EMER_BATT
+##  - # FUEL CONTROL PANEL ##
+  - get: L:GENERIC_LEAR_SW_COMPLEFT_1
+  - get: L:GENERIC_LEAR_SW_COMPRIGHT_1
+  - get: L:GENERIC_Momentary_LEAR_SW_SPR
+##  - # FUEL CONTROL PANEL ##
+  - get: L:GENERIC_LEAR_AIRSTART_L_1
+  - get: L:GENERIC_LEAR_AIRSTART_R_1
+  - get: L:GENERIC_LEAR_INV_PRI_1
+  - get: L:GENERIC_LEAR_INV_SEC_1
+  - get: L:GENERIC_Momentary_LEAR_STARTER_L
+  - get: L:GENERIC_Momentary_LEAR_STARTER_R
+  - get: L:GENERIC_LEAR_BATT1
+  - get: L:GENERIC_LEAR_BATT2
+#   #############  PILOT PANELS - MIDDLE UPPER #############
+##  - # N1 Reminder Values ##
+  - get: L:GENERIC_LEAR_N1_REMINDER_1
+  - get: L:GENERIC_LEAR_N1_REMINDER_10
+  - get: L:GENERIC_LEAR_N1_REMINDER_100
+#  - # ALTM ALERTER
+  - get: L:GENERIC_LEAR_ALERTER_TEST
+#  - # ALERTER DAY/NIGHT SWITCH
+  - get: L:GENERIC_LEAR_ALERTER_DAY
+#  - # AIR DATA BUTTON
+  - get: L:GENERIC_LEAR_ADC1_ADC2
+#  - # ALTIMETER KNOB
+  - get: L:INSTRUMENT_Altimeter_3
+         ###########   GARMIN GTX327-330 TRANSPONDER   ########### 
+  - get: A:TRANSPONDER IDENT:1, Bool
+    set: "value ? '1 (>K:XPNDR_IDENT_ON)' : '1 (>K:XPNDR_IDENT_OFF)'"
+  - get: H:TransponderON  # TRANSPONDER ON BUTTON
+  - get: H:TransponderOFF   # TRANSPONDER OFF BUTTON
+  - get: H:TransponderALT   # TRANSPONDER ALT BUTTON
+  - get: H:TransponderSTBY   # TRANSPONDER STBY BUTTON
+  - get: H:TransponderIDT   # TRANSPONDER IDENT BUTTON
+  - get: H:TransponderVFR   # TRANSPONDER VFR BUTTON  
+  - get: H:TransponderFUNC   # TRANSPONDER FUNC BUTTON
+    set: (>B:NAVCOM_Transponder_FUNC_Set)
+  - get: H:TransponderCRSR   # TRANSPONDER CRSR BUTTON
+  - get: H:TransponderSTARTSTOP   # TRANSPONDER STARTSTOP BUTTON
+  - get: H:TransponderCLR    # TRANSPONDER CLR BUTTON
+  - get: H:Transponder0   # TRANSPONDER 0 BUTTON
+    set: (>B:NAVCOM_Transponder_0_Push)
+  - get: H:Transponder1   # TRANSPONDER 1 BUTTON
+    set: (>B:NAVCOM_Transponder_1_Push)
+  - get: H:Transponder2   # TRANSPONDER 2 BUTTON
+    set: (>B:NAVCOM_Transponder_2_Push)
+  - get: H:Transponder3   # TRANSPONDER 3 BUTTON
+    set: (>B:NAVCOM_Transponder_3_Push)
+  - get: H:Transponder4   # TRANSPONDER 4 BUTTON
+    set: (>B:NAVCOM_Transponder_4_Push)
+  - get: H:Transponder5   # TRANSPONDER 5 BUTTON
+    set: (>B:NAVCOM_Transponder_5_Push)
+  - get: H:Transponder6   # TRANSPONDER 6 BUTTON
+    set: (>B:NAVCOM_Transponder_6_Push)
+  - get: H:Transponder7   # TRANSPONDER 7 BUTTON
+    set: (>B:NAVCOM_Transponder_7_Push)
+  - get: H:Transponder8   # TRANSPONDER 8 BUTTON
+    set: (>B:NAVCOM_Transponder_8_Push)
+  - get: H:Transponder9   # TRANSPONDER 9 BUTTON
+    set: (>B:NAVCOM_Transponder_9_Push)
+  - get: A:TRANSPONDER CODE:1, BCO16  # TRANSPONDER CODE
+  - set: (>K:XPNDR_SET)
+##  - # WEATHER RADAR ##
+  - get: L:XMLVAR_BENDIX_RADAR_RANGE_Position
+  - get: L:GENERIC_BENDIX_RADAR_MODE
+  - get: L:WxRadarRange
+#   #############  PILOT PANELS - MIDDLE LOWER #############
+#  - # ANTISKID
+  - get: B:GENERIC_LEAR_SW_ANTISKID_Toggle
+#  - # Stall Warning
+  - get: L:GENERIC_LEAR_STALL_L_1
+  - get: L:GENERIC_LEAR_STALL_R_1
+#  - #  TAXI/LANDING LIGHTS
+  - get: B:GENERIC_LEAR_TAXI_LAND_L
+    set: |
+      switch (value) {
+        case 0:
+          return '1 0 (>K:2:TAXI_LIGHTS_SET) 1 0 (>K:2:LANDING_LIGHTS_SET)';
+        case 1:
+          return '1 1 (>K:2:TAXI_LIGHTS_SET) 1 0 (>K:2:LANDING_LIGHTS_SET) ';
+        case 2:
+          return '1 1 (>K:2:TAXI_LIGHTS_SET) 1 1 (>K:2:LANDING_LIGHTS_SET)';
+        default: return ''
+      }
+  - get: B:GENERIC_LEAR_TAXI_LAND_R
+    set: |
+      switch (value) {
+        case 0:
+          return '2 0 (>K:2:TAXI_LIGHTS_SET) 2 0 (>K:2:LANDING_LIGHTS_SET)';
+        case 1:
+          return '2 1 (>K:2:TAXI_LIGHTS_SET) 2 0 (>K:2:LANDING_LIGHTS_SET) ';
+        case 2:
+          return '2 1 (>K:2:TAXI_LIGHTS_SET) 2 1 (>K:2:LANDING_LIGHTS_SET)';
+        default: return ''
+      }
+#  - # SYSTEMS TEST KNOB/BTN
+  - get: L:GENERIC_LEAR_TEST_BUTTON
+  - get: L:XMLVAR_LEAR_TEST_KNOB_Position
+  - get: A:HYDRAULIC SWITCH:3
+    set: 3 (>K:HYDRAULIC_SWITCH_TOGGLE)
+#  - # SEAT BELT/NO SMOKING SW
+  - get: L:GENERIC_Momentary_LEAR_SW_SMOKING
+#  - # HORN SILENCE SW (SILENCE/OFF)
+  - get: L:GENERIC_LEAR_SW_HORN_SILENCE_1
+  - get: L:HORN_SILENCE
+#  - # SPOILERON (RESET/OFF)
+  - get: L:GENERIC_LEAR_SPOILERON_RESET
+############ BREAKERS   ############
+  - get: A:LINE BREAKER PULLED:'LINE_L_26V_AC_BUS_PRI_DME'_n, Bool
+    set: (>B:GENERIC_CIRCUIT_BREAKER_AC_BUS_26_Set)
+  - get: A:LINE BREAKER PULLED:'LINE_L_26V_AC_BUS_TONE_GEN'_n, Bool
+    set: (>B:GENERIC_CIRCUIT_BREAKER_AC_BUS_25_Set)
+  - get: A:LINE BREAKER PULLED:'LINE_L_26V_AC_BUS_ANTI_SKID_AC'_n, Bool
+    set: (>B:GENERIC_CIRCUIT_BREAKER_AC_BUS_24_Set)
+  - get: A:LINE BREAKER PULLED:'LINE_L_26V_AC_BUS_ALT_RIC'_n, Bool
+    set: (>B:GENERIC_CIRCUIT_BREAKER_AC_BUS_23_Set)  
+  - get: A:LINE BREAKER PULLED:'LINE_L_26V_AC_BUS_ADF1_AC'_n, Bool
+    set: (>B:GENERIC_CIRCUIT_BREAKER_AC_BUS_22_Set)  

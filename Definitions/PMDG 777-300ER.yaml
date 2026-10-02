@@ -1,0 +1,1748 @@
+# Original author: https://discord.com/channels/1454265644416765974/1475453929490878474/1530290555085656086
+# Updated: 2026-07-24 19:08:30
+
+# PMDG Simulations - Boeing 777 Series V1.5
+# Created by JF97 and tomkadler. 
+# Tested by Tomkadler, shaunncl, 1dukky and alexm90
+
+ignore:
+  - WasmInstrument
+  - PMDGTablet
+
+master: 
+  - get: L:yokes_Fore_Aft
+  - get: L:yokes_L_R
+  - get: A:STEER INPUT CONTROL, Position 16k
+    set: "`${value * -1} (>K:AXIS_STEERING_SET)`"
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, Position 16k
+  - get: A:ELEVATOR POSITION, Position 16k
+    set: "`${value * -1} (>K:AXIS_ELEVATOR_SET)`"
+  - get: A:AILERON POSITION, Position 16k
+    set: "`${value * -1} (>K:AXIS_AILERONS_SET)`"
+  - get: A:RUDDER POSITION, Position 16k
+    set: "`${value * -1} (>K:AXIS_RUDDER_SET)`"
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+
+shared:
+ # YOKE
+  - get: L:switch_1084_a #AUTOPILOT DISCONNECT BUTTON
+    set: 108401 (>K:ROTOR_BRAKE)
+  - get: L:switch_1085_a #TRIM SWITCHES
+    set: "`${value > current ? 108501 : 108502} (>K:ROTOR_BRAKE)`"
+
+ # THRUST LEVER QUADRANT
+  - get: L:switch_498_a #SPOILERS
+    set: "`${(() => {let retVal = 0; if (value <= 200) retVal = 16.92*(value-0)-16384; else retVal = 146.915*(value-200)-13000; return Math.round(retVal);})()} (>K:AXIS_SPOILER_SET)`"
+  - get: L:switch_482_a #LEFT SIDE BUTTON
+    set: 48201 (>K:ROTOR_BRAKE)
+  - get: L:switch_483_a #LEFT INBD BUTTON
+    set: 48301 (>K:ROTOR_BRAKE)
+  - get: L:switch_484_a #LEFT LWR CTR BUTTON
+    set: 48401 (>K:ROTOR_BRAKE)
+  - get: L:switch_515_a #PARKING BRAKE
+    set: "`${(value == 100) ? 51501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_496_a #ALTN PITCH TRIM LEVERS
+    set: "`${value > current ? 49601 : 49602} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_502_a #LEFT THRUST LEVER DISCONNECT BUTTON
+    set: 50201 (>K:ROTOR_BRAKE)
+  - get: L:switch_506_a #RIGHT THRUST LEVER DISCONNECT BUTTON
+    set: 50601 (>K:ROTOR_BRAKE)
+  - get: L:switch_500_a #LEFT THRUST LEVER TOGA BUTTON
+    set: 50001 (>K:ROTOR_BRAKE)
+  - get: L:switch_504_a #RIGHT THRUST LEVER TOGA BUTTON
+    set: 50401 (>K:ROTOR_BRAKE)
+  - get: L:switch_516_a #C STAB CUTOUT GUARD
+    set: 51601 (>K:ROTOR_BRAKE)
+  - get: L:switch_517_a #C STAB CUTOUT SWITCH
+    set: 51701 (>K:ROTOR_BRAKE)
+  - get: L:switch_518_a #R STAB CUTOUT GUARD
+    set: 51801 (>K:ROTOR_BRAKE)
+  - get: L:switch_519_a #R STAB CUTOUT SWITCH
+    set: 51901 (>K:ROTOR_BRAKE)
+  - get: L:switch_520_a #LEFT FUEL CONTROL CUTOFF SWITCH
+    set: "`${(() => {if ((value !== 20) && (value !== 80)) return '';if (Math.abs(current - value) == 60) return '';return 52001;})()} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_521_a #RIGHT FUEL CONTROL CUTOFF SWITCH
+    set: "`${(() => {if ((value !== 20) && (value !== 80)) return '';if (Math.abs(current - value) == 60) return '';return 52101;})()} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_510_a #ALTN FLAPS ARM BUTTON
+    set: 51001 (>K:ROTOR_BRAKE)
+  - get: L:switch_511_a #ALTN FLAPS ARM GUARD
+    set: 51101 (>K:ROTOR_BRAKE)
+  - get: L:switch_512_a #ALTN FLAPS SELECTOR
+    set: "`${value > current ? 51201 : 51202} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_489_a #RIGHT LWR CTR BUTTON
+    set: 48901 (>K:ROTOR_BRAKE)
+  - get: L:switch_490_a #RIGHT INBD BUTTON
+    set: 49001 (>K:ROTOR_BRAKE)
+  - get: L:switch_491_a #RIGHT SIDE BUTTON
+    set: 49101 (>K:ROTOR_BRAKE)
+  - get: L:switch_507_a #FLAPS LEVER
+    set: "`${(() => {if (((value % 10) !== 2) && ((value % 10) !== 8)) return '';if (Math.abs(current - value) == 6) return '';if (value > current) return 50701;else if (value < current) return 50702;})()} (>K:ROTOR_BRAKE)`"
+
+ # LEFT CDU
+  - get: L:switch_328_a #LSK1L
+    set: "`${(value == 100) ? 32801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_329_a #LSK2L
+    set: "`${(value == 100) ? 32901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_330_a #LSK3L
+    set: "`${(value == 100) ? 33001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_331_a #LSK4L
+    set: "`${(value == 100) ? 33101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_332_a #LSK5L
+    set: "`${(value == 100) ? 33201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_333_a #LSK6L
+    set: "`${(value == 100) ? 33301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_334_a #LSK1R
+    set: "`${(value == 100) ? 33401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_335_a #LSK2R
+    set: "`${(value == 100) ? 33501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_336_a #LSK3R
+    set: "`${(value == 100) ? 33601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_337_a #LSK4R
+    set: "`${(value == 100) ? 33701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_338_a #LSK5R
+    set: "`${(value == 100) ? 33801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_339_a #LSK6R
+    set: "`${(value == 100) ? 33901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_340_a #INIT REF PAGE
+    set: "`${(value == 100) ? 34001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_341_a #RTE PAGE
+    set: "`${(value == 100) ? 34101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_342_a #DEP ARR PAGE
+    set: "`${(value == 100) ? 34201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_343_a #ALTN PAGE
+    set: "`${(value == 100) ? 34301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_344_a #VNAV PAGE
+    set: "`${(value == 100) ? 34401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_345_a #FIX PAGE
+    set: "`${(value == 100) ? 34501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_346_a #LEGS PAGE
+    set: "`${(value == 100) ? 34601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_347_a #HOLD PAGE
+    set: "`${(value == 100) ? 34701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_3471_a #FMC COMM PAGE
+    set: "`${(value == 100) ? 347101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_348_a #PROG PAGE
+    set: "`${(value == 100) ? 34801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_349_a #EXECUTE
+    set: "`${(value == 100) ? 34901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_350_a #MENU PAGE
+    set: "`${(value == 100) ? 35001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_351_a #NAV RAD PAGE
+    set: "`${(value == 100) ? 35101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_352_a #PREV PAGE
+    set: "`${(value == 100) ? 35201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_353_a #NEXT PAGE
+    set: "`${(value == 100) ? 35301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_354_a #NUMPAD 1
+    set: "`${(value == 100) ? 35401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_355_a #NUMPAD 2
+    set: "`${(value == 100) ? 35501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_356_a #NUMPAD 3
+    set: "`${(value == 100) ? 35601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_357_a #NUMPAD 4
+    set: "`${(value == 100) ? 35701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_358_a #NUMPAD 5
+    set: "`${(value == 100) ? 35801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_359_a #NUMPAD 6
+    set: "`${(value == 100) ? 35901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_360_a #NUMPAD 7
+    set: "`${(value == 100) ? 36001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_361_a #NUMPAD 8
+    set: "`${(value == 100) ? 36101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_362_a #NUMPAD 9
+    set: "`${(value == 100) ? 36201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_363_a #NUMPAD DECIMAL
+    set: "`${(value == 100) ? 36301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_364_a #NUMPAD 0
+    set: "`${(value == 100) ? 36401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_365_a #NUMPAD PLUS OR MINUS
+    set: "`${(value == 100) ? 36501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_366_a #KEYPAD A
+    set: "`${(value == 100) ? 36601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_367_a #KEYPAD B
+    set: "`${(value == 100) ? 36701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_368_a #KEYPAD C
+    set: "`${(value == 100) ? 36801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_369_a #KEYPAD D
+    set: "`${(value == 100) ? 36901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_370_a #KEYPAD E
+    set: "`${(value == 100) ? 37001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_371_a #KEYPAD F
+    set: "`${(value == 100) ? 37101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_372_a #KEYPAD G
+    set: "`${(value == 100) ? 37201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_373_a #KEYPAD H
+    set: "`${(value == 100) ? 37301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_374_a #KEYPAD I
+    set: "`${(value == 100) ? 37401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_375_a #KEYPAD J
+    set: "`${(value == 100) ? 37501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_376_a #KEYPAD K
+    set: "`${(value == 100) ? 37601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_377_a #KEYPAD L
+    set: "`${(value == 100) ? 37701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_378_a #KEYPAD M
+    set: "`${(value == 100) ? 37801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_379_a #KEYPAD N
+    set: "`${(value == 100) ? 37901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_380_a #KEYPAD O
+    set: "`${(value == 100) ? 38001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_381_a #KEYPAD P
+    set: "`${(value == 100) ? 38101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_382_a #KEYPAD Q
+    set: "`${(value == 100) ? 38201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_383_a #KEYPAD R
+    set: "`${(value == 100) ? 38301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_384_a #KEYPAD S
+    set: "`${(value == 100) ? 38401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_385_a #KEYPAD T
+    set: "`${(value == 100) ? 38501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_386_a #KEYPAD U
+    set: "`${(value == 100) ? 38601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_387_a #KEYPAD V
+    set: "`${(value == 100) ? 38701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_388_a #KEYPAD W
+    set: "`${(value == 100) ? 38801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_389_a #KEYPAD X
+    set: "`${(value == 100) ? 38901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_390_a #KEYPAD Y
+    set: "`${(value == 100) ? 39001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_391_a #KEYPAD Z
+    set: "`${(value == 100) ? 39101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_392_a #KEYPAD SPACE
+    set: "`${(value == 100) ? 39201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_393_a #KEYPAD DELETE
+    set: "`${(value == 100) ? 39301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_394_a #KEYPAD FORWARD SLASH
+    set: "`${(value == 100) ? 39401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_395_a #KEYPAD CLEAR
+    set: "`${(value == 100) ? 39501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_400_a #BRT
+    set: "`${value > current ? 40001 : 40002} (>K:ROTOR_BRAKE)`"  
+
+ # RIGHT CDU
+  - get: L:switch_401_a #LSK1L
+    set: "`${(value == 100) ? 40101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_402_a #LSK2L
+    set: "`${(value == 100) ? 40201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_403_a #LSK3L
+    set: "`${(value == 100) ? 40301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_404_a #LSK4L
+    set: "`${(value == 100) ? 40401 : ''} (>K:ROTOR_BRAKE)`" 
+  - get: L:switch_405_a #LSK5L
+    set: "`${(value == 100) ? 40501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_406_a #LSK6L
+    set: "`${(value == 100) ? 40601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_407_a #LSK1R
+    set: "`${(value == 100) ? 40701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_408_a #LSK2R
+    set: "`${(value == 100) ? 40801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_409_a #LSK3R
+    set: "`${(value == 100) ? 40901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_410_a #LSK4R
+    set: "`${(value == 100) ? 41001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_411_a #LSK5R
+    set: "`${(value == 100) ? 41101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_412_a #LSK6R
+    set: "`${(value == 100) ? 41201 : ''} (>K:ROTOR_BRAKE)`" 
+  - get: L:switch_413_a #INIT REF PAGE
+    set: "`${(value == 100) ? 41301 : ''} (>K:ROTOR_BRAKE)`"  
+  - get: L:switch_414_a #RTE PAGE
+    set: "`${(value == 100) ? 41401 : ''} (>K:ROTOR_BRAKE)`" 
+  - get: L:switch_415_a #DEP ARR PAGE
+    set: "`${(value == 100) ? 41501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_416_a #ALTN PAGE
+    set: "`${(value == 100) ? 41601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_417_a #VNAV PAGE
+    set: "`${(value == 100) ? 41701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_418_a #FIX PAGE
+    set: "`${(value == 100) ? 41801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_419_a #LEGS PAGE
+    set: "`${(value == 100) ? 41901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_420_a #HOLD PAGE
+    set: "`${(value == 100) ? 42001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_4201_a #FMC COMM PAGE
+    set: "`${(value == 100) ? 420101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_421_a #PROG PAGE
+    set: "`${(value == 100) ? 42101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_422_a #EXECUTE
+    set: "`${(value == 100) ? 42201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_423_a #MENU PAGE
+    set: "`${(value == 100) ? 42301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_424_a #NAV RAD PAGE
+    set: "`${(value == 100) ? 42401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_425_a #PREV PAGE
+    set: "`${(value == 100) ? 42501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_426_a #NEXT PAGE
+    set: "`${(value == 100) ? 42601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_427_a #NUMPAD 1
+    set: "`${(value == 100) ? 42701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_428_a #NUMPAD 2
+    set: "`${(value == 100) ? 42801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_429_a #NUMPAD 3
+    set: "`${(value == 100) ? 42901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_430_a #NUMPAD 4
+    set: "`${(value == 100) ? 43001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_431_a #NUMPAD 5
+    set: "`${(value == 100) ? 43101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_432_a #NUMPAD 6
+    set: "`${(value == 100) ? 43201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_433_a #NUMPAD 7
+    set: "`${(value == 100) ? 43301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_434_a #NUMPAD 8
+    set: "`${(value == 100) ? 43401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_435_a #NUMPAD 9
+    set: "`${(value == 100) ? 43501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_436_a #NUMPAD DECIMAL
+    set: "`${(value == 100) ? 43601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_437_a #NUMPAD 0
+    set: "`${(value == 100) ? 43701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_438_a #NUMPAD PLUS OR MINUS
+    set: "`${(value == 100) ? 43801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_439_a #KEYPAD A
+    set: "`${(value == 100) ? 43901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_440_a #KEYPAD B
+    set: "`${(value == 100) ? 44001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_441_a #KEYPAD C
+    set: "`${(value == 100) ? 44101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_442_a #KEYPAD D
+    set: "`${(value == 100) ? 44201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_443_a #KEYPAD E
+    set: "`${(value == 100) ? 44301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_444_a #KEYPAD F
+    set: "`${(value == 100) ? 44401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_445_a #KEYPAD G
+    set: "`${(value == 100) ? 44501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_446_a #KEYPAD H
+    set: "`${(value == 100) ? 44601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_447_a #KEYPAD I
+    set: "`${(value == 100) ? 44701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_448_a #KEYPAD J
+    set: "`${(value == 100) ? 44801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_449_a #KEYPAD K
+    set: "`${(value == 100) ? 44901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_450_a #KEYPAD L
+    set: "`${(value == 100) ? 45001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_451_a #KEYPAD M
+    set: "`${(value == 100) ? 45101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_452_a #KEYPAD N
+    set: "`${(value == 100) ? 45201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_453_a #KEYPAD O
+    set: "`${(value == 100) ? 45301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_454_a #KEYPAD P
+    set: "`${(value == 100) ? 45401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_455_a #KEYPAD Q
+    set: "`${(value == 100) ? 45501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_456_a #KEYPAD R
+    set: "`${(value == 100) ? 45601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_457_a #KEYPAD S
+    set: "`${(value == 100) ? 45701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_458_a #KEYPAD T
+    set: "`${(value == 100) ? 45801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_459_a #KEYPAD U
+    set: "`${(value == 100) ? 45901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_460_a #KEYPAD V
+    set: "`${(value == 100) ? 46001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_461_a #KEYPAD W
+    set: "`${(value == 100) ? 46101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_462_a #KEYPAD X
+    set: "`${(value == 100) ? 46201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_463_a #KEYPAD Y
+    set: "`${(value == 100) ? 46301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_464_a #KEYPAD Z
+    set: "`${(value == 100) ? 46401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_465_a #KEYPAD SPACE
+    set: "`${(value == 100) ? 46501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_466_a #KEYPAD DELETE
+    set: "`${(value == 100) ? 46601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_467_a #KEYPAD FORWARD SLASH
+    set: "`${(value == 100) ? 46701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_468_a #KEYPAD CLEAR
+    set: "`${(value == 100) ? 46801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_473_a #BRT
+    set: "`${value > current ? 47301 : 47302} (>K:ROTOR_BRAKE)`"  
+
+ # EICAS CONTROLS
+  - get: L:switch_478_a #DISPLAY CONTROL
+    set: 47801 (>K:ROTOR_BRAKE)
+  - get: L:switch_479_a #EICAS EVENT RCD
+    set: 47901 (>K:ROTOR_BRAKE)
+  - get: L:PED_UPPER_BRIGHT_CONTROL #UPPER DISPLAY BRIGHTNESS
+  - get: L:PED_LOWER_BRIGHT_CONTROL #LOWER DISPLAY BRIGHTNESS
+  - get: L:PED_LOWER_TERR_BRIGHT_CONTROL #LOWER DISPLAY TERR BRIGHT CONTROL
+
+ # LEFT LATERAL CONSOLE
+  - get: L:switch_1063_a #OXYGEN MASK TEST
+    set: 106301 (>K:ROTOR_BRAKE)
+  - get: L:switch_1107_a #CHART LIGHT BUTTON
+    set: 110701 (>K:ROTOR_BRAKE)
+  - get: L:switch_1105_a #WORKTABLE LIGHT BUTTON
+    set: 110501 (>K:ROTOR_BRAKE)
+  - get: L:WindowClipboardCA #WINDOW CLIPBOARD
+  - get: L:worktable_ca #WORKTABLE
+  - get: L:WindowHandleCA #WINDOW HANDLE
+  - get: L:Window_OpenClose_CA #WINDOW OPEN AND CLOSE
+  - get: L:pen_one #CLICK PEN
+  - get: L:7X7X_shade_LR #REAR SHADE
+  - get: L:7X7X_shade_LF #FORWARD SHADE
+  - get: L:7X7X_visors_ca_stowage #VISOR STOWAGE
+  - get: L:visor_L_front_drag #VISOR FRONT DRAG
+  - get: L:visor_L_side_drag #VISOR SIDE DRAG
+  - get: L:visor_L_front_stow_unstow #VISOR FRONT STOW/UNSTOW
+  - get: L:visor_L_side_stow_unstow #VISOR SIDE STOW/UNSTOW
+
+ # RIGHT LATERAL CONSOLE
+  - get: L:switch_1066_a #OXYGEN MASK TEST
+    set: 106601 (>K:ROTOR_BRAKE)
+  - get: L:switch_1108_a #CHART LIGHT BUTTON
+    set: 110801 (>K:ROTOR_BRAKE)
+  - get: L:switch_1106_a #WORKTABLE LIGHT BUTTON
+    set: 110601 (>K:ROTOR_BRAKE)
+  - get: L:WindowClipboardFO #WINDOW CLIPBOARD
+  - get: L:worktable_fo #WORKTABLE
+  - get: L:WindowHandleFO #WINDOW HANDLE
+  - get: L:Window_OpenClose_FO #WINDOW OPEN AND CLOSE
+  - get: L:pen_two #CLICK PEN
+  - get: L:pen_three #CLICK PEN
+  - get: L:7X7X_shade_RR #REAR SHADE
+  - get: L:7X7X_shade_RF #FORWARD SHADE
+  - get: L:visor_R_front_drag #VISOR FRONT DRAG
+  - get: L:visor_R_side_drag #VISOR SIDE DRAG
+  - get: L:visor_R_front_stow_unstow #VISOR FRONT STOW/UNSTOW
+  - get: L:visor_R_side_stow_unstow #VISOR SIDE STOW/UNSTOW
+
+ # REAR CONSOLE 
+  - get: L:switch_1072_a #CENTRAL OXYGEN MASK TEST
+    set: 107201 (>K:ROTOR_BRAKE)
+  - get: L:switch_1069_a #SIDE OXYGEN MASK TEST
+    set: 106901 (>K:ROTOR_BRAKE)
+
+ # LEFT SEAT
+  - get: L:switch_1006_a #LEFT ARM REST
+    set: 100601 (>K:ROTOR_BRAKE)
+  - get: L:switch_1007_a #RIGHT ARM REST
+    set: 100701 (>K:ROTOR_BRAKE)
+
+ # RIGHT SEAT
+  - get: L:switch_1008_a #LEFT ARM REST
+    set: 100801 (>K:ROTOR_BRAKE)
+  - get: L:switch_1009_a #RIGHT ARM REST
+    set: 100901 (>K:ROTOR_BRAKE)
+
+ # TABLET
+  - get: L:tablet_pos_ca #CAPTAIN TABLET POSITION
+  - get: L:TabletSensorCA #CAPTAIN TABLET
+  - get: L:tablet_pos_fo #FIRST OFFICER TABLET POSITION
+  - get: L:TabletSensorFO #CAPTAIN TABLET
+
+#GLARESHIELD
+ # LANDING GEAR PANEL
+  - get: L:switch_292_a #AUTOBRAKE SELECTOR SWITCH
+    set: "`${(()=>{if (value === current) return '';const p = Math.round(current / 10);let z = 0;if (value === 70) z = 7;else if (value === 60) z = 6;else if (value === 50) z = 5;else if (value === 40) z = 4;else if (value === 30) z = 3;else if (value === 20) z = 2;else if (value === 10) z = 1;else z = 0;if (z === p) return '';return z > p ? 29202 : 29201;})()} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_293_a #ALTN GEAR BUTTON
+    set: 29301 (>K:ROTOR_BRAKE)
+  - get: L:switch_294_a #ALTN GEAR GUARD
+    set: 29401 (>K:ROTOR_BRAKE)
+  - get: L:switch_295_a, Number #GEAR LEVER
+    set: "`${(()=>{const p = current >= 5 ? 1 : 0;const z = value >= 5 ? 1 : 0;if (z === p) return '';return z === 1 ? 29502 : 29501;})()} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_296_a #LOCK OVRD BUTTON
+    set: "`${value * -0.03 + 29604} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_297_a #TERRAIN OVRD BUTTON
+    set: 29701 (>K:ROTOR_BRAKE)
+  - get: L:switch_298_a #TERRAIN OVRD GUARD
+    set: 29801 (>K:ROTOR_BRAKE)
+  - get: L:switch_299_a #GEAR OVRD BUTTON
+    set: 29901 (>K:ROTOR_BRAKE)
+  - get: L:switch_300_a #GEAR OVRD GUARD
+    set: 30001 (>K:ROTOR_BRAKE)
+  - get: L:switch_301_a #FLAP OVRD BUTTON
+    set: 30101 (>K:ROTOR_BRAKE)
+  - get: L:switch_302_a #FLAP OVRD GUARD
+    set: 30201 (>K:ROTOR_BRAKE)
+  - get: L:switch_303_a #G/S INHIBIT BUTTON
+    set: "`${value * -0.03 + 30304} (>K:ROTOR_BRAKE)`"
+
+ # EICAS SWITCHING PANEL
+  - get: L:switch_231_a, Number #LEFT INBOARD DISPLAY BUTTON
+    set: "`${(value == 100) ? 23101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_232_a, Number #RIGHT INBOARD DISPLAY BUTTON
+    set: "`${(value == 100) ? 23201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_233_a, Number #LWR CENTRE DISPLAY BUTTON
+    set: "`${(value == 100) ? 23301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_234_a, Number #ENG DISPLAY BUTTON
+    set: "`${(value == 100) ? 23401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_235_a, Number #STAT DISPLAY BUTTON
+    set: "`${(value == 100) ? 23501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_236_a, Number #ELEC DISPLAY BUTTON
+    set: "`${(value == 100) ? 23601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_237_a, Number #HYD DISPLAY BUTTON
+    set: "`${(value == 100) ? 23701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_238_a, Number #FUEL DISPLAY BUTTON
+    set: "`${(value == 100) ? 23801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_239_a, Number #AIR DISPLAY BUTTON
+    set: "`${(value == 100) ? 23901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_240_a, Number #DOOR DISPLAY BUTTON
+    set: "`${(value == 100) ? 24001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_241_a, Number #GEAR DISPLAY BUTTON
+    set: "`${(value == 100) ? 24101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_242_a, Number #FCTL DISPLAY BUTTON
+    set: "`${(value == 100) ? 24201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_243_a, Number #CAMERA(INOP) DISPLAY BUTTON
+    set: "`${(value == 100) ? 24301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_244_a, Number #CHKL DISPLAY BUTTON
+    set: "`${(value == 100) ? 24401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_245_a, Number #COMM DISPLAY BUTTON
+    set: "`${(value == 100) ? 24501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_246_a, Number #NAV DISPLAY BUTTON
+    set: "`${(value == 100) ? 24601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_247_a, Number #CANCEL/RECALL BUTTON
+    set: "`${(value == 100) ? 24701 : ''} (>K:ROTOR_BRAKE)`"
+
+ # LEFT EFIS CONTROL PANEL
+  - get: L:switch_177_a, Number #MASTER CAUTION BUTTON
+    set: "`${(value == 100) ? 17701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_178_a, Number #ACCEPT BUTTON
+    set: "`${(value == 100) ? 17801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_179_a, Number #CANCEL BUTTON
+    set: "`${(value == 100) ? 17901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_180_a, Number #REJECT BUTTON
+    set: "`${(value == 100) ? 18001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_181_a, Number #RADIO/BARO SELECTOR
+    set: "`${(value == 100) ? 18101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:CAMinsKnob, Number #MINIMUM ROTARY
+  - get: L:switch_183_a, Number #RESET MINS BUTTON
+    set: "`${(value == 100) ? 18301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_184_a #VOR/ADF LEFT SELECTOR
+    set: "`${value > current ? 18401 : 18402} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_185_a #ND MODE SELECTOR
+    set: "`${value > current ? 18502 : 18501} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_186_a, Number #ND MODE CENTRE BUTTON
+    set: "`${(value == 100) ? 18601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_187_a #ND MAP RANGE SELECTOR
+    set: "`${value > current ? 18702 : 18701} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_188_a, Number #ND TFC BUTTON
+    set: "`${(value == 100) ? 18801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_189_a #VOR/ADF RIGHT SELECTOR
+    set: "`${value > current ? 18901 : 18902} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_190_a #IN/HPA SELECTOR
+    set: "`${(value == 100) ? 19001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:CABaroKnob, Number #BARO ROTARY
+  - get: L:switch_192_a, Number #STD BUTTON
+    set: "`${(value == 100) ? 19201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_193_a, Number #FPV BUTTON
+    set: "`${(value == 100) ? 19301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_194_a, Number #METERS BUTTON
+    set: "`${(value == 100) ? 19401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_195_a, Number #WXR BUTTON
+    set: "`${(value == 100) ? 19501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_196_a, Number #STA BUTTON
+    set: "`${(value == 100) ? 19601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_197_a, Number #WPT BUTTON
+    set: "`${(value == 100) ? 19701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_198_a, Number #ARPT BUTTON
+    set: "`${(value == 100) ? 19801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_199_a, Number #DATA BUTTON
+    set: "`${(value == 100) ? 19901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_200_a, Number #POS BUTTON
+    set: "`${(value == 100) ? 20001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_201_a, Number #TERR BUTTON
+    set: "`${(value == 100) ? 20101 : ''} (>K:ROTOR_BRAKE)`"
+
+ # RIGHT EFIS CONTROL PANEL
+  - get: L:switch_272_a, Number #MASTER CAUTION BUTTON
+    set: "`${(value == 100) ? 27201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_269_a, Number #ACCEPT BUTTON
+    set: "`${(value == 100) ? 26901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_270_a, Number #CANCEL BUTTON
+    set: "`${(value == 100) ? 27001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_271_a, Number #REJECT BUTTON
+    set: "`${(value == 100) ? 27101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_248_a, Number #RADIO/BARO SELECTOR
+    set: "`${(value == 100) ? 24801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:FOMinsKnob, Number #MINIMUM ROTARY
+  - get: L:switch_250_a, Number #RESET MINS BUTTON
+    set: "`${(value == 100) ? 25001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_251_a #VOR/ADF LEFT SELECTOR
+    set: "`${value > current ? 25101 : 25102} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_252_a #ND MODE SELECTOR
+    set: "`${value > current ? 25202 : 25201} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_253_a, Number #ND MODE CENTRE BUTTON
+    set: "`${(value == 100) ? 25301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_254_a #ND MAP RANGE SELECTOR
+    set: "`${value > current ? 25402 : 25401} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_255_a, Number #ND TFC BUTTON
+    set: "`${(value == 100) ? 25501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_256_a #VOR/ADF RIGHT SELECTOR
+    set: "`${value > current ? 25601 : 25602} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_257_a #IN/HPA SELECTOR
+    set: "`${(value == 100) ? 25701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:FOBaroKnob, Number #BARO ROTARY
+  - get: L:switch_259_a #STD BUTTON
+    set: "`${(value == 100) ? 25901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_260_a, Number #FPV BUTTON
+    set: "`${(value == 100) ? 26001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_261_a, Number #METERS BUTTON
+    set: "`${(value == 100) ? 26101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_262_a, Number #WXR BUTTON
+    set: "`${(value == 100) ? 26201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_263_a, Number #STA BUTTON
+    set: "`${(value == 100) ? 26301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_264_a, Number #WPT BUTTON
+    set: "`${(value == 100) ? 26401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_265_a, Number #ARPT BUTTON
+    set: "`${(value == 100) ? 26501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_266_a, Number #DATA BUTTON
+    set: "`${(value == 100) ? 26601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_267_a, Number #POS BUTTON
+    set: "`${(value == 100) ? 26701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_268_a, Number #TERR BUTTON
+    set: "`${(value == 100) ? 26801 : ''} (>K:ROTOR_BRAKE)`"
+
+ # MODE CONTROL PANEL
+  - get: L:switch_202_a #LEFT FLIGHT DIRECTOR SWITCH
+    set: 20201 (>K:ROTOR_BRAKE)
+  - get: L:switch_203_a, Number #LEFT AUTOPILOT COMMAND BUTTON
+    set: "`${(value == 100) ? 20301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_204_a #LEFT AUTOTHROTTLE ARM SWITCH
+    set: 20401 (>K:ROTOR_BRAKE)
+  - get: L:switch_205_a #RIGHT AUTOTHROTTLE ARM SWITCH
+    set: 20501 (>K:ROTOR_BRAKE)
+  - get: L:switch_206_a, Number #CLIMB CON COMMAND BUTTON
+    set: "`${(value == 100) ? 20601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_207_a, Number #AUTOTHROTTLE COMMAND BUTTON
+    set: "`${(value == 100) ? 20701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_208_a, Number #IAS/MACH BUTTON
+    set: "`${(value == 100) ? 20801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:ngx_SPDwindow, Number #SPEED WINDOW
+    set: (>K:#84134)
+  - get: L:switch_2100_a, Number #SPEED INTERVENE COMMAND BUTTON
+    set: "`${(value == 100) ? 210001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_211_a, Number #LNAV COMMAND BUTTON
+    set: "`${(value == 100) ? 21101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_212_a, Number #VNAV COMMAND BUTTON
+    set: "`${(value == 100) ? 21201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_213_a, Number #FLCH COMMAND BUTTON
+    set: "`${(value == 100) ? 21301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_214_a #AUTOPILOT DISENGAGE BAR
+    set: 21401 (>K:ROTOR_BRAKE)
+  - get: L:switch_216_a, Number #HDG/TRK COMMAND BUTTON
+    set: "`${(value == 100) ? 21601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:ngx_HDGwindow, Number #HEADING WINDOW
+    set: (>K:#84136)
+  - get: L:switch_2181_a, Number #BANK LIMIT SELECTOR
+    set: "`${value > current ? 218102 : 218101} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_218_a, Number #HDG SEL COMMAND BUTTON
+    set: "`${(value == 100) ? 21801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_219_a, Number #HDG HOLD COMMAND BUTTON
+    set: "`${(value == 100) ? 21901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_220_a, Number #VS/FPA BUTTON
+    set: "`${(value == 100) ? 22001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:ngx_VSwindow, Number #VS/FPA WINDOW
+    set: "`${value + 10000} (>K:#84138)`"
+  - get: L:switch_223_a, Number #VS/FPA COMMAND BUTTON
+    set: "`${(value == 100) ? 22301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:ngx_ALTwindow, Number #ALT WINDOW
+    set: (>K:#84137)
+  - get: L:switch_225_a #AUTO/1000 SELECTOR
+    set: 22501 (>K:ROTOR_BRAKE)
+  - get: L:switch_2251_a, Number # ALT CLICK
+    set: "`${(()=>{if (value == 100) return 225101;else if (value == 0) return 225104;return ''; })()} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_226_a, Number #ALT HOLD COMMAND BUTTON
+    set: "`${(value == 100) ? 22601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_227_a, Number #LOC COMMAND BUTTON
+    set: "`${(value == 100) ? 22701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_228_a, Number #APP COMMAND BUTTON
+    set: "`${(value == 100) ? 22801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_229_a, Number #RIGHT AUTOPILOT COMMAND BUTTON
+    set: "`${(value == 100) ? 22901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_230_a #RIGHT FLIGHT DIRECTOR SWITCH
+    set: 23001 (>K:ROTOR_BRAKE)
+
+ # ISFD AND STANDBY INSTRUMENTS
+  - get: L:switch_810_a, Number #ISFD APP BUTTON
+    set: "`${(value == 100) ? 81001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_811_a, Number #ISFD HP/IN BUTTON
+    set: "`${(value == 100) ? 81101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_812_a, Number #ISFD PLUS BUTTON
+    set: "`${(value == 100) ? 81201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_813_a, Number #ISFD MINUS BUTTON
+    set: "`${(value == 100) ? 81301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_814_a, Number #ISFD RESET BUTTON
+    set: "`${(value == 100) ? 81401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_815_a, Number #ISFD ALTIMETER SELECTOR
+    set: "`${value > current ? 81501 : 81502} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_816_a, Number #ISFD STANDARD BUTTON
+    set: "`${(value == 100) ? 81601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_308_a, Number #SEPERATE SET SPEED BUTTON
+    set: "`${value > current ? 30801 : 30802} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_3080_a, Number #SEPERATE RESET SPEED BUTTON
+    set: "`${(value == 100) ? 308001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_311_a, Number #SEPERATE ALTIMETER SELECTOR
+    set: "`${value > current ? 31101 : 31102} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_3110_a, Number #SEPERATE STANDARD BUTTON
+    set: "`${(value == 100) ? 311001 : ''} (>K:ROTOR_BRAKE)`"
+
+ # INBOARD DISPLAY PANEL LEFT
+  - get: L:switch_315_a, Number #INBOARD DISPLAY SELECTOR
+    set: "`${value > current ? 31507 : 31508} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_314_a #HDG REF GUARD
+    set: 31401 (>K:ROTOR_BRAKE)
+  - get: L:switch_313_a #HDG REF BUTTON
+    set: 31301 (>K:ROTOR_BRAKE)
+
+ # INBOARD DISPLAY PANEL RIGHT
+  - get: L:switch_290_a, Number #INBOARD DISPLAY SELECTOR
+    set: "`${value > current ? 29007 : 29008} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_291_a, Number #FMC SELECTOR
+    set: "`${value > current ? 29107 : 29108} (>K:ROTOR_BRAKE)`"
+
+ # LEFT ANALOG CLOCK
+  - get: L:switch_171_a #CHRONO BUTTON
+    set: "`${(value == 100) ? 17101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_172_a #MAN/UTC SELECTOR
+    set: "`${value > current ? 17202 : 17201} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_1721_a #MAN/UTC PUSH
+    set: "`${(value == 100) ? 172101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_173_a #ELAPSED TIMER SELECTOR
+    set: "`${value > current ? 17302 : 17301} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_174_a #SET SELECTOR
+    set: "`${value > current ? 17402 : 17401} (>K:ROTOR_BRAKE)`"
+
+ # RIGHT ANALOG CLOCK
+  - get: L:switch_279_a #CHRONO BUTTON
+    set: "`${(value == 100) ? 27901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_280_a #MAN/UTC SELECTOR
+    set: "`${value > current ? 28002 : 28001} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_2802_a #MAN/UTC PUSH
+    set: "`${(value == 100) ? 280201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_281_a #ELAPSED TIMER SELECTOR
+    set: "`${value > current ? 28102 : 28101} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_282_a #SET SELECTOR
+    set: "`${value > current ? 28202 : 28201} (>K:ROTOR_BRAKE)`"
+
+ # LEFT CLOCK, MAP AND MIC CONTROLS
+  - get: L:switch_165_a #CLOCK BUTTON
+    set: "`${(value == 100) ? 16501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_166_a #MAP LIGHT BUTTON
+    set: "`${value > current ? 16602 : 16601} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_167_a #MIC BUTTON
+    set: "`${(value == 100) ? 16701 : ''} (>K:ROTOR_BRAKE)`"
+
+ # RIGHT CLOCK, MAP AND MIC CONTROLS
+  - get: L:switch_275_a, Number #CLOCK BUTTON
+    set: "`${(value == 100) ? 27501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_274_a, Number #MAP LIGHT BUTTON
+    set: "`${value > current ? 27402 : 27401} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_273_a, Number #MIC BUTTON
+    set: "`${(value == 100) ? 27301 : ''} (>K:ROTOR_BRAKE)`"
+
+ # LEFT INSTRUMENT SOURCE SELECT PANEL, HEATERS AND FORWARD PANEL BRIGHTNESS CONTROLS
+  - get: L:switch_168_a #NAV SOURCE SELECT BUTTON
+    set: 16801 (>K:ROTOR_BRAKE)
+  - get: L:switch_169_a #DSPL CTRL SOURCE SELECT BUTTON
+    set: 16901 (>K:ROTOR_BRAKE)
+  - get: L:switch_170_a #AIR DATA/ATT SOURCE SELECT BUTTON
+    set: 17001 (>K:ROTOR_BRAKE)
+  - get: L:LEFT_SHOULDER_HEATER #SHOULDER HEATER ROTARY
+  - get: L:switch_319_a #FEET HEATER SELECTOR
+    set: "`${value > current ? 31907 : 31908} (>K:ROTOR_BRAKE)`"
+  - get: L:LEFT_OUTBD_BRIGHT_CONTROL #OUTBOARD BRIGHTNESS DISPLAY
+  - get: L:LEFT_INBD_BRIGHT_CONTROL #INBOARD BRIGHTNESS DISPLAY
+  - get: L:LEFT_INBD_TERR_BRIGHT_CONTROL #TERRAIN BRIGHTNESS DISPLAY
+  - get: L:LEFT_PANEL_LIGHT_CONTROL #PANEL LIGHT CONTROL
+  - get: L:LEFT_FLOOD_LIGHT_CONTROL #FLOOD LIGHT CONTROL
+
+ # RIGHT INSTRUMENT SOURCE SELECT PANEL, HEATERS AND FORWARD PANEL BRIGHTNESS CONTROLS
+  - get: L:switch_276_a #NAV SOURCE SELECT BUTTON
+    set: 27601 (>K:ROTOR_BRAKE)
+  - get: L:switch_277_a #DSPL CTRL SOURCE SELECT BUTTON
+    set: 27701 (>K:ROTOR_BRAKE)
+  - get: L:switch_278_a #AIR DATA/ATT SOURCE SELECT BUTTON
+    set: 27801 (>K:ROTOR_BRAKE)
+  - get: L:RIGHT_SHOULDER_HEATER #SHOULDER HEATER ROTARY
+  - get: L:switch_288_a #FEET HEATER SELECTOR
+    set: "`${value > current ? 28807 : 28808} (>K:ROTOR_BRAKE)`"
+  - get: L:RIGHT_OUTBD_BRIGHT_CONTROL #OUTBOARD BRIGHTNESS DISPLAY
+  - get: L:RIGHT_INBD_BRIGHT_CONTROL #INBOARD BRIGHTNESS DISPLAY
+  - get: L:RIGHT_INBD_TERR_BRIGHT_CONTROL #TERRAIN BRIGHTNESS DISPLAY
+  - get: L:RIGHT_PANEL_LIGHT_CONTROL #PANEL LIGHT CONTROL
+  - get: L:RIGHT_FLOOD_LIGHT_CONTROL #FLOOD LIGHT CONTROL
+
+# OVEHREAD
+ # LEFT OUTER OVERHEAD
+  - get: L:broadband_switch_guard #BROADBAND SWITCH GUARD
+  - get: L:broadband_switch #BROADBAND SWITCH
+  - get: L:switch_59_a, Number #ADIRU
+    set: 5901 (>K:ROTOR_BRAKE)
+  - get: L:switch_54_a, Number #THRUST ASYM COMP
+    set: 5401 (>K:ROTOR_BRAKE)
+  - get: L:switch_56_a, Number #PRIMARY FLIGHT COMPUTERS GUARD
+    set: 5601 (>K:ROTOR_BRAKE)
+  - get: L:switch_55_a, Number #PRIMARY FLIGHT COMPUTERS SWITCH
+    set: 5501 (>K:ROTOR_BRAKE)
+  - get: L:switch_01_a, Number #BATTERY
+    set: 101 (>K:ROTOR_BRAKE)
+  - get: L:switch_17_a, Number #IFE/PASS SEATS
+    set: 1701 (>K:ROTOR_BRAKE)
+  - get: L:switch_18_a, Number #CABIN UTILITY
+    set: 1801 (>K:ROTOR_BRAKE)
+  - get: L:switch_02_a, Number #APU GEN
+    set: 201 (>K:ROTOR_BRAKE)
+  - get: L:switch_03_a #APU SWITCH
+    set: "`${(() => {const p = Math.round(current / 50);let z = 0;if (value === 50) z = 1;else if (value === 100) z = 2;if (p === 2 && z === 1) return '';if (z === p) return '';return z > p ? 302 : 301;})()} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_05_a, Number #L BUS TIE
+    set: 501 (>K:ROTOR_BRAKE)
+  - get: L:switch_06_a, Number #R BUS TIE
+    set: 601 (>K:ROTOR_BRAKE)
+  - get: L:switch_07_a #SECONDARY EXT PWR
+    set: "`${(() => {if (value > 0) return 1 + 700;return '';})()} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_08_a #PRIMARY EXT PWR
+    set: "`${(() => {if (value > 0) return 1 + 800;return '';})()} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_09_a, Number #L MAIN
+    set: 901 (>K:ROTOR_BRAKE)
+  - get: L:switch_14_a, Number #L MAIN DISCONNECT GUARD
+    set: 1401 (>K:ROTOR_BRAKE)
+  - get: L:switch_13_a, Number #L MAIN DISCONNECT
+    set: 1301 (>K:ROTOR_BRAKE)
+  - get: L:switch_11_a, Number #BACK UP GEN L
+    set: 1101 (>K:ROTOR_BRAKE)   
+  - get: L:switch_12_a, Number #BACK UP GEN R
+    set: 1201 (>K:ROTOR_BRAKE)
+  - get: L:switch_10_a, Number #R MAIN
+    set: 1001 (>K:ROTOR_BRAKE)
+  - get: L:switch_16_a, Number #R MAIN DISCONNECT GUARD
+    set: 1601 (>K:ROTOR_BRAKE)
+  - get: L:switch_15_a, Number #R MAIN DISCONNECT
+    set: 1501 (>K:ROTOR_BRAKE)  
+  - get: L:switch_19_a, Number #CAMERA LTS SWITCH
+    set: 1901 (>K:ROTOR_BRAKE)
+  - get: L:switch_20_a, Number #LEFT WIPER
+    set: "`${value > current ? 2007 : 2008} (>K:ROTOR_BRAKE)`"
+
+
+ # LEFT INNER OVERHEAD
+  - get: L:voicerec_switch #VOICE RECORDER SWITCH
+  - get: L:switch_50_a #EMERGENCY LIGHTS GUARD
+    set: 5001 (>K:ROTOR_BRAKE)
+  - get: L:switch_49_a #EMERGENCY LIGHTS
+    set: "`${value > current ? 4907 : 4908} (>K:ROTOR_BRAKE)`"  
+  - get: L:switch_51_a #SERV INTERPHONE SWITCH
+    set: 5101 (>K:ROTOR_BRAKE) 
+  - get: L:switch_53_a #PAX OXYGEN GUARD
+    set: 5301 (>K:ROTOR_BRAKE)
+  - get: L:switch_52_a #PAX OXYGEN BUTTON
+    set: 5201 (>K:ROTOR_BRAKE)
+  - get: L:switch_45_a #L SIDE WINDOW HEAT
+    set: 4501 (>K:ROTOR_BRAKE)
+  - get: L:switch_46_a #L FWD WINDOW HEAT
+    set: 4601 (>K:ROTOR_BRAKE)
+  - get: L:switch_47_a #R FWD WINDOW HEAT
+    set: 4701 (>K:ROTOR_BRAKE)
+  - get: L:switch_48_a #R SIDE WINDOW HEAT
+    set: 4801 (>K:ROTOR_BRAKE)
+  - get: L:switch_44_a #RAM AIR GUARD
+    set: 4401 (>K:ROTOR_BRAKE)
+  - get: L:switch_43_a #RAM AIR
+    set: 4301 (>K:ROTOR_BRAKE)
+  - get: L:switch_39_a #PRIMARY L ENGINE
+    set: 3901 (>K:ROTOR_BRAKE)
+  - get: L:switch_40_a #PRIMARY C1 ELEC
+    set: 4001 (>K:ROTOR_BRAKE)
+  - get: L:switch_41_a #PRIMARY C2 ELEC
+    set: 4101 (>K:ROTOR_BRAKE)
+  - get: L:switch_42_a #PRIMARY R ENGINE
+    set: 4201 (>K:ROTOR_BRAKE)
+  - get: L:switch_35_a #DEMAND L ELEC
+    set: "`${value > current ? 3507 : 3508} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_36_a #DEMAND C1 AIR
+    set: "`${value > current ? 3607 : 3608} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_37_a #DEMAND C2 AIR
+    set: "`${value > current ? 3707 : 3708} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_38_a #DEMAND R ELEC
+    set: "`${value > current ? 3807 : 3808} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_29_a #NO SMOKING
+    set: "`${value > current ? 2907 : 2908} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_30_a #SEAT BELTS
+    set: "`${value > current ? 3007 : 3008} (>K:ROTOR_BRAKE)`"
+  - get: L:OH_CB_LIGHT_CONTROL #CIRCUIT BREAKERS INTEGRATED LIGHTS
+  - get: L:OH_GS_FLOOD_LIGHT_CONTROL #GLARESHIELD FLOOD LIGHTS
+  - get: L:OH_GS_PANEL_LIGHT_CONTROL #GLARESHIELD INTEGRATED LIGHTS
+  - get: L:OH_DOME_SWITCH #DOME LIGHTS
+  - get: L:switch_27_a #STORM LIGHT
+    set: 2701 (>K:ROTOR_BRAKE)
+  - get: L:OH_MASTER_BRIGHT_ROTATE #MASTER BRIGHT ROTATE
+  - get: L:switch_2801_a #MASTER BRIGHT ON
+    set: 280101 (>K:ROTOR_BRAKE)
+  - get: L:OH_PANEL_LIGHT_CONTROL, Number #OVERHEAD INTEGRATED LIGHTS
+  - get: L:switch_22_a #LEFT LANDING LIGHT
+    set: 2201 (>K:ROTOR_BRAKE)
+  - get: L:switch_23_a #NOSE LANDING LIGHT
+    set: 2301 (>K:ROTOR_BRAKE)
+  - get: L:switch_24_a #RIGHT LANDING LIGHT
+    set: 2401 (>K:ROTOR_BRAKE)
+
+ # RIGHT INNER OVERHEAD
+  - get: L:switch_84_a #APU FIRE DISCH TOP
+    set: "`${value > current ? 8402 : 8401} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_8401_a #APU FIRE DISCH HANDLE BOTTOM
+    set: "`${value > current ? 840102 : 840101} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_8402_a #APU FIRE DISCH HANDLE UNLOCK SWITCH
+    set: 840201 (>K:ROTOR_BRAKE)
+  - get: L:switch_89_a #FIRE/OVHT TEST
+    set: 8901 (>K:ROTOR_BRAKE)
+  - get: L:switch_85_a #LWR FWD CARGO FIRE ARM
+    set: 8501 (>K:ROTOR_BRAKE)
+  - get: L:switch_86_a #LWR AFT CARGO FIRE ARM
+    set: 8601 (>K:ROTOR_BRAKE)
+  - get: L:switch_88_a #DEPR/DISCH GUARD
+    set: 8801 (>K:ROTOR_BRAKE)
+  - get: L:switch_87_A #DISCH
+    set: 8701 (>K:ROTOR_BRAKE)
+  - get: L:switch_90_A #L ENG EEC MODE
+    set: 9001 (>K:ROTOR_BRAKE)
+  - get: L:switch_91_A #L ENG EEC MODE GUARD
+    set: 9101 (>K:ROTOR_BRAKE)
+  - get: L:switch_92_A #R ENG EEC MODE
+    set: 9201 (>K:ROTOR_BRAKE)
+  - get: L:switch_93_A #R ENG EEC MODE GUARD
+    set: 9301 (>K:ROTOR_BRAKE)
+  - get: L:switch_94_A #L START SELECTOR
+    set: "`${value > current ? 9407 : 9408} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_95_A #R START SELECTOR
+    set: "`${value > current ? 9507 : 9508} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_9401_A #L START SELECTOR (PW ENGINE)
+    set: "`${value > current ? 940107 : 940108} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_9402_A #R START SELECTOR (PW ENGINE)
+    set: "`${value > current ? 940207 : 940208} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_96_A #AUTOSTART
+    set: 9601 (>K:ROTOR_BRAKE)
+  - get: L:switch_98_A #L FUEL JETTISON NOZZLE GUARD
+    set: 9801 (>K:ROTOR_BRAKE)
+  - get: L:switch_97_A #L FUEL JETTISON NOZZLE
+    set: 9701 (>K:ROTOR_BRAKE)
+  - get: L:switch_100_A #R FUEL JETTISON NOZZLE GUARD
+    set: 10001 (>K:ROTOR_BRAKE)
+  - get: L:switch_99_A #R FUEL JETTISON NOZZLE
+    set: 9901 (>K:ROTOR_BRAKE)
+  - get: L:switch_1011_A #FUEL TO REMAIN PULL ON
+    set: 101101 (>K:ROTOR_BRAKE)
+  - get: L:FuelToRemainRotate, Number
+  - get: L:switch_102_A #FUEL JETTISON ARM
+    set: 10201 (>K:ROTOR_BRAKE)
+  - get: L:switch_103_A #L PUMPS FWD
+    set: 10301 (>K:ROTOR_BRAKE)
+  - get: L:switch_105_A #L PUMPS AFT
+    set: 10501 (>K:ROTOR_BRAKE)
+  - get: L:switch_107_A #CROSSFEED FWD
+    set: 10701 (>K:ROTOR_BRAKE)
+  - get: L:switch_108_A #CROSSFEED AFT
+    set: 10801 (>K:ROTOR_BRAKE)
+  - get: L:switch_104_A #R PUMPS FWD
+    set: 10401 (>K:ROTOR_BRAKE)
+  - get: L:switch_106_A #R PUMPS AFT
+    set: 10601 (>K:ROTOR_BRAKE)
+  - get: L:switch_109_A #CTR PUMP L
+    set: 10901 (>K:ROTOR_BRAKE)
+  - get: L:switch_110_A #CTR PUMP R
+    set: 11001 (>K:ROTOR_BRAKE)
+  - get: L:switch_111_A #WING ANTI-ICE
+    set: "`${value > current ? 11107 : 11108} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_112_A #ENG ANTI-ICE L
+    set: "`${value > current ? 11207 : 11208} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_113_A #ENG ANTI-ICE R
+    set: "`${value > current ? 11307 : 11308} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_114_A #BEACON LIGHT
+    set: 11401 (>K:ROTOR_BRAKE)
+  - get: L:switch_115_A #NAV LIGHT
+    set: 11501 (>K:ROTOR_BRAKE)
+  - get: L:switch_116_A #LOGO LIGHT
+    set: 11601 (>K:ROTOR_BRAKE)
+  - get: L:switch_117_A #WING LIGHT
+    set: 11701 (>K:ROTOR_BRAKE)
+  - get: L:switch_118_A #IND LIGHTS
+    set: "`${value > current ? 11801 : 11802} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_119_A #RUNWAY TURNOFF L
+    set: 11901 (>K:ROTOR_BRAKE)
+  - get: L:switch_120_A #RUNWAY TURNOFF R
+    set: 12001 (>K:ROTOR_BRAKE)
+  - get: L:switch_121_A #TAXI LIGHT
+    set: 12101 (>K:ROTOR_BRAKE)
+  - get: L:switch_122_A #STROBE LIGHT
+    set: 12201 (>K:ROTOR_BRAKE)
+
+ # RIGHT OUTER OVERHEAD
+  - get: L:switch_144_a #EQUIP COOLING
+    set: 14401 (>K:ROTOR_BRAKE)
+  - get: L:switch_145_a #GASPER
+    set: 14501 (>K:ROTOR_BRAKE)
+  - get: L:switch_142_a #RECIRC FANS UPPER
+    set: 14201 (>K:ROTOR_BRAKE)
+  - get: L:switch_143_a #RECIRC FANS LOWER
+    set: 14301 (>K:ROTOR_BRAKE)
+  - get: L:switch_141_a #AIR COND RESET
+    set: 14101 (>K:ROTOR_BRAKE)
+  - get: L:FLTDeckTempKnob, Number #FLT DECK TEMP
+  - get: L:CABINTempKnob, Number #CABIN TEMP
+  - get: L:switch_135_a #LEFT PACK
+    set: 13501 (>K:ROTOR_BRAKE)
+  - get: L:switch_137_a #LEFT TRIM AIR
+    set: 13701 (>K:ROTOR_BRAKE)
+  - get: L:switch_138_a #RIGHT TRIM AIR
+    set: 13801 (>K:ROTOR_BRAKE)
+  - get: L:switch_136_a #RIGHT PACK
+    set: 13601 (>K:ROTOR_BRAKE)
+  - get: L:switch_132_a #LEFT BLEED AIR ISLN
+    set: 13201 (>K:ROTOR_BRAKE)
+  - get: L:switch_133_a #CENTRE BLEED AIR ISLN
+    set: 13301 (>K:ROTOR_BRAKE)
+  - get: L:switch_134_a #RIGHT BLEED AIR ISLN
+    set: 13401 (>K:ROTOR_BRAKE)
+  - get: L:switch_129_a #LEFT ENG BLEED
+    set: 12901 (>K:ROTOR_BRAKE)
+  - get: L:switch_131_a #APU BLEED
+    set: 13101 (>K:ROTOR_BRAKE)
+  - get: L:switch_130_a #RIGHT ENG BLEED
+    set: 13001 (>K:ROTOR_BRAKE)
+  - get: L:switch_127_a #FWD OUTFLOW VALVE
+    set: 12701 (>K:ROTOR_BRAKE)
+  - get: L:switch_128_a #AFT OUTFLOW VALVE
+    set: 12801 (>K:ROTOR_BRAKE)
+  - get: L:switch_1261_a #LDG ALT PULL
+    set: 126101 (>K:ROTOR_BRAKE)
+  - get: L:LDGALTRotate, Number #LDG ALT SELECTOR
+  - get: L:switch_124_a #FWD OPEN/CLOSE
+    set: "`${value > current ? 12401 : 12402} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_125_a #AFT OPEN/CLOSE
+    set: "`${value > current ? 12501 : 12502} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_123_a #RIGHT WIPER
+    set: "`${value > current ? 12307 : 12308} (>K:ROTOR_BRAKE)`"
+
+ # OVERHEAD MAINTENANCE PANEL
+  - get: L:switch_78_A #BACKUP WINDOW HEAT GUARD LEFT
+    set: 7801 (>K:ROTOR_BRAKE)
+  - get: L:switch_77_A #BACKUP WINDOW HEAT SWITCH LEFT
+    set: 7701 (>K:ROTOR_BRAKE)
+  - get: L:switch_79_A #BACKUP WINDOW HEAT SWITCH RIGHT
+    set: 7901 (>K:ROTOR_BRAKE)
+  - get: L:switch_80_A #BACKUP WINDOW HEAT GUARD RIGHT
+    set: 8001 (>K:ROTOR_BRAKE)
+  - get: L:switch_81_A #STANDBY POWER SWITCH
+    set: "`${value > current ? 8101 : 8102} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_82_A #STANDBY POWER GUARD
+    set: 8201 (>K:ROTOR_BRAKE)
+  - get: L:switch_69_A #FLT CONTROL HYD L SWITCH
+    set: 6901 (>K:ROTOR_BRAKE)
+  - get: L:switch_70_A #FLT CONTROL HYD L GUARD
+    set: 7001 (>K:ROTOR_BRAKE)
+  - get: L:switch_71_A #FLT CONTROL HYD C SWITCH
+    set: 7101 (>K:ROTOR_BRAKE)
+  - get: L:switch_72_A #FLT CONTROL HYD C GUARD
+    set: 7201 (>K:ROTOR_BRAKE)
+  - get: L:switch_74_A #FLT CONTROL HYD R SWITCH
+    set: 7401 (>K:ROTOR_BRAKE)
+  - get: L:switch_75_A #FLT CONTROL HYD R GUARD
+    set: 7501 (>K:ROTOR_BRAKE)
+  - get: L:switch_60_A #WING L SWITCH
+    set: 6001 (>K:ROTOR_BRAKE)
+  - get: L:switch_61_A #WING L GUARD
+    set: 6101 (>K:ROTOR_BRAKE)
+  - get: L:switch_63_A #WING C SWITCH
+    set: 6301 (>K:ROTOR_BRAKE)
+  - get: L:switch_64_A #WING C GUARD
+    set: 6401 (>K:ROTOR_BRAKE)
+  - get: L:switch_66_A #WING R SWITCH
+    set: 6601 (>K:ROTOR_BRAKE)
+  - get: L:switch_67_A #WING R GUARD
+    set: 6701 (>K:ROTOR_BRAKE)
+  - get: L:switch_160_A #APU MAINT GUARD
+    set: 16001 (>K:ROTOR_BRAKE)
+  - get: L:switch_159_A #APU MAINT SWITCH
+    set: 15901 (>K:ROTOR_BRAKE)
+  - get: L:switch_162_A #LEFT EEC MAINT GUARD
+    set: 16201 (>K:ROTOR_BRAKE)
+  - get: L:switch_161_A #LEFT EEC MAINT SWITCH
+    set: 16101 (>K:ROTOR_BRAKE)
+  - get: L:switch_164_A #RIGHT EEC MAINT GUARD
+    set: 16401 (>K:ROTOR_BRAKE)
+  - get: L:switch_163_A #RIGHT EEC MAINT SWITCH
+    set: 16301 (>K:ROTOR_BRAKE)
+  - get: L:switch_148_a #AFT CARGO TEMP SELECT SWITCH
+    set: "`${value > current ? 14807 : 14808} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_149_a #BULK CARGO TEMP SELECT SWITCH
+    set: "`${value > current ? 14907 : 14908} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_151_A #TOWING POWER GUARD
+    set: 15101 (>K:ROTOR_BRAKE)
+  - get: L:switch_150_A #TOWING POWER SWITCH
+    set: 15001 (>K:ROTOR_BRAKE)
+  - get: L:switch_153_A #GND TEST GUARD
+    set: 15301 (>K:ROTOR_BRAKE)
+  - get: L:switch_152_A #GND TEST SWITCH
+    set: "`${value > current ? 15201 : 15202} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_156_A #CVR TEST
+    set: 15601 (>K:ROTOR_BRAKE)
+  - get: L:switch_157_A #CVR ERASE
+    set: 15701 (>K:ROTOR_BRAKE)
+
+# PEDESTALL
+ # LEFT AUDIO CONTROL PANEL
+  - get: L:switch_525_a #HF SENS
+    set: "`${value > current ? 52502 : 52501} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_529_a #VHF LEFT SELECT
+    set: "`${(value == 100) ? 52901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_530_a #VHF CENTRE SELECTOR
+    set: "`${(value == 100) ? 53001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_531_a #VHF RIGHT SELECTOR
+    set: "`${(value == 100) ? 53101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_527_a #VHF OUTER DIAL
+  - get: L:switch_528_a #VHF INNER DIAL
+  - get: A:COM ACTIVE FREQUENCY:1, Hz
+    set: (>K:COM_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:1, Hz
+    set: (>K:COM_STBY_RADIO_SET_HZ)
+  - get: A:COM1 STORED FREQUENCY, Hz
+    set: (>K:COM1_STORED_FREQUENCY_SET_HZ)
+  - get: L:switch_532_a #PANEL POWER
+    set: "`${(value == 100) ? 53201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_533_a #HF LEFT SELECTOR
+    set: "`${(value == 100) ? 53301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_534_a #AM SELECTOR
+    set: "`${(value == 100) ? 53401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_535_a #HF RIGHT SELECTOR
+    set: "`${(value == 100) ? 53501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_536_a #VHF LEFT MIC SELECTOR
+    set: "`${(value == 100) ? 53601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_537_a #VHF CENTRE MIC SELECTOR
+    set: "`${(value == 100) ? 53701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_538_a #VHF RIGHT MIC SELECTOR
+    set: "`${(value == 100) ? 53801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_539_a #FLT MIC SELECTOR
+    set: "`${(value == 100) ? 53901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_540_a #CAB MIC SELECTOR
+    set: "`${(value == 100) ? 54001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_541_a #PA MIC SELECTOR
+    set: "`${(value == 100) ? 54101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_548_a #VHF LEFT AUDIO SELECTOR
+    set: 54801 (>K:ROTOR_BRAKE)
+  - get: L:switch_549_a #VHF CENTRE AUDIO SELECTOR
+    set: 54901 (>K:ROTOR_BRAKE)
+  - get: L:switch_550_a #VHF RIGHT AUDIO SELECTOR
+    set: 55001 (>K:ROTOR_BRAKE)
+  - get: L:switch_551_a #FLT AUDIO SELECTOR
+    set: 55101 (>K:ROTOR_BRAKE)
+  - get: L:switch_552_a #CAB AUDIO SELECTOR
+    set: 55201 (>K:ROTOR_BRAKE)
+  - get: L:switch_553_a #PA AUDIO SELECTOR
+    set: 55301 (>K:ROTOR_BRAKE)
+  - get: L:switch_554_a #MIC/INT SWITCH
+    set: "`${value > current ? 55401 : 55402} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_555_a #HF LEFT MIC SELECTOR
+    set: "`${(value == 100) ? 55501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_556_a #HF RIGHT MIC SELECTOR
+    set: "`${(value == 100) ? 55601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_557_a #SAT 1 MIC SELECTOR
+    set: "`${(value == 100) ? 55701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_558_a #SAT 2 MIC SELECTOR
+    set: "`${(value == 100) ? 55801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_564_a #SPKR AUDIO SELECTOR
+    set: 56401 (>K:ROTOR_BRAKE)
+  - get: L:switch_565_a #HF LEFT AUDIO SELECTOR
+    set: 56501 (>K:ROTOR_BRAKE)
+  - get: L:switch_566_a #HF RIGHT AUDIO SELECTOR
+    set: 56601 (>K:ROTOR_BRAKE)
+  - get: L:switch_567_a #SAT 1 AUDIO SELECTOR
+    set: 56701 (>K:ROTOR_BRAKE)
+  - get: L:switch_568_a #SAT 2 AUDIO SELECTOR
+    set: 56801 (>K:ROTOR_BRAKE)
+  - get: L:switch_569_a #VOR/ADF L/R SELECTOR
+    set: "`${value > current ? 56901 : 56902} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_571_a #VOR/ADF L/R AUDIO SELECTOR
+    set: 57101 (>K:ROTOR_BRAKE)
+  - get: L:switch_572_a #V/B/R SELECTOR
+    set: "`${value > current ? 57201 : 57202} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_573_a #APP/MKR L/R AUDIO SELECTOR
+    set: 57301 (>K:ROTOR_BRAKE)
+  - get: L:switch_575_a #APP/MKR L/R SELECTOR
+    set: "`${value > current ? 57501 : 57502} (>K:ROTOR_BRAKE)`"
+
+ # CENTRE AUDIO CONTROL PANEL
+  - get: L:switch_596_a #HF SENS
+    set: "`${value > current ? 59602 : 59601} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_600_a #VHF LEFT SELECT
+    set: "`${(value == 100) ? 60001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_601_a #VHF CENTRE SELECTOR
+    set: "`${(value == 100) ? 60101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_602_a #VHF RIGHT SELECTOR
+    set: "`${(value == 100) ? 60201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_599_a #VHF OUTER DIAL
+  - get: L:switch_598_a #VHF INNER DIAL
+  - get: A:COM ACTIVE FREQUENCY:3, Hz
+    set: (>K:COM3_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:3, Hz
+    set: (>K:COM3_STBY_RADIO_SET_HZ)
+  - get: L:switch_603_a #PANEL POWER
+    set: "`${(value == 100) ? 60301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_604_a #HF LEFT SELECTOR
+    set: "`${(value == 100) ? 60401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_605_a #AM SELECTOR
+    set: "`${(value == 100) ? 60501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_606_a #HF RIGHT SELECTOR
+    set: "`${(value == 100) ? 60601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_607_a #VHF LEFT MIC SELECTOR
+    set: "`${(value == 100) ? 60701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_608_a #VHF CENTRE MIC SELECTOR
+    set: "`${(value == 100) ? 60801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_609_a #VHF RIGHT MIC SELECTOR
+    set: "`${(value == 100) ? 60901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_610_a #FLT MIC SELECTOR
+    set: "`${(value == 100) ? 61001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_611_a #CAB MIC SELECTOR
+    set: "`${(value == 100) ? 61101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_612_a #PA MIC SELECTOR
+    set: "`${(value == 100) ? 61201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_619_a #VHF LEFT AUDIO SELECTOR
+    set: 61901 (>K:ROTOR_BRAKE)
+  - get: L:switch_620_a #VHF CENTRE AUDIO SELECTOR
+    set: 62001 (>K:ROTOR_BRAKE)
+  - get: L:switch_621_a #VHF RIGHT AUDIO SELECTOR
+    set: 62101 (>K:ROTOR_BRAKE)
+  - get: L:switch_622_a #FLT AUDIO SELECTOR
+    set: 62201 (>K:ROTOR_BRAKE)
+  - get: L:switch_623_a #CAB AUDIO SELECTOR
+    set: 62301 (>K:ROTOR_BRAKE)
+  - get: L:switch_624_a #PA AUDIO SELECTOR
+    set: 62401 (>K:ROTOR_BRAKE)
+  - get: L:switch_625_a #MIC/INT SWITCH
+    set: "`${value > current ? 62507 : 62508} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_626_a #HF LEFT MIC SELECTOR
+    set: "`${(value == 100) ? 62601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_627_a #HF RIGHT MIC SELECTOR
+    set: "`${(value == 100) ? 62701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_628_a #SAT 1 MIC SELECTOR
+    set: "`${(value == 100) ? 62801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_629_a #SAT 2 MIC SELECTOR
+    set: "`${(value == 100) ? 62901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_635_a #SPKR AUDIO SELECTOR
+    set: 63501 (>K:ROTOR_BRAKE)
+  - get: L:switch_636_a #HF LEFT AUDIO SELECTOR
+    set: 63601 (>K:ROTOR_BRAKE)
+  - get: L:switch_637_a #HF RIGHT AUDIO SELECTOR
+    set: 63701 (>K:ROTOR_BRAKE)
+  - get: L:switch_638_a #SAT 1 AUDIO SELECTOR
+    set: 63801 (>K:ROTOR_BRAKE)
+  - get: L:switch_639_a #SAT 2 AUDIO SELECTOR
+    set: 63901 (>K:ROTOR_BRAKE)
+  - get: L:switch_640_a #VOR/ADF L/R SELECTOR
+    set: "`${value > current ? 64001 : 64002} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_642_a #VOR/ADF L/R AUDIO SELECTOR
+    set: 64201 (>K:ROTOR_BRAKE)
+  - get: L:switch_643_a #V/B/R SELECTOR
+    set: "`${value > current ? 64301 : 64302} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_644_a #APP/MKR L/R AUDIO SELECTOR
+    set: 64401 (>K:ROTOR_BRAKE)
+  - get: L:switch_646_a #APP/MKR L/R SELECTOR
+    set: "`${value > current ? 64601 : 64602} (>K:ROTOR_BRAKE)`"
+
+ # RIGHT AUDIO CONTROL PANEL
+  - get: L:switch_802_a #HF SENS
+    set: "`${value > current ? 80202 : 80201} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_798_a #VHF LEFT SELECT
+    set: "`${(value == 100) ? 79801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_797_a #VHF CENTRE SELECTOR
+    set: "`${(value == 100) ? 79701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_796_a #VHF RIGHT SELECTOR
+    set: "`${(value == 100) ? 79601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_800_a #VHF OUTER DIAL
+  - get: L:switch_799_a #VHF INNER DIAL
+  - get: A:COM ACTIVE FREQUENCY:2, Hz
+    set: (>K:COM2_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:2, Hz
+    set: (>K:COM2_STBY_RADIO_SET_HZ)
+  - get: L:switch_795_a #PANEL POWER
+    set: "`${(value == 100) ? 79501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_794_a #HF LEFT SELECTOR
+    set: "`${(value == 100) ? 79401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_793_a #AM SELECTOR
+    set: "`${(value == 100) ? 79301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_792_a #HF RIGHT SELECTOR
+    set: "`${(value == 100) ? 79201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_791_a #VHF LEFT MIC SELECTOR
+    set: "`${(value == 100) ? 79101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_790_a #VHF CENTRE MIC SELECTOR
+    set: "`${(value == 100) ? 79001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_789_a #VHF RIGHT MIC SELECTOR
+    set: "`${(value == 100) ? 78901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_788_a #FLT MIC SELECTOR
+    set: "`${(value == 100) ? 78801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_787_a #CAB MIC SELECTOR
+    set: "`${(value == 100) ? 78701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_786_a #PA MIC SELECTOR
+    set: "`${(value == 100) ? 78601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_779_a #VHF LEFT AUDIO SELECTOR
+    set: 77901 (>K:ROTOR_BRAKE)
+  - get: L:switch_778_a #VHF CENTRE AUDIO SELECTOR
+    set: 77801 (>K:ROTOR_BRAKE)
+  - get: L:switch_777_a #VHF RIGHT AUDIO SELECTOR
+    set: 77701 (>K:ROTOR_BRAKE)
+  - get: L:switch_776_a #FLT AUDIO SELECTOR
+    set: 77601 (>K:ROTOR_BRAKE)
+  - get: L:switch_775_a #CAB AUDIO SELECTOR
+    set: 77501 (>K:ROTOR_BRAKE)
+  - get: L:switch_774_a #PA AUDIO SELECTOR
+    set: 77401 (>K:ROTOR_BRAKE)
+  - get: L:switch_773_a #MIC/INT SWITCH
+    set: "`${value > current ? 77301 : 77302} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_772_a #HF LEFT MIC SELECTOR
+    set: "`${(value == 100) ? 77201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_771_a #HF RIGHT MIC SELECTOR
+    set: "`${(value == 100) ? 77101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_770_a #SAT 1 MIC SELECTOR
+    set: "`${(value == 100) ? 77001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_769_a #SAT 2 MIC SELECTOR
+    set: "`${(value == 100) ? 76901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_763_a #SPKR AUDIO SELECTOR
+    set: 76301 (>K:ROTOR_BRAKE)
+  - get: L:switch_762_a #HF LEFT AUDIO SELECTOR
+    set: 76201 (>K:ROTOR_BRAKE)
+  - get: L:switch_761_a #HF RIGHT AUDIO SELECTOR
+    set: 76101 (>K:ROTOR_BRAKE)
+  - get: L:switch_760_a #SAT 1 AUDIO SELECTOR
+    set: 76001 (>K:ROTOR_BRAKE)
+  - get: L:switch_759_a #SAT 2 AUDIO SELECTOR
+    set: 75901 (>K:ROTOR_BRAKE)
+  - get: L:switch_758_a #VOR/ADF L/R SELECTOR
+    set: "`${value > current ? 75801 : 75802} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_756_a #VOR/ADF L/R AUDIO SELECTOR
+    set: 75601 (>K:ROTOR_BRAKE)
+  - get: L:switch_755_a #V/B/R SELECTOR
+    set: "`${value > current ? 75501 : 75502} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_754_a #APP/MKR L/R AUDIO SELECTOR
+    set: 75401 (>K:ROTOR_BRAKE)
+  - get: L:switch_752_a #APP/MKR L/R SELECTOR
+    set: "`${value > current ? 75201 : 75202} (>K:ROTOR_BRAKE)`"
+
+ # CENTRE CDU
+  - get: L:switch_653_a #LSK1L
+    set: "`${(value == 100) ? 65301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_654_a #LSK2L
+    set: "`${(value == 100) ? 65401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_655_a #LSK3L
+    set: "`${(value == 100) ? 65501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_656_a #LSK4L
+    set: "`${(value == 100) ? 65601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_657_a #LSK5L
+    set: "`${(value == 100) ? 65701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_658_a #LSK6L
+    set: "`${(value == 100) ? 65801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_659_a #LSK1R
+    set: "`${(value == 100) ? 65901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_660_a #LSK2R
+    set: "`${(value == 100) ? 66001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_661_a #LSK3R
+    set: "`${(value == 100) ? 66101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_662_a #LSK4R
+    set: "`${(value == 100) ? 66201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_663_a #LSK5R
+    set: "`${(value == 100) ? 66301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_664_a #LSK6R
+    set: "`${(value == 100) ? 66401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_665_a #INIT REF PAGE
+    set: "`${(value == 100) ? 66501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_666_a #RTE PAGE
+    set: "`${(value == 100) ? 66601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_667_a #DEP ARR PAGE
+    set: "`${(value == 100) ? 66701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_668_a #ALTN PAGE
+    set: "`${(value == 100) ? 66801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_669_a #VNAV PAGE
+    set: "`${(value == 100) ? 66901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_670_a #FIX PAGE
+    set: "`${(value == 100) ? 67001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_671_a #LEGS PAGE
+    set: "`${(value == 100) ? 67101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_672_a #HOLD PAGE
+    set: "`${(value == 100) ? 67201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_6721_a #FMC COMM PAGE
+    set: "`${(value == 100) ? 672101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_673_a #PROG PAGE
+    set: "`${(value == 100) ? 67301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_674_a #EXECUTE
+    set: "`${(value == 100) ? 67401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_675_a #MENU PAGE
+    set: "`${(value == 100) ? 67501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_676_a #NAV RAD PAGE
+    set: "`${(value == 100) ? 67601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_677_a #PREV PAGE
+    set: "`${(value == 100) ? 67701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_678_a #NEXT PAGE
+    set: "`${(value == 100) ? 67801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_679_a #NUMPAD 1
+    set: "`${(value == 100) ? 67901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_680_a #NUMPAD 2
+    set: "`${(value == 100) ? 68001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_681_a #NUMPAD 3
+    set: "`${(value == 100) ? 68101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_682_a #NUMPAD 4
+    set: "`${(value == 100) ? 68201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_683_a #NUMPAD 5
+    set: "`${(value == 100) ? 68301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_684_a #NUMPAD 6
+    set: "`${(value == 100) ? 68401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_685_a #NUMPAD 7
+    set: "`${(value == 100) ? 68501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_686_a #NUMPAD 8
+    set: "`${(value == 100) ? 68601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_687_a #NUMPAD 9
+    set: "`${(value == 100) ? 68701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_688_a #NUMPAD DECIMAL
+    set: "`${(value == 100) ? 68801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_689_a #NUMPAD 0
+    set: "`${(value == 100) ? 68901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_690_a #NUMPAD PLUS OR MINUS
+    set: "`${(value == 100) ? 69001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_691_a #KEYPAD A
+    set: "`${(value == 100) ? 69101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_692_a #KEYPAD B
+    set: "`${(value == 100) ? 69201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_693_a #KEYPAD C
+    set: "`${(value == 100) ? 69301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_694_a #KEYPAD D
+    set: "`${(value == 100) ? 69401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_695_a #KEYPAD E
+    set: "`${(value == 100) ? 69501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_696_a #KEYPAD F
+    set: "`${(value == 100) ? 69601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_697_a #KEYPAD G
+    set: "`${(value == 100) ? 69701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_698_a #KEYPAD H
+    set: "`${(value == 100) ? 69801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_699_a #KEYPAD I
+    set: "`${(value == 100) ? 69901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_700_a #KEYPAD J
+    set: "`${(value == 100) ? 70001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_701_a #KEYPAD K
+    set: "`${(value == 100) ? 70101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_702_a #KEYPAD L
+    set: "`${(value == 100) ? 70201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_703_a #KEYPAD M
+    set: "`${(value == 100) ? 70301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_704_a #KEYPAD N
+    set: "`${(value == 100) ? 70401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_705_a #KEYPAD O
+    set: "`${(value == 100) ? 70501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_706_a #KEYPAD P
+    set: "`${(value == 100) ? 70601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_707_a #KEYPAD Q
+    set: "`${(value == 100) ? 70701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_708_a #KEYPAD R
+    set: "`${(value == 100) ? 70801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_709_a #KEYPAD S
+    set: "`${(value == 100) ? 70901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_710_a #KEYPAD T
+    set: "`${(value == 100) ? 71001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_711_a #KEYPAD U
+    set: "`${(value == 100) ? 71101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_712_a #KEYPAD V
+    set: "`${(value == 100) ? 71201 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_713_a #KEYPAD W
+    set: "`${(value == 100) ? 71301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_714_a #KEYPAD X
+    set: "`${(value == 100) ? 71401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_715_a #KEYPAD Y
+    set: "`${(value == 100) ? 71501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_716_a #KEYPAD Z
+    set: "`${(value == 100) ? 71601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_717_a #KEYPAD SPACE
+    set: "`${(value == 100) ? 71701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_718_a #KEYPAD DELETE
+    set: "`${(value == 100) ? 71801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_719_a #KEYPAD FORWARD SLASH
+    set: "`${(value == 100) ? 71901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_720_a #KEYPAD CLEAR
+    set: "`${(value == 100) ? 72001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_725_a #BRT
+    set: "`${value > current ? 72501 : 72502} (>K:ROTOR_BRAKE)`"
+
+ # WEATHER RADAR CONTROL PANEL
+  - get: L:switch_576_a #LEFT TFR BUTTON
+    set: "`${(value == 100) ? 57601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_577_a #LEFT WX BUTTON
+    set: "`${(value == 100) ? 57701 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_578_a #LEFT WX+T BUTTON
+    set: "`${(value == 100) ? 57801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_579_a #LEFT MAP BUTTON
+    set: "`${(value == 100) ? 57901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_580_a #LEFT GC BUTTON
+    set: "`${(value == 100) ? 58001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_581_a #LEFT TILT ROTARY
+    set: "`${value > current ? 58101 : 58102} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_582_a #LEFT GAIN ROTARY
+    set: "`${value > current ? 58201 : 58202} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_583_a #WX AUTO BUTTON
+    set: "`${(value == 100) ? 58301 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_584_a #WX L/R BUTTON
+    set: "`${(value == 100) ? 58401 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_585_a #WX TEST BUTTON
+    set: "`${(value == 100) ? 58501 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_586_a #RIGHT TILT ROTARY
+    set: "`${value > current ? 58601 : 58602} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_587_a #RIGHT GAIN ROTARY
+    set: "`${value > current ? 58701 : 58702} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_588_a #RIGHT TFR BUTTON
+    set: "`${(value == 100) ? 58801 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_589_a #RIGHT WX BUTTON
+    set: "`${(value == 100) ? 58901 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_590_a #RIGHT WX+T BUTTON
+    set: "`${(value == 100) ? 59001 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_591_a #RIGHT MAP BUTTON
+    set: "`${(value == 100) ? 59101 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_592_a #RIGHT GC BUTTON
+    set: "`${(value == 100) ? 59201 : ''} (>K:ROTOR_BRAKE)`"
+
+ # OBSERVER AUDIO PANEL
+  - get: L:switch_648_a #OBSERVER AUDIO SELECTOR
+    set: "`${value > current ? 64802 : 64801} (>K:ROTOR_BRAKE)`"
+
+ # ENGINE FIRE PANEL
+  - get: L:switch_6511_a #DISCHARGE LEFT ENG PULL OUT
+    set: "`${value * -0.03 + 651104} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_651_a #DISCHARGE LEFT ENG
+    set: "`${value > current ? 65102 : 65101} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_6521_a #DISCHARGE RIGHT ENG PULL OUT
+    set: "`${value * -0.03 + 652104} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_652_a #DISCHARGE RIGHT ENG
+    set: "`${value > current ? 65202 : 65201} (>K:ROTOR_BRAKE)`"
+
+ # TRIM PANEL
+  - get: L:switch_727_a #AILERON WING DOWN SWITCH
+  - get: L:switch_729_a #MANUAL TRIM CANCEL BUTTON
+    set: "`${value * -0.03 + 72904} (>K:ROTOR_BRAKE)`"
+  - get: L:RudderTrimKnob #RUDDER TRIM ROTARY
+  - get: A:RUDDER TRIM PCT, Position 16k
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: A:ELEVATOR TRIM PCT, Position 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: A:AILERON TRIM PCT, Position 16k
+    set: (>K:AILERON_TRIM_SET_EX1)
+
+ # TRANSPONDER PANEL
+  - get: L:switch_751_a #XPNDR 1/2
+    set: 75101 (>K:ROTOR_BRAKE)
+  - get: L:switch_749_a #TCAS SELECTOR
+    set: "`${value > current ? 74902 : 74901} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_7491_a #TCAS TEST
+    set: 749101 (>K:ROTOR_BRAKE)
+  - get: L:switch_743_a #ALT SOURCE
+    set: 74302 (>K:ROTOR_BRAKE)
+  - get: A:TRANSPONDER CODE:1, BCO16 # XPDR Code
+    set: (>K:XPNDR_SET)
+  - get: L:switch_746_a #IDENT
+    set: "`${(value == 100) ? 74601 : ''} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_7431_a #LEFT ABV/N/BLW SELECTOR
+    set: "`${value > current ? 743102 : 743101} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_7432_a #LEFT ABS RELEASE SWITCH
+    set: 743201 (>K:ROTOR_BRAKE)
+  - get: L:switch_7433_a #RIGHT ABV/N/BLW SELECTOR
+    set: "`${value > current ? 743302 : 743301} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_7434_a #RIGHT ABS RELEASE SWITCH
+    set: 743401 (>K:ROTOR_BRAKE)
+
+ # EVACTUATION PANEL
+  - get: L:switch_741_a #HORN SHUTOFF
+    set: 74101 (>K:ROTOR_BRAKE)
+  - get: L:switch_742_a #EVAC TEST BUTTON
+    set: "`${value * -0.03 + 74204} (>K:ROTOR_BRAKE)`"
+  - get: L:switch_740_a #COMMAND GUARD
+    set: 74001 (>K:ROTOR_BRAKE)
+  - get: L:switch_739_a #COMMAND SWITCH
+    set: 73901 (>K:ROTOR_BRAKE)
+
+ # LIGHTS PANEL
+  - get: L:switch_735_a #FLOOR LIGHTS
+    set: "`${(()=>{const p = Math.round(current / 100);let z = 0;if (value === 100) z = 2;else if (value === 200) z = 1;else z = 0;if (z === p) return '';return z > p ? 73502 : 73501;})()} (>K:ROTOR_BRAKE)`"
+  - get: L:PED_FLOOD_LIGHT_CONTROL #FLOOD LIGHTS
+  - get: L:PED_PANEL_LIGHT_CONTROL #PANEL LIGHTS
+
+ # CABIN
+  - get: L:door_cockpit #COCKPIT DOOR
+
+ # DOORS
+##  - get: L:7X7XCabinDoor1L #OPEN AND CLOSE L1 DOOR
+##  - get: L:7X7XCabinDoor2L #OPEN AND CLOSE L2 DOOR
+##  - get: L:7X7XCabinDoor3L #OPEN AND CLOSE L3 DOOR
+##  - get: L:7X7XCabinDoor4L #OPEN AND CLOSE L4 DOOR
+##  - get: L:7X7XCabinDoor5L #OPEN AND CLOSE L5 DOOR
+##  - get: L:7X7XCabinDoor1R #OPEN AND CLOSE R1 DOOR
+##  - get: L:7X7XCabinDoor2R #OPEN AND CLOSE R2 DOOR
+##  - get: L:7X7XCabinDoor3R #OPEN AND CLOSE R3 DOOR
+##  - get: L:7X7XCabinDoor4R #OPEN AND CLOSE R4 DOOR
+##  - get: L:7X7XCabinDoor5R #OPEN AND CLOSE R5 DOOR
+
+
+ # EXTERNAL DOORS/CONNECTIONS/OPTIONS
+  - get: L:7X7X_WheelChocks #WHEEL CHOCKS
+  - get: L:7X7XRightFuelJettison #FUEL JETTISON RIGHT
+  - get: L:7X7XLeftFuelJettison #FUEL JETTISON LEFT
+  - get: L:7X7X_HSTAB_shake #STAB SHAKE
+  - get: L:TPX200S_Tug_Pivot #TUG PIVOT
+  - get: L:7X7X_Lav_Door #LAVATORY DOOR
+  - get: L:7X7X_Water_Door #WATER DOOR
+  - get: L:7X7X_Refuel_Door #REFUEL DOOR
+  - get: L:7X7X_AirCond_Door #AIR COND DOOR
+  - get: L:7X7X_AirStart_Door #AIR STARTER DOOR
+  - get: L:7X7X_Power_Door #POWER DOOR
+  - get: L:7X7X_terminalpowerconnection #TERMINAL POWER
+  - get: L:7X7X_tailskid #TAILSKID
+  - get: L:TPU_S_Hose #TPU S HOSE
+  - get: L:TPU_D_Hose #TPU D HOSE
+  - get: L:GPU_D_Hose #GPU D HOSE
+  - get: L:7X7X_GPU_D #GPU D
+  - get: L:7X7X_GSU #GSU
+  - get: L:7X7X_AirStartCart
+  - get: L:7X7X_tailstand
+  - get: L:7X7X_fifth_engine
+  - get: L:747X_APU_exhaust
+  - get: L:7X7X_ReFuel_Panel
+  - get: L:747X_Lower_Deck_Forward_cargo
+  - get: L:747X_Lower_Deck_Aft_cargo
+  - get: L:747X_Bulk_Cargo
+  - get: L:747X_Main_Cargo
+  - get: L:TaxiLightsInstalled
+  - get: L:Antenna_WIFI_FWD
+  - get: L:Antenna_WIFI_AFT
+  - get: L:Antenna_SATCOM1_FWD
+  - get: L:Antenna_VHF1_FWD
+  - get: L:Antenna_VHF2_AFT
+  - get: L:switch_768_74X
+  - get: L:7X7X_Belly_LL_Enabled
+  - get: L:7X7X_scimitars_enabled
+  - get: L:7X7X_winglets_enabled
+  - get: L:7X7X_wingtip_enabled
+  - get: L:7X7X_PIP_package
+  - get: L:7X7X_nonPIP_package
+  - get: L:7X7X_LED_lighting
+  - get: L:7X7X_nonLED_lighting
+  - get: L:TPX200S_Tug
+  - get: L:7X7X_Main_Cargo
+  - get: L:7X7X_Lower_Deck_Forward_Cargo
+  - get: L:7X7X_Lower_Deck_Aft_Cargo
+  - get: L:7X7X_Main_Cargo_25
+  - get: L:7X7X_Main_Cargo_50
+  - get: L:7X7X_Main_Cargo_75
+  - get: L:7X7X_Main_Cargo_100
+  - get: L:7X7X_Lower_Deck_Cargo_100
+  - get: L:7X7X_Lower_Deck_Cargo_75
+  - get: L:7X7X_Lower_Deck_Cargo_50
+  - get: L:7X7X_Lower_Deck_Cargo_25
+  - get: L:7X7X_wheelbrake_12
+  - get: L:7X7X_wheelbrake_10
+  - get: L:7X7X_wheelbrake_09
+  - get: L:7X7X_wheelbrake_08
+  - get: L:7X7X_wheelbrake_07
+  - get: L:7X7X_wheelbrake_06
+  - get: L:7X7X_wheelbrake_05
+  - get: L:7X7X_wheelbrake_04
+  - get: L:7X7X_wheelbrake_03
+  - get: L:7X7X_wheelbrake_02
+  - get: L:7X7X_wheelbrake_01
+  - get: L:capt_headrest
+  - get: L:fo_seat
+  - get: L:fo_headrest
+  - get: L:yoke_captain
+  - get: L:yoke_fo
+  - get: L:efb_inst_captain
+  - get: L:efb_inst_fo
+  - get: L:AirframeOptions
+  - get: L:ShortFieldPlacard
+  - get: L:AutoIgnitionOption
+  - get: L:RMIOption
+  - get: L:FuelCutoffOption
+  - get: L:PressPanelOption
+  - get: L:ProbeHeatLabelOption
+  - get: L:NoSmokeNoElectronics
+  - get: L:AuxFuelPanelOption
+  - get: L:AuxBatteryOption
+  - get: L:LandingLightOptions
+  - get: L:AuxFuelBleedOptions
+  - get: L:efb_captain
+  - get: L:efb_fo
+  - get: L:7X7X_Belly_LL_Disabled
+  - get: A:FUEL TANK CENTER LEVEL, Percent
+    set: "`${value} 1 (>A:FUEL TANK CENTER LEVEL)`"
+  - get: A:FUEL TANK CENTER2 LEVEL, Percent
+    set: "`${value} 1 (>A:FUEL TANK CENTER2 LEVEL)`"
+  - get: A:FUEL TANK CENTER3 LEVEL, Percent
+    set: "`${value} 1 (>A:FUEL TANK CENTER3 LEVEL)`"	
+  - get: A:FUEL TANK RIGHT MAIN LEVEL, Percent
+    set: "`${value} 1 (>A:FUEL TANK RIGHT MAIN LEVEL)`"
+  - get: A:FUEL TANK LEFT MAIN LEVEL, Percent
+    set: "`${value} 1 (>A:FUEL TANK LEFT MAIN LEVEL)`"	
+  - get: A:PAYLOAD STATION WEIGHT:1, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:1)`"
+  - get: A:PAYLOAD STATION WEIGHT:2, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:2)`"
+  - get: A:PAYLOAD STATION WEIGHT:3, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:3)`"
+  - get: A:PAYLOAD STATION WEIGHT:4, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:4)`"
+  - get: A:PAYLOAD STATION WEIGHT:5, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:5)`"
+  - get: A:PAYLOAD STATION WEIGHT:6, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:6)`"
+  - get: A:PAYLOAD STATION WEIGHT:7, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:7)`"
+  - get: A:PAYLOAD STATION WEIGHT:8, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:8)`"
+  - get: A:PAYLOAD STATION WEIGHT:9, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:9)`"
+  - get: A:PAYLOAD STATION WEIGHT:10, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:10)`"
+  - get: A:PAYLOAD STATION WEIGHT:11, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:11)`"
+  - get: A:PAYLOAD STATION WEIGHT:12, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:12)`"
+  - get: A:PAYLOAD STATION WEIGHT:13, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:13)`"
+  - get: A:PAYLOAD STATION WEIGHT:14, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:14)`"
+  - get: A:PAYLOAD STATION WEIGHT:15, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:15)`"
+  - get: A:PAYLOAD STATION WEIGHT:16, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:16)`"
+  - get: A:PAYLOAD STATION WEIGHT:17, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:17)`"
+  - get: A:PAYLOAD STATION WEIGHT:18, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:18)`"
+  - get: A:PAYLOAD STATION WEIGHT:19, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:19)`"
+  - get: A:PAYLOAD STATION WEIGHT:20, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:20)`"	
+  - get: A:PAYLOAD STATION WEIGHT:21, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:21)`"
+  - get: A:PAYLOAD STATION WEIGHT:22, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:22)`"
+  - get: A:PAYLOAD STATION WEIGHT:23, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:23)`"
+  - get: A:PAYLOAD STATION WEIGHT:24, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:24)`"
+  - get: A:PAYLOAD STATION WEIGHT:25, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:25)`"
+  - get: A:PAYLOAD STATION WEIGHT:26, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:26)`"
+  - get: A:PAYLOAD STATION WEIGHT:27, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:27)`"
+  - get: A:PAYLOAD STATION WEIGHT:28, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:28)`"
+  - get: A:PAYLOAD STATION WEIGHT:29, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:29)`"	
+  - get: A:PAYLOAD STATION WEIGHT:30, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:30)`"
+  - get: A:PAYLOAD STATION WEIGHT:31, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:31)`"
+  - get: A:PAYLOAD STATION WEIGHT:32, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:32)`"
+  - get: A:PAYLOAD STATION WEIGHT:33, Pounds
+    set: "`${value} 1 (>A:PAYLOAD STATION WEIGHT:33)`"	

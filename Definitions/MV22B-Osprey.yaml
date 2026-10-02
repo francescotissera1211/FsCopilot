@@ -1,0 +1,844 @@
+# Original author: https://discord.com/channels/1454265644416765974/1494477458915983433/1496608669683417160
+# Updated: 2026-04-22 20:28:36
+
+# MILTECH MV-22 Osprey VTOL - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: DKgolfnut
+# Special Thanks: 
+# Date: 4/22/2026 
+
+# Known Issues:
+ # - 4/22/26
+   # - Initial release for testing
+
+# FIXES:
+   # - 
+include:
+
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+master: 
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+  - get: A:ELEVATOR TRIM PCT, Percent scaler 16k # ELEVATOR TRIM BTN
+    set: (>K:ELEVATOR_TRIM_SET) 
+  - get: A:RUDDER TRIM PCT, Percent # RUDDER TRIM BTN
+    set: (>K:RUDDER_TRIM_SET) 
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, position 16k # Throttle 2 LEVER
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # PROPELLER 1 LEVER
+    set: (>K:PROP_PITCH1_SET)
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:2, position 16k # PROPELLER 2 LEVER
+    set: (>K:PROP_PITCH2_SET) 
+
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+## _ NACELLE rotation
+  - get: L:NacellesRotation
+  - get: L:MARYADI0534, Number
+    set: "value > current ? '0 (>K:INC_COWL_FLAPS4)' : '0 (>K:DEC_COWL_FLAPS4)'"
+
+shared:
+#   #############  AUTOPILOT KNOBS #############
+  - get: A:AUTOPILOT HEADING LOCK DIR, Degrees
+    set: "`${value} (>K:HEADING_BUG_SET)`"
+#  - get: K:HEADING_BUG_Inc
+  - get: A:NAV OBS:1, Degrees
+  - get: L:MARYADIO130, Number
+    set: "value > current ? '(>K:VOR1_OBI_INC)' : '(>K:VOR1_OBI_DEC)'"
+  - get: A:AUTOPILOT AIRSPEED HOLD VAR:1, Knots
+    set: "`${value} (>K:AP_SPD_VAR_SET)`"    
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR, Feet
+  - get: A:AUTOPILOT VERTICAL HOLD VAR, Ft/min
+
+
+##  - #############  CoPILOT PANELS #############
+##  - ## CoPilot INTERCOM PANEL ##
+  - get: L:INTERN_2_COMM_1
+  - get: L:INTERN_2_COMM_2
+  - get: L:INTERN_2_COMM_3
+  - get: L:INTERN_2_COMM_4
+  - get: L:INTERN_2_ICS
+  - get: L:INTERN_2_TACAN
+  - get: L:INTERN_2_MB
+  - get: L:INTERN_2_VOR_ILS
+  - get: L:INTERN_2_MIC
+  - get: L:INTERN_2_PVT
+  - get: L:INTERN_2_VOL_SMALL
+  - get: L:INTERN_2_VOL_BIG
+
+
+##  - #############  MISCELLENEOUS ITEMS #############
+##  - ## MIRRORS ##
+#  - # Pilot MIrror
+  - get: L:MIRROR_X
+  - get: L:MIRROR_Y
+#  - # CoPilot Mirror
+  - get: L:MIRROR_X_L
+  - get: L:MIRROR_Y_L
+  - get: L:door_crew_handle, Bool
+##  - #############  OVERHEAD PANELS #############
+##  - ## Fuel DUMP ##
+  - get: L:dump_fuel_cover
+
+##  - ## Emergency Oxygen ##
+  - get: L:emergency_oxegen_cover
+
+##  - ## UHF/VHF RADIO PANEL ##
+  - get: L:RC_TOD_SND
+  - get: L:RC_TOD_RCV
+  - get: L:RC_GPS
+  - get: L:RC_RT
+  - get: L:RC_ARROW_TOP
+  - get: L:RC_ARROW_MIDDLE
+  - get: L:RC_ARROW_BOTTOM
+  - get: L:RC_MENU
+  - get: L:RC_AMFM
+  - get: L:RC_XMT_RCV
+  - get: L:RC_OFFSET
+  - get: L:RC_BRT_UP
+  - get: L:RC_BRT_DOWN
+  - get: L:RC_KNOB_1
+  - get: L:RC_KNOB_2
+  - get: L:RC_KNOB_3
+  - get: L:RC_KNOB_4
+  - get: L:RC_KNOB_5
+  - get: L:RC_ENTER
+  - get: L:RC_MODE
+  - get: L:RC_CHAN
+  - get: L:RC_OPERATION
+
+
+##  - #############  PEDISTAL #############
+##  - ## Secondary Flight Indicatory (SFI) ##
+  - get: L:SFI_Knob
+  - get: L:SFI_L_1
+  - get: L:SFI_L_2
+  - get: L:SFI_L_3
+  - get: L:SFI_L_4
+  - get: L:sfi_brt
+  - get: L:SFI_R_1
+  - get: L:SFI_R_2
+  - get: L:SFI_R_3
+  - get: L:SFI_R_4
+  - get: L:SFI_BAROMETER
+
+
+##  - #############  PILOT PANELS - Right Arm#############
+##  - ## Pilot INTERCOM PANEL ##
+  - get: L:INTERN_1_COMM_1
+  - get: L:INTERN_1_COMM_2
+  - get: L:INTERN_1_COMM_3
+  - get: L:INTERN_1_COMM_4
+  - get: L:INTERN_1_ICS
+  - get: L:INTERN_1_TACAN
+  - get: L:INTERN_1_MB
+  - get: L:INTERN_1_VOR_ILS
+  - get: L:INTERN_1_MIC
+  - get: L:INTERN_1_PVT
+  - get: L:INTERN_1_VOL_SMALL
+  - get: L:INTERN_1_VOL_BIG
+
+
+##  - #############  ALL Specific LVARS to capture events ############
+#  - # Generic LVAR's Capture
+  - get: L:EVENTS_ID
+  - get: L:MARYADI0000
+  - get: L:MARYADI0001
+  - get: L:MARYADI0002
+  - get: L:MARYADI0003
+  - get: L:MARYADI0004
+  - get: L:MARYADI0005
+  - get: L:MARYADI0006
+  - get: L:MARYADI0007
+  - get: L:MARYADI0008
+  - get: L:MARYADI0009
+  - get: L:MARYADI0010
+  - get: L:MARYADI0011
+  - get: L:MARYADI0012
+  - get: L:MARYADI0013
+  - get: L:MARYADI0014
+  - get: L:MARYADI0015
+  - get: L:MARYADI0016
+  - get: L:MARYADI0017
+  - get: L:MARYADI0018
+  - get: L:MARYADI0019
+  - get: L:MARYADI0020
+  - get: L:MARYADI0021
+  - get: L:MARYADI0022
+  - get: L:MARYADI0023
+  - get: L:MARYADI0024
+  - get: L:MARYADI0025
+  - get: L:MARYADI0026
+  - get: L:MARYADI0027
+  - get: L:MARYADI0028
+  - get: L:MARYADI0029
+  - get: L:MARYADI0030
+  - get: L:MARYADI0031
+  - get: L:MARYADI0032
+  - get: L:MARYADI0033
+  - get: L:MARYADI0034
+  - get: L:MARYADI0035
+  - get: L:MARYADI0036
+  - get: L:MARYADI0037
+  - get: L:MARYADI0038
+  - get: L:MARYADI0039
+  - get: L:MARYADI0040   
+  - get: L:MARYADI0041
+  - get: L:MARYADI0042
+  - get: L:MARYADI0043
+  - get: L:MARYADI0044
+  - get: L:MARYADI0045
+  - get: L:MARYADI0046
+  - get: L:MARYADI0047
+  - get: L:MARYADI0048
+  - get: L:MARYADI0049
+  - get: L:MARYADI0050
+  - get: L:MARYADI0051
+  - get: L:MARYADI0052
+  - get: L:MARYADI0053
+  - get: L:MARYADI0054
+  - get: L:MARYADI0055
+  - get: L:MARYADI0056
+  - get: L:MARYADI0057
+  - get: L:MARYADI0058
+  - get: L:MARYADI0059
+  - get: L:MARYADI0060
+  - get: L:MARYADI0061
+  - get: L:MARYADI0062
+  - get: L:MARYADI0063
+  - get: L:MARYADI0064
+  - get: L:MARYADI0065
+  - get: L:MARYADI0066
+  - get: L:MARYADI0067
+  - get: L:MARYADI0068
+  - get: L:MARYADI0069
+  - get: L:MARYADI0070
+  - get: L:MARYADI0071
+  - get: L:MARYADI0072
+  - get: L:MARYADI0073
+  - get: L:MARYADI0074
+  - get: L:MARYADI0075
+  - get: L:MARYADI0076
+  - get: L:MARYADI0077
+  - get: L:MARYADI0078
+  - get: L:MARYADI0079
+  - get: L:MARYADI0080
+  - get: L:MARYADI0081
+  - get: L:MARYADI0082
+  - get: L:MARYADI0083
+  - get: L:MARYADI0084
+  - get: L:MARYADI0085
+  - get: L:MARYADI0086
+  - get: L:MARYADI0087
+  - get: L:MARYADI0088
+  - get: L:MARYADI0089
+  - get: L:MARYADI0090
+  - get: L:MARYADI0091
+  - get: L:MARYADI0092
+  - get: L:MARYADI0093
+  - get: L:MARYADI0094
+  - get: L:MARYADI0095
+  - get: L:MARYADI0096
+  - get: L:MARYADI0097
+  - get: L:MARYADI0098
+  - get: L:MARYADI0099
+  - get: L:MARYADI0100
+  - get: L:MARYADI0101
+  - get: L:MARYADI0102
+  - get: L:MARYADI0103
+  - get: L:MARYADI0104
+  - get: L:MARYADI0105
+  - get: L:MARYADI0106
+  - get: L:MARYADI0107
+  - get: L:MARYADI0108
+  - get: L:MARYADI0109
+  - get: L:MARYADI0110
+  - get: L:MARYADI0111
+  - get: L:MARYADI0112
+  - get: L:MARYADI0113
+  - get: L:MARYADI0114
+  - get: L:MARYADI0115
+  - get: L:MARYADI0116
+  - get: L:MARYADI0117
+  - get: L:MARYADI0118
+  - get: L:MARYADI0119
+  - get: L:MARYADI0120
+  - get: L:MARYADI0121
+  - get: L:MARYADI0122
+  - get: L:MARYADI0123
+  - get: L:MARYADI0124
+  - get: L:MARYADI0125
+  - get: L:MARYADI0126
+  - get: L:MARYADI0127
+  - get: L:MARYADI0128
+  - get: L:MARYADI0129
+#  - get: L:MARYADI0130
+  - get: L:MARYADI0131
+  - get: L:MARYADI0132
+  - get: L:MARYADI0133
+  - get: L:MARYADI0134
+  - get: L:MARYADI0135
+  - get: L:MARYADI0136
+  - get: L:MARYADI0137
+  - get: L:MARYADI0138
+  - get: L:MARYADI0139
+  - get: L:MARYADI0140
+  - get: L:MARYADI0141
+  - get: L:MARYADI0142
+  - get: L:MARYADI0143
+  - get: L:MARYADI0144
+  - get: L:MARYADI0145
+  - get: L:MARYADI0146
+  - get: L:MARYADI0147
+  - get: L:MARYADI0148
+  - get: L:MARYADI0149
+  - get: L:MARYADI0150
+  - get: L:MARYADI0151
+  - get: L:MARYADI0152
+  - get: L:MARYADI0153
+  - get: L:MARYADI0154
+  - get: L:MARYADI0155
+  - get: L:MARYADI0156
+  - get: L:MARYADI0157
+  - get: L:MARYADI0158
+  - get: L:MARYADI0159
+  - get: L:MARYADI0160
+  - get: L:MARYADI0161
+  - get: L:MARYADI0162
+  - get: L:MARYADI0163
+  - get: L:MARYADI0164
+  - get: L:MARYADI0165
+  - get: L:MARYADI0166
+  - get: L:MARYADI0167
+  - get: L:MARYADI0168
+  - get: L:MARYADI0169
+  - get: L:MARYADI0170
+  - get: L:MARYADI0171
+  - get: L:MARYADI0172
+  - get: L:MARYADI0173
+  - get: L:MARYADI0174
+  - get: L:MARYADI0175
+  - get: L:MARYADI0176
+  - get: L:MARYADI0177
+  - get: L:MARYADI0178
+  - get: L:MARYADI0179
+  - get: L:MARYADI0180
+  - get: L:MARYADI0181
+  - get: L:MARYADI0182
+  - get: L:MARYADI0183
+  - get: L:MARYADI0184
+  - get: L:MARYADI0185
+  - get: L:MARYADI0186
+  - get: L:MARYADI0187
+  - get: L:MARYADI0188
+  - get: L:MARYADI0189
+  - get: L:MARYADI0190
+  - get: L:MARYADI0191
+  - get: L:MARYADI0192
+  - get: L:MARYADI0193
+  - get: L:MARYADI0194
+  - get: L:MARYADI0195
+  - get: L:MARYADI0196
+  - get: L:MARYADI0197
+  - get: L:MARYADI0198
+  - get: L:MARYADI0199
+  - get: L:MARYADI0200
+  - get: L:MARYADI0201
+  - get: L:MARYADI0202
+  - get: L:MARYADI0203
+  - get: L:MARYADI0204
+  - get: L:MARYADI0205
+  - get: L:MARYADI0206
+  - get: L:MARYADI0207
+  - get: L:MARYADI0208
+  - get: L:MARYADI0209
+  - get: L:MARYADI0210
+  - get: L:MARYADI0211
+  - get: L:MARYADI0212
+  - get: L:MARYADI0213
+  - get: L:MARYADI0214
+  - get: L:MARYADI0215
+  - get: L:MARYADI0216
+  - get: L:MARYADI0217
+  - get: L:MARYADI0218
+  - get: L:MARYADI0219
+  - get: L:MARYADI0220
+  - get: L:MARYADI0221
+  - get: L:MARYADI0222
+  - get: L:MARYADI0223
+  - get: L:MARYADI0224
+  - get: L:MARYADI0225
+  - get: L:MARYADI0226
+  - get: L:MARYADI0227
+  - get: L:MARYADI0228
+  - get: L:MARYADI0229
+  - get: L:MARYADI0230
+  - get: L:MARYADI0231
+  - get: L:MARYADI0232
+  - get: L:MARYADI0232_R
+  - get: L:MARYADI0233
+  - get: L:MARYADI0233_R
+  - get: L:MARYADI0234
+  - get: L:MARYADI0234_R
+  - get: L:MARYADI0235
+  - get: L:MARYADI0235_R
+  - get: L:MARYADI0236
+  - get: L:MARYADI0236_R
+  - get: L:MARYADI0237
+  - get: L:MARYADI0237_R
+  - get: L:MARYADI0238
+  - get: L:MARYADI0238_R
+  - get: L:MARYADI0239
+  - get: L:MARYADI0239_R
+  - get: L:MARYADI0240
+  - get: L:MARYADI0240_R
+  - get: L:MARYADI0241
+  - get: L:MARYADI0241_R
+  - get: L:MARYADI0242
+  - get: L:MARYADI0242_R
+  - get: L:MARYADI0243
+  - get: L:MARYADI0243_R
+  - get: L:MARYADI0244
+  - get: L:MARYADI0244_R
+  - get: L:MARYADI0245
+  - get: L:MARYADI0245_R
+  - get: L:MARYADI0246
+  - get: L:MARYADI0246_R
+  - get: L:MARYADI0247
+  - get: L:MARYADI0247_R
+  - get: L:MARYADI0248
+  - get: L:MARYADI0248_R
+  - get: L:MARYADI0249
+  - get: L:MARYADI0249_R
+  - get: L:MARYADI0250
+  - get: L:MARYADI0250_R
+  - get: L:MARYADI0251
+  - get: L:MARYADI0251_R
+  - get: L:MARYADI0252
+  - get: L:MARYADI0252_R
+  - get: L:MARYADI0253
+  - get: L:MARYADI0253_R
+  - get: L:MARYADI0254
+  - get: L:MARYADI0254_R
+  - get: L:MARYADI0255
+  - get: L:MARYADI0255_R
+  - get: L:MARYADI0256
+  - get: L:MARYADI0256_R
+  - get: L:MARYADI0257
+  - get: L:MARYADI0257_R
+  - get: L:MARYADI0258
+  - get: L:MARYADI0258_R
+  - get: L:MARYADI0259
+  - get: L:MARYADI0259_R
+  - get: L:MARYADI0260
+  - get: L:MARYADI0260_R
+  - get: L:MARYADI0261
+  - get: L:MARYADI0261_R
+  - get: L:MARYADI0262
+  - get: L:MARYADI0262_R
+  - get: L:MARYADI0263
+  - get: L:MARYADI0263_R
+  - get: L:MARYADI0264
+  - get: L:MARYADI0264_R
+  - get: L:MARYADI0265
+  - get: L:MARYADI0265_R
+  - get: L:MARYADI0266
+  - get: L:MARYADI0266_R
+  - get: L:MARYADI0267
+  - get: L:MARYADI0267_R
+  - get: L:MARYADI0268
+  - get: L:MARYADI0268_R
+  - get: L:MARYADI0269
+  - get: L:MARYADI0269_R
+  - get: L:MARYADI0270
+  - get: L:MARYADI0270_R
+  - get: L:MARYADI0271
+  - get: L:MARYADI0271_R
+  - get: L:MARYADI0272
+  - get: L:MARYADI0272_R
+  - get: L:MARYADI0273
+  - get: L:MARYADI0273_R
+  - get: L:MARYADI0274
+  - get: L:MARYADI0274_R
+  - get: L:MARYADI0275
+  - get: L:MARYADI0275_R
+  - get: L:MARYADI0276
+  - get: L:MARYADI0276_R
+  - get: L:MARYADI0277
+  - get: L:MARYADI0277_R
+  - get: L:MARYADI0278
+  - get: L:MARYADI0278_R
+  - get: L:MARYADI0279
+  - get: L:MARYADI0279_R
+  - get: L:MARYADI0280
+  - get: L:MARYADI0280_R
+  - get: L:MARYADI0281
+  - get: L:MARYADI0281_R
+  - get: L:MARYADI0282
+  - get: L:MARYADI0282_R
+  - get: L:MARYADI0283
+  - get: L:MARYADI0283_R
+  - get: L:MARYADI0284
+  - get: L:MARYADI0284_R
+  - get: L:MARYADI0285
+  - get: L:MARYADI0285_R
+  - get: L:MARYADI0286
+  - get: L:MARYADI0286_R
+  - get: L:MARYADI0287
+  - get: L:MARYADI0287_R
+  - get: L:MARYADI0288
+  - get: L:MARYADI0288_R
+  - get: L:MARYADI0289
+  - get: L:MARYADI0289_R
+  - get: L:MARYADI0290
+  - get: L:MARYADI0290_R
+  - get: L:MARYADI0291
+  - get: L:MARYADI0291_R
+  - get: L:MARYADI0292
+  - get: L:MARYADI0292_R
+  - get: L:MARYADI0293
+  - get: L:MARYADI0293_R
+  - get: L:MARYADI0294
+  - get: L:MARYADI0294_R
+  - get: L:MARYADI0295
+  - get: L:MARYADI0296
+  - get: L:MARYADI0297
+  - get: L:MARYADI0298
+  - get: L:MARYADI0298
+#    set: (>K:GEAR_TOGGLE)
+  - get: A:GEAR HANDLE POSITION, Bool
+    set: (>K:GEAR_TOGGLE)
+#  - #
+#    type: ToggleSwitch
+#    var_name: L:MARYADI0298
+#    var_units: Bool
+#    var_type: f64
+#    event_name: GEAR_TOGGLE
+#    is_user_event: true
+  - get: L:MARYADI0299
+  - get: L:MARYADI0300
+  - get: L:MARYADI0301
+  - get: L:MARYADI0302
+  - get: L:MARYADI0303
+  - get: L:MARYADI0304
+  - get: L:MARYADI0305
+  - get: L:MARYADI0306
+  - get: L:MARYADI0307
+  - get: L:MARYADI0308
+  - get: L:MARYADI0309
+  - get: L:MARYADI0310
+  - get: L:MARYADI0311
+  - get: L:MARYADI0312
+  - get: L:MARYADI0313
+  - get: L:MARYADI0314
+  - get: L:MARYADI0314_R
+  - get: L:MARYADI0315
+  - get: L:MARYADI0316
+  - get: L:MARYADI0317
+
+  - get: L:MARYADI0318
+  - get: L:MARYADI0319
+  - get: L:MARYADI0320
+  - get: L:MARYADI0321
+  - get: L:MARYADI0322
+#    set: |
+#      switch (value) {
+#          case  0: return '(>K:FLAPS_DOWN)'
+#          case  1: return '(>K:FLAPS_3)'
+#          case  2: return '(>K:FLAPS_2)'
+#          case  3: return '(>K:FLAPS_1)'
+#          case  4: return '(>K:FLAPS_up)'
+#          case  5: return '5 (>L:MARYADI0322)'
+#          default: return ''
+#      }
+  - get: L:MARYADI0323
+  - get: L:MARYADI0324
+  - get: L:maryadi0325
+  - get: L:MARYADI0326
+  - get: L:MARYADI0327
+  - get: L:MARYADI0327_VALUE
+  - get: L:MARYADI0328
+  - get: L:MARYADI0328_VALUE
+  - get: L:MARYADI0329
+  - get: L:MARYADI0330
+  - get: L:MARYADI0330_VALUE
+  - get: L:MARYADI0331
+  - get: L:MARYADI0332
+  - get: L:MARYADI0332_VALUE
+  - get: L:MARYADI0333
+  - get: L:MARYADI0334
+  - get: L:MARYADI0334_VALUE
+  - get: L:MARYADI0335
+  - get: L:MARYADI0336
+  - get: L:MARYADI0336_VALUE
+  - get: L:MARYADI0337
+  - get: L:MARYADI0338
+  - get: L:MARYADI0339
+  - get: L:MARYADI0340
+  - get: L:MARYADI0341
+  - get: L:MARYADI0342
+  - get: L:MARYADI0343
+  - get: L:MARYADI0344
+  - get: L:MARYADI0345
+  - get: L:MARYADI0346
+  - get: L:MARYADI0347
+  - get: L:MARYADI0348
+  - get: L:MARYADI0349
+  - get: L:MARYADI0350
+  - get: L:MARYADI0351
+  - get: L:MARYADI0352
+  - get: L:MARYADI0353
+  - get: L:MARYADI0354
+  - get: L:MARYADI0355
+  - get: L:MARYADI0356
+  - get: L:MARYADI0357
+  - get: L:MARYADI0358
+  - get: L:MARYADI0359
+  - get: L:MARYADI0360
+  - get: L:MARYADI0361
+  - get: L:MARYADI0362
+  - get: L:MARYADI0363
+  - get: L:MARYADI0364
+  - get: L:MARYADI0365
+  - get: L:MARYADI0366
+  - get: L:MARYADI0367
+  - get: L:MARYADI0368
+  - get: L:MARYADI0369
+  - get: L:MARYADI0370
+  - get: L:MARYADI0371
+  - get: L:MARYADI0372
+  - get: L:MARYADI0373
+  - get: L:MARYADI0374
+  - get: L:MARYADI0375
+  - get: L:MARYADI0376
+  - get: L:MARYADI0377
+  - get: L:MARYADI0378
+  - get: L:MARYADI0379
+  - get: L:MARYADI0379_VALUE
+  - get: L:MARYADI0380
+  - get: L:MARYADI0381
+  - get: L:MARYADI0382
+  - get: L:MARYADI0383
+  - get: L:MARYADI0384
+  - get: L:MARYADI0385
+  - get: L:MARYADI0386
+  - get: L:MARYADI0387
+  - get: L:MARYADI0388
+  - get: L:MARYADI0389
+  - get: L:MARYADI0389_VALUE
+  - get: L:MARYADI0390
+  - get: L:MARYADI0391
+  - get: L:MARYADI0392
+  - get: L:MARYADI0393
+  - get: L:MARYADI0394
+  - get: L:MARYADI0395
+  - get: L:MARYADI0395_VALUE
+  - get: L:MARYADI0396
+  - get: L:MARYADI0395_VALUE
+  - get: L:MARYADI0397
+  - get: L:MARYADI0398
+  - get: L:MARYADI0399
+  - get: L:MARYADI0400
+  - get: L:MARYADI0401
+  - get: L:MARYADI0402
+  - get: L:MARYADI0403
+  - get: L:MARYADI0404
+  - get: L:MARYADI0405
+  - get: L:MARYADI0406
+  - get: L:MARYADI0407
+  - get: L:MARYADI0408
+  - get: L:MARYADI0409
+  - get: L:MARYADI0410
+  - get: L:MARYADI0411
+  - get: L:MARYADI0412
+  - get: L:MARYADI0413
+  - get: L:MARYADI0414
+  - get: L:MARYADI0415
+  - get: L:MARYADI0416
+  - get: L:MARYADI0417
+  - get: L:MARYADI0418
+  - get: L:MARYADI0419
+  - get: L:MARYADI0420
+  - get: L:MARYADI0421
+  - get: L:MARYADI0422
+  - get: L:MARYADI0423
+  - get: L:MARYADI0424
+  - get: L:MARYADI0425
+  - get: L:MARYADI0426
+  - get: L:MARYADI0427
+  - get: L:MARYADI0428
+  - get: L:MARYADI0429
+  - get: L:MARYADI0430
+  - get: L:MARYADI0431
+  - get: L:MARYADI0432
+  - get: L:MARYADI0433
+  - get: L:MARYADI0434
+  - get: L:MARYADI0435
+  - get: L:MARYADI0436
+  - get: L:MARYADI0437
+  - get: L:MARYADI0438
+  - get: L:MARYADI0439
+  - get: L:MARYADI0440
+  - get: L:MARYADI0441
+  - get: L:MARYADI0442
+  - get: L:MARYADI0443
+  - get: L:MARYADI0444
+  - get: L:MARYADI0445
+  - get: L:MARYADI0446
+  - get: L:MARYADI0447
+  - get: L:MARYADI0448
+  - get: L:MARYADI0449
+  - get: L:MARYADI0450
+  - get: L:MARYADI0451
+  - get: L:MARYADI0452
+  - get: L:MARYADI0453
+  - get: L:MARYADI0454
+  - get: L:MARYADI0455
+  - get: L:MARYADI0456
+  - get: L:MARYADI0457
+  - get: L:MARYADI0458
+  - get: L:MARYADI0459
+  - get: L:MARYADI0460
+  - get: L:MARYADI0461
+  - get: L:MARYADI0462
+  - get: L:MARYADI0463
+  - get: L:MARYADI0464
+  - get: L:MARYADI0465
+  - get: L:MARYADI0466
+  - get: L:MARYADI0467
+  - get: L:MARYADI0468
+  - get: L:MARYADI0469
+  - get: L:MARYADI0470
+  - get: L:MARYADI0471
+  - get: L:MARYADI0472
+  - get: L:MARYADI0473
+  - get: L:MARYADI0474
+  - get: L:MARYADI0475
+  - get: L:MARYADI0476
+  - get: L:MARYADI0477
+  - get: L:MARYADI0478
+  - get: L:MARYADI0479
+  - get: L:MARYADI0480
+  - get: L:MARYADI0481
+  - get: L:MARYADI0482
+  - get: L:MARYADI0483
+  - get: L:MARYADI0484
+  - get: L:MARYADI0485
+  - get: L:MARYADI0486
+  - get: L:MARYADI0487
+  - get: L:MARYADI0488
+  - get: L:MARYADI0489
+  - get: L:MARYADI0490
+  - get: L:MARYADI0491
+  - get: L:MARYADI0492
+  - get: L:MARYADI0493
+  - get: L:MARYADI0494
+  - get: L:MARYADI0495
+  - get: L:MARYADI0496
+  - get: L:MARYADI0497
+  - get: L:MARYADI0498
+  - get: L:MARYADI0499
+  - get: L:MARYADI0500
+  - get: L:MARYADI0501
+  - get: L:MARYADI0502
+  - get: L:MARYADI0503
+  - get: L:MARYADI0504
+  - get: L:MARYADI0505
+  - get: L:MARYADI0506
+  - get: L:MARYADI0507
+  - get: L:MARYADI0508
+  - get: L:MARYADI0509
+  - get: L:MARYADI0510
+  - get: L:MARYADI0511
+  - get: L:MARYADI0512
+  - get: L:MARYADI0513
+  - get: L:MARYADI0514
+  - get: L:MARYADI0515
+  - get: L:MARYADI0516
+  - get: L:MARYADI0517
+  - get: L:MARYADI0518
+  - get: L:MARYADI0519
+  - get: L:MARYADI0520
+  - get: L:MARYADI0521
+  - get: L:MARYADI0522
+  - get: L:MARYADI0523
+  - get: L:MARYADI0524
+  - get: L:MARYADI0525
+  - get: L:MARYADI0526
+  - get: L:MARYADI0527
+  - get: L:MARYADI0528
+  - get: L:MARYADI0529
+  - get: L:MARYADI0530
+  - get: L:MARYADI0531
+#  - get: L:MARYADI0532
+#  - get: L:MARYADI0533
+##  - # MARYADI0534 see Master area
+  - get: L:MARYADI0535
+  - get: L:MARYADI0536
+#  - get: L:MARYADI0537
+  - get: L:MARYADI0538
+  - get: L:MARYADI0539
+  - get: L:MARYADI0540
+  - get: L:MARYADI0541
+#  - get: L:MARYADI0542
+  - get: L:MARYADI0543
+  - get: L:MARYADI0544
+  - get: L:MARYADI0545
+  - get: L:MARYADI0546
+  - get: L:MARYADI0547
+  - get: L:MARYADI0548
+  - get: L:MARYADI0549
+  - get: L:MARYADI0550
+  - get: L:MARYADI0551
+  - get: L:MARYADI0552
+  - get: L:MARYADI0553
+  - get: L:MARYADI0554
+  - get: L:MARYADI0555
+  - get: L:MARYADI0556
+  - get: L:MARYADI0557
+  - get: L:MARYADI0558
+  - get: L:MARYADI0559
+  - get: L:MARYADI0560
+  - get: L:MARYADI0561
+  - get: L:MARYADI0562
+  - get: L:MARYADI0563
+  - get: L:MARYADI0564
+  - get: L:MARYADI0565
+  - get: L:MARYADI0566
+  - get: L:MARYADI0567
+  - get: L:MARYADI0568
+  - get: L:MARYADI0569
+  - get: L:MARYADI0570
+  - get: L:MARYADI0571
+  - get: L:MARYADI0572
+  - get: L:MARYADI0573
+  - get: L:MARYADI0574
+  - get: L:MARYADI0575
+  - get: L:MARYADI0576
+  - get: L:MARYADI0577
+  - get: L:MARYADI0578
+  - get: L:MARYADI0579
+  - get: L:MARYADI0580
+  - get: L:MARYADI0581
+  - get: L:MARYADI0582
+  - get: L:MARYADI0583
+  - get: L:MARYADI0584
+  - get: L:MARYADI0585
+  - get: L:MARYADI0586
+  - get: L:MARYADI0587
+  - get: L:MARYADI0588
+  - get: L:MARYADI0589
+  - get: L:MARYADI0590
+  - get: L:MARYADI0591
+  - get: L:MARYADI0592
+  - get: L:MARYADI0593
+  - get: L:MARYADI0594
+  - get: L:MARYADI0595
+  - get: L:MARYADI0596
+  - get: L:MARYADI0597
+  - get: L:MARYADI0598
+  - get: L:MARYADI0599
+  - get: L:MARYADI0600

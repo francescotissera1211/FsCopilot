@@ -1,0 +1,1737 @@
+# Original author: https://discord.com/channels/1454265644416765974/1539226475188981800/1541152833481605260
+# Updated: 2026-08-23 18:46:34
+
+# known problems:
+# some momentary switches are not animated, but their functions are available (outputs to L:1 vars)
+# some other momentary switches will not be held on another client (outputs to B: vars)
+# radalt bug might be quirky, as variable cannot be set directly
+# requires same settings in all client's efb companian app
+# trim is weird with AP on
+# If a generator is paralleled by closing a BTB, the switch may need to be actuated multiple times, best option is to not fail a parallel
+# AC paralleling egde cases not tested (such as if the momentary closing of a tripped BTB during a failed manual parallel cause a force parallel)
+
+include:
+  - modules/AS_GNS530.yaml
+  - modules/payload.yaml
+
+ignore:
+  - EFB
+
+master:
+  # fuel tanks
+  - get: A:FUELSYSTEM TANK WEIGHT:1, kg
+  - get: A:FUELSYSTEM TANK WEIGHT:2, kg
+  - get: A:FUELSYSTEM TANK WEIGHT:3, kg
+  - get: A:FUELSYSTEM TANK WEIGHT:4, kg
+  - get: A:FUELSYSTEM TANK WEIGHT:5, kg
+  - get: A:FUELSYSTEM TANK WEIGHT:6, kg
+  - get: A:FUELSYSTEM TANK WEIGHT:7, kg
+  # flight controls
+  - get: A:YOKE Y POSITION, Position 16k
+  - get: A:YOKE X POSITION, Position 16k
+  - get: A:RUDDER POSITION, Position 16k
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  - get: A:AUTOPILOT PITCH HOLD REF, degree
+  # DG compass--deprecated, vars are effectively read only
+  # - get: L:1:WT_B707_COMPASS_HEADING_1
+  # - get: L:1:WT_B707_COMPASS_HEADING_2
+  # AC Paralleling--deperacated, javascript writes to generator frequency
+  # - get: L:WT_B707_GENERATOR_1_FREQ
+  # - get: L:WT_B707_GENERATOR_2_FREQ
+  # - get: L:WT_B707_GENERATOR_3_FREQ
+  # - get: L:WT_B707_GENERATOR_4_FREQ
+
+
+
+
+
+
+
+
+
+
+shared:
+  # flight controls
+  - get: A:ELEVATOR TRIM POSITION, Degree # RPN code only works in shared section, Do not override trim if AP is active, manual trimming synced only
+    set: |
+        return `(A:AUTOPILOT MASTER, Bool) 0 == if{ ${value} (>A:ELEVATOR TRIM POSITION, Degree) } els{}`
+  - get: A:FLAPS HANDLE PERCENT:1, position 16k
+    set: (>K:FLAPS_CONTINUOUS_SET)
+  - get: A:SPOILERS HANDLE POSITION # There is no unit for this simvar
+  - get: A:RUDDER TRIM PCT, percent over 100
+  - get: A:AILERON TRIM PCT, percent over 100
+  # allow other crew members to manipulate throttle
+  - get: B:ENGINE_THROTTLE_1
+    set: (>B:ENGINE_THROTTLE_1_Set)
+  - get: B:ENGINE_THROTTLE_REVERSER_1
+    set: (>B:ENGINE_THROTTLE_REVERSER_1_Set)
+  - get: B:ENGINE_THROTTLE_2
+    set: (>B:ENGINE_THROTTLE_2_Set)
+  - get: B:ENGINE_THROTTLE_REVERSER_2
+    set: (>B:ENGINE_THROTTLE_REVERSER_2_Set)
+  - get: B:ENGINE_THROTTLE_3
+    set: (>B:ENGINE_THROTTLE_3_Set)
+  - get: B:ENGINE_THROTTLE_REVERSER_3
+    set: (>B:ENGINE_THROTTLE_REVERSER_3_Set)
+  - get: B:ENGINE_THROTTLE_4
+    set: (>B:ENGINE_THROTTLE_4_Set)
+  - get: B:ENGINE_THROTTLE_REVERSER_4
+    set: (>B:ENGINE_THROTTLE_REVERSER_4_Set)
+
+
+
+
+
+
+
+
+
+
+
+  # ----------------Covers and chocks----------------
+  # wheel chocks
+  - get: A:COVER ON:0, Bool
+  # Engine covers
+  - get: A:COVER ON:1, Bool
+  # Pitot covers
+  - get: A:COVER ON:2, Bool
+  # Gear pin
+  - get: A:COVER ON:5, Bool
+
+  # Flightdeck seats
+  - get: B:COMMON_ARMREST_PILOT
+    set: (>B:COMMON_ARMREST_PILOT_Set)
+  - get: B:COMMON_ARMREST_COPILOT
+    set: (>B:COMMON_ARMREST_COPILOT_Set)
+  - get: B:UNKNOWN_SEAT_SLIDER_ENG
+    set: "`${value/100} (>B:UNKNOWN_SEAT_SLIDER_ENG_Set)`"
+  - get: B:COMMON_ARMREST_ENG
+    set: (>B:COMMON_ARMREST_ENG_Set)
+  - get: B:UNKNOWN_SEAT_SLIDER_NAV
+    set: "`${value/100} (>B:UNKNOWN_SEAT_SLIDER_NAV_Set)`"
+  - get: B:COMMON_ARMREST_COMS
+    set: (>B:COMMON_ARMREST_COMS_Set)
+  
+  # Interior Doors
+  - get: B:UNKNOWN_COCKPIT_ACCESS_DOOR
+    set: (>B:UNKNOWN_COCKPIT_ACCESS_DOOR_Set)
+  - get: B:COMMON_BATHROOM_DOOR_1
+    set: (>B:COMMON_BATHROOM_DOOR_1_Set)
+  - get: B:COMMON_BATHROOM_DOOR_2
+    set: (>B:COMMON_BATHROOM_DOOR_2_Set)
+  - get: B:UNKNOWN_CABIN_ACCESS_DOOR
+    set: (>B:UNKNOWN_CABIN_ACCESS_DOOR_Set)
+  - get: B:UNKNOWN_CABIN_ACCESS_DOOR_2
+    set: (>B:UNKNOWN_CABIN_ACCESS_DOOR_2_Set)
+  - get: B:COMMON_BATHROOM_DOOR_3
+    set: (>B:COMMON_BATHROOM_DOOR_3_Set)
+  - get: B:COMMON_BATHROOM_DOOR_4
+    set: (>B:COMMON_BATHROOM_DOOR_4_Set)
+  - get: B:COMMON_BATHROOM_DOOR_5
+    set: (>B:COMMON_BATHROOM_DOOR_5_Set)
+  
+  # Exterior Doors
+  - get: A:INTERACTIVE POINT GOAL:0, Percent
+  - get: A:INTERACTIVE POINT GOAL:1, Percent
+  - get: A:INTERACTIVE POINT GOAL:2, Percent
+  - get: A:INTERACTIVE POINT GOAL:3, Percent
+  - get: A:INTERACTIVE POINT GOAL:4, Percent
+  - get: A:INTERACTIVE POINT GOAL:5, Percent
+  - get: A:INTERACTIVE POINT GOAL:6, Percent
+  - get: A:INTERACTIVE POINT GOAL:15, Percent
+
+  # Window Shades (kill me instead)
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_1
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_1_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_2
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_2_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_3
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_3_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_4
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_4_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_5
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_5_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_6
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_6_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_7
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_7_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_8
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_8_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_9
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_9_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_10
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_10_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_11
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_11_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_12
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_12_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_13
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_13_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_14
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_14_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_15
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_15_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_16
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_16_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_17
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_17_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_18
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_18_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_19
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_19_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_20
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_20_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_21
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_21_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_22
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_22_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_23
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_23_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_24
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_24_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_25
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_25_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_26
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_26_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_27
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_27_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_28
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_28_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_29
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_29_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_30
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_30_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_31
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_31_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_32
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_32_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_33
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_33_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_34
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_34_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_35
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_35_Set)`"
+  - get: B:UNKNOWN_LEFT_WINDOW_SHADE_36
+    set: "`${value/100} (>B:UNKNOWN_LEFT_WINDOW_SHADE_36_Set)`"
+
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_1
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_1_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_2
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_2_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_3
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_3_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_4
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_4_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_5
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_5_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_6
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_6_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_7
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_7_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_8
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_8_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_9
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_9_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_10
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_10_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_11
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_11_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_12
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_12_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_13
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_13_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_14
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_14_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_15
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_15_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_16
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_16_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_17
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_17_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_18
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_18_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_19
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_19_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_20
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_20_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_21
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_21_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_22
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_22_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_23
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_23_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_24
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_24_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_25
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_25_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_26
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_26_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_27
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_27_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_28
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_28_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_29
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_29_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_30
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_30_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_31
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_31_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_32
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_32_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_33
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_33_Set)`"
+  - get: B:UNKNOWN_RIGHT_WINDOW_SHADE_34
+    set: "`${value/100} (>B:UNKNOWN_RIGHT_WINDOW_SHADE_34_Set)`"
+
+  # Cargo Lighting
+  - get: B:LIGHTING_LAVATORY_LIGHTS_CARGO
+    set: (>B:LIGHTING_LAVATORY_LIGHTS_CARGO_Set)
+  - get: B:LIGHTING_FORWARD_FLOOD_LIGHTS
+    set: (>B:LIGHTING_FORWARD_FLOOD_LIGHTS_Set)
+  - get: B:LIGHTING_CABIN_CEILING_DOME_LIGHTS
+    set: (>B:LIGHTING_CABIN_CEILING_DOME_LIGHTS_Set)
+  - get: B:LIGHTING_CARGO_LIGHTS
+    set: (>B:LIGHTING_CARGO_LIGHTS_Set)
+  - get: B:LIGHTING_BOARDING_LIGHTS_CARGO
+    set: (>B:LIGHTING_BOARDING_LIGHTS_CARGO_Set)
+
+  # Cargo Door Panel
+  - get: B:COMMON_CARGO_DOOR_SAFETY_HANDLE
+    set: (>B:COMMON_CARGO_DOOR_SAFETY_HANDLE_Set)
+
+  # Fwd cabin lighting
+  - get: B:LIGHTING_BOARDING_LIGHTS_DIMMER
+    set: (>B:LIGHTING_BOARDING_LIGHTS_DIMMER_Set)
+  - get: B:LIGHTING_LOUNGE_LIGHTS
+    set: (>B:LIGHTING_LOUNGE_LIGHTS_Set)
+  - get: B:LIGHTING_BOARDING_LIGHTS_FWD
+    set: (>B:LIGHTING_BOARDING_LIGHTS_FWD_Set)
+  - get: B:LIGHTING_LAVATORY_LIGHTS_FWD
+    set: (>B:LIGHTING_LAVATORY_LIGHTS_FWD_Set)
+  - get: B:LIGHTING_CHIME_LIGHTS_FWD
+    set: (>B:LIGHTING_CHIME_LIGHTS_FWD_Set)
+  - get: B:LIGHTING_GALLEY_LIGHTS_DIMMER
+    set: (>B:LIGHTING_GALLEY_LIGHTS_DIMMER_Set)
+
+  # Aft cabin lighting
+  - get: B:LIGHTING_REAR_GALLEY_LIGHTS
+    set: (>B:LIGHTING_REAR_GALLEY_LIGHTS_Set)
+  - get: B:LIGHTING_REAR_LAVATORY_LIGHTS
+    set: (>B:LIGHTING_REAR_LAVATORY_LIGHTS_Set)
+  - get: B:LIGHTING_BOARDING_LIGHTS_AFT
+    set: (>B:LIGHTING_BOARDING_LIGHTS_AFT_Set)
+  - get: B:LIGHTING_AFT_CARGO_LIGHTS
+    set: (>B:LIGHTING_AFT_CARGO_LIGHTS_Set)
+  - get: B:LIGHTING_CABIN_WINDOW_LIGHTS
+    set: (>B:LIGHTING_CABIN_WINDOW_LIGHTS_Set)
+  - get: B:LIGHTING_CHIME_LIGHTS_AFT
+    set: (>B:LIGHTING_CHIME_LIGHTS_AFT_Set)
+  - get: B:LIGHTING_CABIN_CEILING_FLOOD_LIGHTS
+    set: (>B:LIGHTING_CABIN_CEILING_FLOOD_LIGHTS_Set)
+
+
+
+
+
+
+
+
+
+
+  # ----------------Captain's instrument panel----------------
+  # Air Data
+  - get: B:INSTRUMENT_ALT_CORRECTION
+    set: (>B:INSTRUMENT_ALT_CORRECTION_Set)
+  - get: B:ELECTRICAL_MACH_TEST
+    set: (>L:1:WT_B707_MACH_WARN_TEST)
+
+  # instrument switching
+  - get: B:INSTRUMENT_ATTITUDE
+    set: (>B:INSTRUMENT_ATTITUDE_Set)
+  - get: B:INSTRUMENT_INST
+    set: (>B:INSTRUMENT_INST_Set)
+  - get: B:INSTRUMENT_COMPASS
+    set: (>B:INSTRUMENT_COMPASS_Set)
+  - get: B:INSTRUMENT_ADF_COMPASS
+    set: (>B:INSTRUMENT_ADF_COMPASS_Set)
+
+  # HSI
+  - get: B:INSTRUMENT_COURSE_KNOB_1
+    set: "`${180*value/3.141592654} (>B:INSTRUMENT_COURSE_KNOB_1_Set)`"
+  - get: B:INSTRUMENT_HEADING_KNOB_1
+    set: (>B:INSTRUMENT_HEADING_KNOB_1_Set)
+  - get: B:INSTRUMENT_NAV_SOURCE_1
+    set: (>B:INSTRUMENT_NAV_SOURCE_1_Set)
+
+  # ADI
+  - get: B:INSTRUMENT_ATTITUDE_ADJUSTER_1
+    set: "`${value/20 + 0.5} (>B:INSTRUMENT_ATTITUDE_ADJUSTER_1_Set)`"
+
+  # ASI
+  - get: B:INSTRUMENT_REFERENCE_SPEED_BUG_1
+    set: "`${value/400} (>B:INSTRUMENT_REFERENCE_SPEED_BUG_1_Set)`"
+  - get: B:INSTRUMENT_ASI_SPEED_BUG_CPT_1
+    set: "`${(value-50)/340} (>B:INSTRUMENT_ASI_SPEED_BUG_CPT_1_Set)`"
+  - get: B:INSTRUMENT_ASI_SPEED_BUG_CPT_2
+    set: "`${(value-50)/340} (>B:INSTRUMENT_ASI_SPEED_BUG_CPT_2_Set)`"
+  - get: B:INSTRUMENT_ASI_SPEED_BUG_CPT_3
+    set: "`${(value-50)/340} (>B:INSTRUMENT_ASI_SPEED_BUG_CPT_3_Set)`"
+  - get: B:INSTRUMENT_ASI_SPEED_BUG_CPT_4
+    set: "`${(value-50)/340} (>B:INSTRUMENT_ASI_SPEED_BUG_CPT_4_Set)`"
+
+  # Altitude
+  - get: B:INSTRUMENT_BARO_1
+    set: "`${(value/100-955)/105} (>B:INSTRUMENT_BARO_1_Set)`"
+
+  # radio altimeter
+  - get: B:INSTRUMENT_RA_TEST_1
+    set: (>L:1:XMLVAR_RADIO_ALTIMETER_1_TEST_BUTTON)
+  - get: A:DECISION HEIGHT:1, feet
+    set: |
+        return value==current ? '' : value<current ? '0 (>B:INSTRUMENT_DECISION_HEIGHT_1_Dec)' : '1 (>B:INSTRUMENT_DECISION_HEIGHT_1_Inc)'
+
+  # clock
+  - get: B:INSTRUMENT_CHRONO_TIME_CONTROL
+    set: (>B:INSTRUMENT_CHRONO_TIME_CONTROL_Set)
+  - get: B:INSTRUMENT_CHRONO_SECONDS_CONTROL
+    set: (>B:INSTRUMENT_CHRONO_SECONDS_CONTROL_Set)
+  - get: B:INSTRUMENT_CHRONO_WINDING
+    set: (>B:INSTRUMENT_CHRONO_WINDING_Set)
+
+  # Warnings
+  - get: B:INSTRUMENT_GPWS_PULL_UP_1
+    set: (>B:INSTRUMENT_GPWS_PULL_UP_1_Set)
+  - get: B:INSTRUMENT_GPWS_BELOW_GS_1
+    set: (>B:INSTRUMENT_GPWS_BELOW_GS_1_Set)
+  - get: B:AUTOPILOT_DISCONNECT_WARNING_1
+    set: (>B:AUTOPILOT_DISCONNECT_WARNING_1_Set)
+
+  # VHF nav switching
+  - get: B:INSTRUMENT_VHF_COMPASS
+    set: (>B:INSTRUMENT_VHF_COMPASS_Set)
+
+  # Pneumatic brake
+  - get: B:PNEUMATICS_PNEUMATIC_BRAKE
+    set: "`${value/100} (>B:PNEUMATICS_PNEUMATIC_BRAKE_Set)`"
+
+
+
+
+
+
+
+
+
+
+  # ----------------Center Panel----------------
+  # Backup Attitude
+  - get: B:UNKNOWN_STBY_ADI_CAGE_3
+    set: (>B:UNKNOWN_STBY_ADI_CAGE_3_Set)
+  - get: B:UNKNOWN_TURN_STBY_ADI_KNOB_3
+    set: "`${value/100} (>B:UNKNOWN_TURN_STBY_ADI_KNOB_3_Set)`"
+
+  # Mach Trim
+  - get: B:ELECTRICAL_MACH_TRIM
+    set: (>B:ELECTRICAL_MACH_TRIM_Set)
+
+  # EPR Bugs
+  - get: B:INSTRUMENT_EPR_REFERENCE_1
+    set: "`${(value-1)/1.5} (>B:INSTRUMENT_EPR_REFERENCE_1_Set)`"
+  - get: B:INSTRUMENT_EPR_REFERENCE_2
+    set: "`${(value-1)/1.5} (>B:INSTRUMENT_EPR_REFERENCE_2_Set)`"
+  - get: B:INSTRUMENT_EPR_REFERENCE_3
+    set: "`${(value-1)/1.5} (>B:INSTRUMENT_EPR_REFERENCE_3_Set)`"
+  - get: B:INSTRUMENT_EPR_REFERENCE_4
+    set: "`${(value-1)/1.5} (>B:INSTRUMENT_EPR_REFERENCE_4_Set)`"
+
+  # Master Warning
+  - get: B:AUTOPILOT_DISCONNECT_WARNING
+    set: (>B:AUTOPILOT_DISCONNECT_WARNING_Set)
+
+  # Light Brightness
+  - get: B:SAFETY_WARN_LIGHTS_DIMMER
+    set: (>B:SAFETY_WARN_LIGHTS_DIMMER_Set)
+
+  # Landing gear
+  - get: B:HANDLING_GEAR
+    set: (>B:HANDLING_GEAR_Set)
+
+
+
+
+
+
+
+
+
+
+  # ----------------FO's instrument panel----------------
+  # HSI
+  - get: B:INSTRUMENT_COURSE_KNOB_2
+    set: "`${180*value/3.141592654} (>B:INSTRUMENT_COURSE_KNOB_2_Set)`"
+  - get: B:INSTRUMENT_HEADING_KNOB_2
+    set: "`${180*value/3.141592654} (>B:INSTRUMENT_HEADING_KNOB_2_Set)`"
+  - get: B:INSTRUMENT_NAV_SOURCE_2
+    set: (>B:INSTRUMENT_NAV_SOURCE_2_Set)
+  
+  # ADI
+  - get: B:INSTRUMENT_ATTITUDE_ADJUSTER_2
+    set: "`${value/20 + 0.5} (>B:INSTRUMENT_ATTITUDE_ADJUSTER_2_Set)`"
+
+  # ASI
+  - get: B:INSTRUMENT_REFERENCE_SPEED_BUG_2
+    set: "`${value/400} (>B:INSTRUMENT_REFERENCE_SPEED_BUG_2_Set)`"
+  - get: B:INSTRUMENT_ASI_SPEED_BUG_FO_1
+    set: "`${(value-50)/340} (>B:INSTRUMENT_ASI_SPEED_BUG_FO_1_Set)`"
+  - get: B:INSTRUMENT_ASI_SPEED_BUG_FO_2
+    set: "`${(value-50)/340} (>B:INSTRUMENT_ASI_SPEED_BUG_FO_2_Set)`"
+  - get: B:INSTRUMENT_ASI_SPEED_BUG_FO_3
+    set: "`${(value-50)/340} (>B:INSTRUMENT_ASI_SPEED_BUG_FO_3_Set)`"
+  - get: B:INSTRUMENT_ASI_SPEED_BUG_FO_4
+    set: "`${(value-50)/340} (>B:INSTRUMENT_ASI_SPEED_BUG_FO_4_Set)`"
+
+  # Altitude
+  - get: B:INSTRUMENT_BARO_2
+    set: "`${(value/100-955)/105} (>B:INSTRUMENT_BARO_2_Set)`"
+
+  # radio altimeter
+  - get: B:INSTRUMENT_RA_TEST_2
+    set: (>L:1:XMLVAR_RADIO_ALTIMETER_2_TEST_BUTTON)
+    # fo DH not synced since cpt and FO share variable
+
+  # Metric Altitude
+  - get: B:INSTRUMENT_BARO_4
+    set: "`${(value/100-955)/105} (>B:INSTRUMENT_BARO_4_Set)`"
+
+  # Water Injection
+  - get: B:ENGINE_WATER_INJECTION
+    set: (>B:ENGINE_WATER_INJECTION_Set)
+  - get: B:COMMON_ENGINE_WATER_INJ_DRAIN_COVER
+    set: (>B:COMMON_ENGINE_WATER_INJ_DRAIN_COVER_Set)
+  - get: B:ENGINE_WATER_INJ_DRAIN
+    set: (>B:ENGINE_WATER_INJ_DRAIN_Set)
+
+  # Warnings
+  - get: B:INSTRUMENT_GPWS_PULL_UP_2
+    set: (>B:INSTRUMENT_GPWS_PULL_UP_2_Set)
+  - get: B:INSTRUMENT_GPWS_BELOW_GS_2
+    set: (>B:INSTRUMENT_GPWS_BELOW_GS_2_Set)
+  - get: B:AUTOPILOT_DISCONNECT_WARNING_2
+    set: (>B:AUTOPILOT_DISCONNECT_WARNING_2_Set)
+
+
+
+
+
+
+
+
+
+
+  # ----------------Glareshield/Fire panel----------------
+  - get: B:SAFETY_FIRE_BOTTLE_DISCHG_1
+    set: (>B:SAFETY_FIRE_BOTTLE_DISCHG_1_Set)
+  - get: B:SAFETY_FIRE_BOTTLE_DISCHG_2
+    set: (>B:SAFETY_FIRE_BOTTLE_DISCHG_2_Set)
+  - get: B:SAFETY_FIRE_BOTTLE_DISCHG_3
+    set: (>B:SAFETY_FIRE_BOTTLE_DISCHG_3_Set)
+  - get: B:SAFETY_FIRE_BOTTLE_DISCHG_4
+    set: (>B:SAFETY_FIRE_BOTTLE_DISCHG_4_Set)
+  - get: B:SAFETY_FIRE_HANDLE_1
+    set: (>B:SAFETY_FIRE_HANDLE_1_Set)
+  - get: B:SAFETY_FIRE_HANDLE_2
+    set: (>B:SAFETY_FIRE_HANDLE_2_Set)
+  - get: B:SAFETY_FIRE_HANDLE_3
+    set: (>B:SAFETY_FIRE_HANDLE_3_Set)
+  - get: B:SAFETY_FIRE_HANDLE_4
+    set: (>B:SAFETY_FIRE_HANDLE_4_Set)
+  - get: B:SAFETY_FIRE_BOTTLE_TRANSFER_1
+    set: (>B:SAFETY_FIRE_BOTTLE_TRANSFER_1_Set)
+  - get: B:SAFETY_FIRE_BOTTLE_TRANSFER_2
+    set: (>B:SAFETY_FIRE_BOTTLE_TRANSFER_2_Set)
+  - get: B:SAFETY_FIRE_TEST_ENG
+    set: (>B:SAFETY_FIRE_TEST_ENG_Set)
+  - get: B:SAFETY_FIRE_BELL_CUT
+    set: (>B:SAFETY_FIRE_BELL_CUT_Set)
+
+
+
+
+
+
+
+
+
+
+  # ----------------Overhead panel----------------
+  # Exterior Lighting
+  - get: B:LIGHTING_LANDING_LIGHT_1
+    set: (>B:LIGHTING_LANDING_LIGHT_1_Set)
+  - get: B:LIGHTING_LANDING_LIGHT_2
+    set: (>B:LIGHTING_LANDING_LIGHT_2_Set)
+  - get: B:LIGHTING_LANDING_EXTENSION_1
+    set: (>B:LIGHTING_LANDING_EXTENSION_1_Set)
+  - get: B:LIGHTING_LANDING_EXTENSION_2
+    set: (>B:LIGHTING_LANDING_EXTENSION_2_Set)
+  - get: B:LIGHTING_FIXED_LANDING_LIGHT_1
+    set: (>B:LIGHTING_FIXED_LANDING_LIGHT_1_Set)
+  - get: B:LIGHTING_FIXED_LANDING_LIGHT_2
+    set: (>B:LIGHTING_FIXED_LANDING_LIGHT_2_Set)
+
+  - get: B:LIGHTING_TURN_LIGHTS_LEFT
+    set: (>B:LIGHTING_TURN_LIGHTS_LEFT_Set)
+  - get: B:LIGHTING_TURN_LIGHTS_RIGHT
+    set: (>B:LIGHTING_TURN_LIGHTS_RIGHT_Set)
+
+  - get: B:LIGHTING_NAVIGATION_LIGHTS
+    set: (>B:LIGHTING_NAVIGATION_LIGHTS_Set)
+  - get: B:LIGHTING_BEACON_LIGHT
+    set: (>B:LIGHTING_BEACON_LIGHT_Set)
+
+  - get: B:LIGHTING_WING_LIGHT
+    set: (>B:LIGHTING_WING_LIGHT_Set)
+  - get: B:LIGHTING_WHEEL_LIGHT
+    set: (>B:LIGHTING_WHEEL_LIGHT_Set)
+  - get: B:LIGHTING_STROBE_LIGHT
+    set: (>B:LIGHTING_STROBE_LIGHT_Set)
+
+  # Interior Lighting
+  - get: B:LIGHTING_OVERHEAD_PANEL_LIGHT
+    set: (>B:LIGHTING_OVERHEAD_PANEL_LIGHT_Set)
+  - get: B:LIGHTING_RED_DOME_LIGHT
+    set: (>B:LIGHTING_RED_DOME_LIGHT_Set)
+  - get: B:LIGHTING_PANEL_FLOOD_LIGHTS
+    set: (>B:LIGHTING_PANEL_FLOOD_LIGHTS_Set)
+  - get: B:LIGHTING_CENTER_PANEL_LIGHT
+    set: (>B:LIGHTING_CENTER_PANEL_LIGHT_Set)
+  - get: B:LIGHTING_CAPT_MAP_LIGHT
+    set: (>B:LIGHTING_CAPT_MAP_LIGHT_Set)
+  - get: B:LIGHTING_CAPT_INSTRUMENT_PANEL_INTENSITY
+    set: (>B:LIGHTING_CAPT_INSTRUMENT_PANEL_INTENSITY_Set)
+  - get: B:LIGHTING_FLUORESCENT_PANEL_LIGHT
+    set: (>B:LIGHTING_FLUORESCENT_PANEL_LIGHT_Set)
+  - get: B:LIGHTING_DOME_LIGHT
+    set: (>B:LIGHTING_DOME_LIGHT_Set)
+  - get: B:LIGHTING_PEDESTAL_RED_LIGHT
+    set: (>B:LIGHTING_PEDESTAL_RED_LIGHT_Set)
+  - get: B:LIGHTING_PEDESTAL_WHITE_LIGHT
+    set: (>B:LIGHTING_PEDESTAL_WHITE_LIGHT_Set)
+  - get: B:LIGHTING_COMPASS_LIGHT
+    set: (>B:LIGHTING_COMPASS_LIGHT_Set)
+  - get: B:LIGHTING_FO_INSTRUMENT_PANEL_INTENSITY
+    set: (>B:LIGHTING_FO_INSTRUMENT_PANEL_INTENSITY_Set)
+  - get: B:LIGHTING_FO_MAP_LIGHT
+    set: (>B:LIGHTING_FO_MAP_LIGHT_Set)
+  - get: B:LIGHTING_LIGHT_OVERRIDE
+    set: (>B:LIGHTING_LIGHT_OVERRIDE_Set)
+  
+  # Flight recorder
+  - get: B:ELECTRICAL_FLIGHT_RECORDER
+    set: (>B:ELECTRICAL_FLIGHT_RECORDER_Set)
+
+  # Radio Masters
+  - get: B:ELECTRICAL_ESS_RADIO_BUS
+    set: (>B:ELECTRICAL_ESS_RADIO_BUS_Set)
+  - get: B:ELECTRICAL_RADIO_BUS_2
+    set: (>B:ELECTRICAL_RADIO_BUS_2_Set)
+
+  # Engine Start
+  - get: B:COMMON_ENGINE_STARTER_1_COVER_1
+    set: (>B:COMMON_ENGINE_STARTER_1_COVER_1_Set)
+  - get: B:COMMON_ENGINE_STARTER_2_COVER_2
+    set: (>B:COMMON_ENGINE_STARTER_2_COVER_2_Set)
+  - get: B:COMMON_ENGINE_STARTER_3_COVER_3
+    set: (>B:COMMON_ENGINE_STARTER_3_COVER_3_Set)
+  - get: B:COMMON_ENGINE_STARTER_4_COVER_4
+    set: (>B:COMMON_ENGINE_STARTER_4_COVER_4_Set)
+  - get: B:ENGINE_STARTER_1
+    set: (>B:ENGINE_STARTER_1_Set)
+  - get: B:ENGINE_STARTER_2
+    set: (>B:ENGINE_STARTER_2_Set)
+  - get: B:ENGINE_STARTER_3
+    set: (>B:ENGINE_STARTER_3_Set)
+  - get: B:ENGINE_STARTER_4
+    set: (>B:ENGINE_STARTER_4_Set)
+
+  # Energency Flaps
+  - get: B:COMMON_ELECTRICAL_EMERGENCY_FLAP_COVER
+    set: (>B:COMMON_ELECTRICAL_EMERGENCY_FLAP_COVER_Set)
+  - get: B:ELECTRICAL_EMERGENCY_FLAP_PANEL_1
+    set: (>B:ELECTRICAL_EMERGENCY_FLAP_PANEL_1_Set)
+  - get: B:ELECTRICAL_EMERGENCY_FLAP_PANEL_2
+    set: (>B:ELECTRICAL_EMERGENCY_FLAP_PANEL_2_Set)
+
+  # Compass Couplers
+  - get: B:COMMON_COMPASS_CORRECTION_1
+    set: "`${(value+30)/60} (>B:COMMON_COMPASS_CORRECTION_1_Set)`"
+  - get: B:COMMON_COMPASS_SET_1
+    set: (>B:COMMON_COMPASS_SET_1_Set)
+  - get: B:COMMON_COMPASS_MODE_1
+    set: (>B:COMMON_COMPASS_MODE_1_Set)
+
+  - get: B:COMMON_COMPASS_CORRECTION_2
+    set: "`${(value+30)/60} (>B:COMMON_COMPASS_CORRECTION_2_Set)`"
+  - get: B:COMMON_COMPASS_SET_2
+    set: (>B:COMMON_COMPASS_SET_2_Set)
+  - get: B:COMMON_COMPASS_MODE_2
+    set: (>B:COMMON_COMPASS_MODE_2_Set)
+  
+  # Wipers
+  - get: B:COMMON_WIPERS
+    set: (>B:COMMON_WIPERS_Set)
+  
+  # Brk A/SKID
+  - get: B:COMMON_HYDRAULIC_ANTI_SKID_COVER
+    set: (>B:COMMON_HYDRAULIC_ANTI_SKID_COVER_Set)
+  - get: B:HYDRAULIC_ANTI_SKID
+    set: (>B:HYDRAULIC_ANTI_SKID_Set)
+  - get: B:HYDRAULIC_BRAKE_TEST
+    set: (>B:HYDRAULIC_BRAKE_TEST_Set)
+  
+  # Powered F/CTL
+  - get: B:COMMON_HYDRAULIC_RUDDER_HYDRAULICS_COVER
+    set: (>B:COMMON_HYDRAULIC_RUDDER_HYDRAULICS_COVER_Set)
+  - get: B:COMMON_HYDRAULIC_SPOILER_HYDRAULICS_1_COVER_1
+    set: (>B:COMMON_HYDRAULIC_SPOILER_HYDRAULICS_1_COVER_1_Set)
+  - get: B:COMMON_HYDRAULIC_SPOILER_HYDRAULICS_2_COVER_2
+    set: (>B:COMMON_HYDRAULIC_SPOILER_HYDRAULICS_2_COVER_2_Set)
+  - get: B:HYDRAULIC_RUDDER_HYDRAULICS
+    set: (>B:HYDRAULIC_RUDDER_HYDRAULICS_Set)
+  - get: B:HYDRAULIC_SPOILER_HYDRAULICS_1
+    set: (>B:HYDRAULIC_SPOILER_HYDRAULICS_1_Set)
+  - get: B:HYDRAULIC_SPOILER_HYDRAULICS_2
+    set: (>B:HYDRAULIC_SPOILER_HYDRAULICS_2_Set)
+  
+  # Eng Nac Anti-Ice
+  - get: B:DEICE_NACELLE_1
+    set: (>B:DEICE_NACELLE_1_Set)
+  - get: B:DEICE_NACELLE_2
+    set: (>B:DEICE_NACELLE_2_Set)
+  - get: B:DEICE_NACELLE_3
+    set: (>B:DEICE_NACELLE_3_Set)
+  - get: B:DEICE_NACELLE_4
+    set: (>B:DEICE_NACELLE_4_Set)
+  - get: B:DEICE_NACELLE_SELECTOR
+    set: (>B:DEICE_NACELLE_SELECTOR_Set)
+
+  # GPWS
+  - get: B:COMMON_ELECTRICAL_FLAP_LOGIC_COVER
+    set: (>B:COMMON_ELECTRICAL_FLAP_LOGIC_COVER_Set)
+  - get: B:ELECTRICAL_FLAP_LOGIC
+    set: (>B:ELECTRICAL_FLAP_LOGIC_Set)
+  
+  # CVR
+  - get: B:ELECTRICAL_RECORDER_ERASE
+    set: (>B:ELECTRICAL_RECORDER_ERASE_Set)
+  - get: B:ELECTRICAL_RECORDER_MIC_TEST
+    set: (>B:ELECTRICAL_RECORDER_MIC_TEST_Set)
+  
+  # Inst comp/SELCAL
+  - get: B:ELECTRICAL_AUTO_ALERT_TEST
+    set: (>B:ELECTRICAL_AUTO_ALERT_TEST_Set)
+  - get: B:RADIO_SEL_CAL_1
+    set: (>B:RADIO_SEL_CAL_1_Set)
+  - get: B:RADIO_MARKER_SETTING
+    set: (>B:RADIO_MARKER_SETTING_Set)
+  - get: B:RADIO_SEL_CAL_2
+    set: (>B:RADIO_SEL_CAL_2_Set)
+
+  # Wing Anti-Ice
+  - get: B:DEICE_WING_ANTI_ICE
+    set: (>B:DEICE_WING_ANTI_ICE_Set)
+  - get: B:DEICE_WING_ANTI_ICE_SELECT
+    set: (>B:DEICE_WING_ANTI_ICE_SELECT_Set)
+
+  # Passenger Management
+  - get: B:ELECTRICAL_PASS_OXY
+    set: (>B:ELECTRICAL_PASS_OXY_Set)
+  - get: B:COMMON_LIGHTING_EMERGENCY_LIGHT_COVER
+    set: (>B:COMMON_LIGHTING_EMERGENCY_LIGHT_COVER_Set)
+  - get: B:LIGHTING_EMERGENCY_LIGHT
+    set: (>B:LIGHTING_EMERGENCY_LIGHT_Set)
+  - get: B:UNKNOWN_NO_SMOKING
+    set: (>B:UNKNOWN_NO_SMOKING_Set)
+  - get: B:UNKNOWN_SEAT_BELTS
+    set: (>B:UNKNOWN_SEAT_BELTS_Set)
+  - get: B:ELECTRICAL_GROUND_CALL
+    set: (>B:ELECTRICAL_GROUND_CALL_Set)
+  - get: B:ELECTRICAL_CABIN_CALL
+    set: (>B:ELECTRICAL_CABIN_CALL_Set)
+
+  # Yaw Damper
+  - get: B:ELECTRICAL_YAW_DAMPER
+    set: (>B:ELECTRICAL_YAW_DAMPER_Set)
+  
+  # Att Warn
+  - get: B:ELECTRICAL_WING_TEST
+    set: (>B:ELECTRICAL_WING_TEST_Set)
+  - get: B:ELECTRICAL_OLEO_TEST
+    set: (>B:ELECTRICAL_OLEO_TEST_Set)
+
+  # HF radios are inop, skp for now
+
+  # Probe Heaters
+  - get: B:ELECTRICAL_TEMP_PROBE_HEAT
+    set: (>B:ELECTRICAL_TEMP_PROBE_HEAT_Set)
+  - get: B:ELECTRICAL_FW_SMOKE
+    set: (>B:ELECTRICAL_FW_SMOKE_Set)
+  - get: B:ELECTRICAL_WINDOW_HEAT_1
+    set: (>B:ELECTRICAL_WINDOW_HEAT_1_Set)
+  - get: B:ELECTRICAL_WINDOW_HEAT_2
+    set: (>B:ELECTRICAL_WINDOW_HEAT_2_Set)
+  - get: B:ELECTRICAL_RAM_AIR_HEAT
+    set: (>B:ELECTRICAL_RAM_AIR_HEAT_Set)
+  - get: B:ELECTRICAL_PITOT_HEAT_1
+    set: (>B:ELECTRICAL_PITOT_HEAT_1_Set)
+  - get: B:ELECTRICAL_PITOT_HEAT_2
+    set: (>B:ELECTRICAL_PITOT_HEAT_2_Set)
+  - get: B:ELECTRICAL_AMMETER_SEL
+    set: (>B:ELECTRICAL_AMMETER_SEL_Set)
+  - get: B:ELECTRICAL_WINDOW_OVERHEAT_LIGHT_1
+    set: (>B:ELECTRICAL_WINDOW_OVERHEAT_LIGHT_1_Set)
+  - get: B:ELECTRICAL_WINDOW_OVERHEAT_LIGHT_2
+    set: (>B:ELECTRICAL_WINDOW_OVERHEAT_LIGHT_2_Set)
+  - get: B:ELECTRICAL_QHEAT_OFF_BUTTON
+    set: (>B:ELECTRICAL_QHEAT_OFF_BUTTON_Set)
+
+
+
+
+
+
+
+
+
+
+  # ----------------FWD Center Pedestal----------------
+  # Delco Carousel IV-A Inertial Navigation System
+  # MSU
+  - get: B:INS_OPERATING_MODE_1
+    set: (>B:INS_OPERATING_MODE_1_Set)
+
+  # CDU
+  - get: H:WT_INS_1_HOLD
+    set: (>B:INS_HOLD_PUSH)
+  - get: H:WT_INS_1_REMOTE
+    set: (>B:INS_REMOTE_PUSH)
+  - get: H:WT_INS_1_INSERT
+    set: (>B:INS_INSERT_PUSH)
+
+  - get: H:WT_INS_1_1
+    set: (>B:INS_1_PUSH)
+  - get: H:WT_INS_1_2
+    set: (>B:INS_2_PUSH)
+  - get: H:WT_INS_1_3
+    set: (>B:INS_3_PUSH)
+  - get: H:WT_INS_1_4
+    set: (>B:INS_4_PUSH)
+  - get: H:WT_INS_1_5
+    set: (>B:INS_5_PUSH)
+  - get: H:WT_INS_1_6
+    set: (>B:INS_6_PUSH)
+  - get: H:WT_INS_1_7
+    set: (>B:INS_7_PUSH)
+  - get: H:WT_INS_1_8
+    set: (>B:INS_8_PUSH)
+  - get: H:WT_INS_1_9
+    set: (>B:INS_9_PUSH)
+  - get: H:WT_INS_1_0
+    set: (>B:INS_0_PUSH)
+  - get: H:WT_INS_1_CLEAR
+    set: (>B:INS_CLEAR_PUSH)
+  - get: H:WT_INS_1_WY_PT_CHG
+    set: (>B:INS_WY_PT_CHG_PUSH)
+  
+  - get: B:INS_DATA_SELECTOR_1
+    set: (>B:INS_DATA_SELECTOR_1_Set)
+  - get: B:INS_DIM
+    set: "`${(value-0.05)/0.95} (>B:INS_DIM_Set)`"
+  - get: B:INS_LEG_MODE_SWITCH_1
+    set: (>B:INS_LEG_MODE_SWITCH_1_Set)
+  - get: B:INS_TEST_1
+    set: (>B:INS_TEST_1_Set)
+  - get: B:INS_THUMBWHEEL_1
+    set: (>B:INS_THUMBWHEEL_1_Set)
+
+  # Universal UNS-1 Flight Management System
+  - get: B:UNKNOWN_PMS_1_LSK_001_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_001_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_002_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_002_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_003_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_003_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_004_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_004_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_005_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_005_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_006_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_006_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_007_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_007_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_008_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_008_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_009_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_009_PUSH_Set)
+  - get: B:UNKNOWN_PMS_1_LSK_010_PUSH
+    set: (>B:UNKNOWN_PMS_1_LSK_010_PUSH_Set)
+
+  - get: B:UNKNOWN_FPCDU_1_DATA_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_DATA_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_NAV_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_NAV_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_VNAV_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_VNAV_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_DTO_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_DTO_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_LIST_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_LIST_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_PREV_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_PREV_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_NEXT_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_NEXT_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_FUEL_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_FUEL_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_FPL_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_FPL_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_PERF_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_PERF_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_TUNE_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_TUNE_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_MENU_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_MENU_PUSH_Set)
+
+  - get: B:UNKNOWN_FPCDU_1_A_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_A_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_B_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_B_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_C_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_C_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_D_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_D_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_E_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_E_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_F_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_F_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_G_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_G_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_H_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_H_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_I_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_I_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_J_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_J_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_K_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_K_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_L_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_L_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_M_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_M_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_N_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_N_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_O_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_O_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_P_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_P_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_Q_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_Q_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_R_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_R_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_S_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_S_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_T_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_T_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_U_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_U_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_V_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_V_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_W_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_W_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_X_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_X_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_Y_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_Y_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_Z_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_Z_PUSH_Set)
+
+  - get: B:UNKNOWN_FPCDU_1_1_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_1_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_2_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_2_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_3_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_3_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_4_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_4_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_5_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_5_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_6_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_6_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_7_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_7_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_8_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_8_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_9_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_9_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_0_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_0_PUSH_Set)
+
+  - get: B:UNKNOWN_FPCDU_1_BACK_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_BACK_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_MSG_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_MSG_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_DIM_ON_OFF_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_DIM_ON_OFF_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_PLUS_MINUS_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_PLUS_MINUS_PUSH_Set)
+  - get: B:UNKNOWN_FPCDU_1_ENTER_PUSH
+    set: (>B:UNKNOWN_FPCDU_1_ENTER_PUSH_Set)
+
+
+  # Altitude Alerter
+  - get: B:INSTRUMENT_BARO_3
+    set: "`${(value/100-955)/105} (>B:INSTRUMENT_BARO_3_Set)`"
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:3, feet
+
+  # Bendix RDR-1 Weather Radar
+  - get: B:INSTRUMENT_WX_MODE_SELECTOR
+    set: (>B:INSTRUMENT_WX_MODE_SELECTOR_Set)
+  - get: B:INSTRUMENT_WX_ANT_GAIN
+    set: "`${value/100} (>B:INSTRUMENT_WX_ANT_GAIN_Set)`"
+  - get: B:INSTRUMENT_WX_ANT_TILE
+    set: "`${(value+15)/30} (>B:INSTRUMENT_WX_ANT_TILE_Set)`"
+
+  - get: B:WX_RAD_DIMMER
+    set: (>B:WX_RAD_DIMMER_Set)
+  - get: B:WX_RAD_RANGE_MARKS
+    set: (>B:WX_RAD_RANGE_MARKS_Set)
+  - get: B:WX_OFFSET
+    set: (>B:WX_OFFSET_Set)
+  - get: B:WX_RAD_POLARIZER
+    set: "`${value/100} (>B:WX_RAD_POLARIZER_Set)`"
+  - get: B:WX_RAD_TRACE_ADJUST
+    set: "`${value/100} (>B:WX_RAD_TRACE_ADJUST_Set)`"
+
+  # ATC Transponder
+  - get: B:RADIO_XPDR_FUNC_SELECTOR
+    set: (>B:RADIO_XPDR_FUNC_SELECTOR_Set)
+  - get: B:RADIO_XPDR_MODE_SELECTOR
+    set: (>B:RADIO_XPDR_MODE_SELECTOR_Set)
+  - get: B:RADIO_XPDR_TEST_SWITCH
+    set: (>B:RADIO_XPDR_TEST_SWITCH_Set)
+  - get: B:RADIO_XPDR_XFER_SWITCH
+    set: (>B:RADIO_XPDR_XFER_SWITCH_Set)
+  - get: B:RADIO_XPDR_ALT_REPORT_SWITCH
+    set: (>B:RADIO_XPDR_ALT_REPORT_SWITCH_Set)
+  - get: A:TRANSPONDER CODE:1, Bco16
+  - get: A:TRANSPONDER CODE:2, Bco16
+
+  # ----------------AFT Center Pedestal----------------
+  - get: B:HANDLING_PARKING_BRAKE
+    set: (>B:HANDLING_PARKING_BRAKE_Set)
+  - get: B:HANDLING_STABTRIM_CUTOUT_LEFT
+    set: (>B:HANDLING_STABTRIM_CUTOUT_LEFT_Set)
+  - get: B:HANDLING_STABTRIM_CUTOUT_RIGHT
+    set: (>B:HANDLING_STABTRIM_CUTOUT_RIGHT_Set)
+  - get: B:HANDLING_FRICTION_CONTROL_TRIM
+    set: (>B:HANDLING_FRICTION_CONTROL_TRIM_Set)
+  - get: B:ENGINE_FRICTION_CONTROL_THROTTLE
+    set: (>B:ENGINE_FRICTION_CONTROL_THROTTLE_Set)
+  - get: B:FUEL_FUEL_CUTOFF_1
+    set: (>B:FUEL_FUEL_CUTOFF_1_Set)
+  - get: B:FUEL_FUEL_CUTOFF_2
+    set: (>B:FUEL_FUEL_CUTOFF_2_Set)
+  - get: B:FUEL_FUEL_CUTOFF_3
+    set: (>B:FUEL_FUEL_CUTOFF_3_Set)
+  - get: B:FUEL_FUEL_CUTOFF_4
+    set: (>B:FUEL_FUEL_CUTOFF_4_Set)
+
+  # VHF Radios
+  - get: A:NAV ACTIVE FREQUENCY:1, Hz
+    set: (>K:NAV1_RADIO_SET_HZ)
+  # - get: B:RADIO_NAV_KHZ_CPT_1
+  #   set: (>B:RADIO_NAV_KHZ_CPT_1_Set)
+  # - get: B:RADIO_NAV_MHZ_CPT_1
+  #   set: (>B:RADIO_NAV_MHZ_CPT_1_Set)
+  # - get: B:RADIO_NAV_VOL_CPT_1
+  #   set: (>B:RADIO_NAV_VOL_CPT_1_Set)
+  - get: A:COM ACTIVE FREQUENCY:1, Hz
+    set: (>K:COM_RADIO_SET_HZ)
+  # - get: B:RADIO_COM_KHZ_CPT_1
+  #   set: (>B:RADIO_COM_KHZ_CPT_1_Set)
+  # - get: B:RADIO_COM_MHZ_CPT_1
+  #   set: (>B:RADIO_COM_MHZ_CPT_1_Set)
+  # - get: B:RADIO_COM_VOL_CPT_1
+  #   set: (>B:RADIO_COM_VOL_CPT_1_Set)
+  - get: B:UNKNOWN_NAV_DME_DISABLE_CPT_1
+    set: (>B:UNKNOWN_NAV_DME_DISABLE_CPT_1_Set)
+  - get: B:RADIO_SEARCH_1
+    set: (>B:RADIO_SEARCH_1_Set)
+  - get: B:RADIO_SQUELCH_1
+    set: (>B:RADIO_SQUELCH_1_Set)
+  - get: B:RADIO_SINGLE_DUAL_1
+    set: (>B:RADIO_SINGLE_DUAL_1_Set)
+
+  - get: A:NAV ACTIVE FREQUENCY:2, Hz
+    set: (>K:NAV2_RADIO_SET_HZ)
+  # - get: B:RADIO_NAV_KHZ_FO_2
+  #   set: (>B:RADIO_NAV_KHZ_FO_2_Set)
+  # - get: B:RADIO_NAV_MHZ_FO_2
+  #   set: (>B:RADIO_NAV_MHZ_FO_2_Set)
+  # - get: B:RADIO_NAV_VOL_FO_2
+  #   set: (>B:RADIO_NAV_VOL_FO_2_Set)
+  - get: A:COM ACTIVE FREQUENCY:2, Hz
+    set: (>K:COM2_RADIO_SET_HZ)
+  # - get: B:RADIO_COM_KHZ_FO_2
+  #   set: (>B:RADIO_COM_KHZ_FO_2_Set)
+  # - get: B:RADIO_COM_MHZ_FO_2
+  #   set: (>B:RADIO_COM_MHZ_FO_2_Set)
+  # - get: B:RADIO_COM_VOL_FO_2
+  #   set: (>B:RADIO_COM_VOL_FO_2_Set)
+  - get: B:UNKNOWN_NAV_DME_DISABLE_FO_2
+    set: (>B:UNKNOWN_NAV_DME_DISABLE_FO_2_Set)
+  - get: B:RADIO_SEARCH_2
+    set: (>B:RADIO_SEARCH_2_Set)
+  - get: B:RADIO_SQUELCH_2
+    set: (>B:RADIO_SQUELCH_2_Set)
+  - get: B:RADIO_SINGLE_DUAL_2
+    set: (>B:RADIO_SINGLE_DUAL_2_Set)
+
+  # Autopilot Controller
+  - get: B:AP_MODE_SELECTOR
+    set: (>B:AP_MODE_SELECTOR_Set)
+  - get: B:AP_TURN_CTRL_KNOB
+    set: (>B:AP_TURN_CTRL_KNOB_Set)
+  - get: B:AP_PITCH_CTRL_WHEEL_1
+    set: "value > current ? '1 (>B:AP_PITCH_CTRL_WHEEL_1_Inc)' : '1 (>B:AP_PITCH_CTRL_WHEEL_1_Dec)'"
+  - get: B:AP_PITCH_CTRL_WHEEL_2
+    set: "value > current ? '1 (>B:AP_PITCH_CTRL_WHEEL_2_Inc)' : '1 (>B:AP_PITCH_CTRL_WHEEL_2_Dec)'"
+  - get: B:AP_AP_MASTER
+    set: (>B:AP_AP_MASTER_Set)
+  - get: B:AP_ALT_HOLD
+    set: (>B:AP_ALT_HOLD_Set)
+
+  # Flight Directors
+  - get: B:FD_PITCH_COMMAND_1
+    set: "`${(value+10)/25} (>B:FD_PITCH_COMMAND_1_Set)`"
+  - get: B:FD_MODE_SELECTOR_1
+    set: (>B:FD_MODE_SELECTOR_1_Set)
+  - get: B:FD_ALT_HOLD_1
+    set: (>B:FD_ALT_HOLD_1_Set)
+
+  - get: B:FD_PITCH_COMMAND_2
+    set: "`${(value+10)/25} (>B:FD_PITCH_COMMAND_2_Set)`"
+  - get: B:FD_MODE_SELECTOR_2
+    set: (>B:FD_MODE_SELECTOR_2_Set)
+  - get: B:FD_ALT_HOLD_2
+    set: (>B:FD_ALT_HOLD_2_Set)
+  
+  # ADF Radios
+  - get: B:RADIO_ADF_VOL_1
+    set: "`${value/100} (>B:RADIO_ADF_VOL_1_Set)`"
+  - get: B:RADIO_ADF_MODE_SELECTOR_1
+    set: (>B:RADIO_ADF_MODE_SELECTOR_1_Set)
+  - get: A:ADF ACTIVE FREQUENCY:1, Frequency ADF BCD32
+    set: (>K:ADF_ACTIVE_SET)
+  - get: B:RADIO_ADF_TONE_SWITCH_1
+    set: (>B:RADIO_ADF_TONE_SWITCH_1_Set)
+  - get: B:RADIO_ADF_TEST_1
+    set: (>L:1:WT_B707_ADF_1_TEST)
+
+  - get: B:RADIO_ADF_VOL_2
+    set: "`${value/100} (>B:RADIO_ADF_VOL_2_Set)`"
+  - get: B:RADIO_ADF_MODE_SELECTOR_2
+    set: (>B:RADIO_ADF_MODE_SELECTOR_2_Set)
+  - get: A:ADF ACTIVE FREQUENCY:2, Frequency ADF BCD32
+    set: (>K:ADF2_ACTIVE_SET)
+  - get: B:RADIO_ADF_TONE_SWITCH_2
+    set: (>B:RADIO_ADF_TONE_SWITCH_2_Set)
+  - get: B:RADIO_ADF_TEST_2
+    set: (>L:1:WT_B707_ADF_2_TEST)
+  - get: B:LIGHTING_RADIO_PANEL_LIGHT
+    set: (>B:LIGHTING_RADIO_PANEL_LIGHT_Set)
+
+  # Gear Horn Cutout
+  - get: B:UNKNOWN_HORN_CUTOUT
+    set: (>B:UNKNOWN_HORN_CUTOUT_Set)
+
+
+
+
+
+
+
+
+
+
+  # ----------------Engineer's Panel----------------
+
+  # ----------------DC Electrics----------------
+  - get: B:COMMON_ELECTRICAL_BATTERY_COVER
+    set: (>B:COMMON_ELECTRICAL_BATTERY_COVER_Set)
+  - get: B:ELECTRICAL_BATTERY
+    set: (>B:ELECTRICAL_BATTERY_Set)
+  - get: B:ELECTRICAL_DC_GAUGE_SELECTOR
+    set: (>B:ELECTRICAL_DC_GAUGE_SELECTOR_Set)
+
+  # ----------------AC Electrics----------------
+  # misc
+  - get: B:ELECTRICAL_GALLEY_POWER
+    set: (>B:ELECTRICAL_GALLEY_POWER_Set)
+  - get: B:ELECTRICAL_FUEL_FLOWMETER_POWER
+    set: (>B:ELECTRICAL_FUEL_FLOWMETER_POWER_Set)
+  
+  # CSD Disconnects
+  - get: B:COMMON_ELECTRICAL_CSD_DISCONNECT_1_COVER_1
+    set: (>B:COMMON_ELECTRICAL_CSD_DISCONNECT_1_COVER_1_Set)
+  - get: B:COMMON_ELECTRICAL_CSD_DISCONNECT_2_COVER_2
+    set: (>B:COMMON_ELECTRICAL_CSD_DISCONNECT_2_COVER_2_Set)
+  - get: B:COMMON_ELECTRICAL_CSD_DISCONNECT_3_COVER_3
+    set: (>B:COMMON_ELECTRICAL_CSD_DISCONNECT_3_COVER_3_Set)
+  - get: B:COMMON_ELECTRICAL_CSD_DISCONNECT_4_COVER_4
+    set: (>B:COMMON_ELECTRICAL_CSD_DISCONNECT_4_COVER_4_Set)
+
+  - get: B:ELECTRICAL_CSD_DISCONNECT_1
+    set: (>B:ELECTRICAL_CSD_DISCONNECT_1_Set)
+  - get: B:ELECTRICAL_CSD_DISCONNECT_2
+    set: (>B:ELECTRICAL_CSD_DISCONNECT_2_Set)
+  - get: B:ELECTRICAL_CSD_DISCONNECT_3
+    set: (>B:ELECTRICAL_CSD_DISCONNECT_3_Set)
+  - get: B:ELECTRICAL_CSD_DISCONNECT_4
+    set: (>B:ELECTRICAL_CSD_DISCONNECT_4_Set)
+  
+  # Bus Connections
+  # BTBs
+  - get: B:COMMON_ELECTRICAL_BUS_TIE_BREAKER_1_COVER_1
+    set: (>B:COMMON_ELECTRICAL_BUS_TIE_BREAKER_1_COVER_1_Set)
+  - get: B:COMMON_ELECTRICAL_BUS_TIE_BREAKER_2_COVER_2
+    set: (>B:COMMON_ELECTRICAL_BUS_TIE_BREAKER_2_COVER_2_Set)
+  - get: B:COMMON_ELECTRICAL_BUS_TIE_BREAKER_3_COVER_3
+    set: (>B:COMMON_ELECTRICAL_BUS_TIE_BREAKER_3_COVER_3_Set)
+  - get: B:COMMON_ELECTRICAL_BUS_TIE_BREAKER_4_COVER_4
+    set: (>B:COMMON_ELECTRICAL_BUS_TIE_BREAKER_4_COVER_4_Set)
+
+  - get: B:ELECTRICAL_BUS_TIE_BREAKER_1
+    set: (>B:ELECTRICAL_BUS_TIE_BREAKER_1_Set)
+  - get: B:ELECTRICAL_BUS_TIE_BREAKER_2
+    set: (>B:ELECTRICAL_BUS_TIE_BREAKER_2_Set)
+  - get: B:ELECTRICAL_BUS_TIE_BREAKER_3
+    set: (>B:ELECTRICAL_BUS_TIE_BREAKER_3_Set)
+  - get: B:ELECTRICAL_BUS_TIE_BREAKER_4
+    set: (>B:ELECTRICAL_BUS_TIE_BREAKER_4_Set)
+  
+  # FSCopilot AC generator paralleling synchronization
+  # B707 simulates AC phase difference, but is initialised with a random number generator
+  # since that number is internal to HTML/JS, it is impossible to write to with FSCopilot
+  # this acts as a workaround
+  # when a client detects a tripped BTB, it writes a variable to any client with a succesfully paralleled generator
+  # that client detects that variable, and then forces all other clients to parallel that generator
+  - get: A:LINE BREAKER PULLED:'acbus1tosyncbus'_n, bool
+    set: |
+        if(value == 1) {
+            return "(A:LINE BREAKER PULLED:'eng1toacbus1'_n, bool) 0 == (A:LINE BREAKER PULLED:'acbus1tosyncbus'_n, bool) 0 == and if{ 1 (>L:FSC_SYNC_WT_B707_GEN1_FORCE_PARALLEL) }"
+        }
+  - get: L:FSC_SYNC_WT_B707_GEN1_FORCE_PARALLEL
+    set: |
+        switch (value) {
+            case 1: return '(>H:WT_B707_Generator_1_Force_Paralleling) 0 (>L:FSC_SYNC_WT_B707_GEN1_FORCE_PARALLEL)'
+            default: return ''
+        }
+
+  - get: A:LINE BREAKER PULLED:'acbus2tosyncbus'_n, bool
+    set: |
+        if(value == 1) {
+            return "(A:LINE BREAKER PULLED:'eng2toacbus2'_n, bool) 0 == (A:LINE BREAKER PULLED:'acbus2tosyncbus'_n, bool) 0 == and if{ 1 (>L:FSC_SYNC_WT_B707_GEN2_FORCE_PARALLEL) }"
+        }
+  - get: L:FSC_SYNC_WT_B707_GEN2_FORCE_PARALLEL
+    set: |
+        switch (value) {
+            case 1: return '(>H:WT_B707_Generator_2_Force_Paralleling) 0 (>L:FSC_SYNC_WT_B707_GEN2_FORCE_PARALLEL)'
+            default: return ''
+        }
+
+  - get: A:LINE BREAKER PULLED:'acbus3tosyncbus'_n, bool
+    set: |
+        if(value == 1) {
+            return "(A:LINE BREAKER PULLED:'eng3toacbus3'_n, bool) 0 == (A:LINE BREAKER PULLED:'acbus3tosyncbus'_n, bool) 0 == and if{ 1 (>L:FSC_SYNC_WT_B707_GEN3_FORCE_PARALLEL) }"
+        }
+  - get: L:FSC_SYNC_WT_B707_GEN3_FORCE_PARALLEL
+    set: |
+        switch (value) {
+            case 1: return '(>H:WT_B707_Generator_3_Force_Paralleling) 0 (>L:FSC_SYNC_WT_B707_GEN3_FORCE_PARALLEL)'
+            default: return ''
+        }
+
+  - get: A:LINE BREAKER PULLED:'acbus4tosyncbus'_n, bool
+    set: |
+        if(value == 1) {
+            return "(A:LINE BREAKER PULLED:'eng4toacbus4'_n, bool) 0 == (A:LINE BREAKER PULLED:'acbus4tosyncbus'_n, bool) 0 == and if{ 1 (>L:FSC_SYNC_WT_B707_GEN4_FORCE_PARALLEL) }"
+        }
+  - get: L:FSC_SYNC_WT_B707_GEN4_FORCE_PARALLEL
+    set: |
+        switch (value) {
+            case 1: return '(>H:WT_B707_Generator_4_Force_Paralleling) 0 (>L:FSC_SYNC_WT_B707_GEN4_FORCE_PARALLEL)'
+            default: return ''
+        }
+
+  # Generator Breakers
+  - get: B:ELECTRICAL_GEN_BREAKER_1
+    set: (>B:ELECTRICAL_GEN_BREAKER_1_Set)
+  - get: B:ELECTRICAL_GEN_BREAKER_2
+    set: (>B:ELECTRICAL_GEN_BREAKER_2_Set)
+  - get: B:ELECTRICAL_GEN_BREAKER_3
+    set: (>B:ELECTRICAL_GEN_BREAKER_3_Set)
+  - get: B:ELECTRICAL_GEN_BREAKER_4
+    set: (>B:ELECTRICAL_GEN_BREAKER_4_Set)
+
+  # Generator Field Control
+  - get: B:COMMON_ELECTRICAL_GEN_CONTROL_1_COVER_1
+    set: (>B:COMMON_ELECTRICAL_GEN_CONTROL_1_COVER_1_Set)
+  - get: B:COMMON_ELECTRICAL_GEN_CONTROL_2_COVER_2
+    set: (>B:COMMON_ELECTRICAL_GEN_CONTROL_2_COVER_2_Set)
+  - get: B:COMMON_ELECTRICAL_GEN_CONTROL_3_COVER_3
+    set: (>B:COMMON_ELECTRICAL_GEN_CONTROL_3_COVER_3_Set)
+  - get: B:COMMON_ELECTRICAL_GEN_CONTROL_4_COVER_4
+    set: (>B:COMMON_ELECTRICAL_GEN_CONTROL_4_COVER_4_Set)
+
+  - get: B:ELECTRICAL_GEN_CONTROL_1
+    set: (>B:ELECTRICAL_GEN_CONTROL_1_Set)
+  - get: B:ELECTRICAL_GEN_CONTROL_2
+    set: (>B:ELECTRICAL_GEN_CONTROL_2_Set)
+  - get: B:ELECTRICAL_GEN_CONTROL_3
+    set: (>B:ELECTRICAL_GEN_CONTROL_3_Set)
+  - get: B:ELECTRICAL_GEN_CONTROL_4
+    set: (>B:ELECTRICAL_GEN_CONTROL_4_Set)
+
+  # Generator Frequency Control
+  - get: B:ELECTRICAL_FREQUENCY_CONTROL_1
+    set: "`${(value+12)/24} (>B:ELECTRICAL_FREQUENCY_CONTROL_1_Set)`"
+  - get: B:ELECTRICAL_FREQUENCY_CONTROL_2
+    set: "`${(value+12)/24} (>B:ELECTRICAL_FREQUENCY_CONTROL_2_Set)`"
+  - get: B:ELECTRICAL_FREQUENCY_CONTROL_3
+    set: "`${(value+12)/24} (>B:ELECTRICAL_FREQUENCY_CONTROL_3_Set)`"
+  - get: B:ELECTRICAL_FREQUENCY_CONTROL_4
+    set: "`${(value+12)/24} (>B:ELECTRICAL_FREQUENCY_CONTROL_4_Set)`"
+
+  # Ext Power
+  - get: B:ELECTRICAL_EXTERNAL_POWER
+    set: |
+      if(value == 2) {
+          return "1 (>A:LINE CONNECTION ON:'extpowerbustoextpowerswitchonbus'_n, bool) (>B:ELECTRICAL_EXTERNAL_POWER_ON)"
+      }
+      else if(value == 1) {
+          if(current == 0) {
+              return "0 (>A:LINE CONNECTION ON:'extpowerbustocabinlightingbus'_n, bool) 1 (>A:LINE CONNECTION ON:'acbus3tocabinlightingbus'_n, bool)"
+          }
+          else {
+              return "0 (>A:LINE CONNECTION ON:'extpowerbustoextpowerswitchonbus'_n, bool) (>B:ELECTRICAL_EXTERNAL_POWER_OFF)"
+          }
+      }
+      else {
+          return "1 (>A:LINE CONNECTION ON:'extpowerbustocabinlightingbus'_n, bool) 0 (>A:LINE CONNECTION ON:'acbus3tocabinlightingbus'_n, bool)"
+      }
+
+  # ESS power selector
+  - get: A:LINE CONNECTION ON:'eng1toessacbus'_n, bool
+    set: |
+        return `${value} ` + "(>A:LINE CONNECTION ON:'eng1toessacbus'_n, bool)" + (value == 0 ? "" : " 0 (>B:ELECTRICAL_ESS_PWR_SELECTOR_Set)")
+  - get: A:LINE CONNECTION ON:'eng2toessacbus'_n, bool
+    set: |
+        return `${value} ` + "(>A:LINE CONNECTION ON:'eng2toessacbus'_n, bool)" + (value == 0 ? "" : " 1 (>B:ELECTRICAL_ESS_PWR_SELECTOR_Set)")
+  - get: A:LINE CONNECTION ON:'eng3toessacbus'_n, bool
+    set: |
+        return `${value} ` + "(>A:LINE CONNECTION ON:'eng3toessacbus'_n, bool)" + (value == 0 ? "" : " 2 (>B:ELECTRICAL_ESS_PWR_SELECTOR_Set)")
+  - get: A:LINE CONNECTION ON:'eng4toessacbus'_n, bool
+    set: |
+        return `${value} ` + "(>A:LINE CONNECTION ON:'eng4toessacbus'_n, bool)" + (value == 0 ? "" : " 3 (>B:ELECTRICAL_ESS_PWR_SELECTOR_Set)")
+  - get: A:LINE CONNECTION ON:'extpowerbustoessacbus'_n, bool
+    set: |
+        return `${value} ` + "(>A:LINE CONNECTION ON:'extpowerbustoessacbus'_n, bool)" + (value == 0 ? "" : " 4 (>B:ELECTRICAL_ESS_PWR_SELECTOR_Set)")
+  - get: A:LINE CONNECTION ON:'apubustoessacbus'_n, bool
+    set: |
+        return `${value} ` + "(>A:LINE CONNECTION ON:'apubustoessacbus'_n, bool)" + (value == 0 ? "" : " 5 (>B:ELECTRICAL_ESS_PWR_SELECTOR_Set)")
+  # - get: B:ELECTRICAL_ESS_PWR_SELECTOR
+  #   set: (>B:ELECTRICAL_ESS_PWR_SELECTOR_Set)
+
+  # - get: A:LINE CONNECTION ON:'eng1toessacbus'_n, bool
+  # - get: A:LINE CONNECTION ON:'eng2toessacbus'_n, bool
+  # - get: A:LINE CONNECTION ON:'eng3toessacbus'_n, bool
+  # - get: A:LINE CONNECTION ON:'eng4toessacbus'_n, bool
+  # - get: A:LINE CONNECTION ON:'extpowerbustoessacbus'_n, bool
+  # - get: A:LINE CONNECTION ON:'apubustoessacbus'_n, bool
+  
+  # parallelling/voltage selector
+  - get: B:ELECTRICAL_PARALLELING_SELECTOR
+    set: (>B:ELECTRICAL_PARALLELING_SELECTOR_Set)
+  
+  # KVAR button
+  - get: B:ELECTRICAL_POWERMETER_MEASURE
+    set: (>L:1:WT_B707_POWERMETER_KVARS)
+
+
+
+
+
+  # ----------------Fuel System----------------
+  # Engine LP Shutoff valves
+  - get: B:FUEL_SHUTOFF_1
+    set: (>B:FUEL_SHUTOFF_1_Set)
+  - get: B:FUEL_SHUTOFF_2
+    set: (>B:FUEL_SHUTOFF_2_Set)
+  - get: B:FUEL_SHUTOFF_3
+    set: (>B:FUEL_SHUTOFF_3_Set)
+  - get: B:FUEL_SHUTOFF_4
+    set: (>B:FUEL_SHUTOFF_4_Set)
+  
+  # Boost Pumps
+  - get: B:FUEL_BOOST_PUMP_1_FWD
+    set: (>B:FUEL_BOOST_PUMP_1_FWD_Set)
+  - get: B:FUEL_BOOST_PUMP_1_AFT
+    set: (>B:FUEL_BOOST_PUMP_1_AFT_Set)
+  - get: B:FUEL_BOOST_PUMP_2_FWD
+    set: (>B:FUEL_BOOST_PUMP_2_FWD_Set)
+  - get: B:FUEL_BOOST_PUMP_2_AFT
+    set: (>B:FUEL_BOOST_PUMP_2_AFT_Set)
+  - get: B:FUEL_BOOST_PUMP_3_FWD
+    set: (>B:FUEL_BOOST_PUMP_3_FWD_Set)
+  - get: B:FUEL_BOOST_PUMP_3_AFT
+    set: (>B:FUEL_BOOST_PUMP_3_AFT_Set)
+  - get: B:FUEL_BOOST_PUMP_4_FWD
+    set: (>B:FUEL_BOOST_PUMP_4_FWD_Set)
+  - get: B:FUEL_BOOST_PUMP_4_AFT
+    set: (>B:FUEL_BOOST_PUMP_4_AFT_Set)
+
+  - get: B:FUEL_BOOST_PUMP_CENTER_LEFT
+    set: (>B:FUEL_BOOST_PUMP_CENTER_LEFT_Set)
+  - get: B:FUEL_BOOST_PUMP_CENTER_RIGHT
+    set: (>B:FUEL_BOOST_PUMP_CENTER_RIGHT_Set)
+  
+  # Crossfeed Valves
+  - get: B:FUEL_VALVE_1_CENTER_XFER
+    set: (>B:FUEL_VALVE_1_CENTER_XFER_Set)
+  - get: B:FUEL_VALVE_2_CENTER_XFER
+    set: (>B:FUEL_VALVE_2_CENTER_XFER_Set)
+  - get: B:FUEL_VALVE_3_CENTER_XFER
+    set: (>B:FUEL_VALVE_3_CENTER_XFER_Set)
+  - get: B:FUEL_VALVE_4_CENTER_XFER
+    set: (>B:FUEL_VALVE_4_CENTER_XFER_Set)
+  
+  # Reserve Tank XFR
+  - get: B:FUEL_RESERVE_XFER_VALVE_1
+    set: (>B:FUEL_RESERVE_XFER_VALVE_1_Set)
+  - get: B:FUEL_RESERVE_XFER_VALVE_4
+    set: (>B:FUEL_RESERVE_XFER_VALVE_4_Set)
+
+  # Gauge Test
+  - get: B:FUEL_GAUGE_TEST
+    set: (>L:1:WT_B707_FUEL_GAUGE_TEST)
+  
+  # Temperature selector
+  - get: B:FUEL_FE_FUEL_TEMP_SELECTOR
+    set: (>B:FUEL_FE_FUEL_TEMP_SELECTOR_Set)
+
+  # Fuel Heaters
+  - get: B:COMMON_FUEL_FE_FUEL_HEATER_SWITCH_1_COVER_1
+    set: (>B:COMMON_FUEL_FE_FUEL_HEATER_SWITCH_1_COVER_1_Set)
+  - get: B:COMMON_FUEL_FE_FUEL_HEATER_SWITCH_2_COVER_2
+    set: (>B:COMMON_FUEL_FE_FUEL_HEATER_SWITCH_2_COVER_2_Set)
+  - get: B:COMMON_FUEL_FE_FUEL_HEATER_SWITCH_3_COVER_3
+    set: (>B:COMMON_FUEL_FE_FUEL_HEATER_SWITCH_3_COVER_3_Set)
+  - get: B:COMMON_FUEL_FE_FUEL_HEATER_SWITCH_4_COVER_4
+    set: (>B:COMMON_FUEL_FE_FUEL_HEATER_SWITCH_4_COVER_4_Set)
+
+  - get: B:FUEL_FE_FUEL_HEATER_SWITCH_1
+    set: (>B:FUEL_FE_FUEL_HEATER_SWITCH_1_Set)
+  - get: B:FUEL_FE_FUEL_HEATER_SWITCH_2
+    set: (>B:FUEL_FE_FUEL_HEATER_SWITCH_2_Set)
+  - get: B:FUEL_FE_FUEL_HEATER_SWITCH_3
+    set: (>B:FUEL_FE_FUEL_HEATER_SWITCH_3_Set)
+  - get: B:FUEL_FE_FUEL_HEATER_SWITCH_4
+    set: (>B:FUEL_FE_FUEL_HEATER_SWITCH_4_Set)
+
+
+
+
+
+  # ----------------Pneumatic System----------------
+  # Turbocompressors
+  - get: B:PNEUMATICS_TC_START_STOP_1
+    set: (>B:PNEUMATICS_TC_START_STOP_1_Set)
+  - get: B:PNEUMATICS_TC_START_STOP_2
+    set: (>B:PNEUMATICS_TC_START_STOP_2_Set)
+  - get: B:PNEUMATICS_TC_START_STOP_3
+    set: (>B:PNEUMATICS_TC_START_STOP_3_Set)
+
+  # Engine Bleeds
+  - get: B:PNEUMATICS_BLEED_AIR_1
+    set: (>B:PNEUMATICS_BLEED_AIR_1_Set)
+  - get: B:PNEUMATICS_BLEED_AIR_2
+    set: (>B:PNEUMATICS_BLEED_AIR_2_Set)
+  - get: B:PNEUMATICS_BLEED_AIR_3
+    set: (>B:PNEUMATICS_BLEED_AIR_3_Set)
+  - get: B:PNEUMATICS_BLEED_AIR_4
+    set: (>B:PNEUMATICS_BLEED_AIR_4_Set)
+
+  # Wing Valves
+  - get: B:PNEUMATICS_WING_ISOLATION_VALVE_LEFT
+    set: (>B:PNEUMATICS_WING_ISOLATION_VALVE_LEFT_Set)
+  - get: B:PNEUMATICS_WING_ISOLATION_VALVE_RIGHT
+    set: (>B:PNEUMATICS_WING_ISOLATION_VALVE_RIGHT_Set)
+
+  # Packs
+  - get: B:PNEUMATICS_AIR_CONDITIONING
+    set: (>B:PNEUMATICS_AIR_CONDITIONING_Set)
+  - get: B:PNEUMATICS_AIR_CONDITIONING_RESET
+    set: (>B:PNEUMATICS_AIR_CONDITIONING_RESET_Set)
+
+  # Pressurization
+  - get: B:PNEUMATICS_CONTROLLER_MODE_2 # Takeoff/Landing
+    set: (>B:PNEUMATICS_CONTROLLER_MODE_2_Set)
+  - get: B:PNEUMATICS_PRESSURIZATION_RATE
+    set: "`${(value-50)/1950} (>B:PNEUMATICS_PRESSURIZATION_RATE_Set)`"
+  - get: B:PNEUMATICS_CABIN_ALT
+    set: "`${(value+1000)/44000} (>B:PNEUMATICS_CABIN_ALT_Set)`"
+  - get: B:PNEUMATICS_BARO_CORRECTION
+    set: "`${(value-26)/6.5} (>B:PNEUMATICS_BARO_CORRECTION_Set)`"
+  - get: B:PNEUMATICS_OUTFLOW_BIAS
+    set: (>B:PNEUMATICS_OUTFLOW_BIAS_Set)
+  - get: B:PNEUMATICS_MANUAL_PRESSURE_CONTROL
+    set: (>B:PNEUMATICS_MANUAL_PRESSURE_CONTROL_Set)
+  - get: B:PNEUMATICS_CONTROLLER_MODE_1 # Auto/Man
+    set: (>B:PNEUMATICS_CONTROLLER_MODE_1_Set)
+  - get: B:PNEUMATICS_ALT_HORN_CUTOUT
+    set: (>B:PNEUMATICS_ALT_HORN_CUTOUT_Set)
+
+  # Temperature Control
+  - get: B:COMMON_PNEUMATICS_RAM_AIR_VALVE_COVER
+    set: (>B:COMMON_PNEUMATICS_RAM_AIR_VALVE_COVER_Set)
+  - get: B:COMMON_PNEUMATICS_CREW_AUX_HEAT_VALVE_COVER
+    set: (>B:COMMON_PNEUMATICS_CREW_AUX_HEAT_VALVE_COVER_Set)
+  - get: B:PNEUMATICS_RAM_AIR_VALVE
+    set: (>B:PNEUMATICS_RAM_AIR_VALVE_Set)
+  - get: B:PNEUMATICS_CREW_AUX_HEAT_VALVE
+    set: (>B:PNEUMATICS_CREW_AUX_HEAT_VALVE_Set)
+
+  - get: B:PNEUMATICS_TEMPERATURE_SELECTION_2
+    set: (>B:PNEUMATICS_TEMPERATURE_SELECTION_2_Set)
+  - get: B:PNEUMATICS_TEMPERATURE_SELECTION_1
+    set: (>B:PNEUMATICS_TEMPERATURE_SELECTION_1_Set)
+
+  - get: B:PNEUMATICS_TEMPERATURE_SELECTION_DISPLAY
+    set: (>B:PNEUMATICS_TEMPERATURE_SELECTION_DISPLAY_Set)
+
+
+
+
+
+  # ----------------Engine Display----------------
+  # Alternate LP Start (Momentary switch, FIND A FIX)
+  - get: B:ENGINE_ALTERNATE_LOW_PRESS_START_1
+    set: (>B:ENGINE_ALTERNATE_LOW_PRESS_START_1_Set)
+  - get: B:ENGINE_ALTERNATE_LOW_PRESS_START_2
+    set: (>B:ENGINE_ALTERNATE_LOW_PRESS_START_2_Set)
+
+  # Oil QTY Test
+  - get: B:INSTRUMENT_OIL_QUANTITY_TEST
+    set: (>L:1:WT_B707_OIL_QUANTITY_TEST)
+
+  # Equipment Cooling
+  - get: B:PNEUMATICS_EQUIP_BLOWER_FAN
+    set: (>B:PNEUMATICS_EQUIP_BLOWER_FAN_Set)
+  - get: B:PNEUMATICS_OVBD_DUMP_VALVE
+    set: (>B:PNEUMATICS_OVBD_DUMP_VALVE_Set)
+
+  # Flowmeter Reset
+  - get: B:FUEL_FLOWMETER_RESET_1
+    set: (>B:FUEL_FLOWMETER_RESET_1_Set)
+  - get: B:FUEL_FLOWMETER_RESET_2
+    set: (>B:FUEL_FLOWMETER_RESET_2_Set)
+  - get: B:FUEL_FLOWMETER_RESET_3
+    set: (>B:FUEL_FLOWMETER_RESET_3_Set)
+  - get: B:FUEL_FLOWMETER_RESET_4
+    set: (>B:FUEL_FLOWMETER_RESET_4_Set)
+
+  # Engine Vibration
+  - get: B:ENGINE_VIBRATION_TEST
+    set: (>L:1:WT_B707_ENGINE_VIBRATION_TEST)
+  - get: B:ENGINE_VIBRATION_PICKUP_SELECTOR
+    set: (>B:ENGINE_VIBRATION_PICKUP_SELECTOR_Set)
+
+
+
+
+
+  # ----------------Hydraulic System----------------
+  # AC Aux Pumps
+  - get: B:HYDRAULIC_PUMP_1
+    set: (>B:HYDRAULIC_PUMP_1_Set)
+  - get: B:HYDRAULIC_PUMP_2
+    set: (>B:HYDRAULIC_PUMP_2_Set)
+
+  # Interconnect Valve
+  - get: B:HYDRAULIC_INTERCONNECT_VALVE
+    set: (>B:HYDRAULIC_INTERCONNECT_VALVE_Set)
+
+  # Engine Pumps
+  - get: B:HYDRAULIC_PUMP_3
+    set: (>B:HYDRAULIC_PUMP_3_Set)
+  - get: B:HYDRAULIC_PUMP_4
+    set: (>B:HYDRAULIC_PUMP_4_Set)
+
+  - get: B:COMMON_HYDRAULIC_SHUTOFF_VALVE_1_COVER_1
+    set: (>B:COMMON_HYDRAULIC_SHUTOFF_VALVE_1_COVER_1_Set)
+  - get: B:COMMON_HYDRAULIC_SHUTOFF_VALVE_2_COVER_2
+    set: (>B:COMMON_HYDRAULIC_SHUTOFF_VALVE_2_COVER_2_Set)
+  - get: B:HYDRAULIC_SHUTOFF_VALVE_1
+    set: (>B:HYDRAULIC_SHUTOFF_VALVE_1_Set)
+  - get: B:HYDRAULIC_SHUTOFF_VALVE_2
+    set: (>B:HYDRAULIC_SHUTOFF_VALVE_2_Set)
+
+
+
+
+  # ----------------Upper Aux FE Panel----------------
+  # Coolant Air System
+  - get: B:PNEUMATICS_VALVE_SELECTOR
+    set: (>B:PNEUMATICS_VALVE_SELECTOR_Set)
+
+  - get: B:PNEUMATICS_INLET_VALVE_1
+    set: (>B:PNEUMATICS_INLET_VALVE_1_Set)
+  - get: B:PNEUMATICS_INLET_VALVE_2
+    set: (>B:PNEUMATICS_INLET_VALVE_2_Set)
+  - get: B:PNEUMATICS_EXIT_VALVE_1
+    set: (>B:PNEUMATICS_EXIT_VALVE_1_Set)
+  - get: B:PNEUMATICS_EXIT_VALVE_2
+    set: (>B:PNEUMATICS_EXIT_VALVE_2_Set)
+
+  - get: B:PNEUMATICS_TURBOFAN_EXIT_VALVE_1
+    set: (>B:PNEUMATICS_TURBOFAN_EXIT_VALVE_1_Set)
+  - get: B:PNEUMATICS_TURBOFAN_EXIT_VALVE_2
+    set: (>B:PNEUMATICS_TURBOFAN_EXIT_VALVE_2_Set)
+
+  - get: B:PNEUMATICS_FWD_CARGO_COMPT_HEATER
+    set: (>B:PNEUMATICS_FWD_CARGO_COMPT_HEATER_Set)
+
+  # Crew Compartment Aux Heater
+  - get: B:PNEUMATICS_CARGO_DOOR_HEATER
+    set: (>B:PNEUMATICS_CARGO_DOOR_HEATER_Set)
+
+  - get: B:COMMON_PNEUMATICS_AUX_CREW_HEAT_VALVE_COVER
+    set: (>B:COMMON_PNEUMATICS_AUX_CREW_HEAT_VALVE_COVER_Set)
+  - get: B:PNEUMATICS_AUX_CREW_HEAT_VALVE
+    set: (>B:PNEUMATICS_AUX_CREW_HEAT_VALVE_Set)
+
+  - get: B:PNEUMATICS_GASPER_FAN_1
+    set: (>B:PNEUMATICS_GASPER_FAN_1_Set)
+
+  # Cabin Air Conditioning
+  - get: B:PNEUMATICS_TEMP_CONTROL_VALVE_1
+    set: (>B:PNEUMATICS_TEMP_CONTROL_VALVE_1_Set)
+  - get: B:PNEUMATICS_TEMP_CONTROL_VALVE_2
+    set: (>B:PNEUMATICS_TEMP_CONTROL_VALVE_2_Set)
+
+  # ----------------Fuel Dump Panel----------------
+  - get: B:FUEL_FUEL_DUMP_PANEL_COVER
+    set: (>B:FUEL_FUEL_DUMP_PANEL_COVER_Set)
+
+  - get: B:FUEL_DUMP_CHUTE
+    set: (>B:FUEL_DUMP_CHUTE_Set)
+
+  - get: B:FUEL_FUEL_DUMP_VALVE_CENTER_LEFT
+    set: (>B:FUEL_FUEL_DUMP_VALVE_CENTER_LEFT_Set)
+  - get: B:FUEL_FUEL_DUMP_VALVE_CENTER_RIGHT
+    set: (>B:FUEL_FUEL_DUMP_VALVE_CENTER_RIGHT_Set)
+
+  - get: B:FUEL_FUEL_DUMP_VALVE_MAIN_1
+    set: (>B:FUEL_FUEL_DUMP_VALVE_MAIN_1_Set)
+  - get: B:FUEL_FUEL_DUMP_VALVE_MAIN_2
+    set: (>B:FUEL_FUEL_DUMP_VALVE_MAIN_2_Set)
+  - get: B:FUEL_FUEL_DUMP_VALVE_MAIN_3
+    set: (>B:FUEL_FUEL_DUMP_VALVE_MAIN_3_Set)
+  - get: B:FUEL_FUEL_DUMP_VALVE_MAIN_4
+    set: (>B:FUEL_FUEL_DUMP_VALVE_MAIN_4_Set)
+
+
+
+
+
+  # ----------------Lower Aux FE Panel----------------
+  # Lighting Control
+  - get: B:UNKNOWN_INTERPHONE
+    set: (>B:UNKNOWN_INTERPHONE_Set)
+  - get: B:LIGHTING_ENGINEERS_PANEL_LIGHT
+    set: (>B:LIGHTING_ENGINEERS_PANEL_LIGHT_Set)
+  - get: B:LIGHTING_FE_PANEL_FLOOD_LIGHT
+    set: (>B:LIGHTING_FE_PANEL_FLOOD_LIGHT_Set)
+  - get: B:LIGHTING_BREAKER_PANEL_LIGHT
+    set: (>B:LIGHTING_BREAKER_PANEL_LIGHT_Set)
+  - get: B:LIGHTING_FE_PANEL_TABLE_LIGHTS
+    set: (>B:LIGHTING_FE_PANEL_TABLE_LIGHTS_Set)
+
+  # Oxygen
+  - get: B:ELECTRICAL_CREW_OXY_EMER
+    set: (>B:ELECTRICAL_CREW_OXY_EMER_Set)
+  - get: B:ELECTRICAL_CREW_OXY_DILUTER
+    set: (>B:ELECTRICAL_CREW_OXY_DILUTER_Set)
+  - get: B:ELECTRICAL_CREW_OXY_FLOW
+    set: (>B:ELECTRICAL_CREW_OXY_FLOW_Set)
+
+  # Door Warning
+  - get: B:ELECTRICAL_DOOR_WARN_TEST
+    set: (>L:1:WT_B707_DOOR_WARNINGS_TEST)
+
+  # Cockpit Voice Recorder
+  - get: B:INSTRUMENT_CVR_TRIP_INFO_0
+    set: "`${value/9} (>B:INSTRUMENT_CVR_TRIP_INFO_0_Set)`"
+  - get: B:INSTRUMENT_CVR_TRIP_INFO_1
+    set: "`${value/9} (>B:INSTRUMENT_CVR_TRIP_INFO_1_Set)`"
+  - get: B:INSTRUMENT_CVR_TRIP_INFO_2
+    set: "`${value/9} (>B:INSTRUMENT_CVR_TRIP_INFO_2_Set)`"
+  - get: B:INSTRUMENT_CVR_TRIP_INFO_3
+    set: "`${value/9} (>B:INSTRUMENT_CVR_TRIP_INFO_3_Set)`"
+  - get: B:INSTRUMENT_CVR_TRIP_INFO_4
+    set: "`${value/9} (>B:INSTRUMENT_CVR_TRIP_INFO_4_Set)`"
+  - get: B:INSTRUMENT_CVR_TRIP_INFO_5
+    set: "`${value/9} (>B:INSTRUMENT_CVR_TRIP_INFO_5_Set)`"
+  - get: B:INSTRUMENT_CVR_REPEAT_SWITCH
+    set: (>B:INSTRUMENT_CVR_REPEAT_SWITCH_Set)
+  - get: B:INSTRUMENT_CVR_EVENT_SWITCH
+    set: (>B:INSTRUMENT_CVR_EVENT_SWITCH_Set)
+
+  # ----------------APU Panel----------------
+  - get: B:ELECTRICAL_APU_EXT
+    set: (>B:ELECTRICAL_APU_EXT_Set)
+  - get: B:ELECTRICAL_APU_FIRE_TEST
+    set: (>B:ELECTRICAL_APU_FIRE_TEST_Set)
+  - get: B:ELECTRICAL_APU_FIRE_PULL
+    set: (>B:ELECTRICAL_APU_FIRE_PULL_Set)
+  - get: B:SAFETY_FIRE_TEST_APU
+    set: (>B:SAFETY_FIRE_TEST_APU_Set)
+
+  - get: B:ELECTRICAL_APU
+    set: (>B:ELECTRICAL_APU_Set)
+  - get: B:ELECTRICAL_APU_GENERATOR
+    set: (>B:ELECTRICAL_APU_GENERATOR_Set)
+  - get: B:PNEUMATICS_APU_BLEED
+    set: (>B:PNEUMATICS_APU_BLEED_Set)
+
+
+
+
+
+
+
+
+
+
+  # ----------------Navigator's Panel----------------
+  - get: B:LIGHTING_NAVIGATORS_FLOOD_LIGHT
+    set: (>B:LIGHTING_NAVIGATORS_FLOOD_LIGHT_Set)
+  - get: B:LIGHTING_NAVIGATORS_PANEL_LIGHT
+    set: (>B:LIGHTING_NAVIGATORS_PANEL_LIGHT_Set)
+  - get: B:LIGHTING_RED_TABLE_LIGHT
+    set: (>B:LIGHTING_RED_TABLE_LIGHT_Set)
+  - get: B:LIGHTING_NAVIGATORS_TABLE_LIGHTS
+    set: (>B:LIGHTING_NAVIGATORS_TABLE_LIGHTS_Set)
+  # Navigator altimeter not synced since it's shared with captian's altimeter

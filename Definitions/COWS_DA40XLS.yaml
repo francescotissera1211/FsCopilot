@@ -1,0 +1,387 @@
+# Original author: https://discord.com/channels/1454265644416765974/1474855179135488311/1554819010065862726
+# Updated: 2026-10-01 11:31:07
+
+#How2
+#- 1. Spawn. Make sure the Electric master is off!! Double check that your weather settings are identical.
+#- 2. Connect with your friend. The Master aircraft will send its configuration to the slave aircraft.
+#- 3. Verify the configuration has been sent over by comparing altimeters. They should match exactly!
+#- 4. Turn on the Electric master, a CAS advisory message will display which config is being used. (Master = Yours, Slave = Friend's)
+#- 69. Have fun :) 
+
+#DUAL INPUTS:
+#- This aircraft support dual input of Ailerons, Elevator, Rudder, Brakes, Trim, and throttle, prop and mixture levers.
+#- Hold the AP Disconnect button for 5 seconds to toggle dual input.
+#- Inputs are sent at 10hz to reduce network usage. 
+
+#Tips, recomendations, Advice:
+#- The master aircraft should perform the start. Use the mouse to operate the starter and hold the starter longer a little longer.
+#- Operate engine and G1000 controls slowly and smoothly to mitigate desyncs.
+#- Some items like fuel quantity, weights, temps, etc. may require manual syncing or will will sync later in the flight.
+
+
+include:
+  - modules/AS_G1000_NXi.yaml
+  
+master:
+    #Fuel and weight
+    - get: A:FUEL TANK LEFT MAIN QUANTITY, gallons
+    - get: A:FUEL TANK RIGHT MAIN QUANTITY, gallons
+    - get: L:FUEL_TEMP
+    - get: A:PAYLOAD STATION WEIGHT:1, pounds
+    - get: A:PAYLOAD STATION WEIGHT:2, pounds
+    - get: A:PAYLOAD STATION WEIGHT:3, pounds
+    - get: A:PAYLOAD STATION WEIGHT:4, pounds
+    - get: A:PAYLOAD STATION WEIGHT:5, pounds
+
+    #Config
+    - get: L:FSC_FAILURES_MODE
+    - get: L:FSC_FAILURES_TIMER
+    - get: L:FSC_DAMAGE_ENABLED
+    - get: L:FSC_REALISTIC_PARKING_BRAKE
+
+    - get: L:FSC_OP_SPREAD_BYPASS
+    - get: L:FSC_CYL_SPREAD_INJ:1
+    - get: L:FSC_CYL_SPREAD_INJ:2
+    - get: L:FSC_CYL_SPREAD_INJ:3
+    - get: L:FSC_CYL_SPREAD_INJ:4
+    - get: L:SPREAD_INJ_TRIM
+    - get: L:FSC_CYL_SPREAD_EGT:1
+    - get: L:FSC_CYL_SPREAD_EGT:2
+    - get: L:FSC_CYL_SPREAD_EGT:3
+    - get: L:FSC_CYL_SPREAD_EGT:4
+    - get: L:FSC_CYL_SPREAD_COOL:1
+    - get: L:FSC_CYL_SPREAD_COOL:2
+    - get: L:FSC_CYL_SPREAD_COOL:3
+    - get: L:FSC_CYL_SPREAD_COOL:4
+    - get: L:FSC_MAG_SPREAD_TIMING
+    - get: L:FSC_THROTTLE_SPREAD
+    - get: L:FSC_PROP_SPREAD_HI
+    - get: L:FSC_PROP_SPREAD_LO
+    - get: L:FSC_FUEL_SPREAD_PRESSURE
+    - get: L:FSC_SPREAD_ROUGH
+    - get: L:FSC_SPREAD_OC
+    - get: L:FSC_SPREAD_OP
+    - get: L:FSC_SPREAD_ALT
+    - get: L:FSC_SPREAD_AIR
+    - get: L:FSC_SPREAD_ALT_OFF
+    - get: L:FSC_SYNC
+
+    #Engine
+    - get: L:FSC_ENG_COMP_RPM
+    - get: L:OC_TEMPERATURE
+    - get: L:OT_PROBE
+    - get: L:CHT_C:1
+    - get: L:CHT_C:2
+    - get: L:CHT_C:3
+    - get: L:CHT_C:4
+    #- get: L:CHT_PROBE:1
+    #- get: L:CHT_PROBE:2
+    #- get: L:CHT_PROBE:3
+    #- get: L:CHT_PROBE:4
+    #- get: L:EGT_DELTA:1
+    #- get: L:EGT_DELTA:2
+    #- get: L:EGT_DELTA:3
+    #- get: L:EGT_DELTA:4
+    #- get: L:EGT_PROBE:1
+    #- get: L:EGT_PROBE:2
+    #- get: L:EGT_PROBE:3
+    #- get: L:EGT_PROBE:4
+    - get: L:ENG_FUEL_SYSTEM_GRAM
+    - get: L:ENG_FUEL_SYSTEM_PRIMED
+    - get: L:ENG_FUEL_LINE_GRAM:S
+    - get: L:ENG_FUEL_LINE_GRAM:S
+    - get: L:ENG_FUEL_LINE_GRAM:1
+    - get: L:ENG_FUEL_LINE_GRAM:2
+    - get: L:ENG_FUEL_LINE_GRAM:3
+    - get: L:ENG_FUEL_LINE_GRAM:4
+    - get: L:ENG_FUEL_OUTSIDE_CYL_GRAM:1
+    - get: L:ENG_FUEL_OUTSIDE_CYL_GRAM:2
+    - get: L:ENG_FUEL_OUTSIDE_CYL_GRAM:3
+    - get: L:ENG_FUEL_OUTSIDE_CYL_GRAM:4
+    - get: L:HEALTH_OIL
+    - get: L:DAMAGE_BLOCK_FAC
+    - get: L:HEALTH_CYL:1
+    - get: L:HEALTH_CYL:2
+    - get: L:HEALTH_CYL:3
+    - get: L:HEALTH_CYL:4
+    - get: L:DAMAGE_CYL_FAC:1
+    - get: L:DAMAGE_CYL_FAC:2
+    - get: L:DAMAGE_CYL_FAC:3
+    - get: L:DAMAGE_CYL_FAC:4
+    - get: L:ENG_MAG_FOUL_PWR:1R
+    - get: L:ENG_MAG_FOUL_PWR:1L
+    - get: L:ENG_MAG_FOUL_PWR:2R
+    - get: L:ENG_MAG_FOUL_PWR:2L
+    - get: L:ENG_MAG_FOUL_PWR:3R
+    - get: L:ENG_MAG_FOUL_PWR:3L
+    - get: L:ENG_MAG_FOUL_PWR:4R
+    - get: L:ENG_MAG_FOUL_PWR:4L
+
+    #Elec
+    - get: L:ELEC_BATT_CAPACITY
+    - get: L:ELEC_BATT_SURF
+    - get: L:ELEC_BATT_TEMP
+    - get: L:ELEC_BATT_EMER_CAPACITY
+
+    #AFCS
+    - get: L:AFCS_FORCE_AIL
+    - get: L:AFCS_FORCE_ELE
+    - get: L:AFCS_FAIL_AIL
+    - get: L:AFCS_FAIL_ELE
+    - get: L:AFCS_FAIL_TRIM
+    - get: L:AFCS_POWER
+
+    #Other
+    - get: L:PITOT_TEMP
+    - get: L:FILTER_RESRTICTION
+    - get: L:FUEL_TOTALISER_REM, Gallons
+    - get: L:FUEL_TOTALISER_USE, Gallons
+    - get: L:FSC_CON_DUAL_OFF
+    - get: L:FSC_CON_DUAL_OFF_TIMER_DISPLAY
+
+shared:
+    #Other
+    - get: L:INPUT_START, Percent
+    - get: L:AUTOSTART_STEP
+     
+    #Controls
+    - get: L:FSC_CON_THT
+    - get: L:FSC_CON_PRP
+    - get: L:FSC_CON_MIX
+    - get: L:FSC_CON_OUT_AIL
+      set: (>L:FSC_CON_IN_AIL)
+    - get: L:FSC_CON_OUT_ELE
+      set: (>L:FSC_CON_IN_ELE)
+    - get: L:FSC_CON_OUT_BR1
+      set: (>L:FSC_CON_IN_BR1)
+    - get: L:FSC_CON_OUT_BR2
+      set: (>L:FSC_CON_IN_BR2)
+    - get: L:INPUT_TRIM_AXIS
+
+    #Systems
+    - get: L:COWS_MINIMUMS_ALTITUDE
+    - get: L:COWS_TIMER_EXP
+    - get: L:INPUT_AP_DISC
+    - get: L:WT_TOGA_ACTIVE
+      set: (>K:AUTO_THROTTLE_TO_GA)
+    - get: L:G1000_REV_FORCE
+
+    #Damage
+    - get: L:DAMAGE_OIL
+    - get: L:DAMAGE_BLOCK
+    - get: L:DAMAGE_CYL:1
+    - get: L:DAMAGE_CYL:2
+    - get: L:DAMAGE_CYL:3
+    - get: L:DAMAGE_CYL:4
+    - get: L:DAMAGE_MAG_FOUL:1R
+    - get: L:DAMAGE_MAG_FOUL:1L
+    - get: L:DAMAGE_MAG_FOUL:2R
+    - get: L:DAMAGE_MAG_FOUL:2L
+    - get: L:DAMAGE_MAG_FOUL:3R
+    - get: L:DAMAGE_MAG_FOUL:3L
+    - get: L:DAMAGE_MAG_FOUL:4R
+    - get: L:DAMAGE_MAG_FOUL:4L
+    - get: L:GENERAL ENG FAILED:1
+    - get: L:KAPUTT_CYL:1
+    - get: L:KAPUTT_CYL:2
+    - get: L:KAPUTT_CYL:3
+    - get: L:KAPUTT_CYL:4
+    - get: A:GENERAL ENG FAILED:1, Bool
+    - get: A:ENG ON FIRE:1, Bool
+
+    #Resets 
+    - get: L:RESET_ALL
+    - get: L:RESET_FAILURES
+    - get: L:RESET_DAMAGE
+    - get: L:RESET_BATT
+    - get: L:RESET_ECU
+
+    #Switches
+    #Center Console (back to front)
+    - get: L:FUEL_SELECTOR
+    - get: L:INPUT_PARK
+    - get: L:ENGINE_ALTERNATE_AIR
+
+    #Lower switches (right to left)
+    - get: A:FLAPS HANDLE INDEX, Number
+    - get: A:PITOT HEAT SWITCH:1, Bool
+      set: "`1 ${value} (>K:2:PITOT_HEAT_SET)`"
+    - get: A:GENERAL ENG FUEL PUMP SWITCH EX1:1, Bool
+      set: (>K:ELECT_FUEL_PUMP1_SET)
+    - get: L:FSC_STARTER
+    - get: L:STARTER_SWITCH
+    - get: L:START_MIXTURE_START
+    - get: A:ELECTRICAL MASTER BATTERY:1, Bool
+    - get: A:GENERAL ENG MASTER ALTERNATOR:1, Bool
+      set: "`${value} 1 (>K:ALTERNATOR_SET)`"
+    - get: A:AVIONICS MASTER SWITCH, Bool
+      set: (>K:AVIONICS_MASTER_1_SET)
+    - get: L:ESS_BUS_SWITCH
+    - get: A:ALTERNATE STATIC SOURCE OPEN, Bool
+      set: (>K:TOGGLE_ALTERNATE_STATIC)
+
+    #Upper switches (left to right)
+    - get: L:LIGHTING_PANEL_1
+      set: (>B:LIGHTING_PANEL_1_Set)
+    - get: L:LIGHTING_GLARESHIELD_1
+      set: (>B:LIGHTING_GLARESHIELD_1_Set)
+    - get: A:LIGHT LANDING, Bool
+    - get: A:LIGHT TAXI, Bool
+    - get: A:LIGHT NAV, Bool
+    - get: A:LIGHT STROBE, Bool
+    - get: L:EMERGENCY_BATT_COVER
+    - get: L:EMERGENCY_BATT
+    - get: L:ATT_CAGE
+    - get: L:ATT_CAGE_IsDown
+    - get: L:KOHLSMAN SETTING HG:2
+
+    #CBs
+    - get: L:CB_HOR
+    - get: L:CB_ADC
+    - get: L:CB_AHR
+    - get: L:CB_PFD
+    - get: L:CB_PIT
+    - get: L:CB_FLP
+    - get: L:CB_AUD
+    - get: L:CB_CM1
+    - get: L:CB_GP1
+    - get: L:CB_XPR
+    - get: L:CB_LDL
+    - get: L:CB_FLD
+    - get: L:CB_BAT
+    - get: L:CB_ESS
+    - get: L:CB_MTC
+    - get: L:CB_ENG
+    - get: L:CB_STR
+    - get: L:CB_MAN
+    - get: L:CB_MFD
+    - get: L:CB_FAN
+    - get: L:CB_FUP
+    - get: L:CB_ALT
+    - get: L:CB_ACN
+    - get: L:CB_APT
+    - get: L:CB_INT
+    - get: L:CB_STB
+    - get: L:CB_POS
+    - get: L:CB_TXM
+    - get: L:CB_AVF
+    - get: L:CB_AVN
+    - get: L:CB_CM2
+    - get: L:CB_GP2
+    - get: L:CB_TAS
+    - get: L:CB_AFC
+
+    #Overhead Lighting
+    - get: A:LIGHT CABIN:1, Bool
+    - get: A:LIGHT CABIN:2, Bool
+    - get: A:LIGHT CABIN:3, Bool
+
+    #Doors and windows
+    - get: A:INTERACTIVE POINT GOAL:2, Bool
+    - get: A:INTERACTIVE POINT GOAL:3, Bool
+    - get: A:INTERACTIVE POINT GOAL:6, Bool
+    - get: A:INTERACTIVE POINT GOAL:7, Bool
+
+    #Aircraft Failures
+    - get: L:FAILURES_BYPASS
+    - get: L:FAILURES_THERMOSTAT_OIL
+    - get: L:FAILURES_PROP_PUMP
+    - get: L:FAILURES_PROP_LEVER
+    - get: L:FAILURES_MIX_LEVER
+    - get: L:FAILURES_THROT_LEVER
+    - get: L:FAILURES_VACC_LEAK
+    - get: L:FAILURES_FUEL_PUMP 
+    - get: L:FAILURES_FUEL_LEAK 
+    - get: L:FAILURES_FUEL_INJ:1
+    - get: L:FAILURES_FUEL_INJ:2
+    - get: L:FAILURES_FUEL_INJ:3
+    - get: L:FAILURES_FUEL_INJ:4
+    - get: L:FAILURES_MAG_R
+    - get: L:FAILURES_MAG_L
+    - get: L:FAILURES_MAG_GND_R
+    - get: L:FAILURES_MAG_GND_L
+    - get: L:FAILURES_MAG:1R
+    - get: L:FAILURES_MAG:2R
+    - get: L:FAILURES_MAG:3R
+    - get: L:FAILURES_MAG:4R
+    - get: L:FAILURES_MAG:1L
+    - get: L:FAILURES_MAG:2L
+    - get: L:FAILURES_MAG:3L
+    - get: L:FAILURES_MAG:4L
+    - get: L:FAILURES_CHT_BAFFLE
+    - get: L:FAILURES_CHT_OIL:1
+    - get: L:FAILURES_CHT_OIL:2
+    - get: L:FAILURES_CHT_OIL:3
+    - get: L:FAILURES_CHT_OIL:4
+    - get: L:FAILURES_ALT
+    - get: L:FAILURES_ALT_OVERVOLT 
+    - get: L:FAILURES_CYL:1
+    - get: L:FAILURES_CYL:2
+    - get: L:FAILURES_CYL:3
+    - get: L:FAILURES_CYL:4
+    - get: L:FAILURES_OIL
+    - get: L:FAILURES_BLOCK
+    - get: L:FAILURES_SENS_RPM
+    - get: L:FAILURES_SENS_MAP
+    - get: L:FAILURES_SENS_OP
+    - get: L:FAILURES_SENS_OT
+    - get: L:FAILURES_SENS_FF
+    - get: L:FAILURES_SENS_FP
+    - get: L:FAILURES_SENS_AMPS
+    - get: L:FAILURES_SENS_VOLT
+    - get: L:FAILURES_SENS_FUEL:1
+    - get: L:FAILURES_SENS_FUEL:2
+    - get: L:FAILURES_SENS_CHT:1
+    - get: L:FAILURES_SENS_CHT:2
+    - get: L:FAILURES_SENS_CHT:3
+    - get: L:FAILURES_SENS_CHT:4
+    - get: L:FAILURES_SENS_EGT:1
+    - get: L:FAILURES_SENS_EGT:2
+    - get: L:FAILURES_SENS_EGT:3
+    - get: L:FAILURES_SENS_EGT:4
+    - get: L:FAILURES_STBY_AIRSPEED
+    - get: L:FAILURES_STBY_STATIC
+    - get: L:FAILURES_LIGHT_FLAP:1
+    - get: L:FAILURES_LIGHT_FLAP:2
+    - get: L:FAILURES_LIGHT_FLAP:3
+    - get: L:FAILURES_LIGHT_DIMMER
+    - get: L:FAILURES_LIGHT_FLOOD
+    - get: L:FAILURES_BRAKE:1
+    - get: L:FAILURES_BRAKE:2
+    - get: L:FAILURES_AFCS_TRIM_RUN
+    - get: L:FAILURES_AFCS_TRIM
+    - get: L:FAILURES_AFCS_ELE
+    - get: L:FAILURES_AFCS_AIL
+    - get: L:FAILURES_CB_HORIZON
+    - get: L:FAILURES_CB_ADC
+    - get: L:FAILURES_CB_AHRS
+    - get: L:FAILURES_CB_PFD
+    - get: L:FAILURES_CB_PITOT
+    - get: L:FAILURES_CB_FLAPS
+    - get: L:FAILURES_CB_AUD
+    - get: L:FAILURES_CB_COM1
+    - get: L:FAILURES_CB_NAV1
+    - get: L:FAILURES_CB_XPDR
+    - get: L:FAILURES_CB_BATT
+    - get: L:FAILURES_CB_ESS_TIE
+    - get: L:FAILURES_CB_MAST
+    - get: L:FAILURES_CB_ENGINST
+    - get: L:FAILURES_CB_START
+    - get: L:FAILURES_CB_MAIN_TIE
+    - get: L:FAILURES_CB_MFD
+    - get: L:FAILURES_CB_CDU_FAN
+    - get: L:FAILURES_CB_FUEL_PUMP
+    - get: L:FAILURES_CB_ALT
+    - get: L:FAILURES_CB_ALT_CONT
+    - get: L:FAILURES_CB_ALT_PROT
+    - get: L:FAILURES_CB_AV_FAN
+    - get: L:FAILURES_CB_AV_BUS
+    - get: L:FAILURES_CB_COM2
+    - get: L:FAILURES_CB_NAV2
+    - get: L:FAILURES_CB_TAS
+    - get: L:FAILURES_CB_AFCS
+    - get: L:FAILURES_CB_ADF
+    - get: L:FAILURES_FUEL_LEAK_L
+    - get: L:FAILURES_FUEL_LEAK_R
+    - get: L:FAILURES_FUEL_SPRING
+    - get: L:FAILURES_STALL_HORN

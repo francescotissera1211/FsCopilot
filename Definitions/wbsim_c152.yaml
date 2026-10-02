@@ -1,0 +1,300 @@
+# Original author: https://discord.com/channels/1454265644416765974/1520379671446032425/1520379785061076992
+# Updated: 2026-06-27 10:46:30
+
+
+
+#Made By Discord @lolodom
+
+include:
+  - modules/PMS50_GTN_650-750.yaml
+  - modules/payload.yaml
+  - modules/fuel.yaml
+
+master:
+
+- get: A:BRAKE LEFT POSITION, Position
+  set: (>K:AXIS_LEFT_BRAKE_SET)
+- get: A:BRAKE RIGHT POSITION, Position
+  set: (>K:AXIS_RIGHT_BRAKE_SET)
+- get: A:HEADING INDICATOR, Degrees
+  set: (>K:GYRO_DRIFT_SET_EX1)x
+
+shared:
+- get: L:HANDLING_ElevatorTrim
+  set: (>B:HANDLING_ElevatorTrim_1_Set)
+#Bottom Panel
+- get: A:RECIP ENG PRIMER:1, percent
+- get: B:ELECTRICAL_Alternator_1_Toggle
+- get: B:ELECTRICAL_Battery_1_Toggle
+- get: L:C152X_STARTER_SWITCH_STATE
+  set: (>K:MAGNETO1_SET)
+- get: A:LIGHT POTENTIOMETER:5, percent
+  set: (>K:LIGHT_POTENTIOMETER_5_SET)
+- get: A:LIGHT POTENTIOMETER:6, percent
+  set: (>K:LIGHT_POTENTIOMETER_6_SET)
+- get: K:PANEL_LIGHTS_SET
+- get: K:PITOT_HEAT_SET
+- get: K:NAV_LIGHTS_SET
+- get: K:STROBES_SET
+- get: K:BEACON_LIGHTS_SET
+- get: K:TAXI_LIGHTS_SET
+- get: K:LANDING_LIGHTS_SET
+
+#curcuit brakers
+- get: L:C152X_ALT_BREAKER_PULLED
+- get: L:C152X_FUEL_IND_BREAKER_PULLED
+- get: L:C152X_BCN_PITOT_BREAKER_PULLED
+- get: L:C152X_STROBE_LTS_BREAKER_PULLED
+- get: L:C152X_LDG_LTS_BREAKER_PULLED
+- get: L:C152X_FLAP_BREAKER_PULLED
+- get: L:C152X_INST_LTS_BREAKER_PULLED
+- get: L:C152X_NAV_DOME_BREAKER_PULLED
+- get: L:C152X_COM1_BREAKER_PULLED
+- get: L:C152X_COM2_BREAKER_PULLED
+- get: L:C152X_TRANSPONDER_BREAKER_PULLED
+- get: L:C152X_ADF_BREAKER_PULLED
+- get: L:C152X_AUTOPILOT_BREAKER_PULLED
+- get: L:C152X_DME_BREAKER_PULLED
+
+- get: A:BRAKE PARKING INDICATOR, bool
+  set: (>K:PARKING_BRAKE_SET)
+- get: A:GENERAL ENG ANTI ICE POSITION:1, position 16k
+  set: (>K:ANTI_ICE_GRADUAL_SET_ENG1) 
+- get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k
+- get: A:GENERAL ENG MIXTURE LEVER POSITION:1, Position 16k 
+- get: A:FLAPS HANDLE PERCENT, position 16k
+  set: (>B:HANDLING_Flaps_Set)
+- get: L:C152X_CABIN_AIR
+- get: L:C152X_CABIN_HEAT
+
+#MIP
+- get: A:ATTITUDE BARS POSITION, percent
+  set: "value > current ?  '1 (>K:ATTITUDE_BARS_POSITION_UP) ' : '1 (>K:ATTITUDE_BARS_POSITION_DOWN) '"
+
+- get: L:XMLVAR_Minutes_Delta
+- get: L:XMLVAR_Hours_Delta
+
+- get: A:NAV OBS:1, degrees
+  set: (>K:VOR1_SET)
+- get: A:NAV OBS:2, degrees
+  set: (>K:VOR2_SET)
+- get: A:COM ACTIVE FREQUENCY:1, Hz
+
+  set: (>K:COM_RADIO_SET_HZ)
+- get: A:COM ACTIVE FREQUENCY:2, Hz
+  set: (>K:COM2_RADIO_SET_HZ)
+
+- get: A:COM STANDBY FREQUENCY:1, Hz 
+  set: (>K:COM_STBY_RADIO_SET_HZ)
+- get: A:COM STANDBY FREQUENCY:2, Hz 
+  set: (>K:COM2_STBY_RADIO_SET_HZ)
+
+- get: A:COM VOLUME:1, Percent
+  set: (>K:COM1_VOLUME_SET)
+- get: A:COM TEST:1, Bool
+  set: (>B:NAVCOM_COM2_Test_Set) 
+
+- get: A:NAV ACTIVE FREQUENCY:1, MHz
+  set: "`${value * 1000000} (>K:NAV1_STBY_SET_HZ)`"
+- get: A:NAV ACTIVE FREQUENCY:2, MHz
+  set: "`${value * 1000000} (>K:NAV2_STBY_SET_HZ)`"
+
+- get: A:NAV STANDBY FREQUENCY:1, MHz
+  set: "`${value * 1000000} (>K:NAV1_STBY_SET_HZ)`"
+- get: A:NAV STANDBY FREQUENCY:2, MHz
+  set: "`${value * 1000000} (>K:NAV2_STBY_SET_HZ)`"
+
+
+
+- get: A:COM VOLUME:2, Percent
+  set: (>K:COM2_VOLUME_SET)
+- get: A:COM TEST:2, Bool
+  set: (>B:NAVCOM_COM2_Test_Set) 
+
+- get: A:NAV VOLUME:1, Percent
+  set: (>K:NAV1_VOLUME_SET_EX1)
+- get: A:NAV VOLUME:2, Percent
+  set: (>K:NAV2_VOLUME_SET_EX1)
+- get: H:KA134_EXT_PRESS
+- get: H:KA134_EXT_RELEASE
+- get: H:KA134_MIC1_PRESS
+- get: H:KA134_MIC1_RELEASE
+- get: H:KA134_MIC2_PRESS
+- get: H:KA134_MIC2_RELEASE
+- get: H:KA134_BOTH_PRESS
+- get: H:KA134_BOTH_RELEASE
+- get: H:KA134_NAV1_PRESS
+- get: H:KA134_NAV1_RELEASE
+- get: H:KA134_NAV2_PRESS
+- get: H:KA134_NAV2_RELEASE
+- get: H:KA134_ADF_PRESS
+- get: H:KA134_ADF_RELEASE
+- get: H:KA134_DME_PRESS
+- get: H:KA134_DME_RELEASE
+- get: H:KA134_MKR_PRESS
+- get: H:KA134_MKR_RELEASE
+- get: H:KA134_SPKR_PRESS
+- get: H:KA134_SPKR_RELEASE
+
+- get: Z:KI227_CARD_ADJUSTMENT
+#DME Instrument addon
+- get: L:C152X_DME_POWER
+
+#Autopilot Intrument Addon
+- get: A:AUTOPILOT HEADING LOCK DIR:1, degrees
+  set: (>K:HEADING_BUG_SET)
+- get: H:KAP140_AP_PRESS
+- get: H:KAP140_AP_RELEASE
+- get: H:KAP140_HDG_PRESS
+- get: H:KAP140_HDG_RELEASE
+- get: H:KAP140_NAV_PRESS
+- get: H:KAP140_NAV_RELEASE
+- get: H:KAP140_APR_PRESS
+- get: H:KAP140_APR_RELEASE
+- get: H:KAP140_REV_PRESS
+- get: H:KAP140_REV_RELEASE
+- get: H:KAP140_ALT_PRESS
+- get: H:KAP140_ALT_RELEASE
+- get: H:KAP140_UP_PRESS
+- get: H:KAP140_UP_RELEASE
+- get: H:KAP140_DN_PRESS
+- get: H:KAP140_DN_RELEASE
+- get: H:KAP140_ARM_PRESS
+- get: H:KAP140_ARM_RELEASE
+- get: H:KAP140_BARO_PRESS
+- get: H:KAP140_BARO_RELEASE
+- get: H:KAP140_KNOB_OUTER_INC
+- get: H:KAP140_KNOB_OUTER_DEC
+- get: H:KAP140_KNOB_INNER_INC
+- get: H:KAP140_KNOB_INNER_DEC
+
+
+#ADF(KR87) Instrument Addon
+- get: H:KR87_ADF_PRESS
+- get: H:KR87_ADF_RELEASE
+- get: H:KR87_BFO_PRESS
+- get: H:KR87_BFO_RELEASE
+- get: H:KR87_FREQ_PRESS
+- get: H:KR87_FREQ_RELEASE
+- get: H:KR87_FLTET_PRESS
+- get: H:KR87_FLTET_RELEASE
+- get: H:KR87_SETRST_PRESS
+- get: H:KR87_SETRST_RELEASE
+- get: K:ADF_VOLUME_SET
+- get: H:KR87_KNOB_INNER_INC
+- get: H:KR87_KNOB_INNER_DEC
+- get: H:KR87_KNOB_OUTER_INC
+- get: H:KR87_KNOB_OUTER_DEC
+- get: Z:KR87_KNOB_INNER_PUSH
+  set: (>H:KR87_KNOB_INNER_PUSH)
+
+#EGT Intrument Addon
+- get: K:EGT1_DEC
+- get: K:EGT1_INC
+#Transponder Intrument Addon
+- get: H:TransponderSTBY
+- get: H:TransponderVFR
+- get: H:TransponderALT
+- get: H:TransponderOFF
+- get: H:TransponderON
+- get: H:TransponderFUNC
+- get: H:TransponderCRSR
+- get: H:TransponderCLR
+- get: H:TransponderSTARTSTOP
+
+- get: K:ADF_VOLUME_INC
+- get: K:ADF_VOLUME_DEC
+- get: K:ADF_100_INC
+- get: K:ADF_100_DEC
+- get: K:ADF_10_INC
+- get: K:ADF_10_DEC
+- get: K:ADF_1_INC
+- get: K:ADF_1_DEC
+- get: B:NAVCOM_ADF_Mode_Set
+
+- get: L:C152X_XPNDR_KNOB
+- get: K:XPNDR_IDENT_ON
+- get: A:TRANSPONDER CODE:1, Bco16
+  set: (>B:NAVCOM_Transponder_Code_Set)
+
+- get: A:GENERAL ENG FUEL VALVE:1, bool
+  set: (>K:TOGGLE_FUEL_VALVE_ENG1)
+
+- get: A:KOHLSMAN SETTING MB:2, Millibars 
+  set: "`${value * 16}  (>K:2:KOHLSMAN_SET)`"
+
+# Top Panel
+- get: A:AUDIO PANEL VOLUME, percent
+  set: (>K:AUDIO_PANEL_VOLUME_SET, number)
+- get: A:LIGHT POTENTIOMETER:4, percent
+  set: K:LIGHT_POTENTIOMETER_4_SET
+- get: K:MARKER_BEACON_TEST_MUTE
+- get: B:NAVCOM_AUDIO_Marker_Sensitivity_Toggle
+- get: L:C152X_SPKR_PHONE
+
+  #Misc
+- get: L:C152X_TABLET
+- get: L:C152X_PILOT_VISOR
+- get: L:C152X_COPILOT_VISOR
+- get: L:C152X_WINDOW_HANDLE_PILOT
+- get: L:C152X_PILOT_WINDOW
+- get: L:C152X_WINDOW_HANDLE_COPILOT
+- get: L:C152X_COPILOT_WINDOW
+- get: L:C152X_DOOR_PILOT
+- get: L:C152X_DOOR_COPILOT
+- get: Z:C152X_CABIN_LIGHT
+- get: L:C152X_PILOT_SEAT
+- get: L:C152X_COPILOT_SEAT
+- get: Z:C152X_WA_duck, bool
+
+#covers
+- get: H:C152X_ENG_COVER
+- get: H:C152X_PITOT_COVER
+- get: H:C152X_CHOCKSL
+- get: H:C152X_CHOCKSR
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # Helped a little bit @afl625

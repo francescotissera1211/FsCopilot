@@ -1,0 +1,383 @@
+# Original author: https://discord.com/channels/1454265644416765974/1534642400834748577/1538565476274143232
+# Updated: 2026-08-16 15:09:57
+
+# Black Square COMMANDER 114 variant - FsCopilot YAML Configuration
+# Version: 0.0.2
+# Created By: DKgolfnut
+# Special Thanks: 
+# Date: 8/16/2026 
+
+# Known Issues:
+  # - Initial release all functions working. 
+  # - 8/14/2026
+   # - Pitch Trim Switch is not Synched
+   # GPS/VLOC on GPS units or from Panel are not synched. Each pilot must switch from GPS/VLOC manually. 
+   # GTN750/650 are getting strange double entries on entering ICAO and WAYPOINTS via touch keyboard. Import flight plan from Simbrief or enter manually. 
+   # FLAP Switch due to its functionality acts strange. The flaps move, but the second pilot's seems to not increase/decrease at the same rate as the pilot making the flap changes when using the flap lever in SIM. I have it mapped to a switch using the FLAPS_INCR and FLAPS_DECR and it seems to work fine. ## Please let me know as I think this may need to be removed from synch.## 
+
+# FIXED:
+  # - 8/16/2026
+   # - Added Control Locks
+  # - 8/14/2026
+   # - Initial releases. Please report issues other than those identified above.
+
+include:
+  - modules/PMS50_GTN_650-750.yaml
+  - modules/AS_GNS430.yaml
+  - modules/AS_GNS530.yaml
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+master: 
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+#  - get: A:ELEVATOR TRIM PCT EX1, Percent over #100
+#    set: (>B:HANDLING_ELEVATORTRIM_1_SET)
+#  - get: L:HANDLING_ElevatorTrim
+#    set: (>K:ELEV_TRIM_SET)
+  - get: A:ELEVATOR TRIM PCT, Position 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: L:HANDLING_RudderTrim
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # PROPELLER 1 LEVER
+    set: (>K:PROP_PITCH1_SET)
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, position 16k # - MIXTURE 1 LEVER 
+  - get: L:BKSQ_MixtureLeverPosition_1, Percent 
+  - get: L:BKSQ_TurboCharged, Bool
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+shared:
+######### PANEL OPTIONS ##########
+  - get: L:XMLVAR_GPS_DISABLED_AS430_1
+  - get: L:XMLVAR_GPS_DISABLED_AS530_1
+  - get: L:XMLVAR_GPS_DISABLED_GTN750_1
+  - get: L:XMLVAR_GPS_DISABLED_GTN650_1
+  - get: L:XMLVAR_GPS_DISABLED_GTN650_2
+
+######### RADIO SELECTIONS 
+ #########
+## - KLN 90B TSO PANEL ###
+  - get: L:KLN90B_AnnunTest, Number
+  - get: L:KLN90B_Brightness, Number 
+  - get: L:KLN90B_Disabled, Number
+  - get: L:KLN90B_ElectricitySimVarIndex, Number
+  - get: L:KLN90B_GPS_WP_BEARING, Number       
+  - get: L:KLN90B_HSI_TF_FLAGS, Number
+  - get: L:KLN90B_Installed, Number 
+  - get: L:KLN90B_MsgLight, Number
+  - get: L:KLN90B_ObsSource, Number 
+  - get: L:KLN90B_ObsTarget, Number 
+  - get: L:KLN90B_Power, Number 
+  - get: L:KLN90B_RightScan, Number  
+  - get: L:KLN90B_RollCommand, Number 
+  - get: L:KLN90B_ScreenLuminosity, Number 
+  - get: L:KLN90B_State, Number  
+  - get: L:KLN90B_WptLight, Number 
+  - get: L:KLN90B_WriteGpsSimvars, Number 
+  - get: H:KLN90B_MSG_Push
+  - get: H:KLN90B_ALT_Push 
+  - get: H:KLN90B_DCT_Push   
+  - get: H:KLN90B_CLR_Push  
+  - get: H:KLN90B_ENT_Push  
+  - get: H:KLN90B_LeftCursor_Toggle  
+  - get: H:KLN90B_RightCursor_Toggle   
+  - get: H:KLN90B_LeftSmallKnob_Left
+  - get: H:KLN90B_LeftSmallKnob_Right 
+  - get: H:KLN90B_LeftLargeKnob_Left
+  - get: H:KLN90B_LeftLageKnob_Right 
+  - get: H:KLN90B_Power_Toggle
+  - get: H:KLN90B_RightScan_Toggle  
+
+
+
+
+
+
+
+######### MAIN PANEL - LEFT #########
+## - CLOCK, ILS400 PANEL ###
+  - get: L:var_ClockTimeOffsetMinutes, Number
+  - get: L:var_ClockElapsedHoursKnob, Number
+  - get: L:var_ClockElapsedMinutesKnob, Number
+  - get: L:var_ils400OnSwitch, Bool
+  - get: A:NAV VOLUME:3, Percent
+    set: "value > current ? '(>K:NAV3_VOLUME_INC)' : '(>K:NAV3_VOLUME_DEC)'"
+#  - get: A:NAV ACTIVE FREQUENCY:3, MHz
+  - get: A:NAV ACTIVE FREQUENCY:3, Hz
+    set: '`${value} (>K:NAV3_RADIO_SET_HZ)`'
+
+
+## - AUTOPILOT PANEL ###
+  - get: A:AUTOPILOT MASTER, Bool #AP
+    set: "value ? '(>K:AUTOPILOT_ON)' : '(>K:AUTOPILOT_OFF)'"
+  - get: A:AUTOPILOT HEADING LOCK, Bool # HDG
+    set: "value ? '(>K:AP_HDG_HOLD_ON)' : '(>K:AP_HDG_HOLD_OFF)'"
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet # ALT
+  - get: A:AUTOPILOT ALTITUDE LOCK, Bool # ALT
+    set: "value ? '(>K:AP_ALT_HOLD_ON)' : '(>K:AP_ALT_HOLD_OFF)'"
+  - get: A:AUTOPILOT BACKCOURSE HOLD, Bool # ALT
+    set: "value ? '(>K:AP_BC_HOLD_ON)' : '(>K:AP_BC_HOLD_OFF)'"
+
+
+  - get: A:AUTOPILOT VERTICAL HOLD, Bool
+    set: "value ? '(>K:AP_VS_ON)' : '(>K:AP_VS_OFF)'"
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, Feet per minute # UP/DN
+  - get: A:AUTOPILOT NAV1 LOCK, Bool # NAV
+    set: "value ? '(>K:AP_NAV1_HOLD_ON)' : '(>K:AP_NAV1_HOLD_OFF)'"
+  - get: A:AUTOPILOT APPROACH HOLD, Bool # APR
+    set: "value ? '(>K:AP_APR_HOLD_ON)' : '(>K:AP_NAV1_HOLD_OFF)'"
+  - get: L:var_AutopilotAltIntervention, Bool
+  - get: L:var_AutopilotTest, Bool
+## - Battery, Alternator and Pitch Trim PANEL ###
+  - get: A:ELECTRICAL MASTER BATTERY:1, Bool # BAT 
+    set: (>K:TOGGLE_MASTER_BATTERY)
+  - get: A:GENERAL ENG MASTER ALTERNATOR:1, Bool # BAT 
+    set: (>K:2:ALTERNATOR_SET)
+  - get: L:var_PitchTrimPower, Bool
+  - get: L:var_StandbyVacuumHandle
+    set: (>B:PASSENGER_Cabin_Heat_6_Set)  
+  - get: B:ENGINE_CowlFlaps, Number
+    set: (>B:ENGINE_CowlFlaps_Set)
+  - get: L:bskq_PreHeater, Bool  
+## - True Airspeed, Artificial Horizon and Heading PANEL ###
+  - get: L:var_TrueAirspeedKnob, Number
+
+#  - get: A:ATTITUDE BARS POSITION, Percent over 100
+  - get: B:INSTRUMENT_Attitude_Indicator_Bars, Number
+    set: "value > current ? '1 (>B:INSTRUMENT_Attitude_Indicator_Bars_Position_Up)' : '1(>B:INSTRUMENT_Attitude_Indicator_Bars_Position_Down)'"
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, degrees
+    set: (>B:INSTRUMENT_Heading_Bug_Set)
+  - get: L:var_gyro_AdjustMode, Number 
+  - get: L:var_DirectionalGyroHeading, degrees  
+## - WX-11 PANEL ###  
+  - get: L:var_StormScopeMode, number
+  - get: L:var_StormScopeRange, number
+  - get: L:var_StormScopeBrightness, number
+## - Instruments and Avionics Dimmer PANEL ###
+  - get: L:var_InstrumentLightingKnob, Number
+  - get: L:var_AvionicsLightingKnob, Number
+## - Key Switch Ignition PANEL ###
+  - get: L:BKSQ_IgnitionPosition_1, Number
+  - get: L:starterKnobReturnTime, Number
+  - get: A:GENERAL ENG STARTER ACTIVE:1, Bool
+  - get: A:GENERAL ENG STARTER:1, Bool
+  - get: L:BKSQ_IgnitionPosition_1, Number
+    set: |
+      switch (value) {
+         case  3: return '0 (>K:SET_STARTER1_HELD)'
+          case  4: return '1 (>K:SET_STARTER1_HELD)'
+          default: return ''
+        }
+  - get: L:BKSQ_MagnetoKeyInserted, Bool
+## - MC60 PANEL ###
+  - get: A:GPS OBS VALUE, degrees
+    set: (>K:GPS_OBS_SET)
+  - get: H:MC60_OBS_INC
+  - get: H:MC60_OBS_DEC
+  - get: H:MC60_Reciprocal  
+  - get: L:var_MC60_TrackMode, Number
+  - get: L:var_MC60Power
+  - get: L:var_MC60_From  
+  - get: L:var_MC60_GlassTap
+  - get: L:var_MC60_GSI
+  - get: L:var_MC60_SegmentFailure
+  - get: L:var_MC60_SegmentCounter
+  - get: L:var_MC60_To
+  - get: L:var_MC60_CDI
+
+######### MAIN PANEL - CENTER #########
+## - BARO, ALT, VS PANEL ###
+  - get: L:var_AutopilotBaroCalibration_10, Number
+  - get: L:var_AutopilotBaroCalibration_1, Number
+  - get: L:var_AutopilotBaroCalibration_01, Number
+  - get: L:var_PreselectedAltitude_10000, Number
+  - get: L:var_PreselectedAltitude_1000, Number
+  - get: L:var_PreselectedAltitude_100, Number
+  - get: L:var_PreselectedVerticalSpeed, Number
+
+
+## - MD41 GPS/NAV PANEL ###
+  - get: L:var_LocSourceSwitch, Bool
+  - get: L:var_JpiMode, Number
+  - get: A:GPS DRIVES NAV1, Bool
+#    set: (>K:TOGGLE_GPS_DRIVES_NAV1)
+  - get: H:AS530_CDI_Push
+    set: (>B:AS530_CDI_PUSH)
+  - get: L:var_radio1Mode, Number
+  - get: H:KLN90B_ApprArm_Push 
+  - get: A:CIRCUIT CONNECTION ON:53, Bool
+    set: 53 4 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+  - get: A:CIRCUIT CONNECTION ON:54, Bool
+    set: 54 4 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)
+  - get: A:CIRCUIT CONNECTION ON:55, Bool
+    set: 55 4 (>K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)    
+  - get: L:var_md41Test, Bool  
+## - EDM 800 PANEL ###
+  - get: H:bksq_JpiButton_1_L_Short
+  - get: H:bksq_JpiButton_1_R_Short
+  - get: H:bksq_JpiButton_2_L_Short
+  - get: H:bksq_JpiButton_2_R_Short
+
+## - ELT PANEL ###
+  - get: B:SAFETY_ELT_1, Number
+  - get: A:ELT ACTIVATED, Bool
+    set: "value > current ? '(>K:ELT_ON)' : '(>K:ELT_OFF)'"
+## - CO Guard PANEL ###
+  - get: L:var_CoTest, Bool
+  - get: L:var_CoTest_IsDown, Bool
+#  - get: L:var_CoTest_LeftLeaveToRun, Bool
+
+
+######### MAIN PANEL - RIGHT #########
+## - RNAV 511 PANEL ###
+  - get: L:var_Rnav511_ActiveWaypoint, Bool
+  - get: A:CIRCUIT SWITCH ON:43, Bool
+  - get: L:var_Rnav511_VorSwitch, Bool
+  - get: L:var_Rnav511_Radial_100_L, Number
+  - get: L:var_Rnav511_Radial_100_R, Number
+  - get: L:var_Rnav511_Radial_10_L, Number
+  - get: L:var_Rnav511_Radial_10_R, Number
+  - get: L:var_Rnav511_Radial_1_L, Number
+  - get: L:var_Rnav511_Radial_1_R, Number
+  - get: L:var_Rnav511_Radial_01_L, Number
+  - get: L:var_Rnav511_Radial_01_R, Number
+  - get: L:var_Rnav511_Distance_100_L, Number
+  - get: L:var_Rnav511_Distance_100_R, Number
+  - get: L:var_Rnav511_Distance_10_L, Number
+  - get: L:var_Rnav511_Distance_10_R, Number
+  - get: L:var_Rnav511_Distance_1_L, Number
+  - get: L:var_Rnav511_Distance_1_R, Number
+  - get: L:var_Rnav511_Distance_01_L, Number
+  - get: L:var_Rnav511_Distance_01_R, Number
+  - get: L:var_Rnav511_KtsMinButton_IsDown, Number
+  - get: L:var_Rnav511_KtsMinButton, Number
+  - get: L:var_Rnav511_TestButton_IsDown, Number
+  - get: L:var_Rnav511_TestButton, Number
+  - get: L:var_Rnav511_ActiveWaypoint, Bool
+  - get: A:CIRCUIT SWITCH ON:43, Bool
+  - get: L:var_Rnav511_VorSwitch, Bool
+
+## - COLLINS AUDIO/MARKER PANEL ###
+  - get: L:var_AmrTransmitSelectKnob, Number
+    set: |
+      switch (value) {
+        case 0: return '0 (>K:PILOT_TRANSMITTER_SET)'
+        case 1: return '1 (>K:PILOT_TRANSMITTER_SET)'
+        case 2: return '4 (>K:PILOT_TRANSMITTER_SET)'
+        default: return ''
+      }  
+  - get: A:COM RECEIVE EX1:1, Bool
+    set: (>K:COM1_RECEIVE_SELECT)
+  - get: A:COM RECEIVE EX1:2, Bool
+    set: (>K:COM2_RECEIVE_SELECT)
+  - get: L:var_AmrNav1Switch, Bool
+  - get: L:var_AmrNav2Switch, Bool
+  - get: B:NAVCOM_ADF1_SOUND, Number
+    set: (>B:NAVCOM_ADF1_Sound_Set)  
+  - get: B:NAVCOM_DME1_Sound, Number
+    set: (>B:NAVCOM_DME1_Sound_Set)
+  - get: A:MARKER SOUND:1, Bool
+    set: (>K:B:NAVCOM_MARKER1_Sound_Set)
+  - get: L:var_AmrBeaconSelectKnob, Number
+## - TRANSPONDER BENDIX/King KT76 PANEL ###
+  - get: A:TRANSPONDER STATE:1, Enum # Not  showing TEST function setting #2
+  - get: A:TRANSPONDER IDENT:1, Number
+    set: 0 (>K:XPNDR_IDENT_ON)
+  - get: A:TRANPONDER CODE:1, BCO16
+    set: (>B:NAVCOM_Transponder_Code_Set)
+
+## - ADF LEGACY PANEL ###
+  - get: L:var_Adf31_kHz, Number
+  - get: L:var_AdfFrequencyRange, Number
+  - get: L:var_Adf31_DisplayDrumAnimPos, Number
+  - get: L:var_Adf31_DesireDrumAnimPos, Number  
+  - get: L:var_Adf31_GradualDrum, Number
+  - get: L:var_Adf31_TuningDisplayTimer, Number
+  - get: L:var_AdfMode, Number
+  - get: L:var_AdfVolume_Pull, Number
+  - get: A:ADF VOLUME:1, Percent
+    set: "value > current ? '0 (>K:ADF_VOLUME_INC)' : '0(>K:ADF_VOLUME_DEC)'"
+  - get: L:var_AdfTuningKnobAccel, Number
+  - get: L:var_AdfGradualOffset, Number
+  - get: L:var_Adf31_DesireDrumAnimPos, Number
+  - get: L:var_AdfTestButton_IsDown, Bool
+  - get: L:var_AdfTestButton_LeftLeaveToRun, Number
+## - NARCO DME SCALE PANEL ###
+  - get: L:var_DmeMode, Number
+  - get: L:var_Dme190_MHz, Number
+  - get: L:var_Dme190_kHz, Number
+
+
+## - GEAR, AIR, Pumps, Lights and Flaps Panel ###
+  - get: L:LANDING_GEAR_Gear, Number  
+    set: (>B:LANDING_GEAR_Gear_Set)
+  - get: L:var_AlternateAirHandle, Number
+    set: (>B:PASSENGER_Cabin_Heat_4_set)
+  - get: A:GENERAL ENG FUEL PUMP SWITCH EX1:1
+    set: (>K:ELECT_FUEL_PUMP1_SET)
+  - get: L:var_PitotHeatSwitch, Bool
+  - get: L:LIGHTING_BEACON_1, Bool # ANTI_COLLISION LTS
+    set: (>K:BEACON_LIGHTS_SET)
+  - get: L:LIGHTING_NAV_1, Bool # NAV LTS
+    set: (>K:NAV_LIGHTS_SET)
+  - get: L:bksq_MasterPanelLights, Bool # Instrument LTS  
+  - get: L:LIGHTING_LANDING_1, Bool # LANDING LTS
+    set: (>K:LANDING_LIGHTS_SET)
+  - get: L:LIGHTING_STROBE_1, Bool # STROBE LTS
+    set: (>K:STROBES_SET)
+  - get: L:var_FlapSwitchState_ReadOnly, Bool
+  - get: A:TRAILING EDGE FLAPS LEFT PERCENT, Percent # FLAPS 
+    set: "value > current ? '190 (>K:FLAPS_CONTINUOUS_INCR)' : '190 (>K:FLAPS_CONTINUOUS_DECR)'"
+  - get: L:var_FlapSwitchState_ReadOnly # FLAPS LEFT        
+## - CABIN AIR Panel ###
+  - get: A:ALTERNATE STATIC SOURCE OPEN, Bool
+    set: (>B:SAFETY_Alternate_Static_Air_Toggle)
+## - CABIN AIR Panel ###
+  - get: L:var_CabinVentHandle, Bool # CABIN Vent
+  - get: L:var_CabinHeatHandle, Bool # CABIN HEAT
+  - get: L:var_CabinDefrosterHandle, Bool # CABIN Defroster
+## - Avionics master and Breaker panel 1 ###
+  - get: A:CIRCUIT SWITCH ON:33, Bool
+  - get: B:ELECTRICAL_Aviation_Bus_1, Number
+  - get: L:var_CircuitBreakerLightingKnob, Number
+  - get: A:BRAKE PARKING POSITION, Position
+    set: (>K:PARKING_BRAKE_SET)
+
+######### MISCELLANEOUS ITEMS #########
+  - get: L:bksq_controlLocks, Bool
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+  - get: L:bksq_TabletVisible, Bool 
+  - get: L:bksq_HeadphoneSimulationTarget, Number
+  - get: L:bksq_PilotDoorLocked, Bool
+  - get: L:bksq_PilotDoorLatchingMistake, Bool
+  - get: L:bksq_CopilotDoor, Bool  
+  - get: L:bksq_CopilotDoorLocked, Bool  
+  - get: L:bksq_CopilotDoorLatchingMistake, Bool    
+  - get: L:var_ReadingLightOn, Bool
+  - get: L:var_LIGHTING_Push_Cockpit_1, Bool
+  - get: L:var_LIGHTING_Push_Cockpit_2, Bool
+  - get: L:var_LIGHTING_Push_Cockpit_3, Bool
+  - get: L:var_LIGHTING_Push_Cockpit_4, Bool
+  - get: L:bksq_WheelChocks, Bool
+  - get: L:var_StepLightOn, Bool
+  - get: L:bksq_BaggageDoor, Bool
+  - get: L:var_BaggageLightOn, Bool
+  - get: L:bksq_stormWindow, Bool
+  - get: L:var_EmergencyGearExtension, Bool
+  - get: L:var_EmergencyGearExtension_IsDown, Bool
+  - get: L:var_EmergencyGearExtension_LeftLeaveToRun, Bool 
+  - get: L:var_CabinTempUnitMode, Bool  
+  - get: L:var_FuelStopDown, Number 
+  - get: L:var_FuelSelectorOffSide, Bool
+  - get: A:FUEL TANK SELECTOR:1, Enum
+    set: |
+      switch (value) {
+        case 0: return '(>K:FUEL_SELECTOR_OFF)'
+        case 1: return '(>K:FUEL_SELECTOR_ALL)'        
+        case 19: return '(>K:FUEL_SELECTOR_LEFT_MAIN)'
+        case 20: return '(>K:FUEL_SELECTOR_RIGHT_MAIN)'
+        default: return ''
+      }  

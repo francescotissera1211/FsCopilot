@@ -1,0 +1,552 @@
+# Original author: https://discord.com/channels/1454265644416765974/1492248637877653748/1492971481284476988
+# Updated: 2026-04-12 19:35:43
+
+# Inibuilds F406 Caravan II - Cargo Variant - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: DKgolfnut
+# Special Thanks: 
+# Date: 4/12/2026 
+
+# Known Issues:
+  # - PROP GOV TEST SWITCH is not annimating
+
+# FIXED:
+  # - 4/12/2026 
+
+
+include:
+  - modules/PMS50_GTN_650-750.yaml
+  - modules/AS_GNS530.yaml
+#  - modules/fuel.yaml
+#  - modules/payload.yaml
+master: 
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+  - get: A:ELEVATOR TRIM PCT, Percent scaler 16k # ELEVATOR TRIM BTN
+    set: (>K:ELEVATOR_TRIM_SET) 
+#  - get: B:HANDLING_ElevatorTrim, Number
+#    set: (>B:HANDLING_ElevatorTrim_Set)
+  - get: A:RUDDER TRIM PCT, Percent # RUDDER TRIM BTN
+    set: (>K:RUDDER_TRIM_SET) 
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+#  - get: B:ENGINE_Throttle_1, Percent # Throttle 1 LEVER
+
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, position 16k # Throttle 2 LEVER
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # PROPELLER 1 LEVER
+    set: (>K:PROP_PITCH1_SET)
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:2, position 16k # PROPELLER 2 LEVER
+    set: (>K:PROP_PITCH2_SET) 
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, position 16k # MIXTURE 1 LEVER 
+  - get: L:BKSQ_MixtureLeverPosition_1, Percent 
+  - get: L:BKSQ_TurboCharged, Bool
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:2, position 16k # MIXTURE 2 LEVER
+  - get: L:BKSQ_MixtureLeverPosition_2, Percent   
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+shared:
+  - get: A:GPS DRIVES NAV1, Bool # CDI
+#  - #############  PILOT LEFT ARM PANELS #############
+#  - ## LIGHTING PANEL SWITCHES & DIMMERS ##
+#  - # DAY/NIGHT SWITCH
+  - get: L:LIGHTS_SWITCH_DAYNIGHT
+  - get: L:LIGHTS_LCBPANEL_INTENSITY
+  - get: L:LIGHTS_LFLTINST_INTENSITY
+  - get: L:LIGHTS_RADIOPANEL_INTENSITY
+  - get: L:LIGHTS_CENTERPANEL_INTENSITY
+  - get: L:LIGHTS_COMPASS_INTENSITY
+  - get: L:LIGHTS_RFLTINST_INTENSITY
+  - get: L:LIGHTS_RCBPANEL_INTENSITY
+#  - # EXTERNAL LIGHTING SWITCHS
+  - get: L:LIGHTING_LANDING_1
+    set: (>K:2:LANDING_LIGHTS_SET)
+  - get: L:LIGHTING_TAXI_1
+    set: (>K:2:TAXI_LIGHTS_SET)
+  - get: L:LIGHTING_NAV_1
+    set: (>K:2:NAV_LIGHTS_SET)
+  - get: L:LIGHTING_STROBE_1
+    set: (>K:2:STROBES_SET)
+  - get: L:LIGHTING_WING_1
+    set: (>K:2:WING_LIGHTS_SET)
+  - get: L:LIGHTING_RECOGNITION_1        
+    set: (>K:2:RECOGNITION_LIGHTS_SET)
+# IGNITION SWITCHES
+#  - # LEFT
+  - get: L:SWITCH_IGNITION_L
+#  - # RIGHT  
+  - get: L:SWITCH_IGNITION_R
+# GENS and BATTERY SWITCHES ***BATTERY is B EVENT
+#  - # LEFT
+  - get: L:SWITCH_GEN_L
+#  - # LEFT
+  - get: L:SWITCH_BATT
+#  - # RIGHT  
+  - get: L:SWITCH_GEN_R
+# - # Starters
+  - get: B:ENGINE_Starter_Ignition_1, Number
+    set: |
+      switch (value) {
+          case   0: return '(>B:ENGINE_Starter_Ignition_1_Start)'
+          case  1: return '(>B:ENGINE_Starter_Ignition_1_Off)'
+          case  2: return '(>B:ENGINE_Starter_Ignition_1_Motor)'
+          default: return ''
+      }
+  - get: B:ENGINE_Starter_Ignition_2, Number
+    set: |
+      switch (value) {
+          case   0: return '(>B:ENGINE_Starter_Ignition_2_Start)'
+          case  1: return '(>B:ENGINE_Starter_Ignition_2_Off)'
+          case  2: return '(>B:ENGINE_Starter_Ignition_2_Motor)'
+          default: return ''
+      }
+# FUEL BOOST SWITCHES 
+#  - # LEFT
+  - get: L:SWITCH_FUEL_BOOST_L
+#  - # RIGHT  
+  - get: L:SWITCH_FUEL_BOOST_R
+# Propeller Control Switches
+#  - # GOVERNER SWITCH
+  - get: L:SWITCH_PROP_GOV, Bool
+#  - # RIGHT  
+  - get: L:AUTOFEATHER_ARM
+# HEATING AND DEICE SWITCHES
+#  - # PITOT STATIC
+  - get: B:DEICE_Pitot_1
+    set: (>B:DEICE_Pitot_1_Toggle)
+  - get: B:DEICE_Pitot_2
+    set: (>B:DEICE_Pitot_2_Toggle) 
+  - get: L:SWITCH_STALL_VANE
+#  - # PROPS 
+  - get: L:SWITCH_PROP_L
+  - get: L:SWITCH_PROP_R
+# - # DE-ICE
+  - get: A:WINDSHIELD DEICE SWITCH, Bool
+    set: (>K:WINDSHIELD_DEICE_TOGGLE)
+  - get: A:STRUCTURAL DEICE SWITCH, Number  
+    set: (>K:TOGGLE_STRUCTURAL_DEICE)
+  - get: L:DEICE_Airframe_1  
+  - get: L:SWITCH_AVN_AC
+#  - # Inertial Seperators 
+  - get: L:SWITCH_INERTIAL_SEP_L
+  - get: L:SWITCH_INERTIAL_SEP_R
+# Avionics AVIONICS BUS
+  - get: L:SWITCH_AVN_AC
+    set: 3 6 (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+  - get: L:BUS_CONNECTION_1_4, Bool
+    set: 1 4 (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+  - get: L:BUS_CONNECTION_2_5, Bool
+    set: 2 5 (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+# Fuel Control HTRS
+#  - # HTRS LEFT
+  - get: L:SWITCH_FUEL_CNTL_HTRS_L
+#  - # HTRS RIGHT  
+  - get: L:SWITCH_FUEL_CNTL_HTRS_R 
+#  - #############  PILOT PANEL  #############
+#  - ## STALK LIGHTING ##
+  - get: L:CPT_LIGHT_STALK_FAILURE
+  - get: L:FO_LIGHT_STALK_FAILURE
+  - get: L:LIGHT_STALK_1
+  - get: L:LIGHT_STALK_2
+  - get: L:LIGHT_STALK_3
+  - get: L:LIGHT_STALK_4
+  - get: L:LIGHT_STALK_5
+  - get: L:LIGHT_STALK_6
+  - get: L:LIGHT_STALK_7
+  - get: L:LIGHT_STALK_8
+  - get: L:LIGHT_STALK_9
+  - get: L:LIGHT_STALK_AIRSPEED_1
+  - get: L:LIGHT_STALK_AIRSPEED_2
+  - get: L:LIGHT_STALK_ALT_1
+  - get: L:LIGHT_STALK_ALT_2
+  - get: L:LIGHT_STALK_CLOCK_1
+  - get: L:LIGHT_STALK_CLOCK_2
+  - get: L:LIGHT_STALK_COWL_FLAP_L
+  - get: L:LIGHT_STALK_COWL_FLAP_R
+  - get: L:LIGHT_STALK_CPT_ADI_1
+  - get: L:LIGHT_STALK_CPT_ADI_2
+  - get: L:LIGHT_STALK_DEICE
+  - get: L:LIGHT_STALK_ELEC_1
+  - get: L:LIGHT_STALK_ELEC_2
+  - get: L:LIGHT_STALK_ELEC_3 
+  - get: L:LIGHT_STALK_FF_L
+  - get: L:LIGHT_STALK_FF_R
+  - get: L:LIGHT_STALK_FO_ADI_1
+  - get: L:LIGHT_STALK_FO_ADI_2
+  - get: L:LIGHT_STALK_FO_AIRSPEED_1
+  - get: L:LIGHT_STALK_FO_AIRSPEED_2
+  - get: L:LIGHT_STALK_FO_ALT_1
+  - get: L:LIGHT_STALK_FO_ALT_2
+  - get: L:LIGHT_STALK_FO_DGI_1
+  - get: L:LIGHT_STALK_FO_DGI_2
+  - get: L:LIGHT_STALK_FO_OXY
+  - get: L:LIGHT_STALK_FO_TURN_1
+  - get: L:LIGHT_STALK_FO_TURN_2
+  - get: L:LIGHT_STALK_FO_VSI_1
+  - get: L:LIGHT_STALK_FO_VSI_2
+  - get: L:LIGHT_STALK_FUEL_L
+  - get: L:LIGHT_STALK_FUEL_R
+  - get: L:LIGHT_STALK_HSI
+  - get: L:LIGHT_STALK_L
+  - get: L:LIGHT_STALK_OAT
+  - get: L:LIGHT_STALK_PROP_L
+  - get: L:LIGHT_STALK_PROP_R
+  - get: L:LIGHT_STALK_R
+  - get: L:LIGHT_STALK_RPM_L
+  - get: L:LIGHT_STALK_RPM_R
+  - get: L:LIGHT_STALK_SAI_1
+  - get: L:LIGHT_STALK_SAI_2
+  - get: L:LIGHT_STALK_TEMP_L
+  - get: L:LIGHT_STALK_TEMP_R
+  - get: L:LIGHT_STALK_TORQUE_L
+  - get: L:LIGHT_STALK_TORQUE_R
+  - get: L:LIGHT_STALK_TURN_1
+  - get: L:LIGHT_STALK_TURN_2
+  - get: L:LIGHT_STALK_VSI_1
+  - get: L:LIGHT_STALK_VSI_2
+#  - ## SWITCHES and KNOBS ##
+#  - # BATT/LGEN
+  - get: L:SWITCH_BATT_LGEN
+#  - # RMI
+  - get: L:RMI_DEGREES
+#  - # DME DISPLAY
+  - get: L:DME_SELECTOR 
+ # - # ARTIFICIAL HORIZON
+  - get: L:SAI_WINGS
+    set: "value > current ? '0 (>K:ATTITUDE_BARS_POSITION_UP)' : '0 (>K:ATTITUDE_BARS_POSITION_DOWN)'"
+  - get: L:__KNOB_Panel_Button_136, Number
+  - get: L:__KNOB_KNOB_FO_ADI_WINGS_ADJUST, Number
+    set: "value > current ? '0 (>B:INSTRUMENT_KNOB_FO_ADI_WINGS_ADJUST_Inc)' : '0 (>B:INSTRUMENT_KNOB_FO_ADI_WINGS_ADJUST_Dec)'"
+##  - # SPRAY SWITCHES Upper and Lower Panel
+  - get: L:SPRAY_AIRCRAFT
+  - get: L:SPRAY_ON
+  - get: L:SWITCH_SPRAY
+  - get: L:SWITCH_SPRAY_BUS
+  - get: L:SWITCH_SPRAY_L_VALVE
+  - get: L:SWITCH_SPRAY_L_VALVE_GUARD
+  - get: L:SWITCH_SPRAY_PUMP
+  - get: L:SWITCH_SPRAY_PUMP_GUARD
+  - get: L:SWITCH_SPRAY_R_VALVE
+  - get: L:SWITCH_SPRAY_R_VALVE_GUARD
+##  - # Pressurization OXYGEN PULL *****Needs B EVENT
+  - get: B:PRESSURIZATION_Oxygen, Bool
+    set: (>B:PRESSURIZATION_Oxygen_Toggle)
+#  - # PARKING BRAKE POSITION
+  - get: L:ParkingBrake_Position
+##  - # PARKING BRAKE LEVER *****Needs B EVENT
+  - get: B:LANDING_GEAR_ParkingBrake
+#  - # GEAR HORN DISABLE
+  - get: L:BUTTON_GEAR_HORN
+#  - # FIRE TEST RH
+  - get: L:LANDING_GEAR_Gear
+    set: (>K:GEAR_SET)
+#  - # RH FIRE SWITCH
+  - get: L:BUTTON_CAUTION_RH_FIRE_TEST
+##  - # Needs B EVENT for this
+  - get: B:COMMON_Cover_R
+#  - # LH FIRE SWITCH
+  - get: L:BUTTON_CAUTION_LH_FIRE_TEST
+##  - # Needs B EVENT for this
+  - get: B:COMMON_Cover_L  
+# - # Altimeters
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # ALTIMETER CALIBRATION
+    set: "`2 ${value * 16} (>K:KOHLSMAN_SET)`"
+## ########## RADIO STACK PANELS ##########
+  - get: L:HUZZAH_LIGHTING_BUTTON, Bool
+# GMA340 - AUDIO PANEL
+  - get: L:POTENTIOMETER_10
+  - get: B:AIRLINER_KNOB_COMM_VOL_OUTER, Percent
+  - get: A:COM RECEIVE:1, Bool # COM1
+    set: (>K:COM1_RECEIVE_SELECT)
+  - get: A:COM RECEIVE:2, Bool # COM2
+    set: (>K:COM2_RECEIVE_SELECT)
+  - get: A:COM RECEIVE:3, Bool # COM2
+    set: (>K:COM3_RECEIVE_SELECT)
+  - get: A:COM RECEIVE:4, Bool # COM2
+    set: (>K:COM4_RECEIVE_SELECT)
+  - get: A:NAV SOUND:1, Bool # NAV1
+    set: (>K:RADIO_VOR1_IDENT_TOGGLE)
+  - get: A:NAV SOUND:2, Bool # NAV2
+    set: (>K:RADIO_VOR2_IDENT_TOGGLE)
+  - get: A:DME SOUND, Bool # MKR
+    set: (>K:RADIO_SELECTED_DME_IDENT_TOGGLE)
+  - get: A:MARKER SOUND, Bool # MKR
+    set: (>K:MARKER_SOUND_TOGGLE)
+  - get: A:ADF SOUND:1, Bool # ADF
+    set: (>K:RADIO_ADF_IDENT_TOGGLE) # AUX
+  - get: L:XMLVAR_AudioPanel_1
+  - get: A:DME SOUND:1, Bool # DME
+    set: (>K:RADIO_DME1_IDENT_TOGGLE)
+  - get: A:SPEAKER ACTIVE, Bool # SPR
+    set: (>K:TOGGLE_SPEAKER)
+  - get: L:TX_SWITCH
+  - get: L:BENDIX_PHONE_1 # COM1 PHONE
+  - get: L:BENDIX_PHONE_2 # COM2 PHONE
+  - get: L:BENDIX_PHONE_3 # COM3 PHONE
+  - get: L:BENDIX_PHONE_4 # COM4 PHONE
+  - get: L:BENDIX_PHONE_NAV1 # NAV1 PHONE
+  - get: L:BENDIX_PHONE_NAV2 # NAV2 PHONE
+  - get: L:BENDIX_PHONE_MKR # DME PHONE
+  - get: L:BENDIX_PHONE_DME # DME PHONE
+  - get: L:BENDIX_PHONE_ADF # ADF PHONE
+###########   GARMIN GTX327-330 TRANSPONDER   ########### 
+  - get: A:TRANSPONDER IDENT:1, Bool
+    set: "value ? '1 (>K:XPNDR_IDENT_ON)' : '1 (>K:XPNDR_IDENT_OFF)'"
+  - get: L:XPDR_IDT, Bool   # TRANSPONDER IDENT BUTTON
+  - get: L:XPDR_VFR, Bool
+  - get: L:XPDR_Func, Bool
+  - get: L:XPDR_CRSR, Bool   # TRANSPONDER CRSR BUTTON
+  - get: L:XPDR_StartStop, Bool
+  - get: LXPDR_CLR, Bool    # TRANSPONDER CLR BUTTON
+  - get: L:XPDR_0   # TRANSPONDER 0 BUTTON
+  - get: L:XPDR_1   # TRANSPONDER 1 BUTTON
+  - get: L:XPDR_2   # TRANSPONDER 2 BUTTON
+  - get: L:XPDR_3   # TRANSPONDER 3 BUTTON
+  - get: L:XPDR_4   # TRANSPONDER 4 BUTTON
+  - get: L:XPDR_5   # TRANSPONDER 5 BUTTON
+  - get: L:XPDR_6   # TRANSPONDER 6 BUTTON
+  - get: L:XPDR_7   # TRANSPONDER 7 BUTTON
+  - get: L:XPDR_8   # TRANSPONDER 8 BUTTON
+  - get: A:TRANSPONDER CODE:1, BCO16  # TRANSPONDER CODE
+    set: (>K:XPNDR_SET)
+###########    AS225 COM2 INSTRUMENT   ########### 
+  - get: H:RADIO_COM_COM_Push_2
+  - get: H:RADIO_COM_MON_Push_2
+  - get: H:RADIO_COM_MEM_Push_2
+  - get: H:RADIO_COM_ICS_Push_2
+  - get: H:RADIO_COM_FUNC_Push_2
+  - get: H:RADIO_COM_CLR_Push_2
+  - get: H:RADIO_COM_ENT_Push_2
+  - get: H:RADIO_COM_Swap_Push_2
+  - get: H:RADIO_COM_Swap_Long_Push_2  
+  - get: H:RADIO_COM_Swap_Long_Push_Info_2  
+  - get: H:RADIO_COM_Large_Knob_Inc_2 
+  - get: H:RADIO_COM_Large_Knob_Dec_2
+  - get: H:RADIO_COM_Small_Knob_Inc_2 
+  - get: H:RADIO_COM_Small_Knob_Dec_2
+  - get: A:COM ACTIVE FREQUENCY:2, Hz # COM2 ACTIVE
+    set: (>K:COM2_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:2, Hz # COM2 STANDBY
+    set: (>K:COM2_STBY_RADIO_SET_HZ)
+
+###########    KN 53TSO INSTRUMENT   ########### 
+  - get: L:Nav_Swap_Pressed, Number
+    set: NAV SWAP:2 = 1
+  - get: NAV ACTIVE FREQUENCY:2
+    set: NAV ACTIVE FREQUENCY:2 = {frequency}
+  - get: NAV STANDBY FREQUENCY:2
+    set: NAV STANDBY FREQUENCY:2 = {frequency}  
+  - get: NAV IDENT:2
+  - get: B:INSTRUMENT_KNOB_ADF_OUTER_Inc 
+  - get: B:INSTRUMENT_KNOB_ADF_OUTER_Dec
+
+###########    ADF INSTRUMENT   ########### 
+  - get: L:ADF_ANT  # ADF ANTENNA
+  - get: L:ADF_BFO  # ADF BFO
+  - get: L:BUTTON_XPDR_FRQ_KEY # ADF FREQUENCY TRANSFER
+  - get: L:BUTTON_XPDR_FLT_KEY # ADF FLT ET
+  - get: L:BUTTON_XPDR_SET_KEY # ADF SET/RST
+  - get: L:ADF2_FREQ
+  - get: L:ADF2_EDIT
+  - get: L:__KNB_KNOB_XPDR_OUTER
+  - get: L:__KNB_KNOB_XPDR_INNER
+###########    KR87 TSO TRANSPONDER INSTRUMENT   ########### 
+  - get: A:TRANSPONDER STATE:1, Bool
+    set: |
+      switch (value) {
+          case  0: return '(>B:NAVCOM_Transponder_Mode_Off)'
+          case  1: return '(>B:NAVCOM_Transponder_Mode_Standby)'
+          case  2: return '(>B:NAVCOM_Transponder_Mode_On)'
+          case  3: return '(>B:NAVCOM_Transponder_Mode_Alt)'
+          case  4: return '(>B:NAVCOM_Transponder_Mode_Test)'
+          default: return ''
+      }
+#  - # BENDIX/King WEATHER RADAR
+  - get: L:POTENTIOMETER_5
+  - get: L:WX_WEATHER
+  - get: L:WX_MODE
+  - get: L:WX_RANGE
+  - get: A:FLAPS HANDLE INDEX, Number # FLAPS
+    set: |
+      switch (value) {
+          case  0: return '(>K:FLAPS_UP)'
+          case  1: return '(>K:FLAPS_1)'
+          case  2: return '(>K:FLAPS_2)'
+          case  3: return '(>K:FLAPS_3)'
+          case  4: return '(>K:FLAPS_4)'
+          default: return ''
+      }  
+## ########## CABIN AIR & HEATING PANELS ##########
+#  - # CABIN HEAT CONTROLS
+  - get: L:KNOB_CABINHEAT_HOTCOLD
+  - get: L:SWITCH_CABINHEAT_MANUAL_WARMER
+  - get: L:KNOB_CABINHEAT_SOURCE_SELECT
+#  - # CABIN AIR CONTROLS
+  - get: L:SWITCH_CABINAIR_HIGHLOW
+  - get: L:LEVER_CABINAIR_DEFROST
+  - get: L:LEVER_CABINAIR_Cockpit_Pull
+  - get: L:LEVER_CABINAIR_RAMAIR
+## ############### EXITS and WINDOWS ###############
+  - get: L:INT_L_Cockpit_Door_Handle
+  - get: L:COCKPIT_Door_Handle
+  - get: L:INT_L_Emergency_Door_Handle, Number
+  - get: A:INTERACTIVE POINT GOAL:4, Bool  
+  - get: L:INT_R_Emergency_Door_Handle, Number
+  - get: L:INT_L_Cockpit_Window_Handle
+  - get: A:INTERACTIVE POINT GOAL:3, Bool
+  - get: L:INT_R_Cockpit_Window_Handle
+  - get: A:INTERACTIVE POINT GOAL:2, Bool
+  - get: A:INTERACTIVE POINT GOAL:0, Bool
+  - get: A:INTERACTIVE POINT GOAL:6, Bool
+## ############### EFB OPTIONS ###############
+  - get: L:EFB_ONOFF
+  - get: L:EFB_BRIGHTNESS
+  - get: L:INI_EFB_ACTUAL_BRIGHTNESS
+## ############### Pedestal Quadrant  ###############
+### AP PANEL BTN's
+  - get: L:BUTTON_AP_FD
+  - get: A:AUTOPILOT HEADING LOCK, Bool
+    set: (>K:AP_PANEL_HEADING_HOLD)
+  - get: A:AUTOPILOT NAV1 LOCK, Bool 
+    set: (>K:AP_NAV1_HOLD)
+  - get: A:AUTOPILOT ALTITUDE LOCK, Bool
+    set: (>K:AP_ALT_HOLD)
+  - get: A:AUTOPILOT APPROACH HOLD, Bool
+    set: (>K:AP_APR_HOLD)
+  - get: A:AUTOPILOT GLIDESLOPE HOLD, Bool  
+  - get: A:AUTOPILOT BACKCOURSE HOLD, Bool
+    set: (>K:AP_BC_HOLD)
+  - get: A:NAV OBS:1, Degrees
+    set: (>K:VOR1_SET)
+  - get: A:NAV OBS:2, Degrees
+    set: (>K:VOR2_SET)
+#  - # AP PITCH
+  - get: A:AUTOPILOT VERTICAL HOLD:1, feet per minute
+    set: (>K:2:AP_VS_VAR_SET_ENGLISH)
+#  - # ROLL L/R
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, degrees
+  - get: L:KNOB_AUTOPILOT
+  - get: A:AUTOPILOT YAW DAMPER, Bool
+  - get: L:SWITCH_AUTOPILOT_YD
+    set: |
+      switch (value) {
+          case  0: return '(>K:AUTOPILOT_ON) (>K:AP_VS_ON)'
+          case  1: return '(>K:AUTOPILOT_OFF)'
+          case  2: return '(>K:YAW_DAMPER_ON)'
+          default: return ''
+        }
+#  - # COWL FLAP
+  - get: L:SWITCH_COWL_FLAP_L
+  - get: L:SWITCH_COWL_FLAP_R
+#  - # CROSS FEED Selector
+  - get: L:SWITCH_XFEED_SELECTOR
+  - get: A:PROP SYNC ACTIVE, Bool
+    set: 1 (>K:TOGGLE_PROPELLER_SYNC)
+## ############### MISC ITEMS  ###############
+  - get: L:LEFT_SUNCOVER
+  - get: L:RIGHT_SUNCOVER
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+  - get: A:COVER ON:0, Bool
+  - get: A:COVER ON:1, Bool
+  - get: A:COVER ON:2, Bool
+  - get: L:LEFT_ENGINE_DOOR
+  - get: L:RIGHT_ENGINE_DOOR
+  - get: L:LEFT_NOSELOCKER_1
+  - get: L:RIGHT_NOSELOCKER_1
+  - get: L:LEFT_NOSELOCKER_2
+  - get: L:RIGHT_NOSELOCKER_2
+############### OVERHEAD ITEMS  ###############
+  - get: L:DIM_LIGHT_LEFT
+  - get: L:DIM_LIGHT_CENTER
+  - get: L:DIM_LIGHT_RIGHT
+  - get: L:CABIN_LIGHTS_1, Bool
+  - get: L:CABIN_LIGHTS_2, Bool
+  - get: L:CABIN_LIGHTS_3, Bool
+  - get: L:CABIN_LIGHTS_4, Bool
+############## BREAKER PANELS ###### BREAKERS on Right Door are non-functional
+# - ### LEFT UPPER DOOR PANEL - BREAKER PANEL
+#  - # ENGINE PANEL BREAKERS
+  - get: A:CIRCUIT BREAKER PULLED:3, Bool # Start Control L BREAKER
+    set: 3 3 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE) 
+  - get: A:CIRCUIT BREAKER PULLED:4, Bool # Start Control R BREAKER
+    set: 4 3 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+  - get: L:BREAKER_ENGINE_Ignition_R, Bool
+  - get: L:BREAKER_ENGINE_Ignition_L, Bool
+  - get: A:CIRCUIT BREAKER PULLED:5, Bool # FUEL BOOST L BREAKER
+    set: 5 3 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+  - get: A:CIRCUIT BREAKER PULLED:6, Bool # FUEL BOOST R BREAKER
+    set: 6 3 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+  - get: A:CIRCUIT BREAKER PULLED:30, Bool # AutoFeather L & R BREAKER
+    set: 30 3 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+  - get: L:BREAKER_ENGINE_Fuel_Qty_L, Bool
+  - get: L:BREAKER_ENGINE_Fuel_Qty_R, Bool
+  - get: L:BREAKER_ENGINE_Internal_Sep_L, Bool 
+  - get: L:BREAKER_ENGINE_Internal_Sep_R, Bool
+  - get: L:BREAKER_ENGINE_Crossfeed, Bool
+  - get: L:BREAKER_ENGINE_OSPD_GOV, Bool
+#  - # FIRE DETECTION PANEL BREAKERS
+  - get: L:BREAKER_FIRE_Detect_L, Bool
+  - get: L:BREAKER_FIRE_Detect_R, Bool
+  - get: L:BREAKER_FIRE_Exit_L, Bool
+  - get: L:BREAKER_FIRE_Exit_R, Bool
+# - ### LEFT ARM REST - BREAKER PANEL
+  - get: L:BREAKER_SYSTEM_ELEV_TRIMP, Bool
+  - get: L:BREAKER_SYSTEM_PROP_SYNC, Bool
+  - get: A:CIRCUIT BREAKER PULLED:31, Bool # FLAP CONTROL BREAKER
+    set: 31 3 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE) 
+  - get: A:CIRCUIT BREAKER PULLED:31, Bool # LDG GEAR BREAKER
+    set: 32 3 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE) 
+  - get: L:BREAKER_SYSTEM_SURFACE_DEICE, Bool
+# - # LIGHTS Column 1
+  - get: A:CIRCUIT BREAKER PULLED:9, Bool # LDG GEAR BREAKER
+    set: 9 3 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE) 
+  - get: L:BREAKER_LIGHTS_FLT_INST_R, Bool
+  - get: L:BREAKER_LIGHTS_FLT_INST_L, Bool
+  - get: L:BREAKER_LIGHTS_CB_PANEL_R, Bool
+  - get: L:BREAKER_LIGHTS_CB_PANEL_L, Bool
+  - get: L:BREAKER_LIGHTS_CENTER_PANEL, Bool
+  - get: L:BREAKER_LIGHTS_RADIO_PANEL, Bool
+  - get: L:BREAKER_LIGHTS_CABIN, Bool
+# - # WARNING Column 2
+  - get: L:BREAKER_WARNING_LOWFUEL_R, Bool
+  - get: L:BREAKER_WARNING_LOWFUEL_L, Bool
+  - get: L:BREAKER_WARNING_WING_OHEAT_R, Bool
+  - get: L:BREAKER_WARNING_WING_OHEAT_L, Bool
+  - get: L:BREAKER_WARNING_ANNUNCIATOR_R, Bool
+  - get: L:BREAKER_WARNING_ANNUNCIATOR_L, Bool
+  - get: L:BREAKER_WARNING_STALL, Bool
+  - get: L:BREAKER_WARNING_LDG_GEAR, Bool
+  - get: L:BREAKER_WARNING_BATT_OHEAT, Bool
+  - get: L:BREAKER_WARNING_CABIN_DOOR, Bool
+# - # ENGINE INSTR Column 3
+  - get: L:BREAKER_ENG_INSTR_ITT_R, Bool
+  - get: L:BREAKER_ENG_INSTR_ITT_L, Bool
+  - get: L:BREAKER_ENG_INSTR_Np_R, Bool
+  - get: L:BREAKER_ENG_INSTR_Np_L, Bool
+  - get: L:BREAKER_WARNING_FUEL_FLOW_R, Bool
+  - get: L:BREAKER_WARNING_FUEL_FLOW_L, Bool
+  - get: L:BREAKER_ENG_INSTR_OIL_TEMP_R, Bool
+  - get: L:BREAKER_ENG_INSTR_OIL_TEMP_L, Bool
+  - get: L:BREAKER_ENG_INSTR_TORQUE_R, Bool
+  - get: L:BREAKER_ENG_INSTR_TORQUE_L, Bool
+# - # GEN, T&R, F/W, OAT, SURVEY Column 3
+  - get: L:BREAKER_GEN_CONTROL_RESET, Bool
+  - get: L:BREAKER_GEN_CONTROL_R, Bool
+  - get: L:BREAKER_GEN_CONTROL_L, Bool
+  - get: L:BREAKER_TR_R, Bool
+  - get: L:BREAKER_TR_L, Bool
+  - get: L:BREAKER_FW_SHUTOFF_R, Bool
+  - get: L:BREAKER_FW_SHUTOFF_L, Bool
+  - get: L:BREAKER_1, Bool
+  - get: L:BREAKER_2, Bool
+  - get: L:BREAKER_OAT, Bool
+  - get: L:BREAKER_EQUIP_PWR_SUPPLY_MAIN_OUTLET, Bool
+  - get: L:BREAKER_EQUIP_PWR_SUPPLY_AUX1, Bool
+  - get: L:BREAKER_EQUIP_PWR_SUPPLY_AUX2, Bool
+  - get: L:BREAKER_EQUIP_PWR_SUPPLY_MAIN_PWR, Bool
+
+
+
+
+
+

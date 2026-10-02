@@ -1,0 +1,627 @@
+# Original author: https://discord.com/channels/1454265644416765974/1542568364227174461/1542569199321358458
+# Updated: 2026-08-27 16:19:19
+
+# ATSimulations Antonov AN-2  variant - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: DKgolfnut
+# Special Thanks: 
+# Date: 8/27/2026 
+
+# Known Issues:
+  # - Initial release all functions working. 
+  # - 8/27/2026
+   # -  Items needing manual intervention by both pilots:
+    # - ADF radios all switches and dials.
+    # - Fast Sync button for  GIK auto adjustment of GIK-1 gauge. 
+    # - Inertial Starter selector (3 position momentary  switch) for Spin up and engagement to start.
+    # - Cowl Flap (3 way momentary switch)
+    # - Oil cooler (3 way momentary switch)
+    # - Exterior door - Small one works but the Large one is not synched
+
+# FIXED:
+  # - 8/27/2026
+   # - Waiting for feedback from pilots.
+
+include:
+  - modules/AS_GNS430.yaml
+  - modules/AS_GNS530.yaml
+  - modules/fuel.yaml
+#  - modules/radios.yaml ### Causes issues with ADF radios ###
+  - modules/payload.yaml
+  - modules/transponder.yaml
+master: 
+  - get: L:XMLVAR_AileronsTrim_Switch_1  
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+  - get: A:ELEVATOR TRIM PCT, Position 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: L:XMLVAR_ElevatorTrim_Switch_1  
+  - get: B:HANDLING_ELEVATORTRIM_YOKE
+  - get: L:XMLVAR_RudderTrim_Switch_1  
+  - get: A:RUDDER TRIM PCT, Position 16k
+  - get: L:HANDLING_RudderTrim
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+    set: (>K:THROTTLE1_SET)
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  - get: A:FLAPS HANDLE INDEX, Number
+
+shared:
+######### Example #########
+  - get: A:FUEL TANK SELECTOR:1, Enum
+    set: |
+      switch (value) {
+        case 0: return '(>K:FUEL_SELECTOR_OFF)'
+        case 1: return '(>K:FUEL_SELECTOR_ALL)'        
+        case 19: return '(>K:FUEL_SELECTOR_LEFT_MAIN)'
+        case 20: return '(>K:FUEL_SELECTOR_RIGHT_MAIN)'
+        default: return ''
+      }  
+  - get: B:INSTRUMENT_AN2_door_cabin_handle
+    set: | 
+      switch (value) { 
+        case 0: return '0 (>B:INSTRUMENT_AN2_door_cabin_handle_Set) 1(A:INTERACTIVE POINT GOAL) '
+        case 1: return '1 (>B:INSTRUMENT_AN2_door_cabin_handle_Set) 0(A:INTERACTIVE POINT GOAL) '
+        default: return ''
+      }  
+######### QUADRANT AREA PANELS ##########
+## - LIGHT PANEL ##
+  - get: L:LIGHTING_POTENTIOMETER_1
+    set: (>B:LIGHTING_POTENTIOMETER_1_Set)
+  - get: L:LIGHTING_POTENTIOMETER_4
+    set: (>B:LIGHTING_POTENTIOMETER_4_Set)
+  - get: L:LIGHTING_POTENTIOMETER_7
+    set: (>B:LIGHTING_POTENTIOMETER_7_Set)
+  - get: L:LIGHTING_POTENTIOMETER_8
+    set: (>B:LIGHTING_POTENTIOMETER_8_Set)  
+## - UPPER SWITCH PANEL ##
+  - get: B:ELECTRICAL_Alternator_1, Bool
+    set: (>B:ELECTRICAL_Alternator_1_Toggle)
+  - get: B:ELECTRICAL_Battery_1
+    set: |
+      switch (value) {
+        case 0: return '(>B:ELECTRICAL_Battery_1_GPU)'
+        case 1: return '(>B:ELECTRICAL_Battery_1_On)'
+        case 2: return '(>B:ELECTRICAL_Battery_1_Battery)'
+      default: return ''
+      }
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_art_hor1
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_art_hor1_Set)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_art_hor2
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_art_hor2_Set)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_fuel_meter
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_fuel_meter_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_engine_gage
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_engine_gage_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_flap_ind
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_flap_ind_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_oil_therm
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_oil_therm_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_crop
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_crop_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_scooper
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_scooper_Toggle)
+  - get: B:LANDING_GEAR_Gear
+    set: (>B:LANDING_GEAR_Gear_Set)
+## - COM RADIO PANEL ##
+  - get: A:COM SPACING MODE:1, Enum
+    set: (>K:COM_1_SPACING_MODE_SWITCH)
+  - get: A:COM SPACING MODE:2, Enum
+    set: (>K:COM_2_SPACING_MODE_SWITCH)
+  - get: A:COM SPACING MODE:3, Enum
+    set: (>K:COM_3_SPACING_MODE_SWITCH)
+  - get: A:COM RECEIVE ALL, Bool
+    set: (>K:COM_RECEIVE_ALL_SET)
+  - get: A:COM RECEIVE EX1:1, Bool  
+    set: (>K:COM1_RECEIVE_SELECT)   (>B:NAVCOM_AUDIO_COM1_receive_set)
+  - get: A:COM RECEIVE EX1:2, Bool
+    set: (>K:COM2_RECEIVE_SELECT)  (>B:NAVCOM_AUDIO_COM2_receive_set)
+  - get: A:COM RECEIVE EX1:3, Bool
+    set: (>K:COM3_RECEIVE_SELECT)  (>B:NAVCOM_AUDIO_COM3_receive_set)
+  - get: A:DME SOUND:1, Bool
+    set: (>K:RADIO_DME1_IDENT_SET)
+  - get: A:DME SOUND:2, Bool
+    set: (>K:RADIO_DME2_IDENT_SET)
+  - get: A:NAV SOUND:1, Bool
+    set: (>K:RADIO_VOR1_IDENT_SET)
+  - get: B:NAVCOM_AUDIO_NAV1_receive
+    set: (>B:NAVCOM_AUDIO_NAV1_receive_set)
+  - get: A:NAV SOUND:2, Bool  
+    set: (>K:RADIO_VOR2_IDENT_SET)
+  - get: B:NAVCOM_AUDIO_NAV2_receive
+    set: (>B:NAVCOM_AUDIO_NAV2_receive_set)
+  - get: B:NAVCOM_AUDIO_DME1_sound
+    set: (>K:RADIO_DME1_IDENT_SET)
+  - get: B:NAVCOM_AUDIO_Speaker
+    set: (>B:NAVCOM_AUDIO_Speaker_Set) (>K:TOGGLE_SPEAKER)
+  - get: B:NAVCOM_AUDIO_ADF1_Sound
+    set: (>B:NAVCOM_AUDIO_ADF1_Sound_Set)
+  - get: A:NAV VOLUME:1, Percent
+    set: (>K:NAV1_VOLUME_SET_EX1)
+  - get: A:NAV VOLUME:2, Percent
+    set: (>K:NAV2_VOLUME_SET_EX1)
+  - get: A:AUDIO PANEL VOLUME, Percent
+    set: (>K:AUDIO_PANEL_VOLUME_SET)
+  - get: B:NAVCOM_AUDIO_transmit
+    set: |
+      switch (value) {
+        case 0: return '(>B:NAVCOM_AUDIO_transmit_COM_1)'
+        case 1: return '(>B:NAVCOM_AUDIO_transmit_COM_2)'
+        case 2: return '(>B:NAVCOM_AUDIO_transmit_XMIT_PA)'
+      default: return ''
+      }
+  - get: A:PILOT TRANSMITTER TYPE, Enum
+    set: (>K:PILOT_TRANSMITTER_SET)
+  - get: A:COPILOT TRANSMITTER TYPE, Enum
+    set: (>K:COPILOT_TRANSMITTER_SET)
+  - get: A:SPEAKER ACTIVE, Bool
+    set: (>K:TOGGLE_SPEAKER)
+  - get: A:INTERCOM SYSTEM ACTIVE, Bool
+    set: (>K:TOGGLE_ICS)
+  - get: A:INTERCOM MODE, Enum
+    set: (>K:INTERCOM_MODE_SET)
+  - get: A:MARKER SOUND:1, Bool
+    set:  (>K:MARKER_SOUND_TOGGLE)
+  - get: A:MARKER BEACON TEST MUTE, Enum
+    set: (>K:MARKER_BEACON_TEST_MUTE)
+  - get: A:MARKER BEACON SENSITIVITY HIGH, Enum
+    set: (>K:MARKER_BEACON_SENSITIVITY_HIGH)
+## - GPS INTERCOM SW and BREAKERS on the GNS PANEL area##
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_intercom
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_intercom_Set)
+  - get: L:AN2_UltraLamp_var
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_com1, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_com1_Set)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_com2, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_com2_Set)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_xpdr, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_xpdr_Set)
+  - get: A:LINE BREAKER PULLED:83, Bool # AS530 Breaker
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_AS430, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_AS430_Set)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_marker, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_marker_Set)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_ADF, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_ADF_Set)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_radio_alt, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_radio_alt_Set)
+## - MOVING LIGHTS PANEL ##
+  - get: L:AN2_VC_Light_2_Y
+  - get: L:AN2_VC_Light_2_X
+  - get: L:AN2_VC_Light_3_Y
+  - get: L:AN2_VC_Light_3_X
+## - Main QUAD area ##
+  - get: L:AN2_switch_emer_flaps_cup_var
+  - get: L:AN2_switch_emer_flaps_var
+  - get: B:INSTRUMENT_AN2_lever_carb_heat
+    set: (>B:INSTRUMENT_AN2_lever_carb_heat_Set)
+  - get: B:FUEL_Valve_1
+    set: (>B:FUEL_Valve_1_Toggle)
+  - get: L:1:HANDLING_AN2_knob_flaps_up
+    set: 1 (>B:INSTRUMENT_AN2_knob_flaps_up_push)
+  - get: L:1:HANDLING_AN2_knob_flaps_down
+    set: 1 (>B:INSTRUMENT_AN2_knob_flaps_down_push)
+## - LIQUID DROPPING DOORS ##
+  - get: L:1:LIQUID_DROPPING_DOOR_POS
+  - get: A:LIQUID DROPPING DOOR OPEN TARGET, Percent
+## - HEATING SWITCHES ##
+  - get: B:PASSENGER_Cabin_Heat_1
+    set: (>B:PASSENGER_Cabin_Heat_1_Set)
+  - get: B:PASSENGER_Cabin_Heat_2
+    set: (>B:PASSENGER_Cabin_Heat_2_Set)  
+######### CoPILOT RIGHT PANEL ##########
+  - get: B:INSTRUMENT_AN2_knob_window_heat
+    set: (>B:INSTRUMENT_AN2_knob_window_heat_Toggle)
+## - CLOCK ##
+  - get: L:1:INSTRUMENT_ACHS1_CLOCK_push_left
+    set: (>B:INSTRUMENT_ACHS1_CLOCK_push_left_Set)
+  - get: L:1:INSTRUMENT_ACHS1_CLOCK_push_right
+    set: (>B:INSTRUMENT_ACHS1_CLOCK_push_right_Set)
+  - get: L:1:ACHS1_CLOCK_clock_red_box
+  - get: L:1:ACHS1_CLOCK_stopwaatch_status
+
+## - INSTRUMENTS ##
+  - get: B:INSTRUMENT_AN2_knob_att2_lock
+    set: (>B:INSTRUMENT_AN2_knob_att2_lock_Set)
+  - get: L:1:INSTRUMENT_AN2_knob_fast_slave_rh
+    set: (>B:INSTRUMENT_AN2_knob_fast_slave_rh_Set)
+  - get: L:NAVCOM_ADF_UGK_knob
+    set: (>B:INSTRUMENT_NAVCOM_ADF_UGK_knob_Set)
+  - get: L:1:AN2_UGK_knob_EX1
+  - get: L:1:INSTRUMENT_AN2_knob_battery_check_1
+    set: (>B:INSTRUMENT_AN2_knob_battery_check_1_Set)
+  - get: L:1:INSTRUMENT_AN2_knob_battery_check_2
+    set: (>B:INSTRUMENT_AN2_knob_battery_check_2_Set)
+  - get: L:NAVCOM_ADF_knob_HDG
+  - get: A:ADF CARD, Degrees
+    set: "value > current ? '1 (>B:NAVCOM_ADF_knob_HDG_Inc) (>K:ADF_CARD_INC)' : '1 (>B:NAVCOM_ADF_knob_HDG_Dec) (>K:ADF_CARD_Dec)'"
+## - Transponder ##
+  - get: B:INSTRUMENT_AN2_XPDR_AR
+    set: (>B:INSTRUMENT_AN2_XPDR_AR_Set)
+  - get: L:1:INSTRUMENT_AN2_XPDR_test
+    set: (>B:INSTRUMENT_AN2_XPDR_test_Set)
+  - get: B:INSTRUMENT_AN2_XPDR_12
+    set: (>B:INSTRUMENT_AN2_XPDR_12_Set)
+  - get: A:TRANSPONDER IDENT:1, Bool
+  - get: B:NAVCOM_Transponder_Identify
+    set: 1 (>K:XPNDR_IDENT_ON) 
+  - get: B:INSTRUMENT_AN2_XPDR_On
+    set: (>B:INSTRUMENT_AN2_XPDR_On_Set)  
+## - Switches ##
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_clock_heat, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_clock_heat_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_right_fan, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_right_fan_Toggle)       
+######### PILOT CENTER PANEL ##########
+## - HEATING SWITCHES ##
+  - get: B:PASSENGER_Cabin_Heat_3
+    set: '`${value * 100} (>B:PASSENGER_Cabin_Heat_3_Set)`'
+  - get: B:PASSENGER_Cabin_Heat_4
+    set: '`${value * 100} (>B:PASSENGER_Cabin_Heat_4_Set)`'
+## - Switch PANEL 1 ##
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_flaps_uper, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_flaps_uper_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_flaps_master, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_flaps_master_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_flaps_lower, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_flaps_lower_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_aileron_trim, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_aileron_trim_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_elevator_trim, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_elevator_trim_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_rudder_trim, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_rudder_trim_Toggle)
+
+## - Switch PANEL 2 ##
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_com1, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_com1_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_intercom, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_intercom_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_ADF, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_ADF_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_marker, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_marker_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_xpdr, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_xpdr_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_radio_alt, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_radio_alt_Toggle)
+## - Switch PANEL 3 ##
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_brakes_off, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_brakes_off_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_oil_shutter, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_oil_shutter_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_cowl_flaps, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_cowl_flaps_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_antifire, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_antifire_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_warning_light, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_warning_light_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_panel_light, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_panel_light_Toggle)
+## - Switch PANEL 4 ##
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_cabin_light, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_cabin_light_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_cockpit_light, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_cockpit_light_Toggle)
+  - get: L:DEICE_Pitot_1, Number
+    set: (>K:PITOT_HEAT_SET)
+  - get: B:DEICE_Pitot_1, Number
+    set: (>B:DEICE_Pitot_1_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_UV_light, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_UV_light_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_move_light, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_move_light_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_floor_light, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_floor_light_Toggle)
+## - Switch PANEL 5 ##
+  - get: B:ELECTRICAL_Switch_rectifier, Number
+    set: |
+      switch (value) {
+        case 0: return '(>B:ELECTRICAL_Switch_rectifier_Low)'
+        case 1: return '(>B:ELECTRICAL_Switch_rectifier_Medium)'
+        case 2: return '(>B:ELECTRICAL_Switch_rectifier_High)'
+        default: return ''
+      }
+  - get: B:ELECTRICAL_Breaker_AN2_switch_tailwheel_lock, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_switch_tailwheel_lock_Set) # Changed to SET from Toggle 
+  - get: L:1:INSTRUMENT_AN2_knob_volt_amp
+   
+## - ADF PANEL ##
+  - get: B:INSTRUMENT_AN2_ADF_switch_TFL, Bool
+    set: (>B:INSTRUMENT_AN2_ADF_switch_TFL_Set) # Changed to SET from Toggle 
+  - get: B:INSTRUMENT_ADF1_KNOB_Mode, Bool 
+    set: |
+      switch (value) {
+        case 0: return '(>B:INSTRUMENT_ADF1_KNOB_Mode_Off)'
+        case 1: return '(>B:INSTRUMENT_ADF1_KNOB_Mode_Comp)'
+        case 2: return '(>B:INSTRUMENT_ADF1_KNOB_Mode_Ant)'
+        case 3: return '(>B:INSTRUMENT_ADF1_KNOB_Mode_Frame)'
+        default: return ''
+      }
+  - get: B:NAVCOM_ADF_switch_antenna, Number
+    set: |
+      switch (value) {
+        case 0: return '(>B:NAVCOM_ADF_switch_antenna_Low)'
+        case 1: return '(>B:NAVCOM_ADF_switch_antenna_Medium)'
+        case 2: return '(>B:NAVCOM_ADF_switch_antenna_High)'
+        default: return ''
+      }    
+  - get: A:ADF VOLUME:1
+    set: "value > current ? '0 (>B:NAVCOM_ADF_Volume_Inc) 0 (:>K:ADF_VOLUME_INC)' : '0 (>B:NAVCOM_ADF_Volume_DEC) 0 (:>K:ADF_VOLUME_Dec)'"
+
+######### PILOT FRONT PANEL ##########
+  - get: B:ELECTRICAL_AN2_knob_fire_cover, Bool
+    set: (>B:ELECTRICAL_AN2_knob_fire_cover_Toggle)
+  - get: L:AN2_knob_fire_var
+    set: (>B:ELECTRICAL_AN2_knob_fire_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_start, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_start_Toggle)
+  - get: B:ENGINE_Magneto_1, Bool
+    set: |
+      switch (value) {
+        case 0: return '(>B:ENGINE_Magneto_1_Off)'
+        case 1: return '(>B:ENGINE_Magneto_1_Right)'
+        case 2: return '(>B:ENGINE_Magneto_1_Left)'
+        case 3: return '(>B:ENGINE_Magneto_1_Both)'
+        default: return ''
+      }
+  - get: L:1:AN2_autostart_moment
+  - get: L:ATS_AN2_checklist_start
+  - get: A:ATTITUDE BARS POSITION, position
+    set: (>K:ATTITUDE_BARS_POSITION_SET)
+  - get: B:INSTRUMENT_AN2_knob_att1_lock
+    set: (>B:INSTRUMENT_AN2_knob_att1_lock_Set)
+  - get: L:AN2_dg_switch_heading
+  - get: B:INSTRUMENT_AN2_knob_dg
+    set: (>B:INSTRUMENT_AN2_knob_dg_Set)
+  - get: L:INSTRUMENT_Knob_Altimeter_1
+    set: "value > current ? '0(>B:INSTRUMENT_Knob_Altimeter_1_Inc)' : '0(>B:INSTRUMENT_Knob_Altimeter_1_Dec) '"
+  - get: A:KOHLSMAN SETTING MB:1, Millibars # ALTIMETER CALIBRATION
+    set: "`1 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # ALTIMETER CALIBRATION
+    set: "`2 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # ALTIMETER CALIBRATION
+    set: "`3 ${value * 16} (>K:KOHLSMAN_SET)`" 
+  - get: L:1:INSTRUMENT_AN2_knob_fast_slave_lh
+    set: (>B:INSTRUMENT_AN2_knob_fast_slave_lh_Set)
+  - get: L:NAVCOM_ADF_UGR_knob
+    set: (>B:INSTRUMENT_NAVCOM_ADF_UGR_knob_Set)
+  - get: L:1:AN2_UGR_knob_EX1
+  - get: L:1:INSTRUMENT_AN2_radioalt_test
+    set: (>B:INSTRUMENT_AN2_radioalt_test_Set)
+  - get: L:AN2_radioalt_knob_var
+## - EXTERNAL LIGHTS ##
+  - get: B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_Landing_L, Bool
+    set: (>B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_Landing_L_Toggle)
+  - get: B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_Landing_R, Bool
+    set: (>B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_Landing_R_Toggle)
+  - get: B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_NAV_1, Bool
+    set: (>B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_NAV_1_Toggle)
+  - get: B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_TAXI_1, Bool
+    set: (>B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_TAXI_1_Toggle)
+  - get: B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_Beacon_1, Bool
+    set: (>B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_Beacon_1_Toggle)
+  - get: B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_Beacon_2, Bool
+    set: (>B:ELECTRICAL_Breaker_LIGHTING_Switch_Light_Beacon_2_Toggle)
+
+######### MISC ITEMS ##########
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+  - get: L:1:XMLVAR_3D_EFB_Hidden
+  - get: L:AN2_sunpanel_1_y
+  - get: L:AN2_sunpanel_1_x
+  - get: L:AN2_sunpanel_2_y
+  - get: L:AN2_VC_LIGHT_8_Y
+  - get: L:AN2_VC_LIGHT_8_X 
+  - get: L:AN2_UltraLamp_var 
+  - get: A:BRAKE PARKING POSITION, Position
+    set: (>K:PARKING_BRAKE_SET)
+  - get: A:MANUAL FUEL PUMP HANDLE:1, position 16K
+    set: '`${value - 16384} (>B:FUEL_Manual_Pump_1_Set)`'  
+######### RIGHT ARM PANEL ##########
+  - get: B:PASSENGER_PASSENGER_Switch_Cabin_Air_2
+    set: "value > current ? '1 (>B:PASSENGER_PASSENGER_Switch_Cabin_Air_2_INC)' : '1 (>B:PASSENGER_PASSENGER_Switch_Cabin_Air_2_DEC)'"
+  - get: B:PASSENGER_PASSENGER_Switch_Cabin_Air_23
+    set: "value > current ? '1 (>B:PASSENGER_PASSENGER_Switch_Cabin_Air_3_INC)' : '1 (>B:PASSENGER_PASSENGER_Switch_Cabin_Air_3_DEC)'"    
+  - get: L:1:XMLVAR_WIPER_2_POSITION
+  - get: L:AN2_VC_LIGHT_6_Y
+  - get: L:AN2_VC_LIGHT_6_X
+######### LEFT ARM PANEL ##########
+## - UPPER WINDOW AREA ##
+  - get: B:PASSENGER_PASSENGER_Switch_Cabin_Air_1
+    set: "value > current ? '1 (>B:PASSENGER_PASSENGER_Switch_Cabin_Air_1_INC)' : '1 (>B:PASSENGER_PASSENGER_Switch_Cabin_Air_1_DEC)'"
+  - get: L:1:XMLVAR_WIPER_1_POSITION
+  - get: L:AN2_VC_LIGHT_1_Y
+  - get: L:AN2_VC_LIGHT_1_X
+  - get: L:AN2_VC_LIGHT_5_Y
+  - get: L:AN2_VC_LIGHT_5_X
+  - get: A:AUDIO PANEL VOLUME, Percent
+    set: "value > current ? '1 (>B:NAVCOM_Pilot_Volume_INC)' : '1 (>B:NAVCOM_Pilot_Volume_DEC)'"
+  - get: B:INSTRUMENT_AN2_INTERCOM_1_KNOB_3
+    set: |
+      switch (value) {
+        case 0: return '(>B:INSTRUMENT_AN2_INTERCOM_1_KNOB_3_0)'
+        case 1: return '(>B:INSTRUMENT_AN2_INTERCOM_1_KNOB_3_1)'
+        case 2: return '(>B:INSTRUMENT_AN2_INTERCOM_1_KNOB_3_2)'
+        case 3: return '(>B:INSTRUMENT_AN2_INTERCOM_1_KNOB_3_3)'
+        case 4: return '(>B:INSTRUMENT_AN2_INTERCOM_1_KNOB_3_4)'
+        case 5: return '(>B:INSTRUMENT_AN2_INTERCOM_1_KNOB_3_5)'
+        default: return ''
+      }
+  - get: B:INSTRUMENT_AN2_Intercom_1_switch_1
+    set: (>B:INSTRUMENT_AN2_Intercom_1_switch_1_Toggle)
+  - get: B:INSTRUMENT_AN2_Intercom_1_switch_2
+    set: (>B:INSTRUMENT_AN2_Intercom_1_switch_2_Toggle)
+  - get: L:1:INSTRUMENT_AN2_Intercom_1_button
+    set: (>B:INSTRUMENT_AN2_Intercom_1_button_Set)
+## - LOWER Armrest ##
+  - get: B:LIGHTING_POTENTIOMETER_10
+    set: "value > current ? '1 (>B:LIGHTING_POTENTIOMETER_10_INC)' : '1 (>B:LIGHTING_POTENTIOMETER_10_DEC)'"
+  - get: L:AN2_FUEL_Switch_Pump_cup_var
+  - get: L:AN2_FUEL_Switch_Pump_var
+  - get: A:FUELSYSTEM JUNCTION SETTING:1
+    set: |
+      switch (value) {
+        case 1: return '(>B:FUEL_Selector_1_Off)'
+        case 2: return '(>B:FUEL_Selector_1_Left)'        
+        case 3: return '(>B:FUEL_Selector_1_Both)'
+        case 4: return '(>B:FUEL_Selector_1_Right)'
+        default: return ''
+      }
+  - get: B:FUEL_Selector_1
+  - get: B:INSTRUMENT_AN2_switch_chip_check
+    set: "value > current ? '1 (>B:INSTRUMENT_AN2_switch_chip_check_inc)' : '1 (>B:INSTRUMENT_AN2_switch_chip_check_dec)'"
+  - get: L:AN2_fuel_meter_mode_var
+    set: (>B:ELECTRICAL_Switch_fuel_meter_Set)
+  - get: L:AN2_Switch_antifire1_cup_var
+  - get: L:AN2_Switch_antifire1_var
+  - get: L:AN2_Switch_antifire2_cup_var
+  - get: L:AN2_Switch_antifire2_var 
+  - get: B:INSTRUMENT_AN2_switch_pilot_check
+    set: (>B:INSTRUMENT_AN2_switch_pilot_check_Set)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_window_heat1
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_window_heat1_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_window_heat2, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_window_heat2_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_window_heat3, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_window_heat3_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_left_fan, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_left_fan_Toggle)  
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_master_wiper, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_master_wiper_Toggle)  
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_left_wiper_tmp, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_left_wiper_tmp_Toggle)
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_right_wiper_tmp, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_right_wiper_tmp_Toggle) 
+  - get: B:INSTRUMENT_AN2_switch_fuel_sound
+    set: (>B:INSTRUMENT_AN2_switch_fuel_sound_Set)
+  - get: B:INSTRUMENT_AN2_knob_pneumo, Bool
+    set: (>B:INSTRUMENT_AN2_knob_pneumo_Toggle) 
+  - get: B:ELECTRICAL_Breaker_AN2_AZS_pass_signal, Bool
+    set: (>B:ELECTRICAL_Breaker_AN2_AZS_pass_signal_Toggle) 
+  - get: B:INSTRUMENT_AN2_switch_fuel_check, Bool
+    set: (>B:INSTRUMENT_AN2_switch_fuel_check_Toggle) 
+  - get: B:LIGHTING_POTENTIOMETER_9
+    set: "value > current ? '1 (>B:LIGHTING_POTENTIOMETER_9_INC)' : '1 (>B:LIGHTING_POTENTIOMETER_9_DEC)'"
+  - get: L:AN2_switch_liq_cup_var
+  - get: L:AN2_switch_liq_var 
+  - get: B:ENGINE_PRIMER_1_Lever
+    set: (>B:ENGINE_PRIMER_1_Lever_Toggle)
+  - get: A:RECIP ENG PRIMER:1, percent  
+
+  ######## REAR CABIN ##########
+  - get: B:INSTRUMENT_AN2_door_cockpit
+    set: (>B:INSTRUMENT_AN2_door_cockpit_Set)
+
+  - get: B:INSTRUMENT_AN2_DOOR_CARGO_1_handle
+    set: (>B:INSTRUMENT_AN2_DOOR_CARGO_1_handle_Set)
+
+  - get: A:INTERACTIVE POINT GOAL, Number
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

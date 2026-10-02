@@ -1,0 +1,776 @@
+# Original author: https://discord.com/channels/1454265644416765974/1476942930026561669/1508064233336733726
+# Updated: 2026-05-28 03:37:45
+
+# Original author: https://discord.com/channels/1454265644416765974/1476942930026561669/1492657372068577330
+# Updated: 2026-04-11 22:47:33
+
+# Black Square TBM 850 - FsCopilot YAML Configuration
+# Version: 0.5 
+# Known Issues
+ # - BARO to STD button on ALT (EHSI) is not synched. Both Pilots must press BARO to STD
+ # - Use only the GTN750 and GNS530 GPS/Radios. THe others have issues with non trigerable buttons and knobs
+include:
+  - modules/fuel.yaml
+  - modules/paload.yaml
+master:
+  - get: A:AILERON TRIM PCT, Percent # AILERON TRIM
+    set: (>K:AILERON_TRIM_SET_EX1)
+  - get: A:ELEVATOR TRIM PCT, Percent # ELEVATOR TRIM BTN
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: A:RUDDER TRIM PCT, Percent # RUDDER TRIM BTN
+    set: (>K:RUDDER_TRIM_SET) 
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k 
+    set: (>K:THROTTLE1_SET)
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # PROPELLER LEVER
+    set: (>K:PROP_PITCH1_SET)
+  - get: L:BKSQ_ConditionLever, Number  # CONDITION LEVER
+  - get: L:ENG_FUEL VALVE:1  # FUEL VALVE
+  - get: L:Condition_Lever_CutOff_1  # CONDITION LEVER CUTOFF    
+
+shared:
+        ###########  KING/BENDIX  KNS87 NUMEROUS isues with TUNING KNOBS ###########  
+  - get: H:adf_AntAdf # KNS87 ADF Button
+  - get: H:adf_bfo # KNS87 ADF BFO Button
+  - get: H:adf_frqTransfert # KNS87 ADF Transfer Button
+  - get: H:adf_FltEt # KNS87 ADF FLT ET Button
+  - get: H:adf_SetRst # KNS87 ADF SET REST Button
+  - get: A:ADF VOLUME:1, percent 
+    set: "value > current ? '0 (>K:ADF_VOLUME_INC)' : '0 (>K:ADF_VOLUME_DEC)'"
+  - get: A:ADF ACTIVE FREQUENCY:1, Khz 
+  - get: A:ADF STANDBY FREQUENCY:1, Khz 
+#  - get: A:ADF ACTIVE FREQUENCY:1, Frequency ADF BCD32 # ADF ACTIVE  $$$$$$$$$$$$ TRY THIS on Next revision
+#    set: (>K:ADF_ACTIVE_SET)
+#    skp: H:AS1000_PFD_ENT_Push
+#  - get: A:ADF STANDBY FREQUENCY:1, Frequency ADF BCD32 # ADF STANDBY
+    set: (>K:ADF_STBY_SET)
+
+  - get: L:var_adfKnobPulled, bool # KNS87 ADF inner knob pulled
+  - get: H:ADF_100_DEC
+    set: (>K:ADF_100_DEC)
+  - get: H:ADF_100_INC
+  - get: H:ADF_10_DEC
+  - get: H:ADF_10_INC
+  - get: H:ADF_1_DEC
+  - get: H:ADF_1_INC
+         ###########  KING/BENDIX  KNS80  ###########  
+  - get: H:KNS80_vorModeButton # KNS80 VOR Mode Button 
+  - get: L:var_rnavCourseLinearFlag
+  - get: H:KNS80_rnavModeButton # KNS80 RNAV Mode Button
+  - get: H:KNS80_appModeButton # KNS80 APP Mode Button
+  - get: H:KNS80_dmeHoldButton # KNS80 DME ModeButton
+  - get: L:var_RNAV_DMEHOLD # KNS80 DME ModeButton
+  - get: L:var_RNAV_DME # KNS80 DME ModeButton
+  - get: L:var_RNAV_DISTANCE_NUMBER  
+  - get: L:var_RNAV_WAYPOINT_NUMBER
+  - get: L:var_RNAV_RADIAL_NUMBER
+  - get: L:var_rnavKnobPulled
+  - get: H:var_RNAV_VOLUME
+  - get: H:KNS80_bigInc 
+  - get: H:KNS80_bigDec
+  - get: H:KNS80_smallInc
+  - get: H:KNS80_smallDec
+  - get: H:KNS80_useButton # KNS80 DME ModeButton
+  - get: H:KNS80_displayButton  # Display Button
+  - get: H:KNS80_dataButton  # Data Button
+  - get: A:NAV ACTIVE FREQUENCY:3, Mhz 
+  - set: (>K:NAV3_RADIO_SET_HZ)
+
+         ###########  KING/BENDIX  KX155B RADIO 1 SWAP BROKEN ########### 
+  - get: A:COM VOLUME:1, percent 
+    set: "value > current ? '0 (>K:NAV1_VOLUME_INC)' : '0 (>K:NAV1_VOLUME_DEC)'"
+  - get: H:RADIO1_COM_Freq_Spacing_PUSH
+  - get: H:RADIO1_COM_Knob_Large_INC
+  - get: H:RADIO1_COM_Knob_Large_DEC
+  - get: H:RADIO1_COM_Knob_Small_INC
+  - get: H:RADIO1_COM_Knob_Small_DEC
+  - get: H:RADIO1_COM_Knob_Small_PUSH
+
+#  - get: A:COM2_RADIO_SWAP # STILL CANT SWAP
+#    set: (>K:COM2_RADIO_SWAP)   
+
+  - get: A:NAV VOLUME:1, percent  
+    set: "value > current ? '0 (>K:NAV1_VOLUME_INC)' : '0 (>K:NAV1_VOLUME_DEC)'" 
+  - get: H:RADIO1_NAV_Freq_Spacing_PUSH
+  - get: H:RADIO1_NAV_Knob_Large_INC
+  - get: H:RADIO1_NAV_Knob_Large_DEC
+  - get: H:RADIO1_NAV_Knob_Small_INC
+  - get: H:RADIO1_NAV_Knob_Small_DEC
+  - get: H:RADIO1_NAV_Knob_Small_PUSH
+  - get: A:NAV SOUND:1, Bool # NAV SOUND
+    set: (>K:RADIO_VOR1_IDENT_TOGGLE)
+
+         ###########  KING/BENDIX  KX155B RADIO 2  SWAP BROKEN########### 
+  - get: A:COM VOLUME:2, percent 
+    set: "value > current ? '0 (>K:COM2_VOLUME_INC)' : '0 (>K:COM2_VOLUME_DEC)'" 
+  - get: H:RADIO2_COM_Freq_Spacing_PUSH
+  - get: H:RADIO2_COM_Knob_Large_INC
+  - get: H:RADIO2_COM_Knob_Large_DEC
+  - get: H:RADIO2_COM_Knob_Small_INC
+  - get: H:RADIO2_COM_Knob_Small_DEC
+  - get: H:RADIO2_COM_Knob_Small_PUSH
+
+#  - get: A:COM2_RADIO_SWAP # STILL CANT SWAP
+#    set: (>K:COM2_RADIO_SWAP)   
+
+  - get: A:NAV VOLUME:2, percent  
+    set: "value > current ? '0 (>K:NAV2_VOLUME_INC)' : '0 (>K:NAV2_VOLUME_DEC)'" 
+  - get: H:RADIO2_NAV_Freq_Spacing_PUSH
+  - get: H:RADIO2_NAV_Knob_Large_INC
+  - get: H:RADIO2_NAV_Knob_Large_DEC
+  - get: H:RADIO2_NAV_Knob_Small_INC
+  - get: H:RADIO2_NAV_Knob_Small_DEC
+  - get: H:RADIO2_NAV_Knob_Small_PUSH
+  - get: A:NAV SOUND:2, Bool # NAV SOUND
+    set: (>K:RADIO_VOR2_IDENT_TOGGLE)
+
+#################### GNS 530_1 - AUTOPILOT ####################
+  - get: A:COM VOLUME:1, Percent # VOL
+    set: "`${value} (>K:COM1_VOLUME_SET)`"
+  - get: L:AS1000_PFD_SelectedComIndex # COM 1/2
+    set: (>B:AS1000_PFD_1_COM_Khz_Button_Push)
+  - get: A:COM ACTIVE FREQUENCY:1, Hz # COM ACTIVE
+    set: (>K:COM_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:1, Hz # COM STANDBY
+    set: (>K:COM_STBY_RADIO_SET_HZ)
+  - get: A:NAV VOLUME:1, Percent # VOL
+    set: "`${value} (>K:NAV1_VOLUME_SET_EX1)`"
+  - get: A:NAV ACTIVE FREQUENCY:1, Hz # NAV ACTIVE
+    set: (>K:NAV1_RADIO_SET_HZ)
+  - get: A:NAV STANDBY FREQUENCY:1, Hz # NAV STANDBY
+    set: (>K:NAV1_STBY_SET_HZ)
+  - get: A:GPS DRIVES NAV1, Bool # CDI
+    set: (>K:TOGGLE_GPS_DRIVES_NAV1)
+  - get: H:AS530_1_CDI_Push
+  - get: H:AS530_1_OBS_Push
+  - get: H:AS530_1_MSG_Push
+  - get: H:AS530_1_FPL_Push
+  - get: H:AS530_1_VNAV_Push
+  - get: H:AS530_1_PROC_Push
+  - get: H:AS530_1_RightLargeKnob_Right
+  - get: H:AS530_1_RightLargeKnob_Left
+  - get: H:AS530_1_RightSmallKnob_Right
+  - get: H:AS530_1_RightSmallKnob_Left
+  - get: H:AS530_1_RightSmallKnob_Push
+  - get: H:AS530_1_LeftLargeKnob_Right
+  - get: H:AS530_1_LeftLargeKnob_Left
+  - get: H:AS530_1_LeftSmallKnob_Right
+  - get: H:AS530_1_LeftSmallKnob_Left
+  - get: H:AS530_1_LeftSmallKnob_Push    
+  - get: H:AS530_1_RNG_Dezoom
+  - get: H:AS530_1_RNG_Zoom
+  - get: H:AS530_1_DirectTo_Push
+  - get: H:AS530_1_MENU_Push
+  - get: H:AS530_1_CLR_Push
+  - get: H:AS530_1_ENT_Push
+#################### GNS 530_2 - AUTOPILOT ####################
+  - get: A:COM VOLUME:1, Percent # VOL
+    set: "`${value} (>K:COM1_VOLUME_SET)`"
+  - get: L:AS1000_PFD_SelectedComIndex # COM 1/2
+    set: (>B:AS1000_PFD_1_COM_Khz_Button_Push)
+  - get: A:COM ACTIVE FREQUENCY:1, Hz # COM ACTIVE
+    set: (>K:COM_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:1, Hz # COM STANDBY
+    set: (>K:COM_STBY_RADIO_SET_HZ)
+  - get: A:NAV VOLUME:1, Percent # VOL
+    set: "`${value} (>K:NAV1_VOLUME_SET_EX1)`"
+  - get: A:NAV ACTIVE FREQUENCY:1, Hz # NAV ACTIVE
+    set: (>K:NAV1_RADIO_SET_HZ)
+  - get: A:NAV STANDBY FREQUENCY:1, Hz # NAV STANDBY
+    set: (>K:NAV1_STBY_SET_HZ)
+  - get: A:GPS DRIVES NAV1, Bool # CDI
+    set: (>K:TOGGLE_GPS_DRIVES_NAV1)
+  - get: H:AS530_2_COMSWAP_Push
+  - get: H:AS530_2_NAVSWAP_Push
+  - get: H:AS530_2_CDI_Push
+  - get: H:AS530_2_OBS_Push
+  - get: H:AS530_2_MSG_Push
+  - get: H:AS530_2_FPL_Push
+  - get: H:AS530_2_VNAV_Push
+  - get: H:AS530_2_PROC_Push
+  - get: H:AS530_2_RightLargeKnob_Right
+  - get: H:AS530_2_RightLargeKnob_Left
+  - get: H:AS530_2_RightSmallKnob_Right
+  - get: H:AS530_2_RightSmallKnob_Left
+  - get: H:AS530_2_RightSmallKnob_Push
+  - get: H:AS530_2_LeftLargeKnob_Right
+  - get: H:AS530_2_LeftLargeKnob_Left
+  - get: H:AS530_2_LeftSmallKnob_Right
+  - get: H:AS530_2_LeftSmallKnob_Left
+  - get: H:AS530_2_LeftSmallKnob_Push    
+  - get: H:AS530_2_RNG_Dezoom
+  - get: H:AS530_2_RNG_Zoom
+  - get: H:AS530_2_DirectTo_Push
+  - get: H:AS530_2_MENU_Push
+  - get: H:AS530_2_CLR_Push
+  - get: H:AS530_2_ENT_Push
+
+###########  GLARESHIELD - AUTOPILOT ########### 
+  - get: A:AUTOPILOT MASTER, Bool # AUTOPILOT MASTER BTN
+    set: (>K:AP_MASTER)
+  - get: A:AUTOPILOT YAW DAMPER, Bool # AUTOPILOT MASTER BTN
+    set: (>K:YAW_DAMPER_TOGGLE)
+  - get: L:var_Autopilot_YawDamper_EM_readonly # AUTOPILOT YAW DAMPER EM
+  - get: A:AUTOPILOT APPROACH HOLD, Bool # APR
+    set: (>K:AP_APR_HOLD)
+  - get: L:var_Autopilot_Approach_EM_readonly
+  - get: A:AUTOPILOT BACKCOURSE HOLD, Bool # BC
+    set: (>K:AP_BC_HOLD)
+  - get: L:var_Autopilot_BackCourse_EM_readonly
+  - get: A:AUTOPILOT NAV1 LOCK, Bool # NAV
+    set: (>K:AP_NAV1_HOLD)
+  - get: L:var_Autopilot_Nav_EM_readonly
+  - get: L:var_Autopilot_NavArm_EM_readonly
+  - get: A:AUTOPILOT HEADING LOCK, Bool # HDG
+    set: (>K:AP_PANEL_HEADING_HOLD)
+  - get: L:var_Autopilot_Heading_EM_readonly
+  - get: A:AUTOPILOT HEADING LOCK DIR, Degrees # HDG KNOB
+    set: "`${value} (>K:HEADING_BUG_SET)`"
+  - get: A:AUTOPILOT ALTITUDE LOCK, Bool # ALT
+    set: (>K:AP_ALT_HOLD)
+  - get: L:var_Autopilot_Altitude_EM_readonly
+  - get: A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool # FL
+    set: 0 (>K:FLIGHT_LEVEL_CHANGE)
+  - get: A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1, Bool # FD
+    set: (>K:TOGGLE_FLIGHT_DIRECTOR)
+  - set: L:var_autopilotSoftRideMode # AUTOPILOT SOFT RIDE MODE
+  - get: L:var_Autopilot_SoftRide_EM_readonly  
+  - get: A:AUTOPILOT MAX BANK ID, Number # MAX BANK
+    set: (>K:AP_MAX_BANK_SET)
+  - get: L:var_Autopilot_HalBank_EM_readonly # AUTOPILOT HALFBANK EM
+  - get: L:var_AutopilotStartupCounter # AUTOPILOT STARTUP COUNTER
+  - get: L:var_AutopilotTest # AUTOPILOT TEST 
+  - get: L:var_rnavApproachMode # RNAV APPROACH MODE
+
+#  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet # ALT
+  - get: A:AUTOPILOT VERTICAL HOLD, Bool
+    set: "value ? '(>K:AP_VS_ON)' : '(>K:AP_VS_OFF)'"
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, Feet per minute # UP/DN
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet # ALTITUDE LOCK VAR
+    set: (>K:AP_ALT_VAR_ENGLISH)
+  - get: A:AUTOPILOT VERTICAL SPEED VAR:1, Feet # VERTICAL SPEED VAR
+    set: (>K:AP_VS_VAR_ENGLISH)
+  - get: L:var_VsAdjustMode, Bool  # VS ADJUST MODE SWITCH
+         ###########   ALTIMETER INSTRUMENT   ########### 
+
+  - get: A:KOHLSMAN SETTING HG, inhg  # Altimeter 1 
+    set: "value > current ? '1 (>K:KOHLSMAN_INC)' : '1 (>K:KOHLSMAN_DEC)'"
+
+  - get: L:INSTRUMENT_Altimeter_2  # Altimeter 2
+    set: "value > current ? '2 (>K:KOHLSMAN_INC)' : '2 (>K:KOHLSMAN_DEC)'"
+
+###########  FRONT PANEL - COLUMN 1 ########### 
+
+  - get: L:var_masterWarningLatching  # MASTER WARNING SWITCH
+  - get: L:var_masterCautionLatching  # MASTER CAUTION SWITCH
+
+  - get: L:var_GyroSlaveModeSwitch  # GYRO SLAVE SWITCH
+#  CW/CCW switch is not functioning  
+  - get: A:ATTITUDE BARS POSITION, Percent Over 100 # ATTITUDE INDICATOR BAR POSITION 
+    set: "value > current ? ' (>B:INSTRUMENT_Attitude_Indicator_Bars_Position_Up)' : ' (>B:INSTRUMENT_Attitude_Indicator_Bars_Position_Down)'"  
+     ###########   Pilot CHRONO SYSTEM   ########### 
+  - get: L:var_yokeTimerMode_L # YOKE TIMER
+  - get: L:var_yokeTimerMode_L_SECONDS 
+  - get: L:var_yokeChronoMode_L # YOKE CHRONO
+  - get: L:var_yokeChronoMode_L_SECONDS 
+  - get: L:var_yokeDateTimer_L 3 # YOKE DATE TIMER
+  - get: H:FreeAirTempMode # FREE AIR TEMP INDICATOR MODE BTN
+#  - get: A:NAV OBS:2, Degrees # NAV OBS2 KNOB
+#    set: "value > current ? ' (>K:VOR2_OBI_INC)' : ' (>K:VOR2_OBI_DEC)'"
+  - get: A:NAV OBS:2, Degrees # VOR 2 BEARING
+    set: (>K:VOR2_SET)
+
+     ###########   DEICE SYSTEM   ########### 
+  - get: L:var_airframeDeice # AIRFRAME DEICE SWITCH
+  - get: A:LIGHT WING:1, Bool # ICE LIGHT SWITCH
+    set: "value ? ' (>K:WING_LIGHTS_ON)' : ' (>K:WING_LIGHTS_OFF)'"
+  - get: A:PROP DEICE SWITCH:1, Bool # PROP DEICE SWITCH
+    set: 1 (>B:DEICE_Propeller_1_toggle) 
+  - get: L:var_windshieldHeatSwitch_L # WINDSHIELD HEAT SWITCH L
+  - get: L:var_windshieldHeatSwitch_R # WINDSHIELD HEAT SWITCH R
+  - get: A:PITOT HEAT SWITCH:1, Bool # PITOT HEAT SWITCH
+    set: 1 (>B:DEICE_Pitot_1_Toggle)
+  - get: A:PITOT HEAT SWITCH:2, Bool # PITOT HEAT SWITCH
+    set: 2 (>B:DEICE_Pitot_2_Toggle)  
+  - get: L:var_InertialSeparatorSwitch # INERTIAL SEPARATOR SWITCH
+  - get: L:var_SwitchesLightTest # SWITCHES LIGHT TEST
+  - get: L:var_SwitchesLightTest_IsDown  
+###########  FRONT PANEL - COLUMN 2 ########### 
+         ###########   EFIS SYSTEM SWITCHES   ########### 
+  - get: H:EADI_TestButton  # EADI TEST BUTTON ****NEED CODE to get H EVENT to work ****
+  - get: L:var_EfisCompositeMode  # EFIS COMPOSITE MODE SWITCH  
+  - get: L:var_efisDecisionHeightTest, Bool # EFIS DECISION HEIGHT TEST BUTTON
+  - get: L:var_efisDecisionHeightSet, Bool # EFIS DECISION HEIGHT SET BUTTON
+  - get: A:DECISION HEIGHT, Feet # EFIS DECISION HEIGHT KNOB
+    set: "value > current ? ' (>B:NAVCOM_Decision_Height_Inc)' : ' (>B:NACVCOM_Decision_Height_Dec)'"
+  - get: L:var_EFIS_PowerSwitch, Bool  # EFIS POWER SWITCH
+  - get: L:var_EADI_Brightness, number  # EADI BRIGHTNESS KNOB
+  - get: L:var_efisDmeMode, number  # EFIS DME MODE SWITCH
+         ###########  EHSI INSTRUMENT FUNCTIONS ############
+  - get: H:EHSI_SystemSource  # EHSI SYSTEM SOURCE BTN
+  - get: H:EHSI_NavSource  # EHSI NAV SOURCE BTN
+  - get: H:EHSI_NavMode  # EHSI NAV MODE BTN
+  - get: H:EHSI_HsiMode  # HSI MODE BTN
+  - get: H:EHSI_TestReference  # EHSI TEST REFERENCE BTN
+  - get: H:EHSI_RangeUp  # EHSI RANGE UP BTN
+  - get: H:EHSI_RangeDown  # EHSI RANGE DOWN BTN
+  - get: H:EHSI_ArcMode  # EHSI ARC MODE BTN
+  - get: H:EHSI_SolidBearing  # EHSI SOLID BEARING BTN
+  - get: H:EHSI_HollowBearing  # EHSI HOLLOW BEARING BTN
+  - get: L:var_EHSI_Brightness, number  # EHSI BRIGHTNESS KNOB 
+  - get: L:var_efisCourseButtonAnim, number  # EFIS COURSE BUTTON ANIM
+  - get: H:EHSI_CourseSync
+  - get: A:GPS OBS VALUE, degrees # GPS OBS KNOB
+    set: (>K:GPS_OBS_SET)
+  - get: A:NAV OBS:1, Degrees # VOR 1 BEARING
+    set: (>K:VOR1_SET)
+  - get: A:NAV OBS:2, Degrees # VOR 2 BEARING
+    set: (>K:VOR2_SET)
+  - get: L:TDSGTNXI_OBSModeActive, bool  # TDSGTNXI OBS MODE ACTIVE
+  - get: L:var_RNAV_OBS, number  # RNAV OBS
+  - get: L:var_MLS_OBS, number  # MLS OBS
+  - get: L:var_ADF_OBS, number  # ADF OBS 
+
+         ###########   MISC ITEMS   ########### 
+  - get: L:var_MaskMicCover, Bool  # MASK MIC COVER
+  - get: L:var_MaskMicSwitch, Bool  # MASK MIC SWITCH
+  - get: A:BRAKE PARKING POSITION, position # BRAKE PARKING POSITION KNOB
+    set: (>K:PARKING_BRAKES)       
+###########  FRONT PANEL - COLUMN 3 ########### 
+  - get: L:var_gpsMessageButtonLatching, number  # GPS MESSAGE BUTTON
+  - get: L:var__gpsMessageButton2Latching, number  # GPS MESSAGE BUTTON 2
+         ###########   KAS297B ALERTER SYSTEM   ########### 
+  - get: H:kas297b_VsButton  # KAS297B VS BUTTON
+  - get: H:kas297b_ArmButton  # KAS297B ARM BUTTON
+  - get: H:kas297b_1000_INC  # KAS297B 1000 INC
+  - get: H:kas297b_1000_DEC  # KAS297B 1000 DEC
+  - get: H:kas297b_100_INC  # KAS297B 100 INC
+  - get: H:kas297b_100_DEC  # KAS297B 100 DEC
+
+
+         ###########   MISC TESTING ITEMS   ########### 
+  - get: L:var_TurbineTempTestButton  # TURBINE TEMP TEST BUTTON
+  - get: L:var_TurbineTempTestButton_IsDown  # TURBINE TEMP TEST BUTTON IS DOWN  
+  - get: L:var_TerrainTest, number  # TERRAIN TEST
+  - get: L:var_TerrainInhibited, bool  # TERRAIN INHIBITED
+  - get: L:var_PanelLightTestButton  # ANNUNCIATOR TEST BUTTON 
+  - get: L:var_PanelLightTestButton_IsDown  # ANNUNCIATOR TEST BUTTON IS DOWN
+  - get: L:var_stormScopeSwitch  # STORM SCOPE SWITCH
+  - get: L:var_efisSource, bool  # EFIS SOURCE SWITCH
+         ###########   LANDING GEAR PANEL   ########### 
+  - get: L:var_landingGearDownCheck, bool  # LANDING GEAR DOWN CHECK
+  - get: L:var_landingGearLightTestIlluminate, bool  # LANDING GEAR LIGHT ILLUMINATE
+  - get: A:GEAR HANDLE POSITION, Bool # GEAR POSITION HANDLE
+    set: (>K:GEAR_SET)
+
+         ###########  ETM MODULE ###########
+  - get: H:Etm_EnterTest  # ETM ENTER TEST BUTTON
+  - get: H:Etm_Inc  # ETM INC
+  - get: H:Etm_Dec  # ETM DEC
+  - get: H:Etm_Record  # ETM RECORD BUTTON
+  - get: H:Etm_PageUp  # ETM PAGE UP BUTTON
+  - get: H:Etm_PageDown  # ETM PAGE DOWN BUTTON
+  - get: L:var_EtmMode, number  # ETM MODE
+  - get: H:Etm_ClockStart  # ETM CLOCK START BUTTON
+  - get: H:Etm_ClockStop  # ETM CLOCK STOP BUTTON
+  - get: H:Etm_ClockReset  # ETM CLOCK RESET BUTTON
+
+###########  FRONT PANEL - COLUMN 4 ###########
+         ###########  Annunciator panels ###########         
+  - get: L:var_AnnunciatorDim, bool  # ANNUNCIATOR DIM
+  - get: L:var_AnnunciatorTest1, bool  # ANNUNCIATOR TEST 1
+  - get: L:var_AnnunciatorTest2, bool  # ANNUNCIATOR TEST 2
+         ###########  GARMIN GMA 320 COM PANEL ########### 
+  - get: A:AUDIO PANEL VOLUME, percent # AUDIO PANEL VOLUME Inner KNOB
+    set: "value > current ? ' (>B:NAVCOM_AUDIO_Pilot_Volume_Inc)' : ' (>B:NAVCOM_AUDIO_Pilot_Volume_Dec)'"
+  - get: L:var_AS340_1_1, number  # AS340 1 1  outer knob 
+  - get: A:MARKER BEACON SENSITIVITY HIGH, Bool # MARKER BEACON SENSITIVITY HIGH
+    set: (>K:MARKER_BEACON_SENSITIVITY_HIGH)
+#    set: (>B:NAVCOM_AUDIO_Marker_Beacon_Sensitivity_Toggle)
+  - get: A:MARKER BEACON TEST MUTE, Bool # MARKER BEACON TEST MUTE
+    set: (>B:NAVCOM_AUDIO_Marker_Beacon_Mute_Toggle)
+
+  - get: A:COM RECEIVE:1, Bool # COM RECEIVE
+    set: |
+     switch (value) {
+        case  0: return '0 (>K:COM1_RECEIVE_SELECT)'
+        case  1: return '1 (>K:COM1_RECEIVE_SELECT)'
+        default: return ''  
+        }
+  - get: A:COM TRANSMIT:1, Bool # COM TRANSMIT
+    set: 1 (>K:COM1_RECEIVE_SELECT)
+  - get: A:COM TRANSMIT:1, Bool # COM TRANSMIT
+    set: 0 (>K:PILOT_TRANSMITTER_SET)
+
+
+  - get: A:COM RECEIVE:2, Bool # COM RECEIVE
+    set: |
+     switch (value) {
+        case  0: return '0 (>K:COM2_RECEIVE_SELECT)'
+        case  1: return '1 (>K:COM2_RECEIVE_SELECT)'
+        default: return ''  
+        }
+  - get: A:COM TRANSMIT:2, Bool # COM TRANSMIT
+    set: 1 (>K:COM2_RECEIVE_SELECT)
+  - get: A:COM TRANSMIT:2, Bool # COM TRANSMIT
+    set: 1 (>K:PILOT_TRANSMITTER_SET)
+
+  - get: A:COM RECEIVE:3, Bool # COM RECEIVE
+    set: |
+     switch (value) {
+        case  0: return '0 (>K:COM3_RECEIVE_SELECT)'
+        case  1: return '1 (>K:COM3_RECEIVE_SELECT)'
+        default: return ''  
+        }
+  - get: A:COM TRANSMIT:3, Bool # COM TRANSMIT
+    set: 1 (>K:COM3_RECEIVE_SELECT)
+  - get: A:COM TRANSMIT:3, Bool # COM TRANSMIT
+    set: 2 (>K:PILOT_TRANSMITTER_SET)
+
+  - get: A:NAV SOUND:1, Bool # NAV SOUND
+    set: (>K:RADIO_VOR1_IDENT_TOGGLE)
+  - get: A:NAV SOUND:2, Bool # NAV SOUND
+    set: (>K:RADIO_VOR2_IDENT_TOGGLE)
+  - get: A:DME SOUND, Bool # DME SOUND
+    set: (>K:RADIO_DME1_IDENT_TOGGLE) 
+  - get: A:ADF SOUND:1, Bool # ADF SOUND
+    set: (>K:RADIO_ADF_IDENT_TOGGLE)     
+##  - get: COM1/2 button should work when both are selected via this button. 
+  - get: A:SPEAKER ACTIVE, Bool # SPEAKER ACTIVE
+    set: (>B:NAVCOM_AUDIO_Speaker_Toggle)
+  - get: L:var_cabinIntercom, bool  # CABIN INTERCOM  
+  - get: A:INTERCOM SYSTEM ACTIVE, Bool # INTERCOM SYSTEM ACTIVE
+    set: 0 (>K:TOGGLE_ICS)
+  - get: L:var_crewIsolate, bool  # CREW ISOLATE
+  - get: L:var_AS340_3_1, number  # AS340 3-1  outer knob 
+  - get: L:var_AS340_4_1, number  # AS340 4-1  outer knob 
+         ###########  GARMIN GTN750 PLACE HOLDER  AUTOMATIC  ###########       
+ 
+         ###########  KING/BENDIX  KX155B RADIO 2 ########### 
+  - get: A:COM VOLUME:2, percent 
+    set: "value > current ? '0 (>K:COM2_VOLUME_INC)' : '0 (>K:COM2_VOLUME_DEC)'" 
+  - get: H:RADIO2_COM_Freq_Spacing_PUSH
+  - get: H:RADIO2_COM_Knob_Large_INC
+  - get: H:RADIO2_COM_Knob_Large_DEC
+  - get: H:RADIO2_COM_Knob_Small_INC
+  - get: H:RADIO2_COM_Knob_Small_DEC
+  - get: H:RADIO2_COM_Knob_Small_PUSH
+
+#  - get: A:COM2_RADIO_SWAP # STILL CANT SWAP
+#    set: (>K:COM2_RADIO_SWAP)   
+
+  - get: A:NAV VOLUME:2, percent  
+    set: "value > current ? '0 (>K:NAV2_VOLUME_INC)' : '0 (>K:NAV2_VOLUME_DEC)'" 
+  - get: H:RADIO2_NAV_Freq_Spacing_PUSH
+  - get: H:RADIO2_NAV_Knob_Large_INC
+  - get: H:RADIO2_NAV_Knob_Large_DEC
+  - get: H:RADIO2_NAV_Knob_Small_INC
+  - get: H:RADIO2_NAV_Knob_Small_DEC
+  - get: H:RADIO2_NAV_Knob_Small_PUSH
+  - get: A:NAV SOUND:2, Bool # NAV SOUND
+    set: (>K:RADIO_VOR2_IDENT_TOGGLE)
+         ###########  KING/BENDIX  KNS80  ###########  
+  - get: H:KNS80_vorModeButton # KNS80 VOR Mode Button 
+  - get: L:var_rnavCourseLinearFlag
+  - get: H:KNS80_rnavModeButton # KNS80 RNAV Mode Button
+  - get: H:KNS80_appModeButton # KNS80 APP Mode Button
+  - get: H:KNS80_dmeHoldButton # KNS80 DME ModeButton
+  - get: L:var_RNAV_DMEHOLD # KNS80 DME ModeButton
+  - get: L:var_RNAV_DME # KNS80 DME ModeButton
+  - get: L:var_RNAV_DISTANCE_NUMBER  
+  - get: L:var_RNAV_WAYPOINT_NUMBER
+  - get: L:var_RNAV_RADIAL_NUMBER
+  - get: L:var_rnavKnobPulled
+  - get: H:var_RNAV_VOLUME
+  - get: H:KNS80_bigInc 
+  - get: H:KNS80_bigDec
+  - get: H:KNS80_smallInc
+  - get: H:KNS80_smallDec
+  - get: H:KNS80_useButton # KNS80 DME ModeButton
+  - get: H:KNS80_displayButton  # Display Button
+  - get: H:KNS80_dataButton  # Data Button
+  - get: A:NAV ACTIVE FREQUENCY:3, Mhz 
+  - set: (>K:NAV3_RADIO_SET_HZ)
+
+         ###########  BENDIX RDR1150XL  ###########  
+  - get: L:var_RadarBrightness, number  # RADAR BRIGHTNESS KNOB 
+  - get: H:bksq_wradar1_radarAlertToggle  # RADAR ALERT BUTTON
+  - get: H:bksq_wradar1_radarProfile  # RADAR PROFILE BUTTON
+  - get: H:bksq_wradar1_radarMap  # RADAR MAP BUTTON
+  - get: H:bksq_wradar1_radarHold  # RADAR HOLD BUTTON
+  - get: L:var_radarGain, number  # RADAR GAIN KNOB
+  - get: L:var_radarMode, number  # RADAR MODE KNOB
+  - get: H:bksq_wradar1_radarRangeInc  # RADAR RANGE FEET UP BUTTON
+  - get: H:bksq_wradar1_radarTrackLeft  # RADAR TRACK LEFT BUTTON
+  - get: H:bksq_wradar1_radarTrackRight  # RADAR TRACK RIGHT BUTTON
+  - get: L:var_RadarTilt, number  # RADAR TILT KNOB
+         ###########  AP/MSTR TR/Radio Master/INT LTS  ###########  
+  - get: L:BKSQ_AutopilotMasterSwitch, number  # AUTOPILOT MASTER SWITCH
+  - get: L:var_RadioMasterSwitch, bool  # RADIO MASTER SWITCH
+  - get: L:var_InstrumentLightingKnob, number  # INSTRUMENT LIGHTING KNOB
+  - get: L:var_PanelLightingKnob, number  # PANEL LIGHTING KNOB  
+  - get: L:LIGHTING_CABIN_1, number  # CABIN LIGHTING KNOB
+  - get: L:LIGHTING_CABIN_2, number  # CABIN LIGHTING KNOB
+  - get: L:LIGHTING_CABIN_3, number  # CABIN LIGHTING KNOB
+  - get: L:LIGHTING_CABIN_4, number  # CABIN LIGHTING KNOB
+  - get: L:LIGHTING_CABIN_5, number  # CABIN LIGHTING KNOB
+  - get: L:LIGHTING_CABIN_6, number  # CABIN LIGHTING KNOB
+###########  FRONT PANEL - COLUMN 5 ###########
+         ###########  FUEL PANEL  ###########  
+# - get: L:var_fuelSelectTimer, number  # FUEL SELECT TIMER KNOB
+  - get: A:CIRCUIT ON:40, Bool
+    set: |
+     if (value == 1)
+        return '40 (>K:ELECTRICAL_CIRCUIT_TOGGLE)'
+     else
+        return '40 (>K:ELECTRICAL_CIRCUIT_TOGGLE)'
+  - get: A:FUEL TANK SELECTOR:1, Enum 
+    set: |
+      switch (value) {
+          case 19: return '(>K:FUEL_SELECTOR_LEFT_MAIN )'
+          case 20: return '(>K:FUEL_SELECTOR_RIGHT_MAIN )'
+          default: return ''
+      }
+  - get: L:BKSQ_fuelPumpSwitch, number  # FUEL PUMP SWITCH
+         ###########   GARMIN GNS530 SYSTEM   ###########  Referenced in Modules area
+         
+
+         ###########   GARMIN GTX327-330 TRANSPONDER   ########### 
+  - get: A:TRANSPONDER IDENT:1, Bool
+    set: "value ? '1 (>K:XPNDR_IDENT_ON)' : '1 (>K:XPNDR_IDENT_OFF)'"
+
+  - get: H:TransponderON  # TRANSPONDER ON BUTTON
+  - get: H:TransponderOFF   # TRANSPONDER OFF BUTTON
+  - get: H:TransponderALT   # TRANSPONDER ALT BUTTON
+  - get: H:TransponderSTBY   # TRANSPONDER STBY BUTTON
+  - get: H:TransponderIDT   # TRANSPONDER IDENT BUTTON
+  - get: H:TransponderVFR   # TRANSPONDER VFR BUTTON  
+  - get: H:TransponderFUNC   # TRANSPONDER FUNC BUTTON
+  - get: H:TransponderCRSR   # TRANSPONDER CRSR BUTTON
+  - get: H:TransponderSTARTSTOP   # TRANSPONDER STARTSTOP BUTTON
+  - get: H:TransponderCLR    # TRANSPONDER CLR BUTTON
+  - get: H:Transponder0   # TRANSPONDER 0 BUTTON
+  - get: H:Transponder1   # TRANSPONDER 1 BUTTON
+  - get: H:Transponder2   # TRANSPONDER 2 BUTTON
+  - get: H:Transponder3   # TRANSPONDER 3 BUTTON
+  - get: H:Transponder4   # TRANSPONDER 4 BUTTON
+  - get: H:Transponder5   # TRANSPONDER 5 BUTTON
+  - get: H:Transponder6   # TRANSPONDER 6 BUTTON
+  - get: H:Transponder7   # TRANSPONDER 7 BUTTON
+  - get: H:Transponder8   # TRANSPONDER 8 BUTTON
+  - get: H:Transponder9   # TRANSPONDER 9 BUTTON
+
+
+  - get: A:TRANSPONDER CODE:1, BCO16  # TRANSPONDER CODE
+  - set: (>K:XPNDR_SET)
+ 
+         ###########   ECS - Environmental Control System   ########### 
+  - get: L:var_pressurizationGoal, FT  # PRESSURIZATION GOAL KNOB
+  - get: L:var_pressurizationClimbRate, Number  # PRESSURIZATION CLIMB RATE KNOB
+  - get: L:var_EnvironmentalLightTestButton  # ENVIRONMENTAL LIGHT TEST BUTTON
+  - get: L:var_EnvironmentalLightTestButton_IsDown
+  - get: L:var_bleedState, Number  # BLEED STATE KNOB
+  - get: L:var_airconState, Number  # ARICON STATE KNOB
+  - get: L:var_FanSwitch, Bool  # FAN SWITCH
+  - get: L:var_pressurizationDumpCover, Bool  # PRESSURIZATION DUMP COVER
+  - get: L:var_pressurizationDump, Bool  # PRESSURIZATION DUMP
+  - get: L:var_CabinTemperatureKnob, Number  # CABIN TEMPERATURE KNOB
+  - get: L:var_AirFlowSelectorKnob, Number  # AIR FLOW SELECTOR KNOB
+
+###########  FRONT PANEL - COLUMN 6 ###########
+  - get: L:XMLVAR_ELT_STATE  # ELT STATE
+  - get: A:ELT ACTIVATED, Bool  # ELT ACTIVATED
+    set: |  #This looks like a better way to see the logic.
+      switch (value) {
+          case 1: return '(>K:ELT_OFF)'
+          case 2: return '(>K:ELT_ON)'  
+          default: return ''
+      }  
+# GYROSLAVE and CW/CCW IS HANDLED ON PANEL 1. Thsi is a duplicate 
+         
+
+         ###########   RADAR ALTIMETER INSTRUMENT   ########### 
+  - get: L:var_RadarAltimeterTest  # RADAR ALTIMETER TEST
+  - get: L:var_RadarAltimeterTest_IsDown  # RADAR ALTIMETER TEST BUTTON
+  - get: L:var_copilotDecisionHeight, Number  # COPILOT DECISION HEIGHT
+         ###########   BENDIX/King KR87 TSO INSTRUMENT   ########### 
+  - get: H:adf_AntAdf  # ADF ANTENNA
+  - get: H:adf_bfo  # ADF BFO
+  - get: H:adf_frqTransfert  # ADF FREQUENCY TRANSFER
+  - get: H:adf_FltEt  # ADF FLT ET
+  - get: H:adf_SetRst  # ADF SET/RST
+  - get: A:ADF VOLUME:1, Percent  # ADF VOLUME KNOB
+    set: "value > current ? ' (>K:ADF_VOLUME_INC)' : ' (>K:ADF_VOLUME_DEC)'"
+  - get: A:ADF ACTIVE FREQUENCY:1, KHz  # ADF ACTIVE FREQUENCY
+    set: (>K:ADF_ACTIVE_SET)
+         ##############   NEED HELP WITH ADF TUNER  ##############
+  - get: L:var_adfKnobPulled, Bool  # ADF KNOB PULLED
+         ########### MISC Cabin TEMP, Music, N1/HLD/N2, Pedal ADJ    ###########
+  - get: L:var_CabinTempUnitMode, Bool  # CABIN TEMP UNIT MODE
+  - get: L:var_CrewMusicSwitch, Bool  # CREW MUSIC SWITCH
+  - get: L:var_dmeMode, Number  # DME MODE
+  - get: L:var_RudderPedalAdjustment_R  # RUDDER PEDAL ADJUSTMENT R
+  - get: L:var_RudderPedalAdjustment_R_IsDown  # RUDDER PEDAL ADJUSTMENT  
+  - get: L:var_RudderPedalAdjustment_L  # RUDDER PEDAL ADJUSTMENT L
+  - get: L:var_RudderPedalAdjustment_L_IsDown  # RUDDER PEDAL ADJUSTMENT
+  - get: L:XMLVAR_Cabin_Air_2_Position  # CABIN AIR 2 POSITION  
+    set: "value > current ? ' (>B:PASSENGER_Cabin_Air_2_Inc)' : ' (>B:PASSENGER_Cabin_Air_2_Dec)'" 
+  - get: L:XMLVAR_Cabin_Air_3_Position  # CABIN AIR 3 POSITION  
+    set: "value > current ? ' (>B:PASSENGER_Cabin_Air_3_Inc)' : ' (>B:PASSENGER_Cabin_Air_3_Dec)'" 
+  - get: L:bksq_TabletVisible, Bool  # TABLET VISIBLE
+
+         ###########  YOKES  ########## 
+  - get: L:var_YokeLightKnob_L, Number  # YOKE LIGHT KNOB L
+  - get: L:var_YokeLightKnob_R, Number  # YOKE LIGHT KNOB R
+  - get: L:var_PilotPtt  # PILOT PTT
+  - get: L:var_PilotPtt_IsDown  # PILOT PTT
+  - get: L:var_CoPilotPtt  # PILOT PTT
+  - get: L:var_CoPilotPtt_IsDown  # PILOT PTT
+
+         ###########  MISC ITEMS - YOKE Vis, Visors, Keys ########### 
+  - get: L:XMLVAR_YokeHidden1, Bool  # PILOT Yoke Visibility
+    set: (>B:HANDLING_YOKE_HIDER_1_SET)
+  - get: L:XMLVAR_YokeHidden2, Bool  # CoPILOT Yoke Visibility
+    set: (>B:HANDLING_YOKE_HIDER_2_SET)
+  - get: L:var_Armrest_L  # ARMREST L
+  - get: L:var_Armrest_R  # ARMREST R
+  - get: L:var_Visor_L  # VISOR L
+  - get: L:var_Visor_R  # VISOR R
+  - get: L:bksq_BaggageDoor  # BAGGAGE DOOR Key   
+         ###########  MISC ITEMS - DOORS ########### 
+  - get: A:INTERACTIVE POINT GOAL:0, Bool # Pilot Door HANDLE
+    set: 0 (>K:TOGGLE_AIRCRAFT_EXIT)
+  - get: L:var_PilotDoorLockedLatching  # Pilot Door PRESS to UNLOCK
+  - get: L:var_PilotLadder  # Pilot Door LADDER
+
+  - get: L:var_ReadingLightSwitch_L  # READING LIGHT SWITCH L
+  - get: L:var_ReadingLightSwitch_R  # READING LIGHT SWITCH R
+
+  - get: L:var_AftDoorLockedLatching
+  - get: L:var_AftDoorLockedLatching  # Aft Door PRESS to UNLOCK
+    set: |
+     switch (value) {
+        case  1: return '2 (>K:TOGGLE_AIRCRAFT_EXIT)'
+        default: return ''
+      }
+#  - get: A:CIRCUIT CONNECTION ON:2, Bool  
+#    set: 2 (>K:TOGGLE_AIRCRAFT_EXIT)
+  - get: A:CIRCUIT CONNECTION ON:2, Bool # Aft Door Press to Close BUTTON
+    set: |
+     switch (value) {
+        case  1: return '2 (>K:TOGGLE_AIRCRAFT_EXIT)'
+        default: return ''  
+        }
+  - get: L:var_AftLadder  # Aft Door LADDER
+
+
+
+########### PEDESTAL ITEMS and PANELS ########### 
+         ###########  Quadrant  ###########
+  - get: L:var_emergencyPowerLeverPosition, Number  # EMERGENCY POWER LEVER
+  - get: L:var_PowerLeverAnimationPosition, Number  # POWER LEVER ANIMATION
+  - get: L:var_PowerLeverPosition, Number  # POWER LEVER
+  - get: L:BKSQ_UnrestrictedBeta, Bool  # UNRESTRICTED BETA
+  - get: L:var_FlightIdleDetentTop, Number  # Flight Idle Detent Top
+  - get: L:var_FlightIdleDetentBottom, Number  # Flight Idle Detent Bottom
+
+  - get: L:var_PropRpmFeatherLimit, percent  # PROPELLER RPM FEATHER LIMIT
+  - get: L:var_propGovernorFailure, Bool  # PROPELLER GOVERNOR FAILURE
+  - get: L:var_propOverspeedTestButton, Bool  # PROPELLER OVERSPEED TEST BUTTON   
+  - get: L:var_850Mode, Number  # 850 MODE
+  - get: A:FLAPS HANDLE INDEX:1, Number  # FLAPS HANDLE
+    set: "${value} (>K:FLAPS_SET)"
+         ###########  FLOOR AREA  ###########
+  - get: L:var_EmergencyGearDoor, Bool  # EMERGENCY GEAR DOOR
+  - get: L:XMLVAR_Cabin_Air_1_Position, Number  # CABIN AIR 1 POSITIONadf
+  - get: L:var_EmergencyGearHandle  # EMERGENCY GEAR HANDLE
+  - get: L:var_EmergencyGearHandle_IsDown
+
+########### OVERHEAD ITEMS and PANELS ########### 
+         ###########  LIGHTING PANEL ###########
+  - get: B:LIGHTING_LANDING_1_Toggle, Number
+    set: "(>B:LIGHTING_LANDING_1_Toggle)"
+  - get: B:LIGHTING_LANDING_2_Toggle, Number
+    set: "(>B:LIGHTING_LANDING_2_Toggle)"
+  - get: A:LIGHT TAXI:1, Bool # TAXI LT SW
+    set: 1 (>K:TOGGLE_TAXI_LIGHTS)
+  - get: A:LIGHT NAV:1, Bool  # NAV LT SW
+    set: 1 (>K:TOGGLE_NAV_LIGHTS)
+  - get: A:LIGHT STROBE:1, Bool  # STROBE LT SW
+    set: "value ? '1 (>K:STROBES_ON)' : '0 (>K:STROBES_OFF)'"
+  - get: A:LIGHT RECOGNITION, Bool  # RECOGNITION LT SW
+    set: (>K:TOGGLE_RECOGNITION_LIGHTS)
+  - get: L:var_OverheadLightTestButton  # OVERHEAD LIGHT TEST BUTTON  
+         ########### GYRO INSTRUMENT PANEL ########### 
+  - get: A:CIRCUIT SWITCH ON:57, Bool  # GYRO INST SW
+    set: 57 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+  - get: A:CIRCUIT SWITCH ON:58, Bool  # RMI INST SW
+    set: 58 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+  - get: A:CIRCUIT SWITCH ON:59, Bool  # ADI2 INST SW
+    set: 59 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+  - get: A:CIRCUIT SWITCH ON:60, Bool  # HSI2 INST SW
+    set: 60 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+         ########### ELECTRICAL POWER PANEL ########### 
+  - get: A:GENERAL ENG MASTER ALTERNATOR:1, Bool  # MAIN GEN RESET SW
+    set: 1 (>K:TOGGLE_ALTERNATOR1)
+  - get: L:var_MainGeneratorResetButton, Bool  
+  - get: A:GENERAL ENG MASTER ALTERNATOR:2, Bool  # STBY GEN RESET SW
+    set: 2 (>K:TOGGLE_ALTERNATOR2)
+  - get: L:var_StandbyGeneratorResetButton, Bool 
+  - get: L:var_crashbar, bool  # CRASH BAR SW VAR
+  - get: A:BUS CONNECTION ON:2, Bool  # CRASH BAR SW
+  - get: L:BKSQ_SourceSwitch  # SOURCE SWITCH
+  - get: L:BKSQ_GeneratorSwitch  # GENERATOR SWITCH
+         ########### ENGINE START PANEL ########### 
+  - get: L:BKSQ_StarterSwitch  # STARTER SWITCH
+  - get: L:BKSQ_IgnitionSwitch  # IGNITION SWITCH
+         ########### OXYGEN PANEL ########### 
+  - get: L:var_oxygenMaster  # OXYGEN SWITCH
+  - get: L:var_passengeroxygen  # PASSENGER OXYGEN SWITCH
+  - get: L:var_copilotOxygen  # CoPilot OXYGEN SWITCH
+  - get: L:var_pilotOxygen  # PILOT OXYGEN SWITCH
+        ########### CABIN ITEMS ########### 
+  - get: var_HornTest  # HORN TEST SWITCH
+  - get: var_HornTest_IsDown  # HORN TEST SWITCH
+  - get: var_EmergencyLightKnob  # EMERGENCY LIGHT KNOB/Dimmer
+  - get: var_AccessLights_Button, bool  # ACCESS LIGHTS SWITCH
+  - get: var_CabinLights_Middle_L_Button  # CABIN LIGHTS MIddle L SWITCH
+  - get: var_CabinLights_Middle_R_Button  # CABIN LIGHTS MIddle R SWITCH
+  - get: var_CabinLights_Aft_L_Button  # CABIN LIGHTS AFT L SWITCH
+  - get: var_CabinLights_Aft_R_Button  # CABIN LIGHTS AFT R SWITCH
+
+
+
+
+
+################# BREAKERS PANEL #################
+  - get: L:var_EssentialBusTieCover
+  - get: L:var_EssentialBusTieSwitch
+  - get: L:var_EssentialBus1_Breaker 
+  - get: L:var_EssentialBus2_Breaker
+
+
+  #WEIGHTS
+  - get: A:PAYLOAD STATION WEIGHT:1, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:2, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:3, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:4, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:5, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:6, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:7, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:8, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:9, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:10, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:12, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:13, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:14, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:15, Pounds
+
+
+
+
+
+
+
+
+
+

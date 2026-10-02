@@ -1,0 +1,117 @@
+# Original author: https://discord.com/channels/1454265644416765974/1484451597189775430/1492663010806992926
+# Updated: 2026-04-11 23:09:57
+
+shared:
+  - get: B:SF50_ELECTRICAL_Battery_2_Switch_Set
+  - get: B:SF50_ELECTRICAL_Battery_1_Switch_Set
+  - get: B:SF50_ELECTRICAL_Gen_1_Switch_Set
+  - get: B:SF50_ELECTRICAL_Gen_2_Switch_Set
+  - get: B:LIGHTING_STROBE_1_Set
+  - get: B:SF50_LIGHTING_Landing_Lights_Set
+  - get: B:LIGHTING_WING_1_Set
+  - get: B:SF50_PRESSURIZATION_Oxygen_Master_Set
+  - get: B:SF50_PRESSURIZATION_Switch_Air_Bleed_Set
+  - get: B:DEICE_Pitot_1_Set
+  - get: B:DEICE_Engine_1_Set
+  - get: B:DEICE_Airframe_1_Set
+  - get: B:SF50_DEICE_Windshield_Set
+  - get: B:SF50_DEICE_Windshield_High_Set
+  - get: A:CIRCUIT POWER SETTING:'Instrument_Lights'_n, percent
+    set: (>B:SF50_LIGHTING_Instrument_Lights_Set)
+  - get: H:AS3000_PFD_1_BARO_PUSH
+  - get: A:KOHLSMAN SETTING MB:0, Millibars # Baro Display
+    set: "`0 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: B:LANDING_GEAR_Gear_Set
+  - get: H:SF50_Checklist_Wheel_Push
+  - get: H:SF50_Checklist_Wheel_Push_Long
+  - get: H:SF50_Checklist_Wheel_Inc
+  - get: H:SF50_Checklist_Wheel_Dec
+  - get: B:SF50_LIGHTING_Convenience_Switch_Set
+  - get: B:HANDLING_Yoke_Hider_1_Set
+  - get: H:SF50_Engine_Starter_Push
+  - get: B:SF50_ENGINE_Run_Knob_Set
+  - get: H:AS3000_TSC_Horizontal_1_TopKnob_Large_INC
+  - get: H:AS3000_TSC_Horizontal_1_TopKnob_Large_DEC
+  - get: H:AS3000_TSC_Horizontal_1_TopKnob_Push
+  - get: H:AS3000_TSC_Horizontal_1_TopKnob_Push_Long
+  - get: H:AS3000_TSC_Horizontal_1_TopKnob_Small_INC
+  - get: H:AS3000_TSC_Horizontal_1_TopKnob_Small_DEC
+  - get: H:AS3000_TSC_Horizontal_1_SoftKey_1
+  - get: H:AS3000_TSC_Horizontal_1_SoftKey_2
+  - get: H:AS3000_TSC_Horizontal_1_SoftKey_3
+  - get: H:AS3000_TSC_Horizontal_1_BottomKnob_Push
+  - get: H:AS3000_TSC_Horizontal_1_BottomKnob_Small_INC
+  - get: H:AS3000_TSC_Horizontal_1_BottomKnob_Small_DEC
+  - get: H:AS3000_TSC_Horizontal_2_TopKnob_Large_INC
+  - get: H:AS3000_TSC_Horizontal_2_TopKnob_Large_DEC
+  - get: H:AS3000_TSC_Horizontal_2_TopKnob_Push
+  - get: H:AS3000_TSC_Horizontal_2_TopKnob_Push_Long
+  - get: H:AS3000_TSC_Horizontal_2_TopKnob_Small_INC
+  - get: H:AS3000_TSC_Horizontal_2_TopKnob_Small_DEC
+  - get: H:AS3000_TSC_Horizontal_2_SoftKey_1
+  - get: H:AS3000_TSC_Horizontal_2_SoftKey_2
+  - get: H:AS3000_TSC_Horizontal_2_SoftKey_3
+  - get: H:AS3000_TSC_Horizontal_2_BottomKnob_Push
+  - get: H:AS3000_TSC_Horizontal_2_BottomKnob_Small_INC
+  - get: H:AS3000_TSC_Horizontal_2_BottomKnob_Small_DEC
+  - get: H:AS3000_TSC_Horizontal_3_TopKnob_Large_INC
+  - get: H:AS3000_TSC_Horizontal_3_TopKnob_Large_DEC
+  - get: H:AS3000_TSC_Horizontal_3_TopKnob_Push
+  - get: H:AS3000_TSC_Horizontal_3_TopKnob_Push_Long
+  - get: H:AS3000_TSC_Horizontal_3_TopKnob_Small_INC
+  - get: H:AS3000_TSC_Horizontal_3_TopKnob_Small_DEC
+  - get: H:AS3000_TSC_Horizontal_3_SoftKey_1
+  - get: H:AS3000_TSC_Horizontal_3_SoftKey_2
+  - get: H:AS3000_TSC_Horizontal_3_SoftKey_3
+  - get: H:AS3000_TSC_Horizontal_3_BottomKnob_Push
+  - get: H:AS3000_TSC_Horizontal_3_BottomKnob_Small_INC
+  - get: H:AS3000_TSC_Horizontal_3_BottomKnob_Small_DEC
+  - get: H:SF50_Ecs_Defog_Push
+  - get: H:SF50_Ecs_Aft_Control_Push
+  - get: B:SF50_CABIN_ECS_Temp_Backup_Set
+  - get: B:SF50_CABIN_ECS_Disable_Set
+  - get: H:Garmin_AP_HDG_Sync
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, degrees
+    set: (>K:HEADING_BUG_SET)
+  - get: A:AUTOPILOT HEADING LOCK, bool
+    set: (>K:AP_PANEL_HEADING_HOLD)
+  - get: L:WTAP_Garmin_Approach_Mode_On
+    set: (>K:AP_APR_HOLD)
+  - get: L:WTAP_Garmin_Nav_Mode_On
+    set: (>K:AP_NAV1_HOLD)
+  - get: B:AUTOPILOT_AP_1_Set
+  - get: B:AUTOPILOT_FD_1_Mode_Set
+  - get: B:SF50_AUTOPILOT_Level_Set
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, feet per minute
+    set: (>K:AP_VS_VAR_SET_ENGLISH)
+  - get: A:AUTOPILOT FLIGHT LEVEL CHANGE, bool
+    set: (>K:FLIGHT_LEVEL_CHANGE)
+  - get: B:SF50_AUTOPILOT_VNAV_Mode_Set
+  - get: B:SF50_AUTOPILOT_VS_Mode_Set
+  - get: B:SF50_AUTOPILOT_Altitude_Mode_Set
+  - get: A:AUTOPILOT ALTITUDE HOLD VAR, feet
+    set: (>K:AP_ALT_VAR_SET_ENGLISH)
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, feet per minute 
+    set: (>K:AP_VS_VAR_SET_ENGLISH)
+  - get: A:AUTOPILOT FLIGHT LEVEL CHANGE, bool
+    set: (>K:FLIGHT_LEVEL_CHANGE)
+  - get: L:XMLVAR_VNAVBUTTONVALUE
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:0, feet
+  - get: B:SF50_HANDLING_Flap_Selector_Set
+  - get: B:SF50_AUTOPILOT_AutoThrottle_Arm_Set
+  - get: B:SF50_AUTOPILOT_Man_Speed_Mode_Set
+  - get: B:SF50_AUTOPILOT_FMS_Speed_Mode_Set
+  - get: B:SF50_AUTOPILOT_Speed_Set
+  - get: A:AUTOPILOT AIRSPEED HOLD VAR:1, knots 
+    set: (>K:AP_SPD_VAR_SET) 
+  - get: B:SF50_ENGINE_Throttle_Set
+  - get: B:SF50_FUEL_Control_Knob_Set
+  - get: L:SF50_gear_alternate_ext
+  - get: L:SF50_gear_alternate_ext_handle
+  - get: B:SF50_CAPS_Safety_Pin_Set
+  - get: B:SF50_CAPS_Handle_Set
+    set: "`${value * 100} (>B:SF50_CAPS_Handle_Set)`"
+  - get: B:SF50_LIGHTING_Pilot_Task_Light_Set
+  - get: H:SF50_Safe_Return_Activate_Button_Push
+  - get: B:SF50_INT_Cabin_Door_Toggle
+  - get: B:SF50_INT_Emergency_Exit_Safety_Pin_Set

@@ -1,0 +1,746 @@
+# Original author: https://discord.com/channels/1454265644416765974/1497365461619179540/1498890749880565780
+# Updated: 2026-04-29 03:37:05
+
+# Headwind Simulations - A330-900neo (A339X)
+# Based on FlyByWire A32NX systems (shared codebase - A32NX_ L-var namespace)
+# Adapted from the FlyByWire A320 NEO FS Copilot profile
+# Created for FS Copilot shared cockpit
+
+master:
+  - get: L:A32NX_AUTOTHRUST_TLA:1                               # Throttle 1
+  - get: L:A32NX_AUTOTHRUST_TLA:2                               # Throttle 2
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, Position 16k
+  - get: A:RUDDER TRIM PCT, Position 16k
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: A:ELEVATOR TRIM PCT, Position 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: A:AILERON TRIM PCT, Position 16k
+    set: (>K:AILERON_TRIM_SET_EX1)
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+
+shared:
+# Overhead
+  # ADIRS Panel
+  - get: L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB             # ADIR 1 Knob
+  - get: L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB             # ADIR 2 Knob
+  - get: L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB             # ADIR 3 Knob
+  - get: L:A32NX_OVHD_ADIRS_IR_1_PB_IS_ON                       # IR 1
+  - get: L:A32NX_OVHD_ADIRS_IR_2_PB_IS_ON                       # IR 2
+  - get: L:A32NX_OVHD_ADIRS_IR_3_PB_IS_ON                       # IR 3
+  - get: L:A32NX_OVHD_ADIRS_ADR_1_PB_IS_ON                      # ADR 1
+  - get: L:A32NX_OVHD_ADIRS_ADR_2_PB_IS_ON                      # ADR 2
+  - get: L:A32NX_OVHD_ADIRS_ADR_3_PB_IS_ON                      # ADR 3
+  
+  # Left FLT CTL Panel
+  - get: L:A32NX_ELAC_1_PUSHBUTTON_PRESSED                      # ELAC 1 Button
+  - get: L:A32NX_SEC_1_PUSHBUTTON_PRESSED                       # SEC 1 Button
+  - get: L:A32NX_FAC_1_PUSHBUTTON_PRESSED                       # FAC 1 Button
+  
+  # EVAC Panel
+  - get: L:A32NX_EVAC_COMMAND_TOGGLE                            # COMMAND Button Light
+  - get: L:XMLVAR_Momentary_Push_OVHD_EVAC_COMMAND_Pressed      # COMMAND Button Position
+  - get: L:PUSH_OVHD_EVAC_HORN                                  # HORN SHUT OFF Button
+  - get: L:A32NX_EVAC_CAPT_TOGGLE                               # CAPT/PURS Switch
+  
+  # EMER ELEC PWR Panel
+  - get: L:A32NX_EMERELECPWR_GEN_TEST                           # EMER GEN TEST Button
+  - get: L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON             # GEN 1 LINE Button
+  - get: L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED     # RAT MAN ON/AUTO Button
+  
+  # GPWS Panel
+  - get: L:A32NX_GPWS_TERR_OFF                                  # GPWS TERR Button
+  - get: L:A32NX_GPWS_SYS_OFF                                   # GPWS SYS Button
+  - get: L:A32NX_GPWS_GS_OFF                                    # GPWS G/S MODE Button
+  - get: L:A32NX_GPWS_FLAP_OFF                                  # GPWS FLAP Button
+  - get: L:A32NX_GPWS_FLAPS3                                    # GPWS FLAP3 Button
+
+  # RCDR Panel
+  - get: L:A32NX_RCDR_GROUND_CONTROL_ON                         # GND CTL Button
+  - get: L:A32NX_RCDR_TEST                                      # CVR TEST Button
+
+  # Oxygen Panel
+  - get: L:PUSH_OVHD_OXYGEN_CREW                                # CREW SUPPLY Button
+  
+  # CALLS Panel
+  - get: L:PUSH_OVHD_CALLS_ALL                                  # ALL Button
+  - get: L:A32NX_CALLS_EMER_ON                                  # EMER Button
+
+  # FIRE Panel
+  - get: L:A32NX_FIRE_TEST_APU                                  # APU FIRE TEST
+  - get: L:A32NX_FIRE_TEST_ENG1                                 # ENG1 FIRE TEST
+  - get: L:A32NX_FIRE_TEST_ENG2                                 # ENG2 FIRE TEST
+  - get: L:A32NX_FIRE_GUARD_APU                                 # APU FIRE GUARD
+  - get: L:A32NX_FIRE_GUARD_ENG1                                # ENG 1 FIRE GUARD
+  - get: L:A32NX_FIRE_GUARD_ENG2                                # ENG 2 FIRE GUARD
+  - get: L:A32NX_FIRE_BUTTON_APU                                # APU FIRE
+  - get: L:A32NX_FIRE_BUTTON_ENG1                               # ENG 1 FIRE
+  - get: L:A32NX_FIRE_BUTTON_ENG2                               # ENG 2 FIRE
+  - get: L:A32NX_FIRE_APU_AGENT1_Discharge                      # APU AGENT1 PRESSED
+  - get: L:A32NX_FIRE_ENG1_AGENT1_Discharge                     # ENG1 AGENT1 PRESSED
+  - get: L:A32NX_FIRE_ENG1_AGENT2_Discharge                     # ENG1 AGENT2 PRESSED
+  - get: L:A32NX_FIRE_ENG2_AGENT1_Discharge                     # ENG2 AGENT1 PRESSED
+  - get: L:A32NX_FIRE_ENG2_AGENT2_Discharge                     # ENG2 AGENT2 PRESSED
+
+  # HYD Panel
+  - get: L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO                 # ENG 1 PUMP Button
+  - get: L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO                 # ENG 2 PUMP Button
+  - get: L:A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED                 # RAT MAN ON Button
+  - get: L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO_LOCK                # ELEC PUMP B Guard (Read Only)
+  - get: L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO                     # ELEC PUMP B Button
+  - get: L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO                        # PTU Button
+  - get: L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO                     # ELEC PUMP Y Button
+  
+  # FUEL Panel
+  - get: A:FUELSYSTEM PUMP ACTIVE:2, Bool                       # L TK PUMP 1 Button
+    set: 2 (>K:FUELSYSTEM_PUMP_TOGGLE)
+  - get: A:FUELSYSTEM PUMP ACTIVE:5, Bool                       # L TK PUMP 2 Button
+    set: 5 (>K:FUELSYSTEM_PUMP_TOGGLE)
+  - get: A:FUELSYSTEM PUMP ACTIVE:3, Bool                       # R TK PUMP 1 Button
+    set: 3 (>K:FUELSYSTEM_PUMP_TOGGLE)
+  - get: A:FUELSYSTEM PUMP ACTIVE:6, Bool                       # R TK PUMP 2 Button
+    set: 6 (>K:FUELSYSTEM_PUMP_TOGGLE)
+  - get: A:FUELSYSTEM VALVE SWITCH:9, Bool                      # CTR TK L XFR Button
+    set: 9 (>K:FUELSYSTEM_VALVE_TOGGLE)
+  - get: A:FUELSYSTEM VALVE SWITCH:10, Bool                     # CTR TK R XFR Button
+    set: 10 (>K:FUELSYSTEM_VALVE_TOGGLE)
+  - get: L:A32NX_OVHD_FUEL_MODESEL_MANUAL                       # MODE SEL Button Light
+  - get: L:XMLVAR_Momentary_PUSH_OVHD_FUEL_MODESEL_Pressed      # MODE SEL Button Position
+  - get: A:FUELSYSTEM VALVE SWITCH:3, Bool                      # X FEED Button Light
+    set: 3 (>K:FUELSYSTEM_VALVE_TOGGLE)
+  - get: L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed        # X FEED Button Position
+  
+  # ELEC Panel
+  - get: L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO                     # BAT 1 Button
+  - get: L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO                     # BAT 2 Button
+  - get: L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON                     # EXT PWR Button
+  - get: A:GENERAL ENG MASTER ALTERNATOR:1, Bool                # GEN 1 Button
+    set: (>K:TOGGLE_ALTERNATOR1)
+  - get: A:GENERAL ENG MASTER ALTERNATOR:2, Bool                # GEN 2 Button
+    set: (>K:TOGGLE_ALTERNATOR2)
+  - get: L:A32NX_OVHD_ELEC_IDG_1_PB_IS_RELEASED                 # IDG 1 Button (Irreversible)
+  - get: L:A32NX_OVHD_ELEC_IDG_2_PB_IS_RELEASED                 # IDG 2 Button (Irreversible)    
+  - get: A:APU GENERATOR SWITCH:1, Bool                         # APU GEN
+    set: (>K:APU_GENERATOR_SWITCH_TOGGLE)
+  - get: L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO                   # BUS TIE Button
+  - get: L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL             # AC ESS FEED Button
+  - get: L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON                  # COMMERCIAL Button
+  - get: L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO              # GALY & CAB Button
+
+  # AIR Panel
+  - get: L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON                   # APU BLEED
+  - get: L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO               # ENG 1 BLEED
+  - get: L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO               # ENG 2 BLEED
+  - get: L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position              # X BLEED Knob
+  - get: L:A32NX_OVHD_COND_PACK_1_PB_IS_ON                      # PACK 1
+  - get: L:A32NX_OVHD_COND_PACK_2_PB_IS_ON                      # PACK 2
+
+  - get: L:A32NX_OVHD_PNEU_APU_BLEED_PB_HAS_FAULT               # APU BLEED Fault
+  - get: L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT             # ENG 1 BLEED Fault
+  - get: L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT             # ENG 2 BLEED Fault
+  - get: L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT                  # PACK 1 Fault
+  - get: L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT                  # PACK 2 Fault
+  
+  - get: L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position            # AIR FLOW Knob
+  - get: L:A32NX_OVHD_COND_CKPT_SELECTOR_KNOB                   # COCKPIT Knob
+  - get: L:A32NX_OVHD_COND_FWD_SELECTOR_KNOB                    # FWD CABIN Knob
+  - get: L:A32NX_OVHD_COND_AFT_SELECTOR_KNOB                    # AFT CABIN Knob
+  - get: L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON                     # HOT AIR
+  - get: L:A32NX_OVHD_COND_HOT_AIR_PB_HAS_FAULT                 # HOT AIR Fault
+  - get: L:A32NX_AIRCOND_RAMAIR_TOGGLE                          # RAM AIR
+  
+  # ANTI ICE Panel
+  - get: L:A32NX_BUTTON_OVHD_ANTI_ICE_WING_POSITION             # WING
+  - get: L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed      # WING
+  - get: L:A32NX_BUTTON_OVHD_ANTI_ICE_ENG_1_POSITION            # ENG 1
+  - get: L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG1_Pressed      # ENG 1
+  - get: L:A32NX_BUTTON_OVHD_ANTI_ICE_ENG_2_POSITION            # ENG 2
+  - get: L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG2_Pressed      # ENG 2
+  - get: L:A32NX_MAN_PITOT_HEAT                                 # PROBE
+  - get: L:XMLVAR_Momentary_PUSH_OVHD_PROBESWINDOW_Pressed      # PROBE
+
+  # CABIN PRESS Panel
+  - get: L:A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH                   # MAN V/S CTL Switch
+  - get: L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO                 # MODE SEL Button
+  - get: L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV                  # LDG ELEV Knob
+  - get: L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON                   # DITCHING Button
+
+  # EXT LT Panel
+  - get: L:LIGHTING_STROBE_0                                    # STROBE LT
+  - get: A:LIGHT BEACON, Bool                                   # BEACON LT
+  - get: A:LIGHT WING, Bool                                     # WING LT
+  - get: A:LIGHT LOGO, Bool                                     # LOGO LT
+  - get: A:LIGHT NAV, Bool                                      # NAV LT
+  - get: A:CIRCUIT SWITCH ON:21, Bool                           # L RWY TURNOFF LT + Switch Position
+  - get: A:CIRCUIT SWITCH ON:22, Bool                           # R RWY TURNOFF LT
+  - get: L:LIGHTING_LANDING_2                                   # L LANDING LT Switch Position
+  - get: L:LANDING_2_RETRACTED                                  # L LANDING LT Position
+  - get: A:CIRCUIT SWITCH ON:18, Bool                           # L LANDING LT Circuit
+  - get: L:LIGHTING_LANDING_3                                   # R LANDING LT Switch Position
+  - get: L:LANDING_3_RETRACTED                                  # R LANDING LT Position
+  - get: A:CIRCUIT SWITCH ON:19, Bool                           # R LANDING LT Circuit
+  - get: A:CIRCUIT SWITCH ON:20, Bool                           # NOSE LT TAXI Circuit
+  - get: A:CIRCUIT SWITCH ON:17, Bool                           # NOSE LT T.O. Circuit
+
+  # APU Panel
+  - get: L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON                    # APU MASTER SW Button
+  - get: L:A32NX_OVHD_APU_START_PB_IS_ON                        # APU START Button
+
+  # INT LT Panel
+  - get: A:LIGHT POTENTIOMETER:86, Percent                      # OVHD INTEG LT Knob
+    set: "`${value} 86 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A32NX_STBY_COMPASS_LIGHT_TOGGLE                      # STBY COMPASS LT Switch
+  - get: A:LIGHT CABIN:1, Bool                                  # DOME LT
+  - get: A:LIGHT POTENTIOMETER:7, Percent                       # DOME LT
+    set: "`${value} 7 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A32NX_OVHD_INTLT_ANN                                 # ANN LT
+  - get: L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position           # SEAT BELTS
+  - get: L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position          # NO SMOKING/NO PORTABLE ELEC DEVICES
+  - get: L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position           # EMER EXIT LT
+
+  # Wipers
+  - get: L:A32NX_RAIN_REPELLENT_LEFT_ON                         # Left Rain Repellent
+  - get: L:A32NX_RAIN_REPELLENT_RIGHT_ON                        # Right Rain Repellent
+  - get: A:CIRCUIT SWITCH ON:77, Bool                           # L WIPER On/Off
+    set: "77 (>K:ELECTRICAL_CIRCUIT_TOGGLE)"
+  - get: A:CIRCUIT POWER SETTING:77, Percent                    # L WIPER Intensity
+    set: "`${value} 77 (>K:2:ELECTRICAL_CIRCUIT_POWER_SETTING_SET)`"
+  - get: A:CIRCUIT SWITCH ON:80, Bool                           # R WIPER On/Off
+    set: "80 (>K:2:ELECTRICAL_CIRCUIT_TOGGLE)"
+  - get: A:CIRCUIT POWER SETTING:80, Percent                    # R WIPER Intensity
+    set: "`${value} 80 (>K:2:ELECTRICAL_CIRCUIT_POWER_SETTING_SET)`"
+    
+  # Right FLT CTL Panel
+  - get: L:A32NX_ELAC_2_PUSHBUTTON_PRESSED
+  - get: L:A32NX_SEC_2_PUSHBUTTON_PRESSED
+  - get: L:A32NX_SEC_3_PUSHBUTTON_PRESSED
+  - get: L:A32NX_FAC_2_PUSHBUTTON_PRESSED
+  
+  # CARGO SMOKE Panel
+  - get: L:A32NX_CARGOSMOKE_FWD_DISCHARGED
+  - get: L:A32NX_FIRE_TEST_CARGO
+  - get: L:A32NX_CARGOSMOKE_AFT_DISCHARGED
+  
+  # VENTILATION Panel
+  - get: L:A32NX_VENTILATION_BLOWER_TOGGLE
+  - get: L:A32NX_VENTILATION_EXTRACT_TOGGLE
+  - get: L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON
+  
+  # ENG MAN START Panel
+  - get: L:A32NX_ENGMANSTART1_TOGGLE_LOCK
+  - get: L:A32NX_ENGMANSTART1_TOGGLE
+  - get: L:A32NX_ENGMANSTART2_TOGGLE_LOCK
+  - get: L:A32NX_ENGMANSTART2_TOGGLE
+  
+  - get: L:A339X_SUNSHADE_CS_VISIBLE
+  - get: L:A339X_SUNSHADE_FO_VISIBLE
+
+# Glareshield
+  # EFIS L
+  - get: L:PUSH_AUTOPILOT_MASTERAWARN_L                         # MASTER WARNING Button
+  - get: L:PUSH_AUTOPILOT_MASTERCAUT_L                          # MASTER CAUTION Button
+  - get: H:A32NX_EFIS_L_CHRONO_PUSHED                           # L EFIS CHRONO Button
+  - get: L:A32NX_FCU_EFIS_L_DISPLAY_BARO_VALUE                  # L EFIS Baro Knob
+    set:  |
+      if (value >= 745 && value <= 1100) {
+        return `${value * 16}` + ' (>K:A32NX.FCU_EFIS_L_BARO_SET)'
+      } else if (value >= 22 && value <= 32.48) {
+        return `${value * 541.824}` + ' (>K:A32NX.FCU_EFIS_L_BARO_SET)'
+      }
+  - get: L:A32NX_FCU_EFIS_L_DISPLAY_BARO_MODE                   # L EFIS Baro Knob Push/Pull
+    set:  |
+      switch (value) {
+        case 0: return '(>K:A32NX.FCU_EFIS_L_BARO_PULL)'
+        case 1: return '(>K:A32NX.FCU_EFIS_L_BARO_PUSH)'
+        case 2: return '(>K:A32NX.FCU_EFIS_L_BARO_PUSH)'
+        default: return ''
+      }
+  - get: L:A32NX_FCU_EFIS_L_BARO_IS_INHG                        # L EFIS Baro Knob Collar
+  - get: L:A32NX_FCU_EFIS_L_FD_LIGHT_ON                         # L EFIS FD Button
+    set: (>K:A32NX.FCU_EFIS_L_FD_PUSH)
+  - get: L:A32NX_FCU_EFIS_L_LS_LIGHT_ON                         # L EFIS LS Button
+    set: (>K:A32NX.FCU_EFIS_L_LS_PUSH)
+  - get: L:A32NX_FCU_EFIS_L_CSTR_LIGHT_ON                       # L EFIS CSTR Button
+    set: (>K:A32NX.FCU_EFIS_L_CSTR_PUSH)
+  - get: L:A32NX_FCU_EFIS_L_WPT_LIGHT_ON                        # L EFIS WPT Button
+    set: (>K:A32NX.FCU_EFIS_L_WPT_PUSH)
+  - get: L:A32NX_FCU_EFIS_L_VORD_LIGHT_ON                       # L EFIS VORD Button
+    set: (>K:A32NX.FCU_EFIS_L_VORD_PUSH)
+  - get: L:A32NX_FCU_EFIS_L_NDB_LIGHT_ON                        # L EFIS NDB Button
+    set: (>K:A32NX.FCU_EFIS_L_NDB_PUSH)
+  - get: L:A32NX_FCU_EFIS_L_ARPT_LIGHT_ON                       # L EFIS ARPT Button
+    set: (>K:A32NX.FCU_EFIS_L_ARPT_PUSH)
+  - get: L:A32NX_FCU_EFIS_L_EFIS_MODE                           # L EFIS Mode Knob
+  - get: L:A32NX_FCU_EFIS_L_EFIS_RANGE                          # L EFIS Range Knob
+  - get: L:A32NX_FCU_EFIS_L_NAVAID_1_MODE                       # L EFIS NAVAID 1 Switch
+  - get: L:A32NX_FCU_EFIS_L_NAVAID_2_MODE                       # L EFIS NAVAID 2 Switch
+  
+  # EFIS R
+    # L and R EFIS share the same MASTER WARN/CAUT Events
+  - get: H:A32NX_EFIS_R_CHRONO_PUSHED                           # R EFIS CHRONO Button
+  - get: L:A32NX_FCU_EFIS_R_DISPLAY_BARO_VALUE                  # R EFIS Baro Knob
+    set:  | 
+      if (value >= 745 && value <= 1100) {
+        return `${value * 16}` + ' (>K:A32NX.FCU_EFIS_R_BARO_SET)'
+      } else if (value >= 22 && value <= 32.48) {
+        return `${value * 541.824}` + ' (>K:A32NX.FCU_EFIS_R_BARO_SET)'
+      }
+  - get: L:A32NX_FCU_EFIS_R_DISPLAY_BARO_MODE                   # R EFIS Baro Knob Push/Pull
+    set:  |
+      switch (value) {
+        case 0: return '(>K:A32NX.FCU_EFIS_R_BARO_PULL)'
+        case 1: return '(>K:A32NX.FCU_EFIS_R_BARO_PUSH)'
+        case 2: return '(>K:A32NX.FCU_EFIS_R_BARO_PUSH)'
+        default: return ''
+      }
+  - get: L:A32NX_FCU_EFIS_R_BARO_IS_INHG                        # R EFIS Baro Knob Collar
+  - get: L:A32NX_FCU_EFIS_R_FD_LIGHT_ON                         # R EFIS FD Button
+    set: (>K:A32NX.FCU_EFIS_R_FD_PUSH)
+  - get: L:A32NX_FCU_EFIS_R_LS_LIGHT_ON                         # R EFIS LS Button
+    set: (>K:A32NX.FCU_EFIS_R_LS_PUSH)
+  - get: L:A32NX_FCU_EFIS_R_CSTR_LIGHT_ON                       # R EFIS CSTR Button
+    set: (>K:A32NX.FCU_EFIS_R_CSTR_PUSH)
+  - get: L:A32NX_FCU_EFIS_R_WPT_LIGHT_ON                        # R EFIS WPT Button
+    set: (>K:A32NX.FCU_EFIS_R_WPT_PUSH)
+  - get: L:A32NX_FCU_EFIS_R_VORD_LIGHT_ON                       # R EFIS VORD Button
+    set: (>K:A32NX.FCU_EFIS_R_VORD_PUSH)
+  - get: L:A32NX_FCU_EFIS_R_NDB_LIGHT_ON                        # R EFIS NDB Button
+    set: (>K:A32NX.FCU_EFIS_R_NDB_PUSH)
+  - get: L:A32NX_FCU_EFIS_R_ARPT_LIGHT_ON                       # R EFIS ARPT Button
+    set: (>K:A32NX.FCU_EFIS_R_ARPT_PUSH)
+  - get: L:A32NX_FCU_EFIS_R_EFIS_MODE                           # R EFIS Mode Knob
+  - get: L:A32NX_FCU_EFIS_R_EFIS_RANGE                          # R EFIS Range Knob
+  - get: L:A32NX_FCU_EFIS_R_NAVAID_1_MODE                       # R EFIS NAVAID 1 Switch
+  - get: L:A32NX_FCU_EFIS_R_NAVAID_2_MODE                       # R EFIS NAVAID 2 Switch
+  
+  # FCU Panel
+  - get: L:A32NX_AUTOPILOT_SPEED_SELECTED                       # SPD/MACH Knob Rotate
+    set: "value >= 100 ? '(>K:A32NX.FCU_SPD_SET)' : ''"
+  - get: L:A32NX_FCU_AFS_DISPLAY_SPD_MACH_MANAGED               # SPD/MACH Knob Push/Pull
+    set: "value ? '(>K:A32NX.FCU_SPD_PUSH)' : '(>K:A32NX.FCU_SPD_PULL)'"
+
+  - get: L:A32NX_AUTOPILOT_HEADING_SELECTED, Degrees            # HDG/TRK Knob Rotate
+    set: (>K:A32NX.FCU_HDG_SET)
+  - get: L:A32NX_FCU_AFS_DISPLAY_HDG_TRK_MANAGED                # HDG/TRK Knob Push/Pull
+    set: "value ? '(>K:A32NX.FCU_HDG_PUSH)' : '(>K:A32NX.FCU_HDG_PULL)'"
+  - get: L:A32NX_FCU_LOC_LIGHT_ON                               # LOC Button
+    set: (>K:A32NX.FCU_LOC_PUSH)
+
+  - get: L:A32NX_FCU_AP_1_LIGHT_ON                              # AP1 Button
+    set: (>K:A32NX.FCU_AP_1_PUSH)
+  - get: L:A32NX_FCU_AP_2_LIGHT_ON                              # AP2 Button
+    set: (>K:A32NX.FCU_AP_2_PUSH)
+  - get: L:A32NX_AUTOTHRUST_STATUS                              # A/THR Button
+    set:  |
+      switch (value) {
+        case 0: return '(>K:AUTO_THROTTLE_DISCONNECT)'
+        case 1: return '(>K:AUTO_THROTTLE_ARM)'
+        case 2: return '(>K:AUTO_THROTTLE_ARM)'
+        default: return ''
+      }
+      
+  - get: L:A32NX_FCU_ALT_INCREMENT_1000                         # ALT Knob 100/1000 Collar
+  - get: L:A32NX_FCU_AFS_DISPLAY_ALT_VALUE                      # ALT Knob Rotate
+    set: (>K:A32NX.FCU_ALT_SET)
+
+  - get: L:A32NX_FCU_EXPED_LIGHT_ON                             # EXPED Button
+    set: "value ? '(>K:A32NX.FCU_EXPED_PUSH)' : ''"
+
+  - get: L:A32NX_FCU_AFS_DISPLAY_VS_FPA_VALUE                   # V/S/FPA Knob Rotate
+    set: "`${(value >= 100 || value <= -100) ? value : value * 10} (>K:A32NX.FCU_VS_SET)`"
+  - get: L:A32NX_FCU_APPR_LIGHT_ON                              # APPR Button
+    set: (>K:AP_APR_HOLD)
+    
+  - get: L:A32NX_FMA_VERTICAL_MODE                              # V/S/FPA and ALT Knob Push/Pull
+    set:  |
+      switch(value) {
+        case 12:
+        case 13: return '(>K:A32NX.FCU_ALT_PULL)'
+        case 14:
+        case 15: return '(>K:A32NX.FCU_VS_PULL)'
+        case 22:
+        case 23: return '(>K:A32NX.FCU_ALT_PUSH)'
+        default: return ''
+      }
+
+  - get: L:A32NX_FCU_AFS_DISPLAY_MACH_MODE                      # SPD<->MACH Mode Button
+    set: (>K:A32NX.FCU_SPD_MACH_TOGGLE_PUSH)
+  - get: L:A32NX_FCU_AFS_DISPLAY_TRK_FPA_MODE                   # HDG/TRK<->VS/FPA Mode Button
+    set: (>K:A32NX.FCU_TRK_FPA_TOGGLE_PUSH)
+  - get: L:A32NX_METRIC_ALT_TOGGLE                              # METRIC ALT Toggle Button (INOP)
+    set: (>K:A32NX.FCU_METRIC_ALT_TOGGLE_PUSH)
+  
+  # Lighting Control
+  - get: A:LIGHT POTENTIOMETER:84, Percent                      # EFIS & FCU INTEG LT
+    set: "`${value} 84 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: A:LIGHT POTENTIOMETER:87, Percent                      # EFIS & FCU Display Brightness
+    set: "`${value} 87 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+
+# Instrument Panel
+  # Instrument Lighting Control Panel L
+  - get: A:LIGHT POTENTIOMETER:89, Percent                      # L ND Brightness
+    set: "`${value} 89 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: A:LIGHT POTENTIOMETER:94, Percent                      # L ND Overlay Brightness
+    set: "`${value} 94 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: A:LIGHT POTENTIOMETER:88, Percent                      # L PFD Brightness
+    set: "`${value} 88 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A32NX_DMC_FO_SWITCHING_KNOB
+  - get: L:XMLVAR_KNOB_EFIS_CS_LOUDSPEAKER
+  - get: A:LIGHT POTENTIOMETER:10, Percent                      # L CEILING Light
+    set: "`${value} 10 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A339X_CEILING_LIGHT_CAPTAIN                          # L CEILING Light Switch Position
+  - get: A:LIGHT POTENTIOMETER:11, Percent                      # L MAP Light
+    set: "`${value} 11 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A339X_MAP_LIGHT_CAPTAIN                              # L MAP Light Switch Position
+  - get: A:LIGHT POTENTIOMETER:8, Percent                       # L CONSOLE/FLOOR
+    set: "`${value} 8 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A339X_FOOT_WARMER_CAPTAIN                            # L FOOT WARMER Switch
+  - get: L:A32NX_GPWS_TEST                                      # GPWS TEST Button
+  - get: L:A32NX_PUSH_BKUP_SPD_ALT                              # BKUP SPD/ALT Button
+  - get: H:A330_Neo_L_ATSAW_TRAFFIC_INC                         # L TRAFFIC SELECTOR Scroll Clockwise
+  - get: H:A330_Neo_L_ATSAW_TRAFFIC_DEC                         # L TRAFFIC SELECTOR Scroll Counterclockwise
+  - get: H:A330_Neo_L_ATSAW_TRAFFIC_PUSH                        # L TRAFFIC SELECTOR Push
+  - get: H:A330_Neo_L_ATSAW_TRAFFIC_PULL                        # L TRAFFIC SELECTOR Pull
+  
+  # Instrument Lighting Control Panel R
+  - get: A:LIGHT POTENTIOMETER:91, Percent                      # R ND Brightness
+    set: "`${value} 91 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: A:LIGHT POTENTIOMETER:95, Percent                      # R ND Overlay Brightness
+    set: "`${value} 95 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: A:LIGHT POTENTIOMETER:90, Percent                      # R PFD Brightness
+    set: "`${value} 90 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A32NX_DMC_CS_SWITCHING_KNOB
+  - get: L:XMLVAR_KNOB_EFIS_FO_LOUDSPEAKER
+  - get: A:LIGHT POTENTIOMETER:12, Percent                      # R CEILING Light
+    set: "`${value} 12 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A339X_CEILING_LIGHT_FO                               # R CEILING Light Switch Position
+  - get: A:LIGHT POTENTIOMETER:13, Percent                      # R MAP Light
+    set: "`${value} 13 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A339X_MAP_LIGHT_FO                                   # R MAP Light Switch Position
+  - get: A:LIGHT POTENTIOMETER:9, Percent                       # R CONSOLE/FLOOR
+    set: "`${value} 9 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: L:A339X_FOOT_WARMER_FO                                 # R FOOT WARMER Switch
+  - get: H:A330_Neo_R_ATSAW_TRAFFIC_INC                         # R TRAFFIC SELECTOR Scroll Clockwise
+  - get: H:A330_Neo_R_ATSAW_TRAFFIC_DEC                         # R TRAFFIC SELECTOR Scroll Counterclockwise
+  - get: H:A330_Neo_R_ATSAW_TRAFFIC_PUSH                        # R TRAFFIC SELECTOR Push
+  - get: H:A330_Neo_R_ATSAW_TRAFFIC_PULL                        # R TRAFFIC SELECTOR Pull
+
+  # TERR ON ND
+  - get: L:A32NX_EFIS_TERR_L_ACTIVE # L ND
+  - get: L:A32NX_EFIS_TERR_R_ACTIVE # R ND
+  
+  # ISIS Panel
+  - get: L:A32NX_ISIS_BUGS_ACTIVE
+  - get: L:A32NX_ISIS_BUGS_ALT_ACTIVE:0
+  - get: L:A32NX_ISIS_BUGS_ALT_ACTIVE:1
+  - get: L:A32NX_ISIS_BUGS_SPD_ACTIVE:0
+  - get: L:A32NX_ISIS_BUGS_SPD_ACTIVE:1
+  - get: L:A32NX_ISIS_BUGS_SPD_ACTIVE:2
+  - get: L:A32NX_ISIS_BUGS_SPD_ACTIVE:3
+  - get: L:A32NX_ISIS_LS_ACTIVE
+  - get: L:A32NX_ISIS_BARO_MODE
+  - get: A:KOHLSMAN SETTING MB:3, Millibars                     # ISIS Baro Knob
+    set: "`${value * 16} 3 (>K:2:KOHLSMAN_SET)`"
+  - get: L:A32NX_ISIS_MANUAL_BRIGHTNESS_OFFSET
+
+  # Landing Gear & Brakes
+  - get: L:A32NX_BRAKE_FAN_BTN_PRESSED                          # Brake Fan
+  - get: L:A32NX_AUTOBRAKES_ARMED_MODE                          # Autobrakes
+    set: (>L:A32NX_AUTOBRAKES_ARMED_MODE_SET)
+  - get: L:A32NX_GEAR_LEVER_POSITION_REQUEST                    # Gear Lever
+  - get: A:ANTISKID BRAKES ACTIVE, Bool                         # A/SKID & N/W STRG
+    set: (>K:ANTISKID_BRAKES_TOGGLE)
+    
+  # Chronometer
+  - get: L:A32NX_CHRONO_ET_SWITCH_POS                           # ELAPSED TIME SWITCH
+  - get: H:A32NX_CHRONO_RST                                     # RST pb
+  - get: H:A32NX_CHRONO_TOGGLE                                  # CHR pb
+  - get: H:A32NX_CHRONO_DATE                                    # DATE pb
+
+# Pedestal
+  # MCDU L
+  - get: L:A32NX_MCDU_L_BRIGHTNESS
+  - get: H:A320_Neo_CDU_1_BTN_L1
+  - get: H:A320_Neo_CDU_1_BTN_L2
+  - get: H:A320_Neo_CDU_1_BTN_L3
+  - get: H:A320_Neo_CDU_1_BTN_L4
+  - get: H:A320_Neo_CDU_1_BTN_L5
+  - get: H:A320_Neo_CDU_1_BTN_L6
+  - get: H:A320_Neo_CDU_1_BTN_R1
+  - get: H:A320_Neo_CDU_1_BTN_R2
+  - get: H:A320_Neo_CDU_1_BTN_R3
+  - get: H:A320_Neo_CDU_1_BTN_R4
+  - get: H:A320_Neo_CDU_1_BTN_R5
+  - get: H:A320_Neo_CDU_1_BTN_R6
+  - get: H:A320_Neo_CDU_1_BTN_DIR
+  - get: H:A320_Neo_CDU_1_BTN_PROG
+  - get: H:A320_Neo_CDU_1_BTN_PERF
+  - get: H:A320_Neo_CDU_1_BTN_INIT
+  - get: H:A320_Neo_CDU_1_BTN_DATA
+  - get: H:A320_Neo_CDU_1_BTN_FPLN
+  - get: H:A320_Neo_CDU_1_BTN_RAD
+  - get: H:A320_Neo_CDU_1_BTN_FUEL
+  - get: H:A320_Neo_CDU_1_BTN_SEC
+  - get: H:A320_Neo_CDU_1_BTN_ATC
+  - get: H:A320_Neo_CDU_1_BTN_MENU
+  - get: H:A320_Neo_CDU_1_BTN_AIRPORT
+  - get: H:A320_Neo_CDU_1_BTN_PREVPAGE
+  - get: H:A320_Neo_CDU_1_BTN_NEXTPAGE
+  - get: H:A320_Neo_CDU_1_BTN_UP
+  - get: H:A320_Neo_CDU_1_BTN_DOWN
+  - get: H:A320_Neo_CDU_1_BTN_1
+  - get: H:A320_Neo_CDU_1_BTN_2
+  - get: H:A320_Neo_CDU_1_BTN_3
+  - get: H:A320_Neo_CDU_1_BTN_4
+  - get: H:A320_Neo_CDU_1_BTN_5
+  - get: H:A320_Neo_CDU_1_BTN_6
+  - get: H:A320_Neo_CDU_1_BTN_7
+  - get: H:A320_Neo_CDU_1_BTN_8
+  - get: H:A320_Neo_CDU_1_BTN_9
+  - get: H:A320_Neo_CDU_1_BTN_DOT
+  - get: H:A320_Neo_CDU_1_BTN_0
+  - get: H:A320_Neo_CDU_1_BTN_PLUSMINUS
+  - get: H:A320_Neo_CDU_1_BTN_A
+  - get: H:A320_Neo_CDU_1_BTN_B
+  - get: H:A320_Neo_CDU_1_BTN_C
+  - get: H:A320_Neo_CDU_1_BTN_D
+  - get: H:A320_Neo_CDU_1_BTN_E
+  - get: H:A320_Neo_CDU_1_BTN_F
+  - get: H:A320_Neo_CDU_1_BTN_G
+  - get: H:A320_Neo_CDU_1_BTN_H
+  - get: H:A320_Neo_CDU_1_BTN_I
+  - get: H:A320_Neo_CDU_1_BTN_J
+  - get: H:A320_Neo_CDU_1_BTN_K
+  - get: H:A320_Neo_CDU_1_BTN_L
+  - get: H:A320_Neo_CDU_1_BTN_M
+  - get: H:A320_Neo_CDU_1_BTN_N
+  - get: H:A320_Neo_CDU_1_BTN_O
+  - get: H:A320_Neo_CDU_1_BTN_P
+  - get: H:A320_Neo_CDU_1_BTN_Q
+  - get: H:A320_Neo_CDU_1_BTN_R
+  - get: H:A320_Neo_CDU_1_BTN_S
+  - get: H:A320_Neo_CDU_1_BTN_T
+  - get: H:A320_Neo_CDU_1_BTN_U
+  - get: H:A320_Neo_CDU_1_BTN_V
+  - get: H:A320_Neo_CDU_1_BTN_W
+  - get: H:A320_Neo_CDU_1_BTN_X
+  - get: H:A320_Neo_CDU_1_BTN_Y
+  - get: H:A320_Neo_CDU_1_BTN_Z
+  - get: H:A320_Neo_CDU_1_BTN_DIV
+  - get: H:A320_Neo_CDU_1_BTN_SP
+  - get: H:A320_Neo_CDU_1_BTN_OVFY
+  - get: H:A320_Neo_CDU_1_BTN_CLR
+
+  # MCDU R
+  - get: L:A32NX_MCDU_R_BRIGHTNESS
+  - get: H:A320_Neo_CDU_2_BTN_L1
+  - get: H:A320_Neo_CDU_2_BTN_L2
+  - get: H:A320_Neo_CDU_2_BTN_L3
+  - get: H:A320_Neo_CDU_2_BTN_L4
+  - get: H:A320_Neo_CDU_2_BTN_L5
+  - get: H:A320_Neo_CDU_2_BTN_L6
+  - get: H:A320_Neo_CDU_2_BTN_R1
+  - get: H:A320_Neo_CDU_2_BTN_R2
+  - get: H:A320_Neo_CDU_2_BTN_R3
+  - get: H:A320_Neo_CDU_2_BTN_R4
+  - get: H:A320_Neo_CDU_2_BTN_R5
+  - get: H:A320_Neo_CDU_2_BTN_R6
+  - get: H:A320_Neo_CDU_2_BTN_DIR
+  - get: H:A320_Neo_CDU_2_BTN_PROG
+  - get: H:A320_Neo_CDU_2_BTN_PERF
+  - get: H:A320_Neo_CDU_2_BTN_INIT
+  - get: H:A320_Neo_CDU_2_BTN_DATA
+  - get: H:A320_Neo_CDU_2_BTN_FPLN
+  - get: H:A320_Neo_CDU_2_BTN_RAD
+  - get: H:A320_Neo_CDU_2_BTN_FUEL
+  - get: H:A320_Neo_CDU_2_BTN_SEC
+  - get: H:A320_Neo_CDU_2_BTN_ATC
+  - get: H:A320_Neo_CDU_2_BTN_MENU
+  - get: H:A320_Neo_CDU_2_BTN_AIRPORT
+  - get: H:A320_Neo_CDU_2_BTN_PREVPAGE
+  - get: H:A320_Neo_CDU_2_BTN_NEXTPAGE
+  - get: H:A320_Neo_CDU_2_BTN_UP
+  - get: H:A320_Neo_CDU_2_BTN_DOWN
+  - get: H:A320_Neo_CDU_2_BTN_1
+  - get: H:A320_Neo_CDU_2_BTN_2
+  - get: H:A320_Neo_CDU_2_BTN_3
+  - get: H:A320_Neo_CDU_2_BTN_4
+  - get: H:A320_Neo_CDU_2_BTN_5
+  - get: H:A320_Neo_CDU_2_BTN_6
+  - get: H:A320_Neo_CDU_2_BTN_7
+  - get: H:A320_Neo_CDU_2_BTN_8
+  - get: H:A320_Neo_CDU_2_BTN_9
+  - get: H:A320_Neo_CDU_2_BTN_DOT
+  - get: H:A320_Neo_CDU_2_BTN_0
+  - get: H:A320_Neo_CDU_2_BTN_PLUSMINUS
+  - get: H:A320_Neo_CDU_2_BTN_A
+  - get: H:A320_Neo_CDU_2_BTN_B
+  - get: H:A320_Neo_CDU_2_BTN_C
+  - get: H:A320_Neo_CDU_2_BTN_D
+  - get: H:A320_Neo_CDU_2_BTN_E
+  - get: H:A320_Neo_CDU_2_BTN_F
+  - get: H:A320_Neo_CDU_2_BTN_G
+  - get: H:A320_Neo_CDU_2_BTN_H
+  - get: H:A320_Neo_CDU_2_BTN_I
+  - get: H:A320_Neo_CDU_2_BTN_J
+  - get: H:A320_Neo_CDU_2_BTN_K
+  - get: H:A320_Neo_CDU_2_BTN_L
+  - get: H:A320_Neo_CDU_2_BTN_M
+  - get: H:A320_Neo_CDU_2_BTN_N
+  - get: H:A320_Neo_CDU_2_BTN_O
+  - get: H:A320_Neo_CDU_2_BTN_P
+  - get: H:A320_Neo_CDU_2_BTN_Q
+  - get: H:A320_Neo_CDU_2_BTN_R
+  - get: H:A320_Neo_CDU_2_BTN_S
+  - get: H:A320_Neo_CDU_2_BTN_T
+  - get: H:A320_Neo_CDU_2_BTN_U
+  - get: H:A320_Neo_CDU_2_BTN_V
+  - get: H:A320_Neo_CDU_2_BTN_W
+  - get: H:A320_Neo_CDU_2_BTN_X
+  - get: H:A320_Neo_CDU_2_BTN_Y
+  - get: H:A320_Neo_CDU_2_BTN_Z
+  - get: H:A320_Neo_CDU_2_BTN_DIV
+  - get: H:A320_Neo_CDU_2_BTN_SP
+  - get: H:A320_Neo_CDU_2_BTN_OVFY
+  - get: H:A320_Neo_CDU_2_BTN_CLR
+    
+  # SWITCHING Panel
+  - get: L:A32NX_ATT_HDG_SWITCHING_KNOB
+  - get: L:A32NX_AIR_DATA_SWITCHING_KNOB
+  - get: L:A32NX_EIS_DMC_SWITCHING_KNOB
+  - get: L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB
+
+  # ECAM Control Panel
+  - get: A:LIGHT POTENTIOMETER:92, Percent                      # UPPER DISPLAY Brightness
+    set: "`${value} 92 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: A:LIGHT POTENTIOMETER:93, Percent                      # LOWER DISPLAY Brightness
+    set: "`${value} 93 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: H:A32NX_ECP_TO_CONF_TEST_PRESSED
+  - get: H:A32NX_ECP_TO_CONF_TEST_RELEASED
+  - get: B:A32NX_PED_ECP_EMER_CANCEL_COVER_PUSH
+  - get: L:A32NX_ECP_DISCRETE_OUT_EMER_CANC
+  - get: L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX
+  - get: L:A32NX_ECP_DISCRETE_OUT_CLR
+  - get: L:A32NX_ECP_DISCRETE_OUT_RCL
+
+  # L RMP
+  - get: A:COM ACTIVE FREQUENCY:1, Hz                           # L RMP VHF1 ACTIVE Frequency
+    set: (>K:COM_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:2, Hz                           # L RMP VHF2 ACTIVE Frequency
+    set: (>K:COM2_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:3, Hz                           # L RMP VHF3 ACTIVE Frequency
+    set: (>K:COM3_RADIO_SET_HZ)
+  - get: L:A32NX_RMP_L_VHF2_STANDBY_FREQUENCY                   # L RMP VHF2 STBY Frequency
+  - get: L:A32NX_RMP_L_VHF3_STANDBY_FREQUENCY                   # L RMP VHF3 STBY Frequency
+  - get: H:A32NX_RMP_L_VHF1_BUTTON_PRESSED                      # L RMP VHF1 Select Button
+  - get: H:A32NX_RMP_L_VHF2_BUTTON_PRESSED                      # L RMP VHF2 Select Button
+  - get: H:A32NX_RMP_L_VHF3_BUTTON_PRESSED                      # L RMP VHF3 Select Button
+  - get: L:A32NX_RMP_L_TOGGLE_SWITCH                            # L RMP Power Switch
+  
+  - get: L:XMLVAR_COM_PANEL1_Transmit_Channel                   # L RMP Transmit Select Button(s)
+  - get: L:XMLVAR_COM_1_VHF_L_Switch_Down                       # L RMP VHF1 Receive Select Button
+  - get: L:XMLVAR_COM_1_Volume_VHF_L                            # L RMP VHF1 Volume Knob
+  - get: L:XMLVAR_COM_1_VHF_C_Switch_Down                       # L RMP VHF2 Receive Select Button
+  - get: L:XMLVAR_COM_1_Volume_VHF_C                            # L RMP VHF2 Volume Knob
+  - get: L:XMLVAR_COM_1_VHF_R_Switch_Down                       # L RMP VHF3 Receive Select Button
+  - get: L:XMLVAR_COM_1_Volume_VHF_R                            # L RMP VHF3 Volume Knob
+  - get: L:XMLVAR_NAV_L_VOICE_Switch_Down                       # L RMP Voice Button
+  - get: L:XMLVAR_NAV_L_VOR1_Switch_Down                        # L RMP VOR1 Receive Select Button
+  - get: L:XMLVAR_NAV_L_VOR1_Volume                             # L RMP VOR1 Volume Knob
+  - get: L:XMLVAR_NAV_L_VOR2_Switch_Down                        # L RMP VOR2 Receive Select Button
+  - get: L:XMLVAR_NAV_L_VOR2_Volume                             # L RMP VOR2 Volume Knob
+  - get: L:XMLVAR_NAV_L_MKR_Switch_Down                         # L RMP MKR Receive Select Button
+  - get: L:XMLVAR_NAV_L_MKR_Volume                              # L RMP MKR Volume Knob
+  - get: L:XMLVAR_NAV_L_ILS_Switch_Down                         # L RMP ILS Receive Select Button
+  - get: L:XMLVAR_NAV_L_ILS_Volume                              # L RMP ILS Volume Knob
+  - get: L:XMLVAR_NAV_L_ADF1_Switch_Down                        # L RMP ADF1 Receive Select Button
+  - get: L:XMLVAR_NAV_L_ADF1_Volume                             # L RMP ADF1 Volume Knob
+  - get: L:XMLVAR_NAV_L_ADF2_Switch_Down                        # L RMP ADF2 Receive Select Button
+  - get: L:XMLVAR_NAV_L_ADF2_Volume                             # L RMP ADF2 Volume Knob
+
+  # R RMP
+  - get: L:A32NX_RMP_R_VHF1_STANDBY_FREQUENCY                   # R RMP VHF1 STBY Frequency
+  - get: L:A32NX_RMP_R_VHF3_STANDBY_FREQUENCY                   # R RMP VHF3 STBY Frequency
+  - get: H:A32NX_RMP_R_VHF1_BUTTON_PRESSED                      # R RMP VHF1 Select Button
+  - get: H:A32NX_RMP_R_VHF2_BUTTON_PRESSED                      # R RMP VHF2 Select Button
+  - get: H:A32NX_RMP_R_VHF3_BUTTON_PRESSED                      # R RMP VHF3 Select Button
+  - get: L:A32NX_RMP_R_TOGGLE_SWITCH                            # R RMP Power Switch
+  - get: L:XMLVAR_COM_PANEL2_Transmit_Channel                   # R RMP Transmit Select Button(s)
+  - get: L:XMLVAR_COM_2_VHF_L_Switch_Down                       # R RMP VHF1 Receive Select Button
+  - get: L:XMLVAR_COM_2_Volume_VHF_L                            # R RMP VHF1 Volume Knob
+  - get: L:XMLVAR_COM_2_VHF_C_Switch_Down                       # R RMP VHF2 Receive Select Button
+  - get: L:XMLVAR_COM_2_Volume_VHF_C                            # R RMP VHF2 Volume Knob
+  - get: L:XMLVAR_COM_2_VHF_R_Switch_Down                       # R RMP VHF3 Receive Select Button
+  - get: L:XMLVAR_COM_2_Volume_VHF_R                            # R RMP VHF3 Volume Knob
+  - get: L:XMLVAR_NAV_R_VOICE_Switch_Down                       # R RMP Voice Button
+  - get: L:XMLVAR_NAV_R_VOR1_Switch_Down                        # R RMP VOR1 Receive Select Button
+  - get: L:XMLVAR_NAV_R_VOR1_Volume                             # R RMP VOR1 Volume Knob
+  - get: L:XMLVAR_NAV_R_VOR2_Switch_Down                        # R RMP VOR2 Receive Select Button
+  - get: L:XMLVAR_NAV_R_VOR2_Volume                             # R RMP VOR2 Volume Knob
+  - get: L:XMLVAR_NAV_R_MKR_Switch_Down                         # R RMP MKR Receive Select Button
+  - get: L:XMLVAR_NAV_R_MKR_Volume                              # R RMP MKR Volume Knob
+  - get: L:XMLVAR_NAV_R_ILS_Switch_Down                         # R RMP ILS Receive Select Button
+  - get: L:XMLVAR_NAV_R_ILS_Volume                              # R RMP ILS Volume Knob
+  - get: L:XMLVAR_NAV_R_ADF1_Switch_Down                        # R RMP ADF1 Receive Select Button
+  - get: L:XMLVAR_NAV_R_ADF1_Volume                             # R RMP ADF1 Volume Knob
+  - get: L:XMLVAR_NAV_R_ADF2_Switch_Down                        # R RMP ADF2 Receive Select Button
+  - get: L:XMLVAR_NAV_R_ADF2_Volume                             # R RMP ADF2 Volume Knob
+
+  # Cockpit Lighting
+  - get: A:LIGHT POTENTIOMETER:83, Percent                      # MAIN PNL FLOOD LT
+    set: "`${value} 83 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: A:LIGHT POTENTIOMETER:85, Percent                      # MAIN PNL & PED INTEG LT
+    set: "`${value} 85 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: A:LIGHT POTENTIOMETER:76, Percent                      # PED FLOOD LT
+    set: "`${value} 76 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+
+  # WEATHER Panel
+  - get: L:XMLVAR_A320_WEATHERRADAR_SYS
+  - get: L:A32NX_SWITCH_RADAR_PWS_POSITION
+  - get: L:XMLVAR_A320_WEATHERRADAR_MODE
+  
+  # ENGINE CONTROL Panel
+  - get: A:FUELSYSTEM VALVE SWITCH:1, Bool
+    set: "value ? '1 (>K:FUELSYSTEM_VALVE_OPEN)' : '1 (>K:FUELSYSTEM_VALVE_CLOSE)'"
+  - get: A:FUELSYSTEM VALVE SWITCH:2, Bool
+    set: "value ? '2 (>K:FUELSYSTEM_VALVE_OPEN)' : '2 (>K:FUELSYSTEM_VALVE_CLOSE)'"
+  - get: L:XMLVAR_ENG_MODE_SEL
+    set: (>K:TURBINE_IGNITION_SWITCH_SET)
+  
+  # TRANSPONDER Panel
+  - get: L:A32NX_TRANSPONDER_MODE                               # TRANSPONDER MODE Switch
+  - get: L:A32NX_TRANSPONDER_SYSTEM                             # TRANSPONDER ATC Source Switch
+  - get: L:A32NX_SWITCH_ATC_ALT                                 # TRANSPONDER ALT RPTG Switch
+  - get: H:A320_Neo_ATC_BTN_1                                   # TRANSPONDER 1 Button
+  - get: H:A320_Neo_ATC_BTN_2                                   # TRANSPONDER 2 Button
+  - get: H:A320_Neo_ATC_BTN_3                                   # TRANSPONDER 3 Button
+  - get: H:A320_Neo_ATC_BTN_4                                   # TRANSPONDER 4 Button
+  - get: H:A320_Neo_ATC_BTN_5                                   # TRANSPONDER 5 Button
+  - get: H:A320_Neo_ATC_BTN_6                                   # TRANSPONDER 6 Button
+  - get: H:A320_Neo_ATC_BTN_7                                   # TRANSPONDER 7 Button
+  - get: H:A320_Neo_ATC_BTN_0                                   # TRANSPONDER 0 Button
+  - get: H:A320_Neo_ATC_BTN_CLR                                 # TRANSPONDER CLR Button
+  - get: A:TRANSPONDER IDENT:1, Bool                            # TRANSPONDER IDENT Button
+    set: (>K:XPNDR_IDENT_SET)
+  - get: L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION                   # TCAS TRAFFIC Switch
+  - get: L:A32NX_SWITCH_TCAS_POSITION                           # TCAS MODE Switch
+
+  # Spoilers
+  - get: L:A32NX_SPOILERS_ARMED
+    set: (>K:SPOILERS_ARM_SET)
+  - get: L:A32NX_SPOILERS_HANDLE_POSITION
+    set: "`${value * 16384} (>K:SPOILERS_SET)`"
+
+  # Flaps / Misc
+  - get: L:A32NX_FLAPS_HANDLE_INDEX
+  - get: L:A32NX_COCKPIT_DOOR_LOCKED
+  - get: L:PUSH_DOORPANEL_VIDEO
+  - get: L:A32NX_PARK_BRAKE_LEVER_POS
+  - get: L:A32NX_PRINT_PAGE_OFFSET
+  - get: L:A32NX_PAGES_PRINTED
+  - get: L:A32NX_GRAVITYGEAR_TURNED
+  - get: L:A32NX_GRAVITYGEAR_ROTATIONS
+  - get: L:A32NX_COCKPIT_SEAT_BACK

@@ -1,0 +1,189 @@
+# Original author: https://discord.com/channels/1454265644416765974/1479957163656085716/1545903823116181575
+# Updated: 2026-09-05 21:10:36
+
+# C172 JT-A conversion - FsCopilot YAML Configuration
+# Version: 0.0.9
+# Created By: DKgolfnut
+# Special Thanks Dietmar Koch for testing and input and YURY for the base Profile with my adds for missing buttons to math the C172 JT-A MOD (MrTommyMxr). The JTA Mod is needed for this to work. 
+# Date: 9/5/2026 
+# - Needed MOD for Diesel conversion: FLIGHTSIM.TO MOD here https://flightsim.to/addon/15473/c172jta
+# Known Issues:
+
+# FIXES:
+  # - 4-12-2026
+    # - Updated Syntax for :1 showing before argument and K:2: logic
+  # - 3-9-2026 
+    # - Added G1000 NXi Display Swap
+  # - 3-8-2026
+    # - Added temperature sensors for the NXi (Fuel, Gearbox, Coolant, Etc.)
+    # - Added Cabin Heat and Cabin Air functions
+include:
+  - modules/AS_G1000_NXi.yaml
+  - modules/payload.yaml
+#  - modules/fuel.yaml
+
+master:
+  - get: A:ELEVATOR TRIM PCT, Percent scaler 16k # TRIM
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k # THROTTLE
+  - get: A:FLAPS HANDLE INDEX, Number # FLAPS
+shared:
+  ####################### JT-A MOD ITEMS ########################
+# - # Monitoring Vars 
+#  - get: L:WC_RADIATOR_TEMPERATURE:1, celsius
+#  - get: L:BC_BLOCK_TEMPERATURE:1, celsius
+#  - get: L:OC_OIL_TEMPERATURE:1, celsius
+#  - get: L:GC_GEARBOX_TEMPERATURE:1, celsius
+#  - get: L:FUEL_TEMPERATURE_L, celsius
+#  - get: L:FUEL_TEMPERATURE_R, celsius
+#  - get: L:FUEL_GAL_TOTAL
+#  - get: L:FUEL_GAL_USED
+#  - get: L:FUEL_TOTALISER
+#  - # ECU BTN ITEMS
+  - get: L:FADEC_ECUS_GOOD
+  - get: L:FADEC_ECUTEST_ERROR_CLEAR_TOGGLE
+  - get: L:FADEC_ECUTEST_ACTIVE
+  - get: L:FADEC_ECUTEST_BUTTON_IsDown
+  - get: L:FADEC_ECUTEST_BUTTON_MinReleaseTime
+#  - # FORCE B COVER and SWITCH
+  - get: L:FADEC_FORCE_B_GUARD
+  - get: L:FADEC_FORCE_B_SWITCH
+  - get: L:FADEC_ECUTEST_FAIL_A
+  - get: L:FADEC_ECUTEST_FAIL_B
+  - get: L:FADEC_ECU_A_ERROR
+  - get: L:IDLE_I
+  - get: L:ALTERNATOR_GUARD # ALTERNATOR GUARD
+  - get: L:STBY_BATT # BATT SWITCH
+  - get: A:ELECTRICAL MASTER BATTERY:2
+    set: 2 (>K:TOGGLE_MASTER_BATTERY)
+  - get: A:RECIP ENG ENGINE MASTER SWITCH:1, Bool
+    set: (>K:ENGINE_Master_1_Toggle)
+  - get: A:GENERAL ENG FUEL PUMP SWITCH EX1:1, Bool
+    set: (>K:ELECT_FUEL_PUMP1_SET)
+######### LIGHTING KNOBS ##########
+  - get: L:LIGHTING_POTENTIOMETER_3 # Circuit Breaker Panel Lighting
+    set: (>B:LIGHTING_POTENTIOMETER_3_Set)
+  - get: L:LIGHTING_POTENTIOMETER_4 # AVIONICS
+    set: (>B:LIGHTING_POTENTIOMETER_4_Set)
+######### ELECTRIAL SWITCHES ##########
+  - get: A:CIRCUIT SWITCH ON:24, Bool # AVIONICS SW 1
+    set: 24 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+  - get: A:CIRCUIT SWITCH ON:25, Bool # AVIONICS SW 2  
+    set: 25 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+  - get: B:ELECTRICAL_Battery_1, Number 
+    set: (>B:ELECTRICAL_Battery_1_Toggle) 
+########  FUEL VALVES ##########
+  - get: A:GENERAL ENG FUEL VALVE:1, Bool # Fuel Shut Off Valve
+    set: (>K:TOGGLE_FUEL_VALVE_ENG1)    
+  - get: A:FUEL TANK SELECTOR:1, Number # Fuel Shut Off Valve
+    set: (>K:FUEL_SELECTOR_SET)     
+#####  Addditional ##########
+  - get: B:SAFETY_ELT_1 
+  - get: B:PASSENGER_Cabin_Heat_1_Set
+    set: (>B:PASSENGER_Cabin_Heat_1_Toggle)
+  - get: B:PASSENGER_Cabin_Air_1_Set  
+    set: (>B:PASSENGER_Cabin_Air_1_Toggle)
+  - get: L:XMLVAR_YokeHidden_1
+  - get: L:XMLVAR_YokeHidden_2  
+####################### JT-A MOD ITEMS ########################
+  - get: L:XMLVAR_BATTERYSTBY_SWITCHSTATE # STBY BAT
+    set: (>B:ELECTRICAL_Battery_STBY_2_Set)
+  - get: A:GENERAL ENG MASTER ALTERNATOR:1, Bool # ALT
+    set: "`1 ${value} (>K:ALTERNATOR_SET)`"
+  - get: A:LINE CONNECTION ON:'BUS_1_To_AVIONICS_BUS_1'_n, Bool # AVIONICS BUS 1
+  - get: A:LINE CONNECTION ON:'BUS_2_To_AVIONICS_BUS_2'_n, Bool # AVIONICS BUS 2
+  - get: L:LIGHTING_PANEL_1 # DIMMING SW / CB PANELS
+    set: (>B:LIGHTING_PANEL_1_Set)
+  - get: L:LIGHTING_PANEL_2 # DIMMING STB IND
+    set: (>B:LIGHTING_PANEL_2_Set)
+  - get: L:LIGHTING_PEDESTRAL_1 # DIMMING PEDESTAL
+    set: (>B:LIGHTING_PEDESTRAL_1_Set)
+  - get: L:LIGHTING_POTENTIOMETER_5 # DIMMING AVIONICS
+    set: (>B:LIGHTING_POTENTIOMETER_5_Set)
+  - get: A:LIGHT BEACON:1, Bool # BEACON
+  - get: A:LIGHT LANDING:1, Bool # LAND
+  - get: A:LIGHT TAXI:1, Bool # TAXI
+  - get: A:LIGHT NAV:0, Bool # NAV
+  - get: A:LIGHT STROBE:0, Bool # STROBE
+  - get: A:FUELSYSTEM PUMP SWITCH:1, Bool # FUEL PUMP
+    set: "`1 ${value} (>K:FUELSYSTEM_PUMP_SET)`"
+  - get: A:PITOT HEAT SWITCH, Bool # PITOT HEAT
+    set: "`1 ${value} (>K:PITOT_HEAT_SET)`"
+  - get: B:ELECTRICAL_ELECTRICAL_SWITCH_POWER12V, Bool # CABIN PWR 12V
+    set: (>B:ELECTRICAL_ELECTRICAL_SWITCH_POWER12V_Set)
+  - get: A:RECIP ENG RIGHT MAGNETO:1, Bool # MAGNETO RIGHT
+  - get: A:RECIP ENG LEFT MAGNETO:1, Bool # MAGNETO LEFT
+  - get: A:GENERAL ENG STARTER:1, Bool # START
+    set: (>K:SET_STARTER1_HELD)
+  - get: A:LINE BREAKER PULLED:'Main_Alternator_To_ELEC_SPLIT_BUS'_n, Bool # ALT FIELD    
+  - get: A:LINE BREAKER PULLED:'CROSS_FEED_BUS_To_Warnings'_n, Bool # WARN
+  - get: A:LINE BREAKER PULLED:'BUS_1_To_FuelPump'_n, Bool # FUEL PUMP
+  - get: A:LINE BREAKER PULLED:'BUS_1_To_LightBeacon'_n, Bool # BCN LT
+  - get: A:LINE BREAKER PULLED:'BUS_1_To_LightLanding'_n, Bool # LAND LT
+  - get: A:LINE BREAKER PULLED:'BUS_1_To_CABIN_LIGHTS_BUS'_n, Bool # CABIN LTS / PWR
+  - get: A:LINE BREAKER PULLED:'BUS_1_To_FlapsMotor'_n, Bool # FLAPS
+  - get: A:LINE BREAKER PULLED:'BUS_1_To_AVIONICS_BUS_1'_n, Bool # AVN 1
+  - get: A:LINE BREAKER PULLED:'BUS_2_To_PitotHeat'_n, Bool # PITOT HEAT
+  - get: A:LINE BREAKER PULLED:'BUS_2_To_NAV_LIGHTS_BUS'_n, Bool # NAV LTS
+  - get: A:LINE BREAKER PULLED:'BUS_2_To_RECO_TAXI_LIGHTS_BUS'_n, Bool # RECOG / TAXI LTS
+  - get: A:LINE BREAKER PULLED:'BUS_2_To_STROBE_LIGHTS_BUS'_n, Bool # STROBE LTS
+  - get: A:LINE BREAKER PULLED:'BUS_2_To_PANEL_LIGHTS_BUS'_n, Bool # PANEL LTS
+  - get: A:LINE BREAKER PULLED:'BUS_2_To_AVIONICS_BUS_2'_n, Bool # AVN 2
+  - get: A:LINE BREAKER PULLED:'ESSENTIAL_BUS_To_PFD_BUS'_n, Bool # PFD
+  - get: A:LINE BREAKER PULLED:'ESSENTIAL_BUS_To_ADC_AHRS_BUS'_n, Bool # ADC AHRS
+  - get: A:LINE BREAKER PULLED:'ESSENTIAL_BUS_To_NAV1_ENG_BUS'_n, Bool # NAV 1 ENG
+  - get: A:LINE BREAKER PULLED:'ESSENTIAL_BUS_To_Com1'_n, Bool # COMM 1
+  - get: A:LINE BREAKER PULLED:'ESSENTIAL_BUS_STBY_Indicator_Light'_n, Bool # STBY IND LTS
+  - get: A:LINE BREAKER PULLED:'STBY_Battery_To_ESSENTIAL_BUS'_n, Bool # STBY BATT
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_1_To_PFD_BUS'_n, Bool # PFD
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_1_To_ADC_AHRS_BUS'_n, Bool # ADC AHRS
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_1_To_NAV1_ENG_BUS'_n, Bool # NAV 1 ENG
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_1_To_FIS'_n, Bool # FIS
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_2_To_MFD'_n, Bool # MFD
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_2_To_Transponder'_n, Bool # XPNDR
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_2_To_Nav2'_n, Bool # NAV 2
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_2_To_Com2'_n, Bool # COMM 2
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_2_To_Audio'_n, Bool # AUDIO
+  - get: A:LINE BREAKER PULLED:'AVIONICS_BUS_2_To_Autopilot'_n, Bool # AUTOPILOT
+  - get: A:ALTERNATE STATIC SOURCE OPEN, Bool # ALT STATIC AIR
+    set: (>B:SAFETY_Alternate_Static_Air_Set)
+  - get: A:AIRSPEED TRUE CALIBRATE, Degrees # AIRSPEED CALIBRATION
+  - get: A:ATTITUDE BARS POSITION, Percent # ATTITUDE CALIBRATION
+    set: "`0 ${value} (>K:ATTITUDE_BARS_POSITION_SET)`"
+  - get: L:XMLVAR_ELT_STATE # ELT
+    set: |
+      switch (value) {
+        case 1: return '(>B:SAFETY_ELT_1_ARM)'
+        case 2: return '(>B:SAFETY_ELT_1_ON)'
+        case 3: return '(>B:SAFETY_ELT_1_TEST)'
+        default: return ''
+      }
+  - get: A:PNEUMATICS VALVE TARGET STATUS:'HotAirValve'_n, Percent # CABIN HIT
+    set: (>B:PNEUMATICS_IE_PNEUMATICS_Lever_Valve_HotAirValve_Set)
+  - get: A:PNEUMATICS VALVE TARGET STATUS:'CockpitValve'_n, Percent # CABIN AIR
+    set: (>B:PNEUMATICS_IE_PNEUMATICS_Lever_Valve_CockpitValve_Set)
+  - get: A:FUELSYSTEM VALVE SWITCH:'ShutoffValve'_n, Bool # FUEL SHUT OFF
+    set: (>B:FUEL_Valve_ShutoffValve_Set)
+  - get: A:FUELSYSTEM JUNCTION SETTING:'FuelSelector'_n, Number # FUEL SELECTOR
+    set: |
+      switch (value) {
+        case 1: return '(>B:FUEL_SELECTOR_1_LEFT)'
+        case 2: return '(>B:FUEL_SELECTOR_1_ALL)'
+        case 3: return '(>B:FUEL_SELECTOR_1_RIGHT)'
+        default: return ''
+      }
+  - get: A:LEAD POLE SET, Position 16k
+  - get: A:BRAKE PARKING POSITION, Bool # PARKING BRAKEd
+    set: (>K:PARKING_BRAKE_SET)
+  - get: A:GRAPPLE HOOK SET, Bool
+  - get: L:LIGHTING_CABIN_1
+    set: (>B:LIGHTING_CABIN_1_Set)
+  - get: L:LIGHTING_CABIN_2
+    set: (>B:LIGHTING_CABIN_2_Set)
+  - get: L:XMLVAR_HUD_1_DOWN
+  - get: L:XMLVAR_HUD_2_DOWN
+  - get: A:INTERACTIVE POINT GOAL:'WindowFrontLeft'_n, Bool
+    set: (>B:AIRCRAFT_Door_Window_Pilot_Set)
+  - get: A:INTERACTIVE POINT GOAL:'WindowFrontRight'_n, Bool
+    set: (>B:AIRCRAFT_Door_Window_Set)
+#dkgolfnut published 9-5-2026    

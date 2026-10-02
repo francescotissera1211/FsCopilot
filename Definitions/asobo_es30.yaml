@@ -1,0 +1,407 @@
+# Original author: https://discord.com/channels/1454265644416765974/1553244621172375572/1554936724549795950
+# Updated: 2026-10-01 13:45:33
+
+# Asobo ES30 variant - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: Dkgolfnut
+# Special Thanks: 
+# Updated: 9/30/2026 
+
+# Known Issues:
+ # -CONNECTIVITY TO FSC is critical. Make sure you test the connection by:
+ # -  Changing OVERHEAD PROBES HTG CAPT BTN to OFF (WHITE). If the second pilot button clicks to OFF (WHITE) then FLIPS to ON (DARK) while the HOST BTN stayed in the OFF (WHITE) position, the connection isn't workinig and is duplicatiing button clicks. If left in this state the Autopilot and most buttons will not work. 
+ # - TO REMEDY THIS  the second pilot must disconnect/leave the session, rejoin and test that function again to validate the FSC connection is good. What I have found is, if the second pilot connection immediately goes Green and "Direct" not Yellow relay then green then the FSC connection is good.
+# - ALL FLIGHTPLANS must be sent to the FMC via the EFB or some waypoints will not be added. This works perfectly with SIMBRIEF import or directly building in the EFB then send to the AVIONICS using the EFB Flightplan features.
+
+
+# FIXED:
+  # - 9/30/2026
+   # - Fixed AP functions and VNAV 
+
+include:
+
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+master: 
+  - get: B:HANDLING_AILERON_TRIM
+    set: (>B:HANDLING_AILERON_TRIM_Set)
+  - get: A:ELEVATOR TRIM POSITION
+    set: "value > current ? '1 (>K:ELEVATOR_TRIM_INC)' : '1 (>K:ELEVATOR_TRIM_DEC)'"
+
+  - get: B:HANDLING_RUDDER_TRIM
+    set: (>B:HANDLING_RUDDER_TRIM_Set)
+
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, position 16k # Throttle 2 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:3, position 16k # Throttle 3 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:4, position 16k # Throttle 4 LEVER  
+  - get: B:ENGINE_1_CONDITION, Percent
+    set: |
+      switch (value) {
+          case   0: return '0 (>B:ENGINE_1_CONDITION_Set)'
+          case  100: return '1 (>B:ENGINE_1_CONDITION_Set)'
+          default: return ''
+      }
+  - get: B:ENGINE_4_CONDITION, Percent
+    set: |
+      switch (value) {
+          case   0: return '0 (>B:ENGINE_4_CONDITION_Set)'
+          case  100: return '1 (>B:ENGINE_4_CONDITION_Set)'
+          default: return ''
+      }
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+shared:
+######### MISCELLANEOUS ITEMS #########
+  - get: A:COVER ON:0, Bool
+    set: 0 (>K:COVER_SET)
+  - get: A:COVER ON:1, Bool
+    set: 1 (>K:COVER_SET)
+  - get: A:COVER ON:2, Bool
+    set: 2 (>K:COVER_SET)
+  - get: A:COVER ON:3, Bool
+    set: 3 (>K:COVER_SET)  
+  - get: B:COMMON_CARGO_DOOR
+    set: (>B:COMMON_CARGO_DOOR_Set)
+######### GLARESHIELD and INSTRUMENT PANELS #########
+# - # AUTOPILOT PANEL ####
+  - get: K:AP_PANEL_HEADING_HOLD
+  - get: B:AUTOPILOT_SYNC_HEADING, Number
+    set: (>B:AUTOPILOT_SYNC_HEADING_SET)
+  - get: B:AUTOPILOT_SELECTED_HEADING
+    set: (>B:AUTOPILOT_SELECTED_HEADING_Set)
+  - get: K:AP_NAV1_HOLD
+  - get: B:AUTOPILOT_STANDBY_MODE
+    set: (>B:AUTOPILOT_STANDBY_MODE_SET)
+  - get: B:AUTOPILOT_APPROACH_MODE
+    set: (>B:AUTOPILOT_APPROACH_MODE_Set)
+  - get: B:AUTOPILOT_SYNC_NAVIGATION_SOURCE
+    set: (>B:AUTOPILOT_SYNC_NAVIGATION_SOURCE_Set)
+  - get: B:AUTOPILOT_SELECTED_COURSE, Number
+    set: "`${value / 100} (>B:AUTOPILOT_SELECTED_COURSE_Set)`"
+  - get: K:AP_BC_HOLD
+  - get: B:AUTOPILOT_BACKCOURSE_MODE
+    set: (>B:AUTOPILOT_BACKCOURSE_MODE_Set)
+  - get: B:AUTOPILOT_IAS_MODE, Number
+    set: (>B:AUTOPILOT_IAS_MODE_Set)
+  - get: B:AUTOPILOT_AUTOPILOT, Number
+    set: "`${value} (>B:AUTOPILOT_AUTOPILOT_Set)`"
+  - get: K:YAW_DAMPER_SET
+  - get: B:AUTOPILOT_VS_MODE
+    set: (>B:AUTOPILOT_VS_MODE_Set)
+  - get: B:AUTOPILOT_SELECTED_NAVIGATION_SOURCE, Number
+    set: (>B:AUTOPILOT_SELECTED_NAVIGATION_SOURCE_Set)
+  - get: L:1:XMLVAR_Altitude_Setting
+    set: (>K:AP_ALT_VAR_SET_ENGLISH)
+  - get: K:AP_ALT_HOLD
+  - get: B:AUTOPILOT_AS1000_AUTOPILOT_VERTICAL_NAVIGATION
+    set: (>B:AUTOPILOT_AS1000_AUTOPILOT_VERTICAL_NAVIGATION_Set)
+  - get: A:AUTOPILOT VERTICAL HOLD VAR, Feet per minute
+  - get: B:AUTOPILOT_SYNC_ALTITUDE
+    set: (>B:AUTOPILOT_SYNC_ALTITUDE_Set)
+  - get: B:AUTOPILOT_FLIGHT_DIRECTOR
+    set: (>B:AUTOPILOT_FLIGHT_DIRECTOR_Set)
+## - PFD 1 SoftKeys & Function Keys   
+  - get: H:AS3000_PFD_1_SOFTKEYS_1
+  - get: H:AS3000_PFD_1_SOFTKEYS_2
+  - get: H:AS3000_PFD_1_SOFTKEYS_3
+  - get: H:AS3000_PFD_1_SOFTKEYS_4
+  - get: H:AS3000_PFD_1_SOFTKEYS_5
+  - get: H:AS3000_PFD_1_SOFTKEYS_6
+  - get: H:AS3000_PFD_1_SOFTKEYS_7
+  - get: H:AS3000_PFD_1_SOFTKEYS_8
+  - get: H:AS3000_PFD_1_SOFTKEYS_9
+  - get: H:AS3000_PFD_1_SOFTKEYS_10
+  - get: H:AS3000_PFD_1_SOFTKEYS_11
+  - get: H:AS3000_PFD_1_SOFTKEYS_12
+## - PFD 1 Function Keys 
+  - get: H:AS3000_TSC_Vertical_1_Joystick_Left
+  - get: H:AS3000_TSC_Vertical_1_Joystick_Right
+  - get: H:AS3000_TSC_Vertical_1_Joystick_Up
+  - get: H:AS3000_TSC_Vertical_1_Joystick_Down
+  - get: H:AS3000_TSC_Vertical_1_Joystick_Push
+  - get: H:AS3000_TSC_Vertical_1_Joystick_INC
+  - get: H:AS3000_TSC_Vertical_1_Joystick_DEC
+  - get: H:AS3000_TSC_Vertical_1_MiddleKnob_Push
+  - get: H:AS3000_TSC_Vertical_1_MiddleKnob_INC
+  - get: H:AS3000_TSC_Vertical_1_MiddleKnob_DEC
+  - get: H:AS3000_TSC_Vertical_1_RightKnob_Large_INC
+  - get: H:AS3000_TSC_Vertical_1_RightKnob_Large_DEC
+  - get: H:AS3000_TSC_Vertical_1_RightKnob_Small_INC
+  - get: H:AS3000_TSC_Vertical_1_RightKnob_Small_DEC
+  - get: H:AS3000_TSC_Vertical_1_RightKnob_Push
+  - get: H:AS3000_TSC_Vertical_1_RightKnob_Push_Long  
+  - get: A:AUTOPILOT TAKEOFF POWER ACTIVE, Bool
+    set: (>K:AUTO_THROTTLE_TO_GA)
+## - PFD 2 SoftKeys & Function Keys   
+  - get: H:AS3000_PFD_2_SOFTKEYS_1
+  - get: H:AS3000_PFD_2_SOFTKEYS_2
+  - get: H:AS3000_PFD_2_SOFTKEYS_3
+  - get: H:AS3000_PFD_2_SOFTKEYS_4
+  - get: H:AS3000_PFD_2_SOFTKEYS_5
+  - get: H:AS3000_PFD_2_SOFTKEYS_6
+  - get: H:AS3000_PFD_2_SOFTKEYS_7
+  - get: H:AS3000_PFD_2_SOFTKEYS_8
+  - get: H:AS3000_PFD_2_SOFTKEYS_9
+  - get: H:AS3000_PFD_2_SOFTKEYS_10
+  - get: H:AS3000_PFD_2_SOFTKEYS_11
+  - get: H:AS3000_PFD_2_SOFTKEYS_12
+## - PFD 2 Function Keys 
+  - get: H:AS3000_TSC_Vertical_2_Joystick_Left
+  - get: H:AS3000_TSC_Vertical_2_Joystick_Right
+  - get: H:AS3000_TSC_Vertical_2_Joystick_Up
+  - get: H:AS3000_TSC_Vertical_2_Joystick_Down
+  - get: H:AS3000_TSC_Vertical_2_Joystick_Push
+  - get: H:AS3000_TSC_Vertical_2_Joystick_INC
+  - get: H:AS3000_TSC_Vertical_2_Joystick_DEC
+  - get: H:AS3000_TSC_Vertical_2_MiddleKnob_Push
+  - get: H:AS3000_TSC_Vertical_2_MiddleKnob_INC
+  - get: H:AS3000_TSC_Vertical_2_MiddleKnob_DEC
+  - get: H:AS3000_TSC_Vertical_2_RightKnob_Large_INC
+  - get: H:AS3000_TSC_Vertical_2_RightKnob_Large_DEC
+  - get: H:AS3000_TSC_Vertical_2_RightKnob_Small_INC
+  - get: H:AS3000_TSC_Vertical_2_RightKnob_Small_DEC
+  - get: H:AS3000_TSC_Vertical_2_RightKnob_Push
+  - get: H:AS3000_TSC_Vertical_2_RightKnob_Push_Long
+
+# - # CAUTION, WARNING & STOPWATCH PANEL ####
+  - get: B:INSTRUMENT_CAUTION_ACKNOWLEDGE_LEFT, Bool
+    set: (>B:INSTRUMENT_CAUTION_ACKNOWLEDGE_LEFT_Set)
+  - get: B:INSTRUMENT_CAUTION_ACKNOWLEDGE_RIGHT, Bool
+    set: (>B:INSTRUMENT_CAUTION_ACKNOWLEDGE_RIGHT_Set)
+  - get: B:INSTRUMENT_WARNING_ACKNOWLEDGE_LEFT, Bool 
+    set: (>B:INSTRUMENT_WARNING_ACKNOWLEDGE_LEFT_Set)
+  - get: B:INSTRUMENT_WARNING_ACKNOWLEDGE_RIGHT, Bool 
+    set: (>B:INSTRUMENT_WARNING_ACKNOWLEDGE_RIGHT_Set)  
+  - get: B:INSTRUMENT_STOPWATCH_CONTROL_LEFT, Bool
+    set: (>B:INSTRUMENT_STOPWATCH_CONTROL_LEFT_Set)
+  - get: B:INSTRUMENT_STOPWATCH_CONTROL_RIGHT, Bool
+    set: (>B:INSTRUMENT_STOPWATCH_CONTROL_RIGHT_Set)
+# - # MAIN INSTRUMENT PANEL ####
+  - get: H:SAI340_KNOB_INC
+  - get: H:SAI340_KNOB_DEC
+  - get: B:AUXILIARY_BARO_KNOB
+    set: (>B:AUXILIARY_BARO_KNOB_Set)
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # BARO
+    set: "`3 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: B:LANDING_GEAR, Bool
+    set: "`${value} (>B:LANDING_GEAR_Set)`"
+######### PEDISTAL AREA #########
+# - # UPPER QUAD PANEL - CONTROL 1 ####
+  - get: B:INSTRUMENT_G5000_CONTROL_1_PUSH_G5000_SECONDARY_SCREEN_LEFT
+    set: (>B:INSTRUMENT_G5000_CONTROL_1_PUSH_G5000_SECONDARY_SCREEN_LEFT_Set)  
+  - get: B:INSTRUMENT_G5000_CONTROL_2_G5000_SECONDARY_SCREEN_LEFT
+    set: (>B:INSTRUMENT_G5000_CONTROL_2_G5000_SECONDARY_SCREEN_LEFT_Set)
+  - get: B:INSTRUMENT_G5000_CONTROL_2_PUSH_G5000_SECONDARY_SCREEN_LEFT
+    set: (>B:INSTRUMENT_G5000_CONTROL_2_PUSH_G5000_SECONDARY_SCREEN_LEFT_Set)    
+
+# - # UPPER QUAD PANEL - CONTROL 2 ####
+  - get: L:1:G5000_1_Rotate_Infinite_Var
+  - get: B:INSTRUMENT_ROTATE_G5000_SECONDARY_SCREEN_LEFT
+    set: (>B:INSTRUMENT_ROTATE_G5000_SECONDARY_SCREEN_LEFT_Set)
+  - get: L:1:G5000_2_Rotate_Infinite_Var
+  - get: B:INSTRUMENT_ROTATE_G5000_SECONDARY_SCREEN_RIGHT
+    set: (>B:INSTRUMENT_ROTATE_G5000_SECONDARY_SCREEN_RIGHT_Set)
+
+  - get: B:INSTRUMENT_G5000_CONTROL_1_PUSH_G5000_SECONDARY_SCREEN_RIGHT
+    set: (>B:INSTRUMENT_G5000_CONTROL_1_PUSH_G5000_SECONDARY_SCREEN_RIGHT_Set)
+  - get: B:INSTRUMENT_G5000_CONTROL_2_G5000_SECONDARY_SCREEN_RIGHT
+    set: (>B:INSTRUMENT_G5000_CONTROL_2_G5000_SECONDARY_SCREEN_RIGHT_Set)
+  - get: B:INSTRUMENT_G5000_CONTROL_2_PUSH_G5000_SECONDARY_SCREEN_RIGHT
+    set: (>B:INSTRUMENT_G5000_CONTROL_2_PUSH_G5000_SECONDARY_SCREEN_RIGHT_Set) 
+# - # QUADRANT PANEL ####
+  - get: B:HANDLING_GUST_LOCK
+    set: (>B:HANDLING_GUST_LOCK_Set)
+  - get: L:1:XMLVAR_FEATHERED_1
+  - get: L:1:XMLVAR_FEATHERED_2 
+  - get: L:1:XMLVAR_FEATHERED_3
+  - get: L:1:XMLVAR_FEATHERED_4
+  - get: B:COMMON_ENGINE_1_FEATHER_Cover
+    set: (>B:COMMON_ENGINE_1_FEATHER_Cover_Set)
+  - get: B:COMMON_ENGINE_2_FEATHER_Cover
+    set: (>B:COMMON_ENGINE_2_FEATHER_Cover_Set)
+  - get: B:COMMON_ENGINE_3_FEATHER_Cover
+    set: (>B:COMMON_ENGINE_3_FEATHER_Cover_Set)
+  - get: B:COMMON_ENGINE_4_FEATHER_Cover
+    set: (>B:COMMON_ENGINE_4_FEATHER_Cover_Set)
+  - get: B:HANDLING_PARKING_BRAKE
+    set: (>B:HANDLING_PARKING_BRAKE_Set)
+# - # LOWER QUAD LIGHTS and DOOR PANEL ####
+  - get: B:LIGHTING_MAIN_INSTRUMENT_PANEL_PEDESTAL_LIGHTS, Percent 
+    set: "`${value / 100} (>B:LIGHTING_MAIN_INSTRUMENT_PANEL_PEDESTAL_LIGHTS_Set)`"
+  - get: B:LIGHTING_OVERHEAD_LIGHT, Percent 
+    set: "`${value / 100} (>B:LIGHTING_OVERHEAD_LIGHT_Set)`"
+  - get: B:COMMON_COCKPIT_DOOR, Bool
+    set: (>B:COMMON_COCKPIT_DOOR_Set)  
+# - # LOWER QUAD START and FIRE PANEL ####
+  - get: B:COMMON_ENGINE_2_MASTER_Cover, Bool
+    set: (>B:COMMON_ENGINE_2_MASTER_Cover_Set)
+  - get: B:ENGINE_2_MASTER
+    set: (>B:ENGINE_2_MASTER_Set)
+  - get: B:COMMON_ENGINE_3_MASTER_Cover, Bool
+    set: (>B:COMMON_ENGINE_3_MASTER_Cover_Set)
+  - get: B:ENGINE_3_MASTER
+    set: (>B:ENGINE_3_MASTER_Set)
+  - get: B:ENGINE_1_AND_4_STARTER_MODE
+    set: (>B:ENGINE_1_AND_4_STARTER_MODE_Set)
+  - get: B:ENGINE_1_START, Bool
+    set: (>B:ENGINE_1_START_Set)
+  - get: B:ENGINE_4_START, Bool
+    set: (>B:ENGINE_4_START_Set)
+  - get: B:COMMON_SAFETY_ENGINE_1_FIRE_EXTINGUISHER_Cover
+    set: (>B:COMMON_SAFETY_ENGINE_1_FIRE_EXTINGUISHER_Cover_Set)
+  - get: B:SAFETY_ENGINE_1_FIRE_EXTINGUISHER
+    set: (>B:SAFETY_ENGINE_1_FIRE_EXTINGUISHER_Set)
+  - get: B:COMMON_SAFETY_ENGINE_2_FIRE_EXTINGUISHER_Cover
+    set: (>B:COMMON_SAFETY_ENGINE_2_FIRE_EXTINGUISHER_Cover_Set)
+  - get: B:SAFETY_ENGINE_2_FIRE_EXTINGUISHER
+    set: (>B:SAFETY_ENGINE_2_FIRE_EXTINGUISHER_Set) 
+  - get: B:COMMON_SAFETY_ENGINE_3_FIRE_EXTINGUISHER_Cover
+    set: (>B:COMMON_SAFETY_ENGINE_3_FIRE_EXTINGUISHER_Cover_Set)
+  - get: B:SAFETY_ENGINE_3_FIRE_EXTINGUISHER
+    set: (>B:SAFETY_ENGINE_3_FIRE_EXTINGUISHER_Set)
+  - get: B:COMMON_SAFETY_ENGINE_4_FIRE_EXTINGUISHER_Cover
+    set: (>B:COMMON_SAFETY_ENGINE_4_FIRE_EXTINGUISHER_Cover_Set)
+  - get: B:SAFETY_ENGINE_4_FIRE_EXTINGUISHER
+    set: (>B:SAFETY_ENGINE_4_FIRE_EXTINGUISHER_Set)    
+# - # LOWER QUAD ANTI-SKID PANEL ####
+  - get: B:HYDRAULIC_AUTOBRAKE_LOW, Bool
+    set: (>B:HYDRAULIC_AUTOBRAKE_LOW_Set)
+  - get: B:HYDRAULIC_AUTOBRAKE_MEDIUM, Bool
+    set: (>B:HYDRAULIC_AUTOBRAKE_MEDIUM_Set)
+  - get: B:HYDRAULIC_AUTOBRAKE_MAX, Bool
+    set: (>B:HYDRAULIC_AUTOBRAKE_MAX_Set)
+  - get: A:FLAPS HANDLE INDEX
+######### LEFT and RIGHT SIDE PANELS #########
+# - # LEFT PANEL ####
+  - get: B:COMMON_HANDLING_NOSE_WHEEL_STEERING_Cover
+    set: (>B:COMMON_HANDLING_NOSE_WHEEL_STEERING_Cover_Set)
+  - get: B:HANDLING_NOSE_WHEEL_STEERING
+    set: (>B:HANDLING_NOSE_WHEEL_STEERING_Set)
+  - get: B:HANDLING_TRIM_LEFT
+    set: (>B:HANDLING_TRIM_LEFT_Set)
+  - get: B:HANDLING_SIDE_STICK_PRIORITY_LEFT
+    set: (>B:HANDLING_SIDE_STICK_PRIORITY_LEFT_Set)
+# - # RIGHT PANEL ####
+  - get: B:HANDLING_TRIM_RIGHT
+    set: (>B:HANDLING_TRIM_RIGHT_Set)
+  - get: B:HANDLING_SIDE_STICK_PRIORITY_RIGHT
+    set: (>B:HANDLING_SIDE_STICK_PRIORITY_RIGHT_Set)
+
+######### OVERHEAD PANEL #########
+# - # OXYGEN PANEL ####
+  - get: B:PNEUMATICS_OXYGEN_MAIN_SUPPLY
+    set: (>B:PNEUMATICS_OXYGEN_MAIN_SUPPLY_Set)
+  - get: B:PNEUMATICS_OXYGEN_PASSENGER_SUPPLY
+    set: (>B:PNEUMATICS_OXYGEN_PASSENGER_SUPPLY_Set)    
+  - get: B:PNEUMATICS_OXYGEN_TIMER_RESET
+    set: (>B:PNEUMATICS_OXYGEN_TIMER_RESET_Set)    
+# - # HYDRAULICS PANEL ####  
+  - get: B:HYDRAULIC_PUMP_1, Bool
+    set: (>B:HYDRAULIC_PUMP_1_Set) 
+  - get: B:HYDRAULIC_PUMP_2, Bool
+    set: (>B:HYDRAULIC_PUMP_2_Set)  
+# - # HIGH VOLTAGE PANEL #### 
+  - get: B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_3, Bool 
+    set: (>B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_3_Set)
+  - get: B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_4, Bool 
+    set: (>B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_4_Set)
+  - get: B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_5, Bool 
+    set: (>B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_5_Set)
+  - get: B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_6, Bool 
+    set: (>B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_6_Set)
+  - get: B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_7, Bool 
+    set: (>B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_7_Set)
+  - get: B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_8, Bool 
+    set: (>B:ELECTRICAL_HIGH_VOLTAGE_BATTERY_8_Set)  
+  - get: B:ELECTRICAL_HIGH_VOLTAGE_EXTERNAL_POWER, Bool # HIGH VOLTAGE EXT PWR AVAILABLE
+    set: (>B:ELECTRICAL_HIGH_VOLTAGE_EXTERNAL_POWER_Set)  
+# - # LOW VOLTAGE PANEL ####
+  - get: B:ELECTRICAL_LOW_VOLTAGE_BATTERY_1, Bool  
+    set: (>B:ELECTRICAL_LOW_VOLTAGE_BATTERY_1_Set)
+  - get: B:ELECTRICAL_LOW_VOLTAGE_BATTERY_2, Bool  
+    set: (>B:ELECTRICAL_LOW_VOLTAGE_BATTERY_2_Set)
+  - get: B:ELECTRICAL_LOW_VOLTAGE_EXTERNAL_POWER, Bool # LOW VOLTAGE EXT PWR AVAILABLE
+    set: (>B:ELECTRICAL_LOW_VOLTAGE_EXTERNAL_POWER_Set)  
+# - # FUEL PANEL ####     
+  - get: B:FUEL_ENGINE_1_FUEL_SHUT_OFF_VALVE, Bool 
+    set: (>B:FUEL_ENGINE_1_FUEL_SHUT_OFF_VALVE_Set)
+  - get: B:FUEL_ENGINE_2_FUEL_SHUT_OFF_VALVE, Bool # ACTUALLY THIS IS ENGINE 4
+    set: (>B:FUEL_ENGINE_2_FUEL_SHUT_OFF_VALVE_Set)
+  - get: B:FUEL_CROSSFEED_VALVE, Bool 
+    set: (>B:FUEL_CROSSFEED_VALVE_Set)
+  - get: B:FUEL_ENGINE_1_FUEL_PUMP, Bool 
+    set: (>B:FUEL_ENGINE_1_FUEL_PUMP_Set)
+  - get: B:FUEL_ENGINE_2_FUEL_PUMP, Bool # ACTUALLY THIS IS ENGINE 4
+    set: (>B:FUEL_ENGINE_2_FUEL_PUMP_Set)  
+# - # ANTIICING and DEICING PANEL #### 
+  - get: B:DEICE_LEFT_ELEVATOR_HORN_ANTI_ICING, Bool 
+    set: (>B:DEICE_LEFT_ELEVATOR_HORN_ANTI_ICING_Set)
+  - get: B:DEICE_RIGHT_ELEVATOR_HORN_ANTI_ICING, Bool 
+    set: (>B:DEICE_RIGHT_ELEVATOR_HORN_ANTI_ICING_Set)
+  - get: B:DEICE_SIDE_WINDOW_DEICING, Bool
+    set: (>B:DEICE_SIDE_WINDOW_DEICING_Set)
+  - get: B:DEICE_LEFT_WINDSHIELD_DEICING, Bool
+    set: (>B:DEICE_LEFT_WINDSHIELD_DEICING_Set)
+  - get: B:DEICE_RIGHT_WINDSHIELD_DEICING, Bool
+    set: (>B:DEICE_RIGHT_WINDSHIELD_DEICING_Set)
+  - get: B:DEICE_AIRFRAME_DEICING, Bool
+    set: (>B:DEICE_AIRFRAME_DEICING_Set)
+  - get: B:DEICE_ENGINE_1_DEICING, Bool
+    set: (>B:DEICE_ENGINE_1_DEICING_Set)
+  - get: B:DEICE_ENGINE_2_DEICING, Bool # ACTUALLY THIS IS ENGINE 4
+    set: (>B:DEICE_ENGINE_2_DEICING_Set)
+# - # PROBES HTG PANEL #### 
+  - get: B:DEICE_LEFT_PROBES_HEAT, Percent
+    set: (>B:DEICE_LEFT_PROBES_HEAT_Inc)
+  - get: B:DEICE_RIGHT_PROBES_HEAT, Bool 
+    set: (>B:DEICE_RIGHT_PROBES_HEAT_Inc)
+  - get: B:DEICE_STANDBY_PROBES_HEAT, Bool 
+    set: (>B:DEICE_STANDBY_PROBES_HEAT_Inc)
+# - # READING LTS, WIPERS, CALLS PANEL ####     
+  - get: B:LIGHTING_LEFT_READING_LIGHT, Percent 
+    set: "`${value / 100} (>B:LIGHTING_LEFT_READING_LIGHT_Set)`"
+  - get: B:LIGHTING_RIGHT_READING_LIGHT, Percent 
+    set: "`${value / 100} (>B:LIGHTING_RIGHT_READING_LIGHT_Set)`"
+  - get: B:COMMON_WIPER
+    set: (>B:COMMON_WIPER_Set)  
+  - get: B:AUDIO_CALL_TO_ATTENDANTS, Bool
+    set: (>B:AUDIO_CALL_TO_ATTENDANTS_Set)
+  - get: B:AUDIO_CALL_TO_MECHANIC, Bool
+    set: (>B:AUDIO_CALL_TO_MECHANIC_Set)  
+# - # CABIN PRESSURE PANEL ####   
+  - get: B:PNEUMATICS_LANDING_ELEVATION_SOURCE, Bool
+    set: 1 (>B:PNEUMATICS_LANDING_ELEVATION_SOURCE_Inc)
+  - get: L:1:XMLVAR_MANUAL_LANDING_ELEVATION
+  - get: B:PNEUMATICS_CABIN_ALTITUDE_SETTING
+    set: "`${value / 100} (>B:PNEUMATICS_CABIN_ALTITUDE_SETTING_Set)`"
+# - # DOORS PANEL ####  
+  - get: B:INSTRUMENT_DOOR_INDICATOR_TEST
+    set: (>B:INSTRUMENT_DOOR_INDICATOR_TEST_Set)
+# - # COMPT TEMP PANEL ####  
+  - get: B:PNEUMATICS_COCKPIT_TEMPERATURE_MODE
+    set: (>B:PNEUMATICS_COCKPIT_TEMPERATURE_MODE_Set) 
+  - get: L:1:XMLVAR_COCKPIT_TEMP_KNOB
+  - get: B:PNEUMATICS_TEMPERATURE_DISPLAY_SELECTOR
+    set: (>B:PNEUMATICS_TEMPERATURE_DISPLAY_SELECTOR_Set)
+  - get: B:PNEUMATICS_CABIN_TEMPERATURE_MODE
+    set: (>B:PNEUMATICS_CABIN_TEMPERATURE_MODE_Set)
+  - get: L:1:XMLVAR_CABIN_TEMP_KNOB
+  - get: B:PNEUMATICS_AIR_CONDITIONING_PACK_1, Bool
+    set: (>B:PNEUMATICS_AIR_CONDITIONING_PACK_1_Set)
+  - get: B:PNEUMATICS_AIR_CONDITIONING_PACK_2, Bool
+    set: (>B:PNEUMATICS_AIR_CONDITIONING_PACK_2_Set)
+# - # EXTERNAL LIGHTS PANEL #### 
+  - get: A:LIGHT BEACON:1, Bool
+  - get: A:LIGHT NAV:1, Bool
+  - get: A:LIGHT STROBE:1, Bool
+  - get: A:LIGHT TAXI:1, Bool
+  - get: A:LIGHT LANDING:1, Bool
+  - get: A:LIGHT LOGO:1, Bool  
+# - # SIGNS PANEL #### 
+  - get: B:LIGHTING_SEAT_BELT_SIGNS
+    set: (>B:LIGHTING_SEAT_BELT_SIGNS_Set)
+  - get: L:1:XMLVAR_ES30_EMER_LIGHTS_MODE

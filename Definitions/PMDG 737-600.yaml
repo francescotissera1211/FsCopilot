@@ -1,0 +1,1397 @@
+# Original author: https://discord.com/channels/1454265644416765974/1460714073158193254/1489854511022346241
+# Updated: 2026-04-04 05:10:19
+
+# PMDG Simulations - Boeing 737NG Series V2.1
+# Created by Hawks1326 and Av8rChris. Special thanks to Dkgolfnut, Yury, Steeeve, Bennnnnnn, Hurfi, AFL625, and Nathan for their support!!!
+include:
+- modules/FSDT_GSX.yaml
+
+master:
+- get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k
+- get: A:GENERAL ENG THROTTLE LEVER POSITION:2, Position 16k
+- get: A:RUDDER TRIM PCT, Position 16k
+  set: (>K:RUDDER_TRIM_SET_EX1)
+- get: A:ELEVATOR TRIM PCT, Position 16k
+  set: (>K:ELEVATOR_TRIM_SET)
+- get: A:AILERON TRIM PCT, Position 16k
+  set: (>K:AILERON_TRIM_SET_EX1)
+- get: A:BRAKE LEFT POSITION EX1, Position 32k
+  set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+- get: A:BRAKE RIGHT POSITION EX1, Position 32k
+  set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+
+shared:
+#AFT OVHD
+- get: L:switch_224_73X, Number
+  set: "`${value > current ? 22402 : 22401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_255_73X, Number
+  set: "`${value > current ? 25502 : 25501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_256_73X, Number
+  set: "`${value > current ? 25602 : 25601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_229_73X, Number
+  set: "`${value > current ? 22902 : 22901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_230_73X, Number
+  set: "`${value > current ? 23002 : 23001} (>K:ROTOR_BRAKE)`"
+- get: L:switch_231_73X, Number
+  set: "`${value > current ? 23102 : 23101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_257_73X, Number
+  set: "`${value > current ? 25702 : 25701} (>K:ROTOR_BRAKE)`"
+- get: L:switch_258_73X, Number
+  set: "`${value >= 1 ? 25808 : 25807} (>K:ROTOR_BRAKE)`"
+- get: L:switch_267_73X, Number
+  set: "`${value > current ? 26702 : 26701} (>K:ROTOR_BRAKE)`"
+- get: L:switch_268_73X, Number
+  set: "`${value > current ? 26802 : 26801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_270_73X, Number
+  set: "`${value > current ? 27002 : 27001} (>K:ROTOR_BRAKE)`"
+- get: L:switch_271_73X, Number
+  set: "`${value > current ? 27102 : 27101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_264_73X, Number
+  set: "`${value > current ? 26402 : 26401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_265_73X, Number
+  set: "`${value > current ? 26502 : 26501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_298_73X, Number
+  set: "`${value > current ? 29802 : 29801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_299_73X, Number
+  set: "`${value > current ? 29902 : 29901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_301_73X, Number
+  set: "`${value * -0.03 + 30104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_302_73X, Number
+  set: "`${value * -0.03 + 30204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_303_73X, Number
+  set: "`${value * -0.03 + 30304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_304_73X, Number
+  set: "`${value * -0.03 + 30404} (>K:ROTOR_BRAKE)`"
+#FWD OVHD ROW 1
+- get: L:switch_78_73X, Number
+  set: "`${value > current ? 7802 : 7801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_79_73X, Number
+  set: "`${value > current ? 7902 : 7901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_80_73X, Number
+  set: "`${value > current ? 8002 : 8001} (>K:ROTOR_BRAKE)`"
+- get: L:switch_81_73X, Number
+  set: "`${value > current ? 8102 : 8101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_73_73X, Number
+  set: "`${value > current ? 7302 : 7301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_74_73X, Number
+  set: "`${value > current ? 7402 : 7401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_75_73X, Number
+  set: "`${value >= 1 ? 7508 : 7507} (>K:ROTOR_BRAKE)`"
+- get: L:switch_65_73X, Number
+  set: "`${value > current ? 6502 : 6501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_66_73X, Number
+  set: "`${value > current ? 6602 : 6601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_67_73X, Number
+  set: "`${value > current ? 6702 : 6701} (>K:ROTOR_BRAKE)`"
+- get: L:switch_68_73X, Number
+  set: "`${value > current ? 6802 : 6801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_63_73X, Number
+  set: "`${value > current ? 6302 : 6301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_58_73X, Number
+  set: "`${value > current ? 5802 : 5801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_59_73X, Number
+  set: "`${value >= 1 ? 5908 : 5907} (>K:ROTOR_BRAKE)`"
+- get: L:switch_60_73X, Number
+  set: "`${value > current ? 6002 : value < current ? 6001 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_61_73X, Number
+  set: "`${value > current ? 6102 : value < current ? 6101 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_62_73X, Number
+  set: "`${value > current ? 6202 : value < current ? 6201 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_49_73X, Number
+  set: "`${value > current ? 4902 : 4901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_37_73X
+  set: 3701 (>K:ROTOR_BRAKE)
+- get: L:switch_38_73X
+  set: 3801 (>K:ROTOR_BRAKE)
+- get: L:switch_39_73X
+  set: 3901 (>K:ROTOR_BRAKE)
+- get: L:switch_40_73X
+  set: 4001 (>K:ROTOR_BRAKE)
+- get: L:switch_45_73X
+  set: 4501 (>K:ROTOR_BRAKE)
+- get: L:switch_46_73X
+  set: 4601 (>K:ROTOR_BRAKE)
+#FWD OVHD ROW 2
+- get: L:switch_93_73X
+  set: "`${value > current ? 9302 : 9301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_03_73X, Number
+  set: "`${value > current ? 302 : 301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_04_73X, Number
+  set: "`${value > current ? 402 : 401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_01_73X, Number
+  set: "`${value > current ? 102 : 101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_02_73X, Number
+  set: "`${value > current ? 202 : 201} (>K:ROTOR_BRAKE)`"
+- get: L:switch_05_73X, Number
+  set: "`${value > current ? 502 : 501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_06_73X, Number
+  set: "`${value > current ? 602 : 601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_10_73X, Number
+  set: "`${value > current ? 1002 : 1001} (>K:ROTOR_BRAKE)`"
+- get: L:switch_11_73X, Number
+  set: "`${value > current ? 1102 : 1101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_12_73X, Number
+  set: "`${value > current ? 1202 : 1201} (>K:ROTOR_BRAKE)`"
+- get: L:switch_13_73X, Number
+  set: "`${value > current ? 1302 : 1301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_14_73X, Number
+  set: "`${value > current ? 1402 : 1401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_15_73X, Number
+  set: "`${value > current ? 1502 : 1501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_17_73X, Number
+  set: "`${value > current ? 1701 : 1702} (>K:ROTOR_BRAKE)`"
+- get: L:switch_18_73X, Number
+  set: "`${value > current ? 1802 : 1801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_19_73X, Number
+  set: "`${value > current ? 1902 : 1901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_27_73X, Number
+  set: "`${value > current ? 2701 : 2702} (>K:ROTOR_BRAKE)`"
+- get: L:switch_28_73X, Number
+  set: "`${value > current ? 2801 : 2802} (>K:ROTOR_BRAKE)`"
+- get: L:switch_29_73X, Number
+  set: "`${value > current ? 2901 : 2902} (>K:ROTOR_BRAKE)`"
+- get: L:switch_30_73X, Number
+  set: "`${value > current ? 3001 : 3002} (>K:ROTOR_BRAKE)`"
+- get: L:switch_36_73X, Number
+  set: "`${value > current ? 3602 : 3601} (>K:ROTOR_BRAKE)`"
+#FWD OVHD ROW 3
+- get: L:OH_PANEL_LIGHT_CONTROL
+- get: L:OH_CB_PANEL_LIGHT_CONTROL
+- get: L:switch_96_73X, Number
+  set: "`${value > current ? 9602 : 9601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_97_73X, Number
+  set: "`${value > current ? 9702 : 9701} (>K:ROTOR_BRAKE)`"
+- get: L:switch_100_73X, Number
+  set: "`${value > current ? 10002 : 10001} (>K:ROTOR_BRAKE)`"
+- get: L:switch_101_73X, Number
+  set: "`${value > current ? 10102 : 10101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_103_73X, Number
+  set: "`${value > current ? 10302 : 10301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_104_73X, Number
+  set: "`${value > current ? 10408 : 10407} (>K:ROTOR_BRAKE)`"
+- get: L:switch_105_73X, Number
+  set: 10501 (>K:ROTOR_BRAKE)
+- get: L:switch_106_73X, Number
+  set: 10601 (>K:ROTOR_BRAKE)
+- get: L:switch_109_73X, Number
+  set: "`${value > current ? 10902 : 10901} (>K:ROTOR_BRAKE)`"
+#FWD OVHD ROW 4
+- get: L:switch_135_73X, Number
+  set: "`${value > current ? 13502 : 13501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_136_73X, Number
+  set: "`${value > current ? 13602 : 13601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_137_73X, Number
+  set: "`${value > current ? 13701 : value < current ? 13702 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_138_73X, Number
+  set: "`${value > current ? 13802 : 13801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_139_73X, Number
+  set: "`${value > current ? 13902 : 13901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_140_73X, Number
+  set: "`${value > current ? 14002 : 14001} (>K:ROTOR_BRAKE)`"
+- get: L:switch_141_73X, Number
+  set: "`${value > current ? 14102 : 14101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_156_73X, Number
+  set: "`${value > current ? 15602 : 15601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_157_73X, Number
+  set: "`${value > current ? 15702 : 15701} (>K:ROTOR_BRAKE)`"
+- get: L:switch_158_73X, Number
+  set: "`${value > current ? 15802 : 15801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_165_73X, Number
+  set: 16501 (>K:ROTOR_BRAKE)
+- get: L:switch_166_73X, Number
+  set: 16601 (>K:ROTOR_BRAKE)
+- get: L:switch_167_73X, Number
+  set: 16701 (>K:ROTOR_BRAKE)
+- get: L:switch_168_73X, Number
+  set: 16801 (>K:ROTOR_BRAKE)
+- get: L:switch_178_73X, Number
+  set: 17801 (>K:ROTOR_BRAKE)
+- get: L:switch_180_73X, Number
+  set: 18001 (>K:ROTOR_BRAKE)
+- get: L:switch_183_73X, Number
+  set: 18301 (>K:ROTOR_BRAKE)
+#FWD OVHD ROW 5
+- get: L:switch_2981_73X, Number
+  set: "`${value > current ? 298102 : 298101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_313_73X, Number
+  set: "`${value > current ? 31302 : 31301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_311_73X, Number
+  set: "`${value > current ? 31102 : 31101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_305_73X, Number
+  set: "`${value > current ? 30502 : 30501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_306_73X, Number
+  set: "`${value > current ? 30602 : 30601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_307_73X, Number
+  set: "`${value > current ? 30702 : 30701} (>K:ROTOR_BRAKE)`"
+- get: L:switch_872_73X, Number
+  set: "`${value > current ? 87202 : 87201} (>K:ROTOR_BRAKE)`"
+- get: L:switch_196_73X, Number
+  set: "`${value > current ? 19602 : 19601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_200_73X, Number
+  set: "`${value > current ? 20008 : value < current ? 20007 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_201_73X, Number
+  set: "`${value > current ? 20108 : value < current ? 20107 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_202_73X, Number
+  set: "`${value > current ? 20208 : value < current ? 20207 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_210_73X, Number
+  set: "`${value > current ? 21002 : 21001} (>K:ROTOR_BRAKE)`"
+- get: L:switch_211_73X, Number
+  set: "`${value > current ? 21102 : 21101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_212_73X, Number
+  set: "`${value > current ? 21202 : 21201} (>K:ROTOR_BRAKE)`"
+- get: L:switch_199_73X, Number
+  set: "`${value > current ? 19902 : 19901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_209_73X, Number
+  set: "`${value > current ? 20902 : 20901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_218_73X, number
+  set: "`${Math.abs(value - current) > 50 ? (value < current ? 21807 : 21808) : (value > current ? 21807 : 21808)} (>K:ROTOR_BRAKE)`"
+- get: L:switch_220_73X, number
+  set: "`${Math.abs(value - current) > 50 ? (value < current ? 22007 : 22008) : (value > current ? 22007 : 22008)} (>K:ROTOR_BRAKE)`"
+- get: L:switch_222_73X, Number
+  set: "`${value > current ? 22202 : 22201} (>K:ROTOR_BRAKE)`"
+- get: L:switch_223_73X, Number
+  set: "`${value > current ? 22302 : 22301} (>K:ROTOR_BRAKE)`"
+#OVHD FWD LIGHTING PANEL
+- get: L:switch_113_73X, Number
+  set: "`${value > current ? 11302 : 11301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_114_73X, Number
+  set: "`${value > current ? 11402 : 11401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_115_73X, Number
+  set: "`${value > current ? 11502 : 11501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_116_73X, Number
+  set: "`${value > current ? 11602 : 11601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_117_73X, Number
+  set: "`${value > current ? 11702 : 11701} (>K:ROTOR_BRAKE)`"
+- get: L:switch_118_73X, Number
+  set: "`${value >= 1 ? 11808 : 11807} (>K:ROTOR_BRAKE)`"
+- get: L:switch_119_73X, Number
+  set: "`${value > current ? 11902 : 11901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_120_73X, Number
+  set: "`${value >= 1 ? 12008 : 12007} (>K:ROTOR_BRAKE)`"
+- get: L:switch_121_73X, Number
+  set: "`${value > current ? 12102 : 12101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_122_73X, Number
+  set: "`${value > current ? 12202 : 12201} (>K:ROTOR_BRAKE)`"
+- get: L:switch_123_73X, Number
+  set: "`${value > current ? 12308 : value < current ? 12307 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_124_73X, Number
+  set: "`${value > current ? 12402 : 12401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_125_73X, Number
+  set: "`${value > current ? 12502 : 12501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_126_73X, Number
+  set: "`${value > current ? 12602 : 12601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_982_73X, Number
+  set: "`${value >= 1 ? 98208 : 98207} (>K:ROTOR_BRAKE)`"
+#Glareshield, EFIS, and MCPs
+- get: L:switch_347_73X, Number
+  set: "`${value * -0.03 + 34704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_348_73X, Number
+  set: "`${value * -0.03 + 34804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_349_73X, Number
+  set: "`${value * -0.03 + 34904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_356_73X, Number
+  set: "`${value > current ? 35602 : 35601} (>K:ROTOR_BRAKE)`"
+###- get: L:CAMinsKnob, Number
+###- get: L:CABaroKnob, Number
+- get: L:switch_357_73X, Number
+  set: "`${value * -0.03 + 35704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_363_73X, Number
+  set: "`${value * -0.03 + 36304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_364_73X, Number
+  set: "`${value * -0.03 + 36404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_366_73X, Number
+  set: "`${value > current ? 36602 : 36601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_367_73X, Number
+  set: "`${value * -0.03 + 36704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_358_73X, Number
+  set: "`${value >= 1 ? 35808 : 35807} (>K:ROTOR_BRAKE)`"
+- get: L:switch_359_73X, Number
+  set: "`${value > current ? 35902 : 35901} (>K:ROTOR_BRAKE)`"
+- get: L:switch_360_73X, Number
+  set: "`${value * -0.03 + 36004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_361_73X, Number
+  set: "`${value > current ? 36102 : 36101} (>K:ROTOR_BRAKE)`"
+- get: L:switch_362_73X, Number
+  set: "`${value * -0.03 + 36204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_368_73X, Number
+  set: "`${value >= 1 ? 36808 : 36807} (>K:ROTOR_BRAKE)`"
+- get: L:switch_369_73X, Number
+  set: "`${value * -0.03 + 36904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_370_73X, Number
+  set: "`${value * -0.03 + 37004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_371_73X, Number
+  set: "`${value * -0.03 + 37104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_372_73X, Number
+  set: "`${value * -0.03 + 37204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_373_73X, Number
+  set: "`${value * -0.03 + 37304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_374_73X, Number
+  set: "`${value * -0.03 + 37404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_375_73X, Number
+  set: "`${value * -0.03 + 37504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_376_73X, Number
+- get: L:ngx_CRSwindowL, Number
+  set: (>K:#84132)
+- get: L:switch_378_73X, Number
+  set: "`${value > current ? 37802 : 37801} (>K:ROTOR_BRAKE)`"
+- get: L:switch_380_73X, Number
+  set: "`${value > current ? 38002 : 38001} (>K:ROTOR_BRAKE)`"
+- get: L:switch_381_73X, Number
+  set: 38101 (>K:ROTOR_BRAKE)
+- get: L:switch_382_73X, Number
+  set: 38201 (>K:ROTOR_BRAKE)
+- get: L:switch_383_73X, Number
+  set: "`${value * -0.03 + 38304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_384_73X, Number
+- get: L:ngx_SPDwindow, Number
+  set: (>K:#84134)
+- get: L:switch_386_73X, Number
+  set: 38601 (>K:ROTOR_BRAKE)
+- get: L:switch_387_73X, Number
+  set: "`${value * -0.03 + 38704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_389_73X, Number
+  set: "`${value > current ? 38908 : value < current ? 38907 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_390_73X, Number
+- get: L:ngx_HDGwindow, Number
+  set: (>K:#84136)
+- get: L:switch_391_73X, Number
+  set: 39101 (>K:ROTOR_BRAKE)
+- get: L:switch_392_73X, Number
+  set: 39201 (>K:ROTOR_BRAKE)
+- get: L:switch_393_73X, Number
+  set: 39301 (>K:ROTOR_BRAKE)
+- get: L:switch_396_73X, Number
+  set: 39601 (>K:ROTOR_BRAKE)
+- get: L:switch_397_73X, Number
+  set: 39701 (>K:ROTOR_BRAKE)
+- get: L:switch_394_73X, Number
+  set: 39401 (>K:ROTOR_BRAKE)
+- get: L:switch_395_73X, Number
+  set: 39501 (>K:ROTOR_BRAKE)
+- get: L:switch_400_73X, Number
+- get: L:ngx_ALTwindow, Number
+  set: (>K:#84137)
+- get: L:switch_885_73X, Number
+  set: "`${value * -0.03 + 88504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_401_73X, Number
+- get: L:switch_402_73X, Number
+  set: 40201 (>K:ROTOR_BRAKE)
+- get: L:switch_403_73X, Number
+  set: 40301 (>K:ROTOR_BRAKE)
+- get: L:switch_404_73X, Number
+  set: 40401 (>K:ROTOR_BRAKE)
+- get: L:switch_405_73X, Number
+  set: 40501 (>K:ROTOR_BRAKE)
+- get: L:switch_406_73X, Number
+  set: 40601 (>K:ROTOR_BRAKE)
+- get: L:switch_407_73X, Number
+  set: "`${value > current ? 40702 : 40701} (>K:ROTOR_BRAKE)`"
+- get: L:ngx_VSwindow, Number
+  set: (>K:#84138)
+- get: L:switch_409_73X, Number
+- get: L:ngx_CRSwindowR, Number
+  set: (>K:#84133)
+- get: L:switch_412_73X, Number
+  set: "`${value > current ? 41202 : 41201} (>K:ROTOR_BRAKE)`"
+###- get: L:FOMinsKnob, Number
+###- get: L:FOBaroKnob, Number
+- get: L:switch_413_73X, Number
+  set: "`${value * -0.03 + 41304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_419_73X, Number
+  set: "`${value * -0.03 + 41904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_420_73X, Number
+  set: "`${value * -0.03 + 42004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_422_73X, Number
+  set: "`${value > current ? 42202 : 42201} (>K:ROTOR_BRAKE)`"
+- get: L:switch_423_73X, Number
+  set: "`${value * -0.03 + 42304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_414_73X, Number
+  set: "`${value >= 1 ? 41408 : 41407} (>K:ROTOR_BRAKE)`"
+- get: L:switch_415_73X, Number
+  set: "`${value > current ? 41502 : 41501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_416_73X, Number
+  set: "`${value * -0.03 + 41604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_417_73X, Number
+  set: "`${value > current ? 41702 : 41701} (>K:ROTOR_BRAKE)`"
+- get: L:switch_418_73X, Number
+  set: "`${value * -0.03 + 41804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_424_73X, Number
+  set: "`${value >= 1 ? 42408 : 42407} (>K:ROTOR_BRAKE)`"
+- get: L:switch_425_73X, Number
+  set: "`${value * -0.03 + 42504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_426_73X, Number
+  set: "`${value * -0.03 + 42604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_427_73X, Number
+  set: "`${value * -0.03 + 42704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_428_73X, Number
+  set: "`${value * -0.03 + 42804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_429_73X, Number
+  set: "`${value * -0.03 + 42904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_430_73X, Number
+  set: "`${value * -0.03 + 43004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_431_73X, Number
+  set: "`${value * -0.03 + 43104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_437_73X, Number
+  set: "`${value * -0.03 + 43704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_438_73X, Number
+  set: "`${value * -0.03 + 43804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_439_73X, Number
+  set: "`${value * -0.03 + 43904} (>K:ROTOR_BRAKE)`"
+#MIP
+- get: L:switch_325_73X, Number
+- get: L:switch_326_73X, Number
+- get: L:switch_314_73X, Number
+  set: "`${value * -0.03 + 31404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_315_73X, Number
+  set: "`${value * -0.03 + 31504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_316_73X, Number
+  set: "`${value * -0.03 + 31604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_2063_73X, Number
+- get: L:switch_335_73X, Number
+  set: "`${value > current ? 33502 : value < current ? 33501 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_336_73X, Number
+  set: "`${value > current ? 33602 : value < current ? 33601 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_339_73X, Number
+  set: "`${value * -0.03 + 33904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_340_73X, Number
+  set: "`${value * -0.03 + 34004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_341_73X, Number
+  set: "`${value * -0.03 + 34104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_342_73X, Number
+  set: "`${value > current ? 34201 : value < current ? 34202 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_346_73X, Number
+  set: "`${value > current ? 34608 : value < current ? 34607 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_991_73X, Number
+  set: "`${value > current ? 99108 : value < current ? 99107 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_993_73X, Number
+  set: "`${value * -0.03 + 99304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_986_73X, Number
+  set: "`${value * -0.03 + 98604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_987_73X, Number
+  set: "`${value * -0.03 + 98704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_988_73X, Number
+  set: "`${value * -0.03 + 98804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_989_73X, Number
+  set: "`${value * -0.03 + 98904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_990_73X, Number
+  set: "`${value * -0.03 + 99004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_497_73X
+  set: 49701 (>K:ROTOR_BRAKE)
+- get: L:switch_498_73X
+  set: 49801 (>K:ROTOR_BRAKE)
+- get: L:switch_466_73X, Number
+- get: L:switch_467_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_468_73X, Number
+  set: "`${value > current ? 46801 : value < current ? 46802 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_464_73X, Number
+- get: L:switch_465_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_460_73X, Number
+  set: "`${value * 0.1} (>K:#70092)`"
+- get: L:switch_462_73X, Number
+  set: "`${value * -0.03 + 46204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_463_73X, Number
+  set: "`${value * -0.03 + 46304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_455_73X, Number
+  set: "`${(()=>{const p=current>=50?2:current<=10?0:1;let z=p;if(p===0){z=value>=20?(value>=50?2:1):0;}else if(p===2){z=value<=40?(value<=10?0:1):2;}else{z=value>=50?2:value<=10?0:1;}return z===p?'':(z>p?45501:45502);})()} (>K:ROTOR_BRAKE)`"
+- get: L:switch_4552_73X
+  set: 455201 (>K:ROTOR_BRAKE)
+- get: L:switch_440_73X, Number
+  set: "`${value > current ? 44001 : value < current ? 44002 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_441_73X, Number
+  set: "`${value > current ? 44101 : value < current ? 44102 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_442_73X, Number
+  set: "`${value > current ? 44201 : value < current ? 44202 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_443_73X, Number
+  set: "`${value * -0.03 + 44304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_444_73X, Number
+  set: "`${value * -0.03 + 44404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_445_73X, Number
+  set: "`${value * -0.03 + 44504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_523_73X, Number
+  set: "`${value * -0.03 + 52304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_524_73X, Number
+  set: "`${value * -0.03 + 52404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_525_73X, Number
+  set: "`${value * -0.03 + 52504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_530_73X, Number
+  set: "`${value * -0.03 + 53004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_2073_73X, Number
+- get: L:switch_522_73X, Number
+  set: "`${value * -0.03 + 52204} (>K:ROTOR_BRAKE)`"
+#EFB
+- get: L:tablet_vis
+- get: L:tablet_home_btn_CA
+- get: L:tablet_home_btn_FFO
+- get: L:tablet_power_btn_CA
+- get: L:tablet_power_btn_FO
+- get: L:TabletSensorCA
+- get: L:TabletSensorFO
+#LLDU
+- get: L:switch_983_73X, Number
+  set: "`${value * -0.03 + 98304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_9831_73X, Number
+  set: "`${value * -0.03 + 983104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_895_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_901_73X
+  set: 90101 (>K:ROTOR_BRAKE)
+- get: L:switch_319_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_323_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:ngx_windshield_air_left, Bool
+- get: L:ngx_foot_air_left, Bool
+- get: L:CA_MAIN_PANEL_LIGHT_CONTROL, Number
+- get: L:CA_BACKGROUND_BRT_CONTROL, Number
+- get: L:CA_AFDS_FLOOD_LIGHT_CONTROL, Number
+- get: L:CA_OUTBD_DU_BRIGHT_CONTROL, Number
+- get: L:CA_INBD_DU_RDR_BRIGHT_CONTROL, Number
+- get: L:CA_INBD_DU_BRIGHT_CONTROL, Number
+- get: L:CA_LOWER_DU_BRIGHT_CONTROL_INOP, Number
+- get: L:CA_LOWER_DU_BRIGHT_CONTROL, Number
+- get: L:CA_UPPER_DU_BRIGHT_CONTROL, Number
+#MCDU 1
+- get: L:switch_534_73X, Number
+  set: "`${value * -0.03 + 53404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_535_73X, Number
+  set: "`${value * -0.03 + 53504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_536_73X, Number
+  set: "`${value * -0.03 + 53604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_537_73X, Number
+  set: "`${value * -0.03 + 53704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_538_73X, Number
+  set: "`${value * -0.03 + 53804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_539_73X, Number
+  set: "`${value * -0.03 + 53904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_540_73X, Number
+  set: "`${value * -0.03 + 54004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_541_73X, Number
+  set: "`${value * -0.03 + 54104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_542_73X, Number
+  set: "`${value * -0.03 + 54204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_543_73X, Number
+  set: "`${value * -0.03 + 54304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_544_73X, Number
+  set: "`${value * -0.03 + 54404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_545_73X, Number
+  set: "`${value * -0.03 + 54504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_546_73X, Number
+  set: "`${value * -0.03 + 54604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_547_73X, Number
+  set: "`${value * -0.03 + 54704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_548_73X, Number
+  set: "`${value * -0.03 + 54804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_549_73X, Number
+  set: "`${value * -0.03 + 54904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_550_73X, Number
+  set: "`${value * -0.03 + 55004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_551_73X, Number
+  set: "`${value * -0.03 + 55104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_552_73X, Number
+  set: "`${value * -0.03 + 55204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_553_73X, Number
+  set: "`${value * -0.03 + 55304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_554_73X, Number
+  set: "`${value * -0.03 + 55404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_555_73X, Number
+  set: "`${value * -0.03 + 55504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_556_73X, Number
+  set: "`${value * -0.03 + 55604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_557_73X, Number
+  set: "`${value * -0.03 + 55704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_558_73X, Number
+  set: "`${value * -0.03 + 55804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_559_73X, Number
+  set: "`${value * -0.03 + 55904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_560_73X, Number
+  set: "`${value * -0.03 + 56004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_605_73X, Number
+- get: L:switch_561_73X, Number
+  set: "`${value * -0.03 + 56104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_562_73X, Number
+  set: "`${value * -0.03 + 56204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_563_73X, Number
+  set: "`${value * -0.03 + 56304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_564_73X, Number
+  set: "`${value * -0.03 + 56404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_565_73X, Number
+  set: "`${value * -0.03 + 56504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_566_73X, Number
+  set: "`${value * -0.03 + 56604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_567_73X, Number
+  set: "`${value * -0.03 + 56704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_568_73X, Number
+  set: "`${value * -0.03 + 56804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_569_73X, Number
+  set: "`${value * -0.03 + 56904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_570_73X, Number
+  set: "`${value * -0.03 + 57004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_571_73X, Number
+  set: "`${value * -0.03 + 57104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_572_73X, Number
+  set: "`${value * -0.03 + 57204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_573_73X, Number
+  set: "`${value * -0.03 + 57304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_574_73X, Number
+  set: "`${value * -0.03 + 57404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_575_73X, Number
+  set: "`${value * -0.03 + 57504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_576_73X, Number
+  set: "`${value * -0.03 + 57604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_577_73X, Number
+  set: "`${value * -0.03 + 57704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_578_73X, Number
+  set: "`${value * -0.03 + 57804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_579_73X, Number
+  set: "`${value * -0.03 + 57904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_580_73X, Number
+  set: "`${value * -0.03 + 58004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_581_73X, Number
+  set: "`${value * -0.03 + 58104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_582_73X, Number
+  set: "`${value * -0.03 + 58204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_583_73X, Number
+  set: "`${value * -0.03 + 58304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_584_73X, Number
+  set: "`${value * -0.03 + 58404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_585_73X, Number
+  set: "`${value * -0.03 + 58504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_586_73X, Number
+  set: "`${value * -0.03 + 58604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_587_73X, Number
+  set: "`${value * -0.03 + 58704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_588_73X, Number
+  set: "`${value * -0.03 + 58804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_589_73X, Number
+  set: "`${value * -0.03 + 58904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_590_73X, Number
+  set: "`${value * -0.03 + 59004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_591_73X, Number
+  set: "`${value * -0.03 + 59104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_592_73X, Number
+  set: "`${value * -0.03 + 59204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_593_73X, Number
+  set: "`${value * -0.03 + 59304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_594_73X, Number
+  set: "`${value * -0.03 + 59404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_595_73X, Number
+  set: "`${value * -0.03 + 59504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_596_73X, Number
+  set: "`${value * -0.03 + 59604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_597_73X, Number
+  set: "`${value * -0.03 + 59704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_598_73X, Number
+  set: "`${value * -0.03 + 59804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_599_73X, Number
+  set: "`${value * -0.03 + 59904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_600_73X, Number
+  set: "`${value * -0.03 + 60004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_601_73X, Number
+  set: "`${value * -0.03 + 60104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_602_73X, Number
+  set: "`${value * -0.03 + 60204} (>K:ROTOR_BRAKE)`"
+#MCDU 2
+- get: L:switch_606_73X, Number
+  set: "`${value * -0.03 + 60604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_607_73X, Number
+  set: "`${value * -0.03 + 60704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_608_73X, Number
+  set: "`${value * -0.03 + 60804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_609_73X, Number
+  set: "`${value * -0.03 + 60904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_610_73X, Number
+  set: "`${value * -0.03 + 61004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_611_73X, Number
+  set: "`${value * -0.03 + 61104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_612_73X, Number
+  set: "`${value * -0.03 + 61204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_613_73X, Number
+  set: "`${value * -0.03 + 61304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_614_73X, Number
+  set: "`${value * -0.03 + 61404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_615_73X, Number
+  set: "`${value * -0.03 + 61504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_616_73X, Number
+  set: "`${value * -0.03 + 61604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_617_73X, Number
+  set: "`${value * -0.03 + 61704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_618_73X, Number
+  set: "`${value * -0.03 + 61804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_619_73X, Number
+  set: "`${value * -0.03 + 61904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_620_73X, Number
+  set: "`${value * -0.03 + 62004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_621_73X, Number
+  set: "`${value * -0.03 + 62104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_622_73X, Number
+  set: "`${value * -0.03 + 62204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_623_73X, Number
+  set: "`${value * -0.03 + 62304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_624_73X, Number
+  set: "`${value * -0.03 + 62404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_625_73X, Number
+  set: "`${value * -0.03 + 62504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_626_73X, Number
+  set: "`${value * -0.03 + 62604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_627_73X, Number
+  set: "`${value * -0.03 + 62704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_628_73X, Number
+  set: "`${value * -0.03 + 62804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_629_73X, Number
+  set: "`${value * -0.03 + 62904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_630_73X, Number
+  set: "`${value * -0.03 + 63004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_631_73X, Number
+  set: "`${value * -0.03 + 63104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_632_73X, Number
+  set: "`${value * -0.03 + 63204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_677_73X, Number
+- get: L:switch_633_73X, Number
+  set: "`${value * -0.03 + 63304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_634_73X, Number
+  set: "`${value * -0.03 + 63404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_635_73X, Number
+  set: "`${value * -0.03 + 63504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_636_73X, Number
+  set: "`${value * -0.03 + 63604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_637_73X, Number
+  set: "`${value * -0.03 + 63704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_638_73X, Number
+  set: "`${value * -0.03 + 63804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_639_73X, Number
+  set: "`${value * -0.03 + 63904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_640_73X, Number
+  set: "`${value * -0.03 + 64004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_641_73X, Number
+  set: "`${value * -0.03 + 64104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_642_73X, Number
+  set: "`${value * -0.03 + 64204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_643_73X, Number
+  set: "`${value * -0.03 + 64304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_644_73X, Number
+  set: "`${value * -0.03 + 64404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_645_73X, Number
+  set: "`${value * -0.03 + 64504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_646_73X, Number
+  set: "`${value * -0.03 + 64604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_647_73X, Number
+  set: "`${value * -0.03 + 64704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_648_73X, Number
+  set: "`${value * -0.03 + 64804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_649_73X, Number
+  set: "`${value * -0.03 + 64904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_650_73X, Number
+  set: "`${value * -0.03 + 65004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_651_73X, Number
+  set: "`${value * -0.03 + 65104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_652_73X, Number
+  set: "`${value * -0.03 + 65204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_653_73X, Number
+  set: "`${value * -0.03 + 65304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_654_73X, Number
+  set: "`${value * -0.03 + 65404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_655_73X, Number
+  set: "`${value * -0.03 + 65504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_656_73X, Number
+  set: "`${value * -0.03 + 65604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_657_73X, Number
+  set: "`${value * -0.03 + 65704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_658_73X, Number
+  set: "`${value * -0.03 + 65804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_659_73X, Number
+  set: "`${value * -0.03 + 65904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_660_73X, Number
+  set: "`${value * -0.03 + 66004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_661_73X, Number
+  set: "`${value * -0.03 + 66104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_662_73X, Number
+  set: "`${value * -0.03 + 66204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_663_73X, Number
+  set: "`${value * -0.03 + 66304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_664_73X, Number
+  set: "`${value * -0.03 + 66404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_665_73X, Number
+  set: "`${value * -0.03 + 66504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_666_73X, Number
+  set: "`${value * -0.03 + 66604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_667_73X, Number
+  set: "`${value * -0.03 + 66704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_668_73X, Number
+  set: "`${value * -0.03 + 66804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_669_73X, Number
+  set: "`${value * -0.03 + 66904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_670_73X, Number
+  set: "`${value * -0.03 + 67004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_671_73X, Number
+  set: "`${value * -0.03 + 67104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_672_73X, Number
+  set: "`${value * -0.03 + 67204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_673_73X, Number
+  set: "`${value * -0.03 + 67304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_674_73X, Number
+  set: "`${value * -0.03 + 67404} (>K:ROTOR_BRAKE)`"
+#LRDU
+- get: L:switch_500_73X, Number
+  set: "`${value * -0.03 + 50004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_501_73X
+  set: 50101 (>K:ROTOR_BRAKE)
+- get: L:switch_502_73X
+- get: L:switch_503_73X
+  set: 50301 (>K:ROTOR_BRAKE)
+- get: L:switch_504_73X
+- get: L:switch_505_73X
+  set: 50501 (>K:ROTOR_BRAKE)
+- get: L:switch_506_73X
+- get: L:FO_MAIN_PANEL_LIGHT_CONTROL
+- get: L:FO_INBD_DU_RDR_BRIGHT_CONTROL
+- get: L:FO_INBD_DU_BRIGHT_CONTROL
+- get: L:FO_OUTBD_DU_BRIGHT_CONTROL
+- get: L:ngx_windshield_air_right, Bool
+- get: L:ngx_foot_air_right, Bool
+- get: L:switch_896_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_902_73X
+  set: 90201 (>K:ROTOR_BRAKE)
+- get: L:switch_322_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_324_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_9832_73X, Number
+  set: "`${value * -0.03 + 983204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_9833_73X, Number
+  set: "`${value * -0.03 + 983304} (>K:ROTOR_BRAKE)`"
+#C/FO Yokes
+- get: L:switch_1004_73X, Number
+  set: "`${value * -0.03 + 100404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_1005_73X, Number
+  set: "`${value * -0.03 + 100504} (>K:ROTOR_BRAKE)`"
+#Throttle Quadrant
+- get: L:switch_679_73X, Number
+- get: L:NGXLeftSpoiler_1_var, Number
+- get: L:NGXLeftSpoiler_2_var, Number
+- get: L:NGXLeftSpoiler_3_var, Number
+- get: L:NGXLeftSpoiler_4_var, Number
+- get: L:NGXLeftSpoiler_5_var, Number
+- get: L:NGXLeftSpoiler_6_var, Number
+- get: L:NGXRightSpoiler_7_var, Number
+- get: L:NGXRightSpoiler_8_var, Number
+- get: L:NGXRightSpoiler_9_var, Number
+- get: L:NGXRightSpoiler_10_var, Number
+- get: L:NGXRightSpoiler_11_var, Number
+- get: L:NGXRightSpoiler_12_var, Number
+- get: L:switch_714_73X, Number
+  set: "`${(value * 358.4125) - 14337} (>K:AXIS_FLAPS_SET)`"
+- get: L:switch_682_73X, Number
+  set: "`${value * -0.03 + 68204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_684_73X, Number
+  set: "`${value * -0.03 + 68404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_685_73X, Number
+  set: "`${value * -0.03 + 68504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_687_73X, Number
+  set: "`${value * -0.03 + 68704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_688_73X, Number
+  set: 68801 (>K:ROTOR_BRAKE)
+- get: L:switch_689_73X, Number
+  set: 68901 (>K:ROTOR_BRAKE)
+- get: L:switch_693_73X, Number
+  set: "`${value * -0.03 + 69304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_709_73X, Number
+  set: 70901 (>K:ROTOR_BRAKE)
+- get: L:switch_710_73X, Number
+- get: L:switch_711_73X, Number
+  set: 71101 (>K:ROTOR_BRAKE)
+- get: L:switch_712_73X, Number
+- get: L:switch_694_73X, Number
+  set: "`${value > current ? 69402 : value < current ? 69401 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_696_73X, Number
+  set: "`${value > current ? 69602 : value < current ? 69601 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_697_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_6971_73X
+  set: 697101 (>K:ROTOR_BRAKE)
+- get: L:switch_698_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_6981_73X
+  set: 698101 (>K:ROTOR_BRAKE)
+- get: L:switch_699_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_6991_73X
+  set: 699101 (>K:ROTOR_BRAKE)
+- get: L:switch_705_73X, Number
+  set: "`${value > current ? 70502 : value < current ? 70501 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_715_73X, Number
+  set: "`${value > current ? 71502 : value < current ? 71501 : ''} (>K:ROTOR_BRAKE)`"
+#Lower Pedestal
+- get: L:switch_724_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_903_73X, Number
+  set: "`${value * -0.03 + 90304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_904_73X, Number
+  set: "`${value * -0.03 + 90404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_906_73X, Number
+  set: "`${value * -0.03 + 90604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_908_73X, Number
+  set: "`${value * -0.03 + 90804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_910_73X, Number
+  set: "`${value * -0.03 + 91004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_912_73X, Number
+  set: "`${value * -0.03 + 91204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_914_73X, Number
+  set: "`${value * -0.03 + 91404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_725_73X, Number
+  set: "`${value * -0.03 + 72504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_721_73X, Number
+  set: "`${value * -0.03 + 72104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_729_73X, Number
+  set: "`${value * -0.03 + 72904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_731_73X, Number
+  set: "`${value * -0.03 + 73104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_734_73X, Number
+  set: "`${value * -0.03 + 73404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_735_73X, Number
+  set: "`${value * -0.03 + 73504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_877_73X, Number
+  set: "`${value * -0.03 + 87704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_878_73X, Number
+  set: "`${value * -0.03 + 87804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_879_73X, Number
+  set: "`${value * -0.03 + 87904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_736_73X, Number
+  set: "`${value * -0.03 + 73604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_737_73X, Number
+  set: "`${value * -0.03 + 73704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_738_73X, Number
+  set: "`${value * -0.03 + 73804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_739_73X
+  set: 73901 (>K:ROTOR_BRAKE)
+- get: L:switch_740_73X
+  set: 74001 (>K:ROTOR_BRAKE)
+- get: L:switch_741_73X
+  set: 74101 (>K:ROTOR_BRAKE)
+- get: L:switch_742_73X
+  set: 74201 (>K:ROTOR_BRAKE)
+- get: L:switch_880_73X
+  set: 88001 (>K:ROTOR_BRAKE)
+- get: L:switch_743_73X
+  set: 74301 (>K:ROTOR_BRAKE)
+- get: L:switch_744_73X
+  set: 74401 (>K:ROTOR_BRAKE)
+- get: L:switch_745_73X
+  set: 74501 (>K:ROTOR_BRAKE)
+- get: L:switch_746_73X
+  set: 74601 (>K:ROTOR_BRAKE)
+- get: L:switch_747_73X
+  set: 74701 (>K:ROTOR_BRAKE)
+- get: L:switch_748_73X
+  set: 74801 (>K:ROTOR_BRAKE)
+- get: L:switch_749_73X
+  set: 74901 (>K:ROTOR_BRAKE)
+- get: L:switch_750_73X
+  set: 75001 (>K:ROTOR_BRAKE)
+- get: L:switch_751_73X
+  set: 75101 (>K:ROTOR_BRAKE)
+- get: L:switch_752_73X, Number
+- get: L:switch_753_73X
+  set: 75301 (>K:ROTOR_BRAKE)
+- get: L:switch_754_73X, Number
+- get: L:switch_755_73X
+  set: 75501 (>K:ROTOR_BRAKE)
+- get: L:switch_818_73X
+- get: L:switch_820_73X
+- get: L:switch_827_73X
+  set: 82701 (>K:ROTOR_BRAKE)
+- get: L:switch_812_73X, Number
+  set: "`${value * -0.03 + 81204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_813_73X, Number
+  set: "`${value * -0.03 + 81304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_814_73X, Number
+  set: "`${value * -0.03 + 81404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_937_73X, Number
+  set: "`${value * -0.03 + 93704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_938_73X, Number
+  set: "`${value * -0.03 + 93804} (>K:ROTOR_BRAKE)`"
+- get: L:PED_FLOOD_LIGHT_CONTROL
+- get: L:PED_PANEL_LIGHT_CONTROL
+- get: L:switch_769_73X, Number
+  set: "`${value * -0.03 + 76904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_760_73X, Number
+- get: L:switch_761_73X, Number
+- get: L:switch_763_73X
+  set: 76301 (>K:ROTOR_BRAKE)
+- get: L:switch_765_73X
+  set: 76501 (>K:ROTOR_BRAKE)
+- get: L:switch_767_73X
+  set: 76701 (>K:ROTOR_BRAKE)
+- get: L:switch_768_73X
+  set: "`${value * -0.03 + 76804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_790_73X, Number
+  set: "`${value * -0.03 + 79004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_791_73X, Number
+  set: "`${value * -0.03 + 79104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_916_73X, Number
+  set: "`${value * -0.03 + 91604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_792_73X, Number
+  set: "`${value * -0.03 + 79204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_793_73X, Number
+  set: "`${value * -0.03 + 79304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_794_73X, Number
+  set: "`${value > current ? 79402 : 79401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_795_73X, Number
+  set: "`${value > current ? 79502 : 79501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_922_73X, Number
+  set: "`${value > current ? 92202 : 92201} (>K:ROTOR_BRAKE)`"
+- get: L:switch_923_73X, Number
+  set: "`${value > current ? 92302 : 92301} (>K:ROTOR_BRAKE)`"
+- get: L:switch_917_73X, Number
+  set: "`${value * -0.03 + 91704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_918_73X, Number
+  set: "`${value * -0.03 + 91804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_919_73X, Number
+  set: "`${value * -0.03 + 91904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_796_73X, Number
+  set: "`${value * -0.03 + 79604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_920_73X, Number
+  set: "`${value * -0.03 + 92004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_797_73X, Number
+  set: "`${value * -0.03 + 79704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_921_73X, Number
+  set: "`${value * -0.03 + 92104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_770_73X, Number
+  set: "`${value > current ? 77001 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_771_73X, Number
+  set: "`${value > current ? 77101 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_772_73X, Number
+  set: "`${value > current ? 77201 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_773_73X, Number
+  set: "`${value > current ? 77301 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_775_73X, Number
+  set: "`${value > current ? 77501 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_776_73X, Number
+  set: "`${value > current ? 77601 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_777_73X, Number
+  set: "`${value > current ? 77701 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_778_73X, Number
+  set: "`${value > current ? 77801 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_779_73X, Number
+  set: "`${value > current ? 77901 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_780_73X, Number
+  set: "`${value > current ? 78001 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_781_73X, Number
+  set: "`${value > current ? 78101 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_782_73X, Number
+  set: "`${value > current ? 78201 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_783_73X, Number
+  set: "`${value > current ? 78301 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_784_73X, Number
+  set: "`${value > current ? 78401 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_785_73X, Number
+  set: "`${value > current ? 78501 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_786_73X, Number
+  set: "`${value > current ? 78601 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_787_73X, Number
+  set: "`${value > current ? 78701 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_788_73X, Number
+  set: "`${value > current ? 78801 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_789_73X, Number
+  set: "`${value > current ? 78901 : ''} (>K:ROTOR_BRAKE)`"
+- get: L:switch_798_73X
+  set: 79801 (>K:ROTOR_BRAKE)
+- get: L:switch_803_73X
+  set: 80301 (>K:ROTOR_BRAKE)
+- get: L:switch_800_73X, Number
+  set: |
+    switch (value) {
+      case 0:  return current > 30 ? '80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE)' : current > 20 ? '80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE)' : current > 10 ? '80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE)' : current > 0 ? '80008 (>K:ROTOR_BRAKE)' : ''
+      case 10: return current > value ? '80008 (>K:ROTOR_BRAKE)' : '80007 (>K:ROTOR_BRAKE)'
+      case 20: return current > value ? current > 30 ? '80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE)' : '80008 (>K:ROTOR_BRAKE)' : current < 10 ? '80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE)' : '80007 (>K:ROTOR_BRAKE)'
+      case 30: return current > value ? current > 40 ? '80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE)' : current > 30 ? '80008 (>K:ROTOR_BRAKE) 80008 (>K:ROTOR_BRAKE)' : '80008 (>K:ROTOR_BRAKE)' : current < 10 ? '80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE)' : current < 20 ? '80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE)' : '80007 (>K:ROTOR_BRAKE)'
+      case 40: return current > 20 ? '80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE)' : current > 10 ? '80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE)' : current > 0 ? '80007 (>K:ROTOR_BRAKE) 80007 (>K:ROTOR_BRAKE)' : '80007 (>K:ROTOR_BRAKE)'
+      default: return ''
+    }
+- get: L:switch_801_73X, Number
+  set: 80101 (>K:ROTOR_BRAKE)
+- get: L:switch_806_73X, Number
+  set: 80601 (>K:ROTOR_BRAKE)
+- get: L:switch_810_73X, Number
+- get: L:switch_811_73X, Number
+- get: L:switch_840_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_924_73X, Number
+  set: "`${value * -0.03 + 92404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_925_73X, Number
+  set: "`${value * -0.03 + 92504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_927_73X, Number
+  set: "`${value * -0.03 + 92704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_929_73X, Number
+  set: "`${value * -0.03 + 92904} (>K:ROTOR_BRAKE)`"
+- get: L:switch_931_73X, Number
+  set: "`${value * -0.03 + 93104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_933_73X, Number
+  set: "`${value * -0.03 + 93304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_935_73X, Number
+  set: "`${value * -0.03 + 93504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_837_73X, Number
+  set: "`${value * -0.03 + 83704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_841_73X, Number
+  set: "`${value * -0.03 + 84104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_847_73X, Number
+  set: "`${value * -0.03 + 84704} (>K:ROTOR_BRAKE)`"
+- get: L:switch_845_73X, Number
+  set: "`${value * -0.03 + 84504} (>K:ROTOR_BRAKE)`"
+- get: L:switch_850_73X, Number
+  set: "`${value * -0.03 + 85004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_851_73X, Number
+  set: "`${value * -0.03 + 85104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_881_73X, Number
+  set: "`${value * -0.03 + 88104} (>K:ROTOR_BRAKE)`"
+- get: L:switch_882_73X, Number
+  set: "`${value * -0.03 + 88204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_883_73X, Number
+  set: "`${value * -0.03 + 88304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_852_73X, Number
+  set: "`${value * -0.03 + 85204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_853_73X, Number
+  set: "`${value * -0.03 + 85304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_854_73X, Number
+  set: "`${value * -0.03 + 85404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_855_73X
+  set: 85501 (>K:ROTOR_BRAKE)
+- get: L:switch_856_73X
+  set: 85601 (>K:ROTOR_BRAKE)
+- get: L:switch_857_73X
+  set: 85701 (>K:ROTOR_BRAKE)
+- get: L:switch_858_73X
+  set: 85801 (>K:ROTOR_BRAKE)
+- get: L:switch_884_73X
+  set: 88401 (>K:ROTOR_BRAKE)
+- get: L:switch_859_73X
+  set: 85901 (>K:ROTOR_BRAKE)
+- get: L:switch_860_73X
+  set: 86001 (>K:ROTOR_BRAKE)
+- get: L:switch_861_73X
+  set: 86101 (>K:ROTOR_BRAKE)
+- get: L:switch_862_73X
+  set: 86201 (>K:ROTOR_BRAKE)
+- get: L:switch_863_73X
+  set: 86301 (>K:ROTOR_BRAKE)
+- get: L:switch_864_73X
+  set: 86401 (>K:ROTOR_BRAKE)
+- get: L:switch_865_73X
+  set: 86501 (>K:ROTOR_BRAKE)
+- get: L:switch_866_73X
+  set: 86601 (>K:ROTOR_BRAKE)
+- get: L:switch_867_73X
+  set: 86701 (>K:ROTOR_BRAKE)
+- get: L:switch_868_73X, Number
+  set: 86801 (>K:ROTOR_BRAKE)
+- get: L:switch_869_73X
+  set: 86901 (>K:ROTOR_BRAKE)
+- get: L:switch_870_73X, Number
+- get: L:switch_871_73X
+  set: 87101 (>K:ROTOR_BRAKE)
+- get: L:switch_949_73X, Number
+  set: "`${value} (>K:ROTOR_BRAKE)`"
+- get: L:switch_950_73X, Number
+  set: "`${value * -0.03 + 95004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_953_73X, Number
+  set: "`${value * -0.03 + 95304} (>K:ROTOR_BRAKE)`"
+- get: L:switch_954_73X, Number
+  set: "`${value * -0.03 + 95404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_956_73X, Number
+  set: "`${value * -0.03 + 95604} (>K:ROTOR_BRAKE)`"
+- get: L:switch_958_73X, Number
+  set: "`${value * -0.03 + 95804} (>K:ROTOR_BRAKE)`"
+- get: L:switch_960_73X, Number
+  set: "`${value * -0.03 + 96004} (>K:ROTOR_BRAKE)`"
+- get: L:switch_962_73X, Number
+  set: "`${value * -0.03 + 96204} (>K:ROTOR_BRAKE)`"
+- get: L:switch_964_73X, Number
+  set: "`${value * -0.03 + 96404} (>K:ROTOR_BRAKE)`"
+- get: L:switch_830_73X, Number
+- get: L:switch_831_73X, Number
+  set: 83101 (>K:ROTOR_BRAKE)
+- get: L:switch_834_73X, Number
+  set: "`${value > current ? 83402 : 83401} (>K:ROTOR_BRAKE)`"
+- get: L:switch_2002_73X
+  set: 200201 (>K:ROTOR_BRAKE)
+- get: L:switch_2003_73X, Number
+  set: 200301 (>K:ROTOR_BRAKE)
+- get: L:switch_2004_73X, Number
+  set: 200401 (>K:ROTOR_BRAKE)
+- get: L:switch_2005_73X, Number
+  set: 200501 (>K:ROTOR_BRAKE)
+ #Radios
+- get: A:ADF ACTIVE FREQUENCY:1, Frequency ADF BCD32
+  set: (>K:ADF_ACTIVE_SET)
+- get: A:ADF ACTIVE FREQUENCY:2, Frequency ADF BCD32
+  set: (>K:ADF2_ACTIVE_SET)
+- get: A:ADF STANDBY FREQUENCY:1, Frequency ADF BCD32
+  set: (>K:ADF_STBY_SET)
+- get: A:ADF STANDBY FREQUENCY:2, Frequency ADF BCD32
+  set: (>K:ADF2_STBY_SET)
+- get: A:ADF SOUND:1, Bool
+  set: (>K:RADIO_ADF_IDENT_SET)
+- get: A:ADF SOUND:2, Bool
+  set: (>K:RADIO_ADF2_IDENT_SET)
+- get: A:ADF VOLUME:1, Percent
+- get: A:ADF VOLUME:2, Percent
+- get: A:COM ACTIVE FREQUENCY:1, Hz
+  set: (>K:COM_RADIO_SET_HZ)
+- get: A:COM ACTIVE FREQUENCY:2, Hz
+  set: (>K:COM2_RADIO_SET_HZ)
+- get: A:COM ACTIVE FREQUENCY:3, Hz
+  set: (>K:COM3_RADIO_SET_HZ)
+- get: A:COM STANDBY FREQUENCY:1, Hz
+  set: (>K:COM_STBY_RADIO_SET_HZ)
+- get: A:COM STANDBY FREQUENCY:2, Hz
+  set: (>K:COM2_STBY_RADIO_SET_HZ)
+- get: A:COM STANDBY FREQUENCY:3, Hz
+  set: (>K:COM3_STBY_RADIO_SET_HZ)
+- get: A:COM1 STORED FREQUENCY, Hz
+  set: (>K:COM1_STORED_FREQUENCY_SET_HZ)
+- get: A:COM2 STORED FREQUENCY, Hz
+  set: (>K:COM2_STORED_FREQUENCY_SET_HZ)
+- get: A:COM3 STORED FREQUENCY, Hz
+  set: (>K:COM3_STORED_FREQUENCY_SET_HZ)
+- get: A:COM VOLUME:1, Percent
+  set: (>K:COM1_VOLUME_SET)
+- get: A:COM VOLUME:2, Percent
+  set: (>K:COM2_VOLUME_SET)
+- get: A:COM VOLUME:3, Percent
+  set: (>K:COM3_VOLUME_SET)
+- get: A:COM TEST:1, Bool
+  set: (>K:RADIO_COMMNAV1_TEST_TOGGLE)
+- get: A:COM TEST:2, Bool
+  set: (>K:RADIO_COMMNAV2_TEST_TOGGLE)
+- get: A:COM TEST:3, Bool
+  set: (>K:RADIO_COMMNAV3_TEST_TOGGLE)
+- get: A:COM SPACING MODE:1, Enum
+  set: (>K:COM_1_SPACING_MODE_SWITCH)
+- get: A:COM SPACING MODE:2, Enum
+  set: (>K:COM_2_SPACING_MODE_SWITCH)
+- get: A:COM SPACING MODE:3, Enum
+  set: (>K:COM_3_SPACING_MODE_SWITCH)
+- get: A:COM RECEIVE ALL, Bool
+  set: (>K:COM_RECEIVE_ALL_SET)
+- get: A:COM RECEIVE EX1:1, Bool
+  set: (>K:COM1_RECEIVE_SELECT)
+- get: A:COM RECEIVE EX1:2, Bool
+  set: (>K:COM2_RECEIVE_SELECT)
+- get: A:COM RECEIVE EX1:3, Bool
+  set: (>K:COM3_RECEIVE_SELECT)
+- get: A:DME SOUND:1, Bool
+  set: (>K:RADIO_DME1_IDENT_SET)
+- get: A:DME SOUND:1, Bool
+  set: (>K:RADIO_DME1_IDENT_TOGGLE)
+- get: A:DME SOUND:2, Bool
+  set: (>K:RADIO_DME2_IDENT_SET)
+- get: A:DME SOUND:2, Bool
+  set: (>K:RADIO_DME2_IDENT_TOGGLE)
+- get: A:NAV ACTIVE FREQUENCY:1, Hz
+  set: (>K:NAV1_RADIO_SET_HZ)
+- get: A:NAV ACTIVE FREQUENCY:2, Hz
+  set: (>K:NAV2_RADIO_SET_HZ)
+- get: A:NAV ACTIVE FREQUENCY:3, Hz
+  set: (>K:NAV3_RADIO_SET_HZ)
+- get: A:NAV ACTIVE FREQUENCY:4, Hz
+  set: (>K:NAV4_RADIO_SET_HZ)
+- get: A:NAV STANDBY FREQUENCY:1, Hz
+  set: (>K:NAV1_STBY_SET_HZ)
+- get: A:NAV STANDBY FREQUENCY:2, Hz
+  set: (>K:NAV2_STBY_SET_HZ)
+- get: A:NAV STANDBY FREQUENCY:3, Hz
+  set: (>K:NAV3_STBY_SET_HZ)
+- get: A:NAV STANDBY FREQUENCY:4, Hz
+  set: (>K:NAV4_STBY_SET_HZ)
+- get: A:NAV SOUND:1, Bool
+  set: (>K:RADIO_VOR1_IDENT_SET)
+- get: A:NAV SOUND:1, Bool
+  set: (>K:RADIO_VOR1_IDENT_TOGGLE)
+- get: A:NAV SOUND:2, Bool
+  set: (>K:RADIO_VOR2_IDENT_SET)
+- get: A:NAV SOUND:2, Bool
+  set: (>K:RADIO_VOR2_IDENT_TOGGLE)
+- get: A:NAV SOUND:3, Bool
+  set: (>K:RADIO_VOR3_IDENT_SET)
+- get: A:NAV SOUND:3, Bool
+  set: (>K:RADIO_VOR3_IDENT_TOGGLE)
+- get: A:NAV SOUND:4, Bool
+  set: (>K:RADIO_VOR4_IDENT_SET)
+- get: A:NAV SOUND:4, Bool
+  set: (>K:RADIO_VOR4_IDENT_TOGGLE)
+- get: A:NAV VOLUME:1, Percent
+- get: A:NAV VOLUME:2, Percent
+- get: A:NAV VOLUME:3, Percent
+- get: A:NAV VOLUME:4, Percent
+- get: A:TACAN ACTIVE CHANNEL:1, Number
+  set: (>K:TACAN1_ACTIVE_CHANNEL_SET)
+- get: A:TACAN ACTIVE CHANNEL:2, Number
+  set: (>K:TACAN2_ACTIVE_CHANNEL_SET)
+- get: A:TACAN STANDBY CHANNEL:1, Number
+  set: (>K:TACAN1_STANDBY_CHANNEL_SET)
+- get: A:TACAN STANDBY CHANNEL:2, Number
+  set: (>K:TACAN2_STANDBY_CHANNEL_SET)
+- get: A:TACAN ACTIVE MODE:1, Bool
+  set: (>K:TACAN1_ACTIVE_MODE_SET)
+- get: A:TACAN ACTIVE MODE:2, Bool
+  set: (>K:TACAN2_ACTIVE_MODE_SET)
+- get: A:TACAN STANDBY MODE:1, Bool
+  set: (>K:TACAN1_STANDBY_MODE_SET)
+- get: A:TACAN STANDBY MODE:2, Bool
+  set: (>K:TACAN2_STANDBY_MODE_SET)
+- get: A:TACAN VOLUME:1, Percent
+- get: A:TACAN VOLUME:2, Percent
+- get: A:AUDIO PANEL VOLUME, Percent
+- get: A:PILOT TRANSMITTER TYPE, Enum
+  set: (>K:PILOT_TRANSMITTER_SET)
+- get: A:COPILOT TRANSMITTER TYPE, Enum
+  set: (>K:COPILOT_TRANSMITTER_SET)
+- get: A:SPEAKER ACTIVE, Bool
+  set: (>K:TOGGLE_SPEAKER)
+- get: A:INTERCOM SYSTEM ACTIVE, Bool
+  set: (>K:TOGGLE_ICS)
+- get: A:INTERCOM MODE, Enum
+  set: (>K:INTERCOM_MODE_SET)
+- get: A:MARKER SOUND:1, Bool
+  set: (>K:MARKER_SOUND_TOGGLE)
+- get: A:MARKER BEACON TEST MUTE, Enum
+  set: (>K:MARKER_BEACON_TEST_MUTE)
+- get: A:MARKER BEACON SENSITIVITY HIGH, Enum
+  set: (>K:MARKER_BEACON_SENSITIVITY_HIGH)
+- get: A:TRANSPONDER IDENT:1, Bool
+  set: 1 (>K:XPNDR_IDENT_ON)
+- get: A:TRANSPONDER CODE:1, BCO16
+  set: (>K:XPNDR_SET)
+#Cockpit Door
+- get: L:switch_1148_73X
+  set: 114801 (>K:ROTOR_BRAKE)
+#Jumpseat
+- get: L:switch_2001_73X
+  set: 200101 (>K:ROTOR_BRAKE)
+#Jumpseat Mask
+- get: L:switch_983_73X
+  set: 98301 (>K:ROTOR_BRAKE)
+- get: L:switch_9831_73X
+  set: 983101 (>K:ROTOR_BRAKE)
+#Clipboard
+- get: L:switch_1310_73X
+  set: 131001 (>K:ROTOR_BRAKE)
+#Map Lights
+- get: L:maplight_L_drag_h
+- get: L:maplight_L_drag_v
+- get: L:maplight_R_drag_h
+- get: L:maplight_R_drag_v
+- get: L:maplight_O_drag_h
+- get: L:maplight_O_drag_v
+- get: L:chartlight_L_drag_h
+- get: L:chartlight_L_drag_v
+- get: L:chartlight_R_drag_h
+- get: L:chartlight_R_drag_v
+- get: L:switch_2015_73X, Number
+  set: "`${value > current ? 201502 : 201501} (>K:ROTOR_BRAKE)`"
+- get: L:switch_2016_73X, Number
+  set: "`${value > current ? 201602 : 201601} (>K:ROTOR_BRAKE)`"
+- get: L:switch_2017_73X, Number
+  set: "`${value > current ? 201702 : 201701} (>K:ROTOR_BRAKE)`"

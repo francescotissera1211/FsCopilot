@@ -1,0 +1,679 @@
+# Original author: https://discord.com/channels/1454265644416765974/1544821483489071144/1544821545640136785
+# Updated: 2026-09-02 21:57:34
+
+# Contrail - Dessault Faclon 50 V1.0
+# Created by Dustin with amazing mentorship form Dkgolgnut-Dennis
+# Tested by Dustin & PilotC
+
+# Known Issues:
+  # Initial Release - first profile
+  # CRS 1/2 push dirct doesnt work
+  # Overhead circut breaker light doesnt sync
+  # All knobs must be turn at a "noramal" speed to avoid syncing isues
+  # Map light knobs not synced
+  
+# IMPORTANT!
+  # Course MODE IS NOT SYNCED ON PILOT/COPILOT ND DISPLAY BOTH PILOTS MUST SET THE PILOT ND TO FMS MODE FOR THE AP TO SYNC FMS MODE
+  # Landing gear lever sometimes loses sync do to different players control configs / hardware
+  # TRIM IS SYNCED TO MASTER CONTROL and AP. can lose sync aswell depending on players control configs.
+   # I have it set to work with the ingame setting of "elevator nose trim down/up" I recommend making sure both pilots are at same value before connecting
+
+      
+include:
+  - modules/payload.yaml
+  - modules/fuel.yaml
+
+master: 
+  - get: A:STEER INPUT CONTROL, Position 16k
+    set: "`${value * -1} (>K:AXIS_STEERING_SET)`"
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, Position 16k
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:3, Position 16k
+  - get: A:ELEVATOR POSITION, Position 16k
+    set: "`${value * -1} (>K:AXIS_ELEVATOR_SET)`"
+  - get: A:AILERON POSITION, Position 16k
+    set: "`${value * -1} (>K:AXIS_AILERONS_SET)`"
+  - get: A:RUDDER POSITION, Position 16k
+    set: "`${value * -1} (>K:AXIS_RUDDER_SET)`"
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  - get: L:CTL_FA50_TRIM_ELEV_PCT, Number
+  - get: L:CTL_FA50_YOKE_TRIM_SWITCH_PILOT, bool
+    set: (>B:HANDLING_ElevTrim_set)
+
+  
+
+
+shared:
+# overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_AIRFRAME, bool # AI airframe knob,Overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_ENG1, bool # AI Engine 1 switch,Overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_ENG2, bool # AI Engine 2 switch,Overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_ENG3, bool # AI Engine 3 switch,Overhead
+  - get: L:CTL_FA50_SYS_AC_SWITCH_BAG, bool # Bleed air baggage comp switch,Overhead
+  - get: L:CTL_FA50_SYS_AC_SWITCH_CABIN, bool # Bleed air cabin knob,Overhead
+  - get: L:CTL_FA50_SYS_AC_SWITCH_CREW, bool # Bleed air cockpit knob,Overhead
+  - get: L:CTL_FA50_SYS_BLEED_SWITCH_HP1, bool # Bleed air hp1 switch,Overhead
+  - get: L:CTL_FA50_SYS_BLEED_SWITCH_HP2, bool # Bleed air hp2 switch,Overhead
+  - get: L:CTL_FA50_SYS_BLEED_SWITCH_HP3, bool # Bleed air hp3 switch,Overhead
+  - get: L:CTL_FA50_SYS_BLEED_SWITCH_ISO, bool # Bleed air isolation switch,Overhead
+  - get: L:CTL_FA50_SYS_BLEED_SWITCH_PRV, bool # Bleed air pressure relief valve switch,Overhead
+  - get: L:CTL_OVHD_COPILOT_CTRSD_KNOB, bool # Copilot side center light knob,Overhead
+  - get: L:CTL_OVHD_COPILOT_OVHD_KNOB, bool
+  - get: L:CTL_OVHD_COPILOT_INST_KNOB, bool # Copilot instrument light knob,Overhead
+  - get: L:CTL_OVHD_COPILOT_MAP_KNOB_SW, bool # Adjust copilot reading light brightness switch,Overhead
+  - get: B:LIGHTING_CABIN_2, bool # Copilot overhead light knob,Overhead 
+  - get: L:CTL_FA50_SYS_WIPER_R_SWITCH, bool # Copilot wiper right knob,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_BAT1, bool # Bat 1 button,Overhead
+  - get: A:BUS CONNECTION ON:20, Bool, # Bat 1 Switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_BAT2, bool # Bat 2 button,Overhead
+  - get: A:BUS CONNECTION ON:21, Bool, # Bat 2 Switch,Overhead
+  - get: A:BUS CONNECTION ON:5, Bool # Bus C Switch,Overhead
+  - get: A:BUS CONNECTION ON:7, Bool # Bus D Switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_SWITCH_BUS_TIE, bool # Bus tie switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_GEN1, bool # Gen 1 button,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_SWITCH_GEN1, bool # Generator 1 switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_GEN2, bool # Gen 2 button,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_SWITCH_GEN2, bool #Generator 2 switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_GEN3, bool # Gen 3 button,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_SWITCH_GEN3, bool # Generator 3 switch,Overhead
+  - get: L:CTL_FA50_SYS_ENG_STARTMODE1_SWITCH, bool # Engine 1 ignition mode knob,Overhead
+  - get: L:CTL_FA50_SYS_ENG_STARTMODE2_SWITCH, bool # Engine 2 ignition mode knob,Overhead
+  - get: L:CTL_FA50_SYS_ENG_STARTMODE3_SWITCH, bool # Engine 3 ignition mode knob,Overhead
+  - get: L:CTL_FA50_SYS_ENG_CMPTR1_SWITCH, bool # Engine 1 computer switch,Overhead
+  - get: L:CTL_FA50_SYS_ENG_CMPTR2_SWITCH, bool # Engine 2 computer switch,Overhead
+  - get: L:CTL_FA50_SYS_ENG_CMPTR3_SWITCH, bool # Engine 3 computer switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_DC_PWR_SEL, bool # DC power knob,Overhead
+  - get: L:CTL_FA50_SYS_ENG_SPR1_SWITCH, bool # Engine 1 SPR button,Overhead
+  - get: L:CTL_FA50_SYS_ENG_SPR2_SWITCH, bool # Engine 2 SPR button,Overhead
+  - get: L:CTL_FA50_SYS_ENG_SPR3_SWITCH, bool # Engine 3 SPR button,Overhead
+  - get: L:CTL_FA50_SYS_ENG_START1_SWITCH, bool # Engine 1 starter button,Overhead
+  - get: L:CTL_FA50_SYS_ENG_START2_SWITCH, bool # Engine 2 starter button,Overhead
+  - get: L:CTL_FA50_SYS_ENG_START3_SWITCH, bool # Engine 3 starter button,Overhead
+  - get: L:CTL_FA50_OVHD_EXT_LT_ANTICOL_SW, bool # Anti-collision light knob,Overhead
+  - get: L:CTL_FA50_OVHD_EXT_LT_NAV_SW, bool # Logo & NAV lights knob,Overhead
+  - get: L:CTL_FA50_OVHD_EXT_LT_TAXI_SW, bool # EXT light taxi switch,Overhead
+  - get: L:LIGHTING_LANDING_1, bool # Landing light switch,Overhead
+    set: (>K:2:LANDING_LIGHTS_SET) l0 (>L:LIGHTING_LANDING_1)
+  - get: L:LIGHTING_WING_1, bool # Wing light switch,Overhead
+    set: (>K:2:WING_LIGHTS_SET) l0 (>L:LIGHTING_WING_1)    
+  - get: L:CTL_FA50_FUEL_XFR_PUMP_1_SW, bool # Transfer pump 1 switch,Overhead
+  - get: L:CTL_FA50_FUEL_XFR_PUMP_2_SW, bool # Transfer pump 2 switch,Overhead
+  - get: L:CTL_FA50_FUEL_XFR_PUMP_3_SW, bool # Transfer pump 3 switch,Overhead
+  - get: B:FUEL_PUMP_4_Toggle, bool
+  - get: B:FUEL_PUMP_5_Toggle, bool
+  - get: B:FUEL_PUMP_6_Toggle, bool
+  - get: B:FUEL_VALVE_7_Toggle, bool
+  - get: B:FUEL_VALVE_8_Toggle, bool
+  - get: B:FUEL_VALVE_9_Toggle, bool
+  - get: B:FUEL_VALVE_10_Toggle, bool
+  - get: L:CTL_FA50_LIGHT_INT_SEATBELT_VALUE, bool # Seatbelts light switch,Overhead
+  - get: L:CTL_FA50_LIGHT_INT_EMERGENCY, bool # Emergency light knob,Overhead
+  - get: L:CTL_FA50_LIGHT_INT_CABIN_DOME, bool # Cabin dome light,Overhead
+  - get: L:CTL_FA50_LIGHT_INT_NO_SMOKING_VALUE, bool # Smoking sign light switch,Overhead
+  - get: B:LIGHTING_CABIN_1, bool # Cockpit dome light,Overhead
+    set: (>B:LIGHTING_CABIN_1_toggle)
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_AC1_IsDown, # AC bus 1 voltmeter button,Overhead
+  - get: L:CTL_FAT0_SYS_ELEC_BUTTON_AC1,
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_AC2_IsDown, # AC bus 2 voltmeter button,Overhead
+  - get: L:CTL_FAT0_SYS_ELEC_BUTTON_AC2,
+  - get: L:CTL_FA50_SYS_ELEC_SWITCH_INV_AC1, bool # AC inverter 1 switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_SWITCH_INV_AC2, bool # AC inverter 2 switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_SWITCH_INV_STBY, bool # AC standby inverter knob,Overhead
+  - get: L:CTL_OVHD_PILOT_CTRSD_KNOB, bool # Pilot center side light knob,Overhead
+  - get: L:CTL_OVHD_PILOT_INST_KNOB, bool # Pilot instrument light knob,Overhead
+  - get: L:CTL_OVHD_PILOT_MAP_KNOB_SW, bool # Adjust pilot reading light brightness switch,Overhead
+  - get: L:CTL_OVHD_PILOT_OVHD_KNOB, bool # Pilot glareshield light knob,Overhead
+  - get: L:CTL_FA50_SYS_WIPER_L_SWITCH, bool # Pilot wiper left knob,Overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_PITOT_2, bool # Copilot pitot heat right switch,Overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_PITOT_1, bool # Pilot pitot heat left switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_EFIS1, bool # EFIS 1 master switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_EFIS2, bool # EFIS 2 master switch,Overhead
+  - get: L:CTL_FA50_SYS_ELEC_BUTTON_RADIO, bool # Radio master switch,Overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_WINDSHIELD_2, bool # Windshield heat copilot side knob,Overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_WINDSHIELD_1, bool # Windshield heat pilot side knob,Overhead
+  - get: L:CTL_FA50_SYS_AA_SWITCH_WINDSHIELD_3, bool # Windshield heat side windows switch,Overhead
+ 
+ # Com panels
+  - get: L:CTL_FA50_PDSTL_RADIO_COM1_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_RADIO_COM1_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_RADIO_COM1_SWAP_IsDown,
+  - get: L:CTL_FA50_PDSTL_RADIO_COM1_SWAP
+  - get: L:CTL_FA50_PDSTL_RADIO_COM1_SWITCH_SEL, bool
+  - get: L:CTL_FA50_PDSTL_RADIO_NAV1_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_RADIO_NAV1_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_RADIO_NAV1_SWAP,
+  - get: L:CTL_FA50_PDSTL_RADIO_NAV1_SWITCH_SEL, bool
+  - get: L:CTL_FA50_PDSTL_RADIO_COM2_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_RADIO_COM2_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_RADIO_COM2_SWAP,
+  - get: L:CTL_FA50_PDSTL_RADIO_COM2_SWITCH_SEL, bool
+  - get: L:CTL_FA50_PDSTL_RADIO_NAV2_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_RADIO_NAV2_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_RADIO_NAV2_SWAP,
+  - get: L:CTL_FA50_PDSTL_RADIO_NAV2_SWITCH_SEL, bool
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF1_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF1_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF1_SWAP,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF1_SWITCH_SEL, bool
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF1_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF1_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF1_SWAP,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF1_SWITCH_SEL, bool
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF2_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF2_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF2_SWAP,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF2_SWITCH_SEL, bool
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF2_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF2_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF2_SWAP,
+  - get: L:CTL_FA50_PDSTL_RADIO_ADF2_SWITCH_SEL, bool
+
+
+ # Transponder
+  - get: L:CTL_FA50_PDSTL_XPNDR_KNOB_MODE, bool
+  - get: L:CTL_FA50_PDSTL_XPNDR_BUTTON_TEST_ISDOWN,
+  - get: L:CTL_FA50_PDSTL_XPNDR_BUTTON_TEST,
+  - get: L:CTL_FA50_PDSTL_XPNDR_KNOB_OUTER,
+  - get: L:CTL_FA50_PDSTL_XPNDR_KNOB_INNER,
+  - get: L:CTL_FA50_PDSTL_XPNDR_BUTTON_IDENT_ISDOWN,
+  - get: L:CTL_FA50_PDSTL_XPNDR_BUTTON_IDENT,
+  - get: L:CTL_FA50_PDSTL_XPNDR_SWITCH_IDX, bool
+  - get: L:CTL_FA50_PDSTL_XPNDR_SWITCH_ALT, bool
+
+ # Pedestal
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_ADC_1_IsDown, # ADC 1 switch,Pedestal
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_ADC_1
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_ADC_2_IsDown, # ADC 2 switch,Pedestal
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_ADC_2
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_STALL_1_IsDown
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_STALL_1
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_STALL_2_IsDown
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_STALL_2
+  - get: L:CTL_FA50_PDSTL_TURB_BTN, bool
+  - get: L:CTL_FA50_PDSTL_AP_XFR_BTN, bool
+  - get: L:CTL_FA50_PDSTL_AILERON_RSW, bool # Aileron knob,Pedestal
+  - get: L:CTL_FA50_PDSTL_RUDDER_RSW, bool # Rudder knob,Pedestal
+  - get: L:CTL_FA50_PDSTL_COPILOT_AP_2NDCRS_BTN,  # Copilot EFIS 2nd course button,Pedestal
+  - get: L:EFIS_C86C_BTN_BRG_RIGHT_MODE,  # Copilot EFIS bearing button (pedestal),Pedestal
+  - get: L:CTL_FA50_PDSTL_COPILOT_AP_COURSE_BTN_IsDown,  # Copilot EFIS course button,Pedestal
+  - get: L:CTL_FA50_PDSTL_COPILOT_AP_COURSE_BTN
+  - get: L:EFIS_C86C_BTN_HSI_RIGHT_MODE,  # Copilot EFIS HSI mode button (pedestal),Pedestal
+  - get: L:EFIS_C86C_BTN_RATEST_RIGHT_IsDown,  # Copilot EFIS rate test button (pedestal),Pedestal
+  - get: L:EFIS_C86C_BTN_RATEST_RIGHT,
+  - get: L:EFIS_C86C_BTN_RADAR_RIGHT,  # Copilot EFIS radar button (pedestal),Pedestal
+  - get: L:CTL_FA50_PDSTL_ADC_12_BTN, bool # ADC1/2 
+  - get: L:CTL_FA50_SYS_ENG1_CUTOFF, bool # Engine 1 stop/idle switch,Pedestal
+  - get: L:CTL_FA50_SYS_ENG2_CUTOFF, bool # Engine 2 stop/idle switch,Pedestal
+  - get: L:CTL_FA50_SYS_ENG3_CUTOFF, bool # Engine 3 stop/idle switch,Pedestal
+  - get: L:EFIS_C86C_BTN_BRG_LEFT_MODE,  # Pilot EFIS bearing button (pedestal),Pedestal
+  - get: L:EFIS_C86C_BTN_HSI_LEFT_MODE,  # Pilot EFIS HSI mode button (pedestal),Pedestal
+  - get: L:EFIS_C86C_BTN_RATEST_LEFT_IsDown, # Pilot EFIS radar button (pedestal),Pedestal
+  - get: L:EFIS_C86C_BTN_RATEST_LEFT,
+  - get: L:EFIS_C86C_BTN_RADAR_LEFT,  # Pilot EFIS rate test button (pedestal),Pedestal
+  - get: L:CTL_FA50_EHSI_ET_1_BTN,  #Elapsed time button (pedestal),Pedestal
+  - get: L:CTL_FA50_EHSI_ET_2_BTN,  # Elapsed time button (pedestal),Pedestal
+  - get: L:CTL_FA50_EHSI_NAV_DATA_1_BTN,  # NAV data button (pedestal),Pedestal
+  - get: L:CTL_FA50_EHSI_NAV_DATA_2_BTN,  # NAV data button (pedestal),Pedestal
+  - get: L:CTL_FA50_MACH_TRIM_SW,, bool # Mach TRIM switch,Pedestal
+  - get: L:CTL_FA50_PDSTL_MAG_TRUE_1_BTN, bool # Pilot EFIS mag/true switch,Pedestal
+  - get: L:CTL_FA50_PDSTL_MAG_TRUE_2_BTN, bool # Copilot EFIS mag/true switch,Pedestal
+  - get: L:CTL_FA50_PDSTL_AIR_BRAKE_LEVER, bool 
+  - get: L:CTL_FA50_PDSTL_PILOT_AP_2NDCRS_BTN,
+  - get: L:CTL_FA50_PDSTL_PILOT_AP_COURSE_BTN, # Pilot EFIS course button,Pedestald
+  - get: L:CTL_FA50_SYS_TEST_HORN_SILENCE_IsDown, # Sound warning horn silence button,Pedestal
+  - get: L:CTL_FA50_SYS_TEST_HORN_SILENCE,
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_CABIN, bool # Cabin test button,Pedestal
+  - get: L:CTL_FA50_PDSTL_TAIL_PLANE_SW, bool # Emergency TRIM CB switch,Pedestal
+  - get: L:CTL_FA50_PDSTL_TAIL_PLANE_CB, bool
+  - get: B:PDSTL_KNOB_VOL_COM1, bool
+  - get: B:PDSTL_KNOB_VOL_COM3, bool
+  - get: A:FLAPS HANDLE INDEX, Number
+    set: (>B:PDSTL_LEVER_FLAPS_Set)
+
+    
+  
+ 
+ # Center Panel
+  - get: L:EFIS_C86C_AP_ALT_SELECTED_BUTTON_IsDown, # Cancel altitude warning button,Center panel
+  - get: L:EFIS_C86C_AP_ALT_SELECTED_BUTTON
+  - get: L:CTL_FA50_CENTER_ANNUN_LT_SW, bool # Annunciator light switch,Center panel
+  - get: L:CTL_FA50_CENTER_ANNUN_TEST_BTN_IsDown, # Annunciator test button,Center panel
+  - get: L:CTL_FA50_CENTER_ANNUN_TEST_BTN,
+  - get: L:CTL_FA50_SYS_PRESS_BARO_KNOB, bool # Center automatic pressurization control barometric knob,Center panel
+  - get: L:CTL_FA50_SYS_PRESS_RATE_KNOB, bool # Center automatic pressurization control rate knob,Center panel
+  - get: L:CTL_FA50_SYS_PRESS_ALT_KNOB, bool
+  - get: L:CTL_FA50_SYS_BRAKE_SELECTOR, bool # Brake selector,Center panel
+  - get: L:CTL_FA50_SYS_FIRE_BOTTLE_1_SWITCH, bool # Fire engine 1 (center panel),Center panel
+  - get: L:CTL_FA50_SYS_FIRE_BOTTLE_2_SWITCH, bool # Fire bag comp (center panel),Center panel
+  - get: L:CTL_FA50_SYS_FIRE_BOTTLE_3_SWITCH, bool # Fire engine 2 (center panel),Center panel
+  - get: L:CTL_FA50_SYS_FIRE_BOTTLE_4_SWITCH, bool # Fire aft comp (center panel),Center panel
+  - get: L:CTL_FA50_SYS_FIRE_BOTTLE_5_SWITCH, bool # Fire engine 3 (center panel),Center panel
+  - get: L:CTL_FA50_SYS_FIRE_BOTTLE_6_SWITCH, bool # Fire apu (center panel),Center panel
+  - get: L:CTL_FA50_SYS_FIRE_SHUTOFF_1, bool # Fire shutoff 1 switch,Center panel
+  - get: L:CTL_FA50_SYS_FIRE_SHUTOFF_2, bool # Fire shutoff 2 switch,Center panel
+  - get: L:CTL_FA50_SYS_FIRE_SHUTOFF_3, bool # Fire shutoff 3 switch,Center panel
+  - get: L:CTL_FA50_SYS_CENTER_FUEL_QTY_SWITCH, booL # Fuel quantity switch,Center panel
+  - get: L:CTL_FA50_SYS_GEAR_EMERG_HANDLE, bool # Emergency gear handle switch,Center panel
+  - get: L:CTL_FA50_SYS_GEAR_EMERG_HANDLE_LOCK, bool # Emergency gear handle lock switch,Center panel
+  - get: L:CTL_FA50_SYS_GEAR_TEST_BUTTON_IsDown, # Gear test button,Center panel
+  - get: L:CTL_FA50_SYS_GEAR_TEST_BUTTON
+  - get: L:CTL_FA50_SYS_BRAKE_TEST_BUTTON_IsDown, # Brake test button,Center panel
+  - get: L:CTL_FA50_SYS_BRAKE_TEST_BUTTON,
+  - get: L:CTL_FA50_CENTER_PARK_BRK_HANDLE, bool # Parking brake switch,Center panel
+  - get: L:CTL_FA50_CENTER_PARK_BRK_EMERGENCY, bool # Emergency brake button,Center panel
+  - get: L:CTL_FA50_SYS_PRESS_MANUAL_KNOB, bool # Center pressurization knob,Center panel
+  - get: L:CTL_FA50_SYS_PRESS_MODE, bool # Pressure mode knob,Center panel
+  - get: L:CTL_FA50_SYS_PRESS_MODE, bool # Standby pump knob,Center panel
+  - get: L:CTL_FA50_SYS_AC_TEMP_MODE_CREW, bool # Temperature mode crew switch,Center panel
+  - get: L:CTL_FA50_SYS_AC_TEMP_SEL_SWITCH_CREW, bool # Manual temperature mixer crew knob,Center panel
+  - get: L:CTL_FA50_SYS_AC_TEMP_SEL_KNOB_CREW, bool # Cockpit temperature knob,Center panel
+  - get: L:CTL_FA50_SYS_AC_TEMP_SEL_SWITCH_CABIN, bool # Temperature mode cabin switch,Center panel
+  - get: L:CTL_FA50_SYS_AC_TEMP_SEL_SWITCH_CABIN, bool # Manual temperature mixer cabin knob,Center panel
+  - get: L:CTL_FA50_SYS_AC_TEMP_SEL_KNOB_CABIN, bool # Cabin temperature knob,Center panel
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_FIRE_IsDown, # Fire test button,Center panel
+  - get: L:CTL_FA50_SYS_TEST_BUTTON_FIRE_IsDown,
+  - get: L:CTL_FA50_CENTER_PANEL_GW_FUEL_USED_RESET, bool # Reset used fuel counter knob (center panel),Center panel
+  - get: L:CTL_FA50_CENTER_PANEL_GW_KNOB, bool 
+  - get: B:CNP_KNOB_ALT_SEL, bool #  Pilot pfd screw 4 knob,Center panel
+  - get: L:CTL_FA50_STDBY_ADI_CAGING_ISDOWN, # Caging button (center panel),Center panel
+  - get: L:CTL_FA50_STDBY_ADI_CAGING,
+  - get: L:CNP_PILOT_STBY_ADI_KNOB,Pilot stby ADI button,Center panel
+  - get: L:CTL_FA50_CENTER_PANEL_FUEL_USED_ENG1_KNOB, bool # Reset used fuel counter knob (center panel),Center panel
+  - get: L:CTL_FA50_CENTER_PANEL_FUEL_USED_ENG2_KNOB, bool # Reset used fuel counter knob (center panel),Center panel
+  - get: L:CTL_FA50_CENTER_PANEL_FUEL_USED_ENG3_KNOB, bool # Reset used fuel counter knob (center panel),Center panel
+  - get: B:CNP_SWITCH_ALT_SEL_INC_TOGGLE, bool #
+  - get: L:CTL_FA50_AUTOTHROTTLE_ACTIVE, bool
+  - get: L:CTL_FA50_SYS_ENG_EMERGENCY_REVERSER_SWITCH, bool # Emergency reverser stow switch,Center panel
+  - get: L:CTL_FA50_THRUST_REVERSER_SW_COVER, bool # Thrust reverser switch cover switch,Center panel
+  - get: L:CTL_MX20_ON_IsDown
+  - get: L:CTL_MX20_ON
+  - get: L:CTL_MX20_BRIGHTNESS, bool
+  - get: H:CTL_MX20_KEY_MENU
+    set: (>H:CTL_MX20_KEY_MENU)
+  - get: H:CTL_MX20_KEY_ITEM_1
+    set: (>H:CTL_MX20_KEY_ITEM_1)
+  - get: H:CTL_MX20_KEY_ITEM_2
+    set: (>H:CTL_MX20_KEY_ITEM_2)
+  - get: H:CTL_MX20_KEY_ITEM_3
+    set: (>H:CTL_MX20_KEY_ITEM_3)
+  - get: H:CTL_MX20_KEY_ITEM_4
+    set: (>H:CTL_MX20_KEY_ITEM_4)
+  - get: H:CTL_MX20_KEY_ITEM_5
+    set: (>H:CTL_MX20_KEY_ITEM_5)
+  - get: H:CTL_MX20_KEY_ITEM_6
+    set: (>H:CTL_MX20_KEY_ITEM_6)
+  - get: H:CTL_MX20_KEY_FUNCTION
+    set: (>H:CTL_MX20_KEY_FUNCTION) 
+  - get: H:CTL_MX20_KEY_SMART_FUNC_1
+    set: (>H:CTL_MX20_KEY_SMART_FUNC_1)
+  - get: H:CTL_MX20_KEY_SMART_FUNC_2
+    set: (>H:CTL_MX20_KEY_SMART_FUNC_2)
+  - get: H:CTL_MX20_KEY_SMART_FUNC_3
+    set: (>H:CTL_MX20_KEY_SMART_FUNC_3)
+  - get: H:CTL_MX20_KEY_SMART_FUNC_4
+    set: (>H:CTL_MX20_KEY_SMART_FUNC_4)
+  - get: L:CTL_FA50_CENTER_PANEL_WX_MODE_KNOB, bool
+  - get: L:CTL_FA50_CENTER_PANEL_WX_GAIN_KNOB, bool
+  - get: L:CTL_FA50_CENTER_PANEL_WX_TILT_KNOB, bool
+  - get: L:CTL_FA50_CENTER_PANEL_WX_RANGE_KNOB, bool
+  - get: L:CTL_FA50_SYS_HYD_STBY_MODE_SWITCH, bool
+  - get: L:LANDING_GEAR_gear
+    set: (>B:LANDING_GEAR_Gear_set)
+  - get: A:KOHLSMAN SETTING MB:1, Millibars # ALTIMETER CALIBRATION
+    set: "`1 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # ALTIMETER CALIBRATION
+    set: "`2 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # ALTIMETER CALIBRATION
+    set: "`3 ${value * 16} (>K:KOHLSMAN_SET)`"  
+  - get: L:CTL_FA50_PILOT_ALT_1_BARO_KNOB_COUNTER
+    set: "value > current ? '1 (>K:KOHLSMAN_INC)' : '1 (>K:KOHLSMAN_DEC)'"
+  - get: L:CTL_FA50_PILOT_ALT_2_BARO_KNOB_COUNTER
+    set: "value > current ? '2 (>K:KOHLSMAN_INC)' : '2 (>K:KOHLSMAN_DEC)'"
+  - get: L:CTL_FA50_PILOT_ALT_3_BARO_KNOB_COUNTER
+    set: "value > current ? '3 (>K:KOHLSMAN_INC)' : '3 (>K:KOHLSMAN_DEC)'"
+  - get: L:CTL_FA50_PILOT_ALT1_FREEZE_BARO_HG100
+
+
+ 
+ # Copilot side Panel
+  - get: L:CTL_FA50_COPILOT_AUDIO_VOL_KNOB, bool # Volume knob (copilot side),Copilot side panel
+  - get: L:CTL_FA50_COPILOT_ATT_HDG_BTN, bool # Copilot ATT heading button,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_CPIT_BTN, bool # Copilot cockpit switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_EMG_BTN, bool # Copilot emergency switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_FILTR_BTN, bool # Copilot filter switch (copilot side),Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_FILT_BTN, bool # Copilot filter switch (copilot side),Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_FM_BTN, bool # Copilot FM switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_HF1_BTN, bool # Copilot HF1 switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_HF2_BTN, bool # Copilot HF2 switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_MASK_BTN, bool # Copilot mask switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_MIC_CABIN_BTN, bool # Copilot mic cabin switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_MIC_FM_BTN, bool # Copilot mic FM switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_MIC_HF1_BTN, bool # Copilot mic HF1 switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_MIC_HF2_BTN, bool # Copilot mic HF2 switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_MIC_PAGE_BTN, bool # Copilot mic page switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_MKR2_BTN, bool # Copilot marker 2 switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_SKP_BTN, bool # Copilot skip switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_AUDIO_ST_BTN, bool # booleCopilot ST switch,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_BELOW_GS_BTN, bool # Copilot below glideslope button,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_DAVTRON_DIM_SW, bool # Copilot bright-dim knob,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_DAVTRON_SET_SW, bool # Copilot min-sec set knob,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_DAVTRON_TIME_SW, bool # Copilot time set knob,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_DAVTRON_ZERO_SW, bool # Copilot zero set knob,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_EBATT_BTN, bool # Copilot electronic battery switch,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_EFIS_TEST_BTN, bool # Copilot EFIS test button,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_ELT_SW, bool # Copilot ELT switch,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_FLOOR_SW, bool # Copilot floor knob,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_GALLEY_BTN, bool # Copilot galley power switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_OXY_MASK_TEST, bool # Copilot oxygen mask test button,Copilot side panel
+  - get: L:CTL_FA50_SYS_COPILOT_PITOT_KNOB, bool # Copilot static source switch,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_PULL_UP_BTN, # Copilot pull up button,Copilot side panel
+  - get: L:CTL_FA50_SYS_IRS2_TEST_BUTTON, bool # Copilot IRS test button,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_TAT_BTN, bool # Copilot display ambient temperature button,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_TAS_DIM_KNOB, bool # Copilot tas dim knob,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_VSI_AB_BTN, bool # Copilot above/below switch,Copilot side panel
+  - get: L:CTL_FA50_COPILOT_VSI_R_BTN, bool # Copilot range switch,Copilot side panel
+  - get: L:CTL_FA50_SYS_APU_BUTTON_BLEEDAIR, bool # APU bleed air button,Copilot side panel
+  - get: L:CTL_FA50_SYS_APU_BUTTON_GEN, bool # APU gen button,Copilot side panel
+  - get: L:CTL_FA50_SYS_APU_BUTTON_MASTER, bool # APU master button,Copilot side panel
+  - get: L:CTL_FA50_SYS_APU_BUTTON_START, bool # APU start button,Copilot side panel
+  - get: L:CTL_FA50_SYS_APU_BUTTON_STOP, bool # APU stop button,Copilot side panel
+  - get: L:CTL_FA50_SYS_IRS2_MODE_SELECTOR, bool # Mode knob (copilot side),Copilot side panel
+  - get: L:CTL_FA50_SYS_OXY_MODE_KNOB, bool # OXY mode knob,Copilot side panel
+  - get: L:CTL_FA50_SYS_OXY_RESET_BUTTON, bool # Oxygen reset button,Copilot side panel
+  - get: H:CTL_DME_2_BTN_PWR,
+  - get: H:CTL_DME_2_BTN_SEL,
+  - get: H:CTL_DME_2_BTN_CH,
+  - get: L:CP_RMI_KNOB_1_TOGGLE, bool
+  - get: L:CP_RMI_KNOB_2_TOGGLE, bool
+  - get: L:CTL_FA50_COPILOT_AID_MARKER_NDL, bool
+  - get: L:EFIS_C86C_KNOB_DHRNG_RIGHT, bool
+  - get: L:EFIS_C86C_KNOB_DHRNG_RIGHT_MODE,
+  - get: L:EFIS_C86C_KNOB_DIM_EHSI_RIGHT,
+  - get: L:EFIS_C86C_KNOB_DIM_EADI_RIGHT,
+  - get: L:EFIS_C86C_AP_BTN_12BANK_R, bool
+  - get: L:EFIS_C86C_AP_BTN_HDG_R, bool
+  - get: L:EFIS_C86C_AP_BTN_CLIMB_R, bool
+  - get: L:EFIS_C86C_AP_BTN_NAV_R, bool
+  - get: L:EFIS_C86C_AP_BTN_APPR_R, bool
+  - get: L:EFIS_C86C_AP_BTN_ALT_R, bool
+  - get: L:EFIS_C86C_AP_BTN_VNAV_R, bool
+  - get: L:EFIS_C86C_AP_BTN_DESCENT_R, bool
+  - get: L:EFIS_C86C_AP_BTN_VS_R, bool
+  - get: L:EFIS_C86C_AP_BTN_SPEED_R, bool
+  - get: B:CP_RMI_KNOB_1_TOGGLE, bool
+  - get: B:CP_RMI_KNOB_2_TOGGLE, bool
+
+ # Pilot side panel
+  - get: H:CTL_DME_1_BTN_PWR,
+  - get: H:CTL_DME_1_BTN_SEL,
+  - get: H:CTL_DME_1_BTN_CH,
+  - get: L:CTL_FA50_PILOT_AUDIO_VOL_KNOB, bool # Pilot volume knob
+  - get: L:CTL_FA50_SYS_IRS1_MODE_SELECTOR, bool # Mode knob (pilot side),Pilot side panel
+  - get: L:CTL_FA50_SYS_IRS1_TEST_BUTTON, bool # Irs test button, Pilot side panel
+  - get: L:CTL_FA50_PILOT_IAS_BUG_KNOB, bool #
+  - get: B:PP_RMI_KNOB_1_TOGGLE, bool
+  - get: B:PP_RMI_KNOB_2_TOGGLE, bool
+  - get: L:CTL_FA50_EHSI_CRS_KNOB_1, bool
+  - get: L:CTL_FA50_EHSI_CRS_KNOB_1_PUSH,
+  - get: L:CTL_FA50_EHSI_HDG_KNOB, bool
+  - get: L:CTL_FA50_EHSI_HDG_KNOB_PUSH,
+  - get: L:CTL_FA50_EHSI_CRS_KNOB_2, bool
+  - get: L:CTL_FA50_EHSI_CRS_KNOB_2_PUSH,
+  - get: L:EFIS_C86C_KNOB_DIM_EHSI_LEFT,
+  - get: L:EFIS_C86C_KNOB_DIM_EADI_LEFT,
+  - get: L:EFIS_C86C_KNOB_DHRNG_LEFT, bool
+  - get: L:EFIS_C86C_KNOB_DHRNG_LEFT_MODE,
+  - get: L:CTL_FA50_PILOT_ALERT_IND, bool # 
+    set: (>A:CTL_FA50_PILOT_ALERT_IND)
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_EMG_BTN, bool # Pilot emergency switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_FILT_BTN, bool # Pilot filter switch (pilot side),Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_FILTR_BTN, bool # Pilot filter switch (pilot side),Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_FM_BTN, bool # Pilot FM switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_HF1_BTN, bool # Pilot HF1 switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_HF2_BTN, bool
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_MASK_BTN, bool # Pilot mask switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_MIC_CABIN_BTN, bool # Pilot mic cabin switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_MIC_FM_BTN, bool # Pilot mic FM switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_MIC_HF1_BTN, bool # Pilot mic HF1 switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_MIC_HF2_BTN, bool # Pilot mic HF2 switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_MIC_PAGE_BTN, bool # Pilot mic page switch,Pilot side panel
+  - get: A:COM RECEIVE:1, bool
+    set: (>K:COM1_RECEIVE_SELECT)
+  - get: A:COM RECEIVE:2, bool
+    set: (>K:COM2_RECEIVE_SELECT)
+  - get: A:COM RECEIVE:3, bool
+    set: (>K:COM3_RECEIVE_SELECT)
+  - get: L:MARKER_SOUND_TOGGLE, bool 
+    set: (>K:MARKER_SOUND_TOGGLE)
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_CPIT_BTN, bool # Pilot C'PIT switch,Pilot side panel
+  - get: A:NAV SOUND:1, Bool
+    set: (>K:RADIO_VOR1_IDENT_SET)
+  - get: A:NAV SOUND:2, Bool
+    set: (>K:RADIO_VOR2_IDENT_SET)
+  - get: A:DME SOUND:1, Bool
+    set: (>K:RADIO_DME1_IDENT_SET)
+  - get: A:DME SOUND:2, Bool
+    set: (>K:RADIO_DME2_IDENT_SET)
+  - get: A:ADF SOUND:1
+    set: (>K:RADIO_ADF_IDENT_SET)
+  - get: A:ADF SOUND:2
+    set: (>K:RADIO_ADF2_IDENT_SET)
+  - get: A:COM TRANSMIT:1, Bool
+    set: 0 (>K:PILOT_TRANSMITTER_SET)
+  - get: A:COM TRANSMIT:2, Bool
+    set: 1 (>K:PILOT_TRANSMITTER_SET)
+  - get: A:COM TRANSMIT:3, Bool
+    set: 2 (>K:PILOT_TRANSMITTER_SET)
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_MKR2_BTN, bool # Pilot marker 2 switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_SKP_BTN, bool # Pilot skip switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_AUDIO_ST_BTN, bool # Pilot ST switch,Pilot side panel
+  - get: L:CTL_FA50_CVR_TEST_BUTTON_IsDown, # Pilot CVR test button,Pilot side panel
+  - get: L:CTL_FA50_CVR_TEST_BUTTON, 
+  - get: L:CTL_FA50_PILOT_BELOW_GS_BTN, Bool # Pilot below glideslope button,Pilot side panel
+  - get: L:CTL_FA50_PILOT_DAVTRON_DIM_SW, bool # Pilot bright-dim knob,Pilot side panel
+  - get: L:CTL_FA50_PILOT_DAVTRON_SET_SW, bool # Pilot min-sec set knob,Pilot side panel
+  - get: L:CTL_FA50_PILOT_DAVTRON_TIME_SW, bool # Pilot time set knob,Pilot side panel
+  - get: L:CTL_FA50_PILOT_DAVTRON_ZERO_SW, bool # Pilot zero set knob,Pilot side panel
+  - get: L:CTL_FA50_PILOT_ATT_HDG_BTN, bool # Pilot EFIS test button,Pilot side panel
+  - get: L:CTL_FA50_PILOT_EFIS_TEST_BTN_IsDown
+  - get: L:CTL_FA50_PILOT_EFIS_TEST_BTN
+  - get: L:CTL_FA50_FAKE_CLICKSPOTS_DECAL, bool # Pilot fake decals switch,Pilot side panel
+  - get: L:EFIS_C86C_AP_BTN_MASTER_YD, bool # Pilot yaw damper master switch,Pilot side panel
+  - get: L:EFIS_C86C_AP_BTN_MASTER_AP, bool # Pilot auto pilot master swtich, Pilot side panel
+  - get: L:CTL_FA50_PILOT_FLOOR_SW, bool # Pilot floor switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_OXY_MASK_TEST, bool # Pilot oxygen mask test button,Pilot side panel
+  - get: L:EFIS_C86C_AP_BTN_MASTER_AP, bool # Pilot autopilot master switch,Pilot side panel
+  - get: L:CTL_FA50_SYS_PILOT_PITOT_KNOB, bool # Pilot static source switch,Pilot side panel
+  - get: L:CTL_FA50_PILOT_PULL_UP_BTN, # Pilot pull up button,Pilot side panel
+  - get: L:CTL_FA50_PILOT_VSI_AB_BTN, bool # Pilot above/below button,Pilot side panel
+  - get: L:CTL_FA50_PILOT_VSI_R_BTN, bool # Pilot range button,Pilot side panel
+  - get: L:CTL_FA50_EHSI_HDG_KNOB,
+  - get: L:CTL_FA50_EHSI_HDG_KNOB_PUSH,
+  - get: L:EFIS_C86C_AP_BTN_12BANK_L, bool
+  - get: L:EFIS_C86C_AP_BTN_HDG_L, bool
+  - get: L:EFIS_C86C_AP_BTN_CLIMB_L, bool
+  - get: L:EFIS_C86C_AP_BTN_NAV_L, bool
+  - get: L:EFIS_C86C_AP_BTN_APPR_L, bool
+  - get: L:EFIS_C86C_AP_BTN_ALT_L, bool
+  - get: L:EFIS_C86C_AP_BTN_VNAV_L, bool
+  - get: L:EFIS_C86C_AP_BTN_DESCENT_L, bool
+  - get: L:EFIS_C86C_AP_BTN_VS_L, bool
+  - get: L:EFIS_C86C_AP_BTN_SPEED_L, bool
+
+ # Yoke / flight controls handling
+  - get: L:CTL_FA50_YOKE_TRIM_SWITCH_PILOT, bool # Elevator TRIM switch (pilot yoke) knob,Yoke / flight controls
+  - get: L:CTL_FA50_YOKE_TRIM_SWITCH_COPILOT, bool # Elevator TRIM switch (copilot yoke) knob,Yoke / flight controls
+  - get: L:CTL_FA50_YOKE_COPILOT_GA_BTN, bool # Copilot go around button,Yoke / flight controls
+  - get: L:CTL_FA50_YOKE_COPILOT_SYNC_BTN, bool # Sync button (copilot yoke) button,Yoke / flight controls
+  - get: L:CTL_FA50_YOKE_PILOT_GA_BTN_IsDown, bool # Pilot go around button,Yoke / flight controls
+  - get: L:CTL_FA50_YOKE_PILOT_GA_BTN,
+  - get: L:CTL_FA50_YOKE_PILOT_SYNC_BTN, bool # Sync button (pilot yoke) button,Yoke / flight controls
+
+ # GNSXLS options pilot
+  - get: H:CTL_GNSXLS_1_BUTTON_ON,Number,GNS pilot — power on,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_BUTTON_OFF,Number,GNS pilot — power off (long press),CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_BUTTON_BRT_PUSHED,Number,GNS pilot — brightness hold,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_BUTTON_BRT_RELEASED,Number,GNS pilot — brightness release,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_FPL,Number,GNS pilot — FPL button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_NAV,Number,GNS pilot — NAV button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_DIRECTTO,Number,GNS pilot — Direct-to button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_PLAN,Number,GNS pilot — Plan button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_HOLD,Number,GNS pilot — Hold / POS fix button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_AFIS,Number,GNS pilot — AFIS button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_VNAV,Number,GNS pilot — VNAV button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_MSG,Number,GNS pilot — MSG button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_PRV,Number,GNS pilot — Page prev button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_NXT,Number,GNS pilot — Page next button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_ENTER,Number,GNS pilot — Enter button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_BACK,Number,GNS pilot — Back (CLR) button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_L1,Number,GNS pilot — L1 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_L2,Number,GNS pilot — L2 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_L3,Number,GNS pilot — L3 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_L4,Number,GNS pilot — L4 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_L5,Number,GNS pilot — L5 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_R1,Number,GNS pilot — R1 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_R2,Number,GNS pilot — R2 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_R3,Number,GNS pilot — R3 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_R4,Number,GNS pilot — R4 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_R5,Number,GNS pilot — R5 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_0,Number,GNS pilot — Digit 0 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_1,Number,GNS pilot — Digit 1 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_2,Number,GNS pilot — Digit 2 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_3,Number,GNS pilot — Digit 3 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_4,Number,GNS pilot — Digit 4 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_5,Number,GNS pilot — Digit 5 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_6,Number,GNS pilot — Digit 6 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_7,Number,GNS pilot — Digit 7 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_8,Number,GNS pilot — Digit 8 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_9,Number,GNS pilot — Digit 9 button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_A,Number,GNS pilot — A button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_B,Number,GNS pilot — L:button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_C,Number,GNS pilot — C button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_D,Number,GNS pilot — D button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_E,Number,GNS pilot — E button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_F,Number,GNS pilot — F button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_G,Number,GNS pilot — G button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_H,Number,GNS pilot — H:button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_I,Number,GNS pilot — I button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_J,Number,GNS pilot — J button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_K,Number,GNS pilot — K button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_L,Number,GNS pilot — L button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_M,Number,GNS pilot — M button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_N,Number,GNS pilot — N button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_O,Number,GNS pilot — O button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_P,Number,GNS pilot — P button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_Q,Number,GNS pilot — Q button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_R,Number,GNS pilot — R button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_S,Number,GNS pilot — S button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_T,Number,GNS pilot — T button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_U,Number,GNS pilot — U button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_V,Number,GNS pilot — V button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_W,Number,GNS pilot — W button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_X,Number,GNS pilot — X button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_Y,Number,GNS pilot — Y button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_Z,Number,GNS pilot — Z button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_SP,Number,GNS pilot — Space button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_HSTG,Number,GNS pilot — # button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_PLUSMIN,Number,GNS pilot — +/- button,CTL Falcon 50 GNS — GNS pilot
+  - get: H:CTL_GNSXLS_1_KEY_ASTERISK,Number,GNS pilot — * button,CTL Falcon 50 GNS — GNS pilot
+
+ # GNSXLS options Copilot
+  - get: H:CTL_GNSXLS_2_BUTTON_ON,Number,GNS copilot — power on,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_BUTTON_OFF,Number,GNS copilot — power off (long press),CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_BUTTON_BRT_PUSHED,Number,GNS copilot — brightness hold,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_BUTTON_BRT_RELEASED,Number,GNS copilot — brightness release,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_FPL,Number,GNS copilot — FPL button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_NAV,Number,GNS copilot — NAV button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_DIRECTTO,Number,GNS copilot — Direct-to button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_PLAN,Number,GNS copilot — Plan button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_HOLD,Number,GNS copilot — Hold / POS fix button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_AFIS,Number,GNS copilot — AFIS button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_VNAV,Number,GNS copilot — VNAV button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_MSG,Number,GNS copilot — MSG button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_PRV,Number,GNS copilot — Page prev button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_NXT,Number,GNS copilot — Page next button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_ENTER,Number,GNS copilot — Enter button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_BACK,Number,GNS copilot — Back (CLR) button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_L1,Number,GNS copilot — L1 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_L2,Number,GNS copilot — L2 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_L3,Number,GNS copilot — L3 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_L4,Number,GNS copilot — L4 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_L5,Number,GNS copilot — L5 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_R1,Number,GNS copilot — R1 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_R2,Number,GNS copilot — R2 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_R3,Number,GNS copilot — R3 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_R4,Number,GNS copilot — R4 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_R5,Number,GNS copilot — R5 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_0,Number,GNS copilot — Digit 0 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_1,Number,GNS copilot — Digit 1 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_2,Number,GNS copilot — Digit 2 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_3,Number,GNS copilot — Digit 3 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_4,Number,GNS copilot — Digit 4 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_5,Number,GNS copilot — Digit 5 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_6,Number,GNS copilot — Digit 6 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_7,Number,GNS copilot — Digit 7 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_8,Number,GNS copilot — Digit 8 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_9,Number,GNS copilot — Digit 9 button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_A,Number,GNS copilot — A button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_B,Number,GNS copilot — L:button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_C,Number,GNS copilot — C button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_D,Number,GNS copilot — D button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_E,Number,GNS copilot — E button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_F,Number,GNS copilot — F button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_G,Number,GNS copilot — G button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_H,Number,GNS copilot — H:button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_I,Number,GNS copilot — I button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_J,Number,GNS copilot — J button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_K,Number,GNS copilot — K button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_L,Number,GNS copilot — L button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_M,Number,GNS copilot — M button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_N,Number,GNS copilot — N button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_O,Number,GNS copilot — O button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_P,Number,GNS copilot — P button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_Q,Number,GNS copilot — Q button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_R,Number,GNS copilot — R button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_S,Number,GNS copilot — S button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_T,Number,GNS copilot — T button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_U,Number,GNS copilot — U button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_V,Number,GNS copilot — V button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_W,Number,GNS copilot — W button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_X,Number,GNS copilot — X button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_Y,Number,GNS copilot — Y button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_Z,Number,GNS copilot — Z button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_SP,Number,GNS copilot — Space button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_HSTG,Number,GNS copilot — # button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_PLUSMIN,Number,GNS copilot — +/- button,CTL Falcon 50 GNS — GNS copilot
+  - get: H:CTL_GNSXLS_2_KEY_ASTERISK,Number,GNS copilot — * button,CTL Falcon 50 GNS — GNS copilot
+
+ # Checklist
+  - get: L:CTL_FA50_CHECKLIST_STATE, bool # Checklist switch,Paper checklist
+  - get: L:CTL_FA50_CHECKLIST_PAGE, bool # Checklist switch page
+
+ # General
+  - get: L:CTL_FA50_ANIM_COCKPIT_DOOR # Cockpit door switch (general),Cockpit general
+  - get: L:CTL_FA50_COPILOT_ARM_REST_R # Copilot armrest switch (general),Cockpit general
+  - get: L:CTL_FA50_COPILOT_ARM_REST, bool # Copilot armrest switch (general),Cockpit general
+  - get: L:CTL_FA50_PILOT_ARM_REST
+  - get: L:CTL_FA50_PILOT_ARM_REST_L # Pilot armrest switch (general),Cockpit general
+  - get: L:CTL_FA50_TOW_SIGN_SHOW  # Show tow sign switch,Cockpit general
+  - get: L:CTL_FA50_SUNVISOR_STOW_PILOT
+  - get: L:CTL_FA50_SUNVISOR_POS_PILOT
+  - get: L:CTL_FA50_SUNVISOR_STOW_COPILOT
+  - get: L:CTL_FA50_SUNVISOR_POS_COPILOT
+  - get: L:CTL_FA50_EXT_FWD_DOOR_HANDLE_POS, bool
+  - get: L:CTL_FA50_EXT_BAGGAGE_DOOR_HANDLE_POS, bool
+  - get: L:CTL_FA50_PP_WINDOW_HANDLE, bool
+  - get: L:CTL_FA50_PILOT_WINDOW_BLIND, bool
+  - get: L:CTL_FA50_COPILOT_WINDOW_BLIND, bool
+  - get: L:CTL_FA50_CABIN_IFE_2, bool
+  - get: L:CTL_FA50_CABIN_IFE_1, bool
+  - get: L:CTL_FA50_TORQUE_LINK_DISCONNECTED, bool
+  - get: A:COVER ON:3, bool
+  - get: A:COVER ON:2, bool
+  - get: A:COVER ON:1, bool
+  - get: A:COVER ON:0, bool
+  - get: L:CTL_FA50_EFB_UNSTOWED, bool
+  - get: L:CTL_FA50_EFB_UNSTOWED_RESOLVED, bool

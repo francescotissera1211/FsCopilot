@@ -1,0 +1,544 @@
+# Original author: https://discord.com/channels/1454265644416765974/1506020601423466527/1506020601423466527
+# Updated: 2026-05-18 19:48:44
+
+# Phenom300E - FSCopilot v1.0 developed by Hawks1326
+
+master:
+ - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k
+   set: K:AXIS_THROTTLE1_SET
+ - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, Position 16k
+   set: K:AXIS_THROTTLE2_SET
+
+shared:
+  - get: A:AUTOPILOT MASTER, Bool # AP MASTER
+    set: (>K:AP_MASTER)
+  - get: A:AUTOPILOT DISENGAGED, Bool # AP DISENGAGE
+    set: (>K:AUTOPILOT_DISENGAGE_SET)
+  - get: A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1, Bool # FD1
+    set: "1 (>K:TOGGLE_FLIGHT_DIRECTOR)"
+  - get: A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:2, Bool # FD2
+    set: "2 (>K:TOGGLE_FLIGHT_DIRECTOR)"
+  - get: A:AUTOPILOT NAV1 LOCK, Bool # NAV
+    set: (>K:AP_NAV1_HOLD)
+  - get: A:AUTOPILOT HEADING LOCK, Bool # HDG
+    set: (>K:AP_HDG_HOLD)
+  - get: A:AUTOPILOT APPROACH HOLD, Bool # APR
+    set: (>K:AP_APR_HOLD)
+  - get: A:AUTOPILOT ALTITUDE LOCK, Bool # ALT HOLD
+    set: (>K:AP_ALT_HOLD)
+  - get: A:AUTOPILOT VERTICAL HOLD, Bool # VS
+    set: (>K:AP_VS_SET)
+  - get: A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool # FLC
+    set: (>K:FLIGHT_LEVEL_CHANGE)
+  - get: A:AUTOPILOT YAW DAMPER, Bool # YD
+    set: (>K:YAW_DAMPER_TOGGLE)
+  - get: A:AUTOPILOT BANK HOLD, Bool # BANK
+    set: (>K:AP_BANK_HOLD)
+  - get: B:AUTOPILOT_VNAV_MODE, Boolean # VNV
+    set: (>B:AUTOPILOT_VNAV_MODE_TOGGLE)
+  - get: L:FSR_300E_PUSH_CPL, Bool # CPL
+    set: (>B:FSR_GENERIC_Autopilot_Push_CPL_1_Toggle)
+  - get: L:FSR_300E_PUSH_CSC, Bool # CSC
+    set: (>B:FSR_GENERIC_Autopilot_Push_CSC_1_Toggle)
+  - get: B:AUTOPILOT_Speed_Mode, Boolean # FMS/MAN
+    set: (>B:AUTOPILOT_Speed_Mode_Toggle)
+  - get: A:AUTOPILOT MANAGED SPEED IN MACH, Bool # MACH TOGGLE
+    set: (>K:AP_MANAGED_SPEED_IN_MACH_TOGGLE)
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees # HDG BUG
+    set: (>K:HEADING_BUG_SET)
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet # ALT
+    set: (>K:AP_ALT_VAR_SET_ENGLISH)
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, Feet per minute # VS VAR
+    set: (>K:AP_VS_VAR_SET_ENGLISH)
+  - get: A:AUTOPILOT AIRSPEED HOLD VAR:1, Knots # SPD (when not in Mach)
+    set: (>K:AP_SPD_VAR_SET)
+  - get: A:AUTOPILOT MACH HOLD VAR:1, Mach # SPD (when in Mach)
+    set: (>K:AP_MACH_VAR_SET)
+  - get: A:AUTOPILOT MAX BANK, Degrees # BANK knob
+    set: (>K:AP_MAX_BANK_SET)
+  - get: A:NAV OBS:1, Degrees # CRS1 knob
+    set: (>K:VOR1_OBS_SET)
+  - get: A:NAV OBS:2, Degrees # CRS2 knob
+    set: (>K:VOR2_OBS_SET)
+  - get: L:FSR_300E_BATTERY_1_SWITCH_ON, Bool
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BATTERY_MASTER_1_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BATTERY_MASTER_1_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_BATTERY_2_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BATTERY_MASTER_2_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BATTERY_MASTER_2_ON)' // Position 1
+          default: return ''
+      }
+  - get: B:ELECTRICAL_Alternator_1_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:ELECTRICAL_ALTERNATOR_1_OFF)' // Position 0
+          case 1: return '(>B:ELECTRICAL_ALTERNATOR_1_ON)' // Position 1
+          default: return ''
+      }
+  - get: B:ELECTRICAL_Alternator_2_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:ELECTRICAL_ALTERNATOR_2_OFF)' // Position 0
+          case 1: return '(>B:ELECTRICAL_ALTERNATOR_2_ON)' // Position 1
+          default: return ''
+      }
+
+  - get: B:FSR_GENERIC_Electrical_Switch_Bleed1_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BLEED1_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BLEED1_ON)' // Position 1
+          default: return ''
+      }
+
+  - get: B:FSR_GENERIC_Electrical_Switch_Bleed2_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BLEED2_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BLEED2_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_BUSTIE_KNOB_POS
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BUSTIE_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BUSTIE_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_BUSTIE_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_EMERGENCY_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_EMERGENCY_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_EMERGENCY_ON)' // Position 1
+          default: return ''
+      }
+  - get: B:FSR_GENERIC_Electrical_Switch_GPU_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_GPU_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_GPU_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_XBLEED_KNOB_POS
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_XBLEED_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_XBLEED_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_TESTPANEL_KNOB_POS, numbers
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_TEST_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_TEST_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_TEST_POS2)' // Position 2
+          case 3: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_TEST_POS3)' // Position 3
+          case 4: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_TEST_POS4)' // Position 4
+          case 5: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_TEST_POS5)' // Position 5
+          default: return ''
+        }
+  - get: L:FSR_300E_TESTPANEL_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_TEST_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_TEST_ON)' // Position 1
+          default: return ''
+        }
+  - get: L:FSR_300E_FUEL_PUMP1_SWITCH, numbers
+    set: |
+        switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_FUEL_PUMP1_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_FUEL_PUMP1_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_FUEL_PUMP1_POS2)' // Position 1
+          default: return ''
+        }
+  - get: L:FSR_300E_FUEL_PUMP2_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_FUEL_PUMP2_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_FUEL_PUMP2_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_FUEL_PUMP2_POS2)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_FUELXFEED_KNOB_POS, numbers
+    set: |
+      switch (value) {
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_FUELXFEED_POS0)' // Position 0
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_FUELXFEED_POS1)' // Position 1
+          case 3: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_FUELXFEED_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_HYD_SOV1_SWITCH_ON, Bool
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_HYD_SOV1_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_HYD_SOV1_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_HYD_SOV2_SWITCH_ON, Bool
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_HYD_SOV2_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_HYD_SOV2_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_ELT_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_ELT_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_ELT_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_ELT_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_PUSHER_CUTOUT_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PUSHERCUTOUT_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PUSHERCUTOUT_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_PAX_SWITCH_SETTING
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PAXSIGNS_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PAXSIGNS_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PAXSIGNS_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_SWITCH_PITCHBACKUP
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PITCHBACKUP_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PITCHBACKUP_POS1)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_SWITCH_PFD_1_MODE
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PFD_1_MODE_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PFD_1_MODE_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PFD_1_MODE_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_SWITCH_PFD_2_MODE
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PFD_2_MODE_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PFD_2_MODE_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PFD_2_MODE_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_ENGINE1_KNOB_POS, numbers
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ENGINE_STARTER_1_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ENGINE_STARTER_1_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ENGINE_STARTER_1_POS2)' // Position 2
+          default: return ''
+      }
+  - get: A:TURB ENG IGNITION SWITCH EX1:1, enum
+    set: |
+      switch (value) {
+          case 0: return '(>B:ENGINE_IGNITION_1_OFF)' // Position 0
+          case 1: return '(>B:ENGINE_IGNITION_1_AUTO)' // Position 1
+          case 2: return '(>B:ENGINE_IGNITION_1_ON)' // Position 2
+          default: return ''
+      }
+  - get: A:TURB ENG IGNITION SWITCH EX1:2, enum
+    set: |
+      switch (value) {
+          case 0: return '(>B:ENGINE_IGNITION_2_OFF)' // Position 0
+          case 1: return '(>B:ENGINE_IGNITION_2_AUTO)' // Position 1
+          case 2: return '(>B:ENGINE_IGNITION_2_ON)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_ENGINE2_KNOB_POS, numbers
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ENGINE_STARTER_2_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ENGINE_STARTER_2_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ENGINE_STARTER_2_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_ELECTRICAL_SWITCH_SOV1_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_SOV1_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_SOV1_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_ELECTRICAL_SWITCH_SOV2_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_SOV2_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_SOV2_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_ENGINE_FIRE_BOTTLE_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ENGINE_FIRE_BOTTLE_SWITCH_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ENGINE_FIRE_BOTTLE_SWITCH_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_TOCONFIG_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_TOCONFIG_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_TOCONFIG_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_WSHIELD1_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_WSHIELD1_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_WSHIELD1_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_WSHIELD2_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_WSHIELD2_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_WSHIELD2_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_OADSPROBES_KNOB_POS
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_ADSPROBES_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_ADSPROBES_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_ADSPROBES_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_WINGSTAB_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_WINGSTAB_ANTICE_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_WINGSTAB_ANTICE_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_WINGSTAB_ANTICE_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_ENG_1_ICE_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_ENG1_ANTICE_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_ENG1_ANTICE_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_ENG_2_ICE_SWITCH_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_ENG2_ANTICE_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_ENG2_ANTICE_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:ParkingBrake_Position
+    set: (>B:LANDING_GEAR_PARKINGBRAKE_TOGGLE)
+  - get: L:FSR_300E_SPOILERS_SWITCH, Bool
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_SPOILERS_ON)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_SPOILERS_OFF)' // Position 1
+          default: return ''
+      }
+  - get: A:FLAPS HANDLE PERCENT, Position 16k
+    set: (>K:FLAPS_CONTINUOUS_SET)
+  - get: B:LANDING_GEAR_gear
+    set: |
+      switch (value) {
+          case 0: return '(>B:LANDING_GEAR_GEAR_UP)' // Position UP
+          case 1: return '(>B:LANDING_GEAR_GEAR_DOWN)' // Position DN
+          default: return ''
+      }
+  - get: L:FSR_300E_DNLock_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_GEARL_SWITCH_DNLOCK_ON)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_GEARL_SWITCH_DNLOCK_OFF)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_GearHornInhib_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_GEARL_SWITCH_WARNINHIB_ON)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_GEARL_SWITCH_WARNINHIB_OFF)' // Position 1
+          default: return ''
+      }
+
+  - get: L:FSR_300E_PRESSDUMP_SWITCH_COVER, Bool
+    set: (>B:FSR_GENERIC_ELECTRICAL_SWITCH_PRESSDUMP_COVER_TOGGLE)
+  - get: L:FSR_300E_PRESSDUMP_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PRESSDUMP_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PRESSDUMP_ON)' // Position 1
+          default: return ''
+      }
+  - get: B:FSR_GENERIC_Electrical_Switch_PressMode_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PRESSMODE_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PRESSMODE_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_CABIN_ALTITUDE_SET_SWITCH
+    set: (>B:FSR_GENERIC_ELECTRICAL_SWITCH_CABINALT_Set)
+  - get: L:FSR_300E_ECS_KNOB_POS
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_ECS_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_ECS_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_ECS_POS2)' // Position 2
+          case 3: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_ECS_POS3)' // Position 3
+          default: return ''
+      }
+  - get: L:FSR_300E_CABIN_AIRCON_SPEED, numbers
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOBOUTTER_AIRCONFAN_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOBOUTTER_AIRCONFAN_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOBOUTTER_AIRCONFAN_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_COCKPIT_AIRCON_SPEED, numbers
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOBINNER_AIRCONFAN_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOBINNER_AIRCONFAN_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOBINNER_AIRCONFAN_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_AIRCONMODE_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_AIRCONMODE_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_AIRCONMODE_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_AIRCONMODE_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_LANDING_SWITCH, numbers
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_LDGTAXI_LIGHT_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_LDGTAXI_LIGHT_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_LDGTAXI_LIGHT_POS2)' // Position 2
+          default: return ''
+      }
+  - get: B:LIGHTING_NAV_1_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:NAV_LIGHTS_OFF)' // Position 0
+          case 1: return '(>B:NAV_LIGHTS_ON)' // Position 1
+          default: return ''
+      }
+  - get: B:LIGHTING_STROBE_1_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:STROBES_OFF)' // Position 0
+          case 1: return '(>B:STROBES_ON)' // Position 1
+          default: return ''
+      }
+  - get: B:LIGHTING_WING_1_Toggle
+    set: |
+      switch (value) {
+          case 0: return '(>B:WING_LIGHTS_OFF)' // Position 0
+          case 1: return '(>B:NAV_LIGHTS_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_COCKPITPANEL_KNOB_POS, numbers
+  - get: L:FSR_300E_CABINLIGHTS_KNOB_POS, numbers
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_CABINLIGHTS_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_CABINLIGHTS_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_CABINLIGHTS_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_ELECTRICAL_EMERLIGHTS
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_EMERLIGHTS_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_EMERLIGHTS_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_EMERLIGHTS_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_PILOT_OVERHEAD_LIGHT_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_PILOT_OVERHEAD_LIGHT_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_PILOT_OVERHEAD_LIGHT_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_COPILOT_OVERHEAD_LIGHT_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_COPILOT_OVERHEAD_LIGHT_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_COPILOT_OVERHEAD_LIGHT_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_PANELS_LED_ON
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_PANELS_LED_CENTER_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_PANELS_LED_CENTER_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_IFE_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_IFE_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_IFE_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_PILOT_MASCKMIC_SWITCH
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PILOTMASK_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_SWITCH_PILOTMASK_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_FCERESET_KNOB_POS
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_FCE_RESET_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_FCE_RESET_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_FCE_RESET_POS2)' // Position 2
+          default: return ''
+      }
+  - get: L:FSR_300E_OXYGEN_KNOB_POS
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_OXYGEN_CTRL_POS0)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_OXYGEN_CTRL_POS1)' // Position 1
+          case 2: return '(>B:FSR_GENERIC_ELECTRICAL_KNOB_OXYGEN_CTRL_POS2)' // Position 2
+          default: return ''
+      }
+  - get: A:RUDDER TRIM PCT, Percent scaler 16k
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: A:ELEVATOR TRIM PCT, Percent scaler 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: A:AILERON TRIM PCT, Percent scaler 16k
+    set: (>K:AILERON_TRIM_SET_EX1)
+  - get: L:FSR_300E_ECS_COCKPIT_TEMP_SET, numbers
+  - get: L:FSR_300E_ECS_CABIN_TEMP_SET, numbers
+  - get: L:FSR_300E_Emergency_Landing_Gear_Door
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_EMERGENCY_LANDING_GEAR_DOOR_OFF)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_EMERGENCY_LANDING_GEAR_DOOR_ON)' // Position 1
+          default: return ''
+      }
+  - get: L:FSR_300E_Emergency_Gear_Lever
+    set: |
+      switch (value) {
+          case 0: return '(>B:FSR_GENERIC_EMERGENCY_LANDING_GEAR_DOOR_Dec)' // Position 0
+          case 1: return '(>B:FSR_GENERIC_EMERGENCY_LANDING_GEAR_DOOR_Inc)' // Position 1
+          default: return ''
+      }

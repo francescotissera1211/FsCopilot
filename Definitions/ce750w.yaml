@@ -1,0 +1,710 @@
+# Original author: https://discord.com/channels/1454265644416765974/1488304550673780847/1492973428859207692
+# Updated: 2026-04-12 19:43:29
+
+# FlightFX Citation X (CE750W) - FsCopilot YAML Configuration
+# Version: 0.0.3
+# Created By: DKgolfnut
+# Special Thanks: 
+# Date: 4/12/2026 
+
+# Known Issues:
+ # - BARO STD buttons on PFD's do not have a functional trigger. So Both Pilots will need to hit the Keyboard button they have mapped, to set the Baro to STD when needed. 
+ # - MAIN SCREENS (MFD's amd EICAS) BTNS need slow click when making choices to keep sync. Same with Autopilot BTN's
+ # - Typical Knob turn desync, but I would say the knobs stay pretty close in general. If Desync occurs, have the Second pilot LEAVE from session, set to match and rejoin. If this becomes too burdensome, I can remove the knobs that are problematic from sync for MANUAL PF and PM adustments.
+# FIXES:
+   # - 4/12/2026 
+     # - Yury Updated Syntax for :1 showing before argument and K:2: logic 
+     # - Fixed Previous Page and Next Page buttons on FMC
+   # - Initial release 3/31/2026
+   # - All functions are in the profile for cockpit and cabin. 
+
+include:
+  - modules/fuel.yaml
+  - modules/payload.yaml
+master:
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+  - get: A:ELEVATOR TRIM PCT, Percent scaler 16k # ELEVATOR TRIM BTN
+    set: (>K:ELEVATOR_TRIM_SET) 
+  - get: A:RUDDER TRIM PCT, Percent # RUDDER TRIM BTN
+    set: (>K:RUDDER_TRIM_SET) 
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, position 16k # Throttle 2 LEVER
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  - get: A:TURB ENG THROTTLE COMMANDED N1:1, Position 16k
+    set: (>K:THROTTLE1_SET)
+  - get: A:TURB ENG THROTTLE COMMANDED N1:2, Position 16k
+    set: (>K:THROTTLE2_SET)
+  - get: A:SPOILERS HANDLE POSITION, Position 16k
+    set: (>K:SPOILERS_SET)
+shared:
+#  - #############  CABIN ITEMS #############
+  - get: L:ATS_IS_ON
+  - get: L:KNOB_ATS_FMS_MAN
+  - get: A:AUTOPILOT AIRSPEED HOLD VAR, knots # AUTOPILOT MASTER BTN
+    set: (>K:AP_SPD_VAR_SET) 
+#  - ## Doors and Drawers ##
+  - get: L:door_cockpit
+  - get: L:VTX_C750_MAIN_DOOR
+#  - # ENTRY LIGHT
+  - get: A:LIGHT POTENTIOMETER:22
+    set: (>K:LIGHT_POTENTIOMETER_22_SET)
+  - get: L:pantry_cabinet_1
+  - get: L:pantry_cabinet_2
+  - get: L:pantry_cabinet_3
+  - get: L:pantry_cabinet_4
+  - get: L:pantry_cabinet_5
+  - get: L:pantry_cabinet_6
+  - get: L:pantry_cabinet_7
+  - get: L:pantry_cabinet_8
+  - get: L:pantry_cabinet_9
+  - get: L:pantry_cabinet_10
+  - get: L:pantry_cabinet_10
+  - get: L:pantry_cabinet_11  
+  - get: L:pantry_cabinet_12
+  - get: L:pantry_cabinet_13
+  - get: L:table1
+  - get: L:table2
+  - get: L:table3
+  - get: L:table4
+  - get: L:toilet_door 
+#  - #############  FRONT  PANEL -  Upper LEFT  #############
+#  - # PFD CNTRL PANEL - PILOT
+  - get: L:knob_pfd_1_dim
+  - get: L:knob_mfd_1_dim
+  - get: L:push_sg_test_1
+  - get: L:push_adc_rev_1
+  - get: L:push_irs_rev_1
+#  - # RADIO COM PANEL - PILOT
+  - get: B:NAVCOM_COM1_Transmit
+    set: (>B:NAVCOM_COM1_Transmit_Toggle)
+  - get: B:NAVCOM_COM2_Transmit
+    set: (>B:NAVCOM_COM2_Transmit_Toggle)
+  - get: A:COM RECEIVE:1, Bool
+    set: (>K:COM1_RECEIVE_SELECT)
+  - get: A:COM VOLUME:1, Percent
+    set: "value > current ?  '(>K:COM1_VOLUME_INC) ' : '(>K:COM1_VOLUME_DEC) '"
+  - get: A:COM RECEIVE:2, Bool
+    set: (>K:COM2_RECEIVE_SELECT)
+  - get: A:COM VOLUME:2, Percent
+    set: "value > current ?  '(>K:COM2_VOLUME_INC) ' : '(>K:COM2_VOLUME_DEC) '"
+  - get: A:ADF SOUND:1, Bool
+    set: (>K:RADIO_ADF_IDENT_TOGGLE)
+  - get: A:ADF VOLUME:1, Percent
+    set: "value > current ?  '(>K:ADF_VOLUME_INC) ' : '(>K:ADF_VOLUME_DEC) '"
+  - get: A:ADF SOUND:2, Bool
+    set: (>K:RADIO_ADF2_IDENT_TOGGLE)
+  - get: A:ADF VOLUME:2, Percent
+    set: "value > current ?  '(>K:ADF_VOLUME_INC) ' : '(>K:ADF_VOLUME_DEC) '"
+  - get: A:NAV SOUND:1, Bool
+    set: (>K:RADIO_VOR1_IDENT_TOGGLE)
+  - get: A:NAV VOLUME:1, Percent
+    set: "value > current ?  '(>K:NAV1_VOLUME_INC) ' : '(>K:NAV1_VOLUME_DEC) '"
+  - get: A:NAV SOUND:2, Bool
+    set: (>K:RADIO_VOR2_IDENT_TOGGLE)
+  - get: A:NAV VOLUME:2, Percent
+    set: "value > current ?  '(>K:NAV2_VOLUME_INC) ' : '(>K:NAV2_VOLUME_DEC) '"
+  - get: A:DME SOUND:1, Bool
+    set: (>K:RADIO_DME1_IDENT_TOGGLE)
+  - get: L:vol_knob_dme1_1
+  - get: A:DME SOUND:2, Bool
+    set: (>K:RADIO_DME2_IDENT_TOGGLE)
+  - get: L:vol_knob_dme2_1
+  - get: A:MARKER SOUND, Bool
+    set: (>K:MARKER_SOUND_TOGGLE)
+  - get: L:vol_knob_mkr_1
+  - get: A:SPEAKER ACTIVE, Bool
+    set: (>K:TOGGLE_SPEAKER)
+  - get: L:vol_large_knob_spkr_1, Number  
+  - get: L:vol_large_knob_spkr_2, Number  
+#  - # HONEYWELL PFD & MFD PAGES - PILOT
+  - get: L:push_pilot_1_pfdhsi
+  - get: L:push_pilot_1_pfdwx
+  - get: L:push_pilot_1_et
+  - get: L:push_pilot_1_acftsys
+  - get: L:push_pilot_1_mfdmap  
+  - get: L:push_pilot_1_mfdwx
+  - get: L:push_pilot_1_norm
+  - get: L:push_pilot_1_abn
+  - get: L:push_pilot_1_emer
+  - get: L:Joystick_1_Panning_Y_Axis
+  - get: L:Joystick_1_Panning_Y_Axis_Delta
+  - get: L:Joystick_1_Panning_X_Axis
+  - get: L:Joystick_1_Panning_X_Axis_Delta
+  - get: L:push_pilot_1_skp
+  - get: L:push_pilot_1_pag
+  - get: L:push_pilot_1_rcl
+  - get: L:push_pilot_1_ent
+#  - # VTX750 Panel - Pilot  
+  - get: L:nav_panel_L_brg_knob_1
+  - get: L:nav_panel_L_brg_prev_btn
+  - get: H:Generic_Upr_1_Push_NAV
+  - get: H:Generic_Upr_1_Push_FMS
+  - get: L:nav_panel_L_brg_knob_2
+#  - # Cage Alternate Artificial Horizon
+  - get: L:backup_attitude_cage_switch
+#######  FRONT  PANEL - Center DISPLAYS  #########
+#  - # PFD - PILOT
+  - get: L:pfd-1-knob-minimums
+  - get: L:pfd-1-btn-ra-baro
+  - get: A:KOHLSMAN SETTING HG:1, inHg
+    set: "value > current ?  '1 (>K:KOHLSMAN_INC) ' : '1 (>K:KOHLSMAN_DEC) '"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # ALTIMETER CALIBRATION
+    set: "`2 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: L:XMLVAR_BARO1_ForcedToSTD, Bool
+    set: '1 (>K:BAROMETRIC_STD_PRESSURE)'      
+  - get: A:NAV OBS:1, Degrees # VOR 1 BEARING
+    set: (>K:VOR1_SET)
+  - get: A:NAV OBS:2, Degrees # VOR 2 BEARING
+    set: (>K:VOR2_SET)
+# - # MFD1 Display 
+  - get: H:mfd_1_btn_sk0
+  - get: H:mfd_1_btn_sk1
+  - get: H:mfd_1_btn_sk2
+  - get: H:mfd_1_btn_sk3
+  - get: H:mfd_1_btn_sk4
+  - get: H:mfd_1_btn_sk5
+  - get: H:Generic_Upr_1_TILT_PUSH
+  - get: H:Generic_Upr_1_RANGE_INC
+  - get: H:Generic_Upr_1_RANGE_DEC
+#  - # EICAS Display
+  - get: H:eicas_1_btn_sk0
+  - get: H:eicas_1_btn_sk1
+  - get: H:eicas_1_btn_sk2
+  - get: H:eicas_1_btn_sk3
+  - get: H:eicas_1_btn_sk4
+  - get: H:eicas_1_btn_sk5
+  - get: L:eicas-knob
+# - # MFD2 Display 
+  - get: H:mfd_2_btn_sk0
+  - get: H:mfd_2_btn_sk1
+  - get: H:mfd_2_btn_sk2
+  - get: H:mfd_2_btn_sk3
+  - get: H:mfd_2_btn_sk4
+  - get: H:mfd_2_btn_sk5
+  - get: H:Generic_Upr_2_TILT_PUSH
+  - get: H:Generic_Upr_2_RANGE_INC
+  - get: H:Generic_Upr_2_RANGE_DEC
+#  - # PFD - PILOT
+  - get: L:pfd-2-knob-minimums
+  - get: L:pfd-2-btn-ra-baro
+  - get: L:XMLVAR_BARO2_ForcedToSTD, Bool
+    set: '2 (>K:BAROMETRIC_STD_PRESSURE)'  
+##########  FRONT  PANEL -  Upper RIGHT  #########
+#  - # Upper Ruddder A BTN
+  - get: L:push_upper_rudder
+#  - # EICAS DISPLAY PANEL
+  - get: L:knob_eicas_xfer
+  - get: L:knob_eicas_1_dim
+  - get: L:knob_sg_rev
+  - get: L:push_dau1_rev
+  - get: L:push_dau2_rev
+#  - # BACKUP COM panel
+  - get: L:push_backup_com_switch
+  - get: L:push_backup_com_emerg
+  - get: L:push_backup_com_navaudio
+  - get: L:push_backup_com_sq
+  - get: L:push_backup_com_com2
+  - get: L:knob_backup_com_tune_large
+  - get: L:knob_backup_com_tune_small
+#  - # VTX750 - CoPilot
+  - get: L:nav_panel_R_brg_knob_1
+  - get: L:nav_panel_R_prev_btn
+  - get: H:Generic_Upr_2_Push_NAV
+  - get: H:Generic_Upr_2_Push_FMS
+  - get: L:nav_panel_R_brg_knob_2
+#  - #APU FIRE PANEL
+  - get: L:push_apu_fire_cover
+  - get: L:push_apu_fire
+#  - # PFD CNTRL PANEL - CoPilot
+  - get: L:knob_pfd_2_dim
+  - get: L:knob_mfd_2_dim
+  - get: L:push_sg_test_2
+  - get: L:push_adc_rev_2
+  - get: L:push_irs_rev_2
+#  - # HONEYWELL PFD & MFD PAGES - PILOT
+  - get: L:push_pilot_2_pfdhsi
+  - get: L:push_pilot_2_pfdwx
+  - get: L:push_pilot_2_et
+  - get: L:push_pilot_2_tcas
+  - get: L:push_pilot_2_acftsys
+  - get: L:push_pilot_2_mfdwx
+  - get: L:push_pilot_2_mfdmap
+  - get: L:push_pilot_2_norm
+  - get: L:push_pilot_2_abn
+  - get: L:push_pilot_2_emer
+  - get: L:Joystick_2_Panning_Y_Axis
+  - get: L:Joystick_2_Panning_Y_Axis_Delta
+  - get: L:Joystick_2_Panning_X_Axis
+  - get: L:Joystick_2_Panning_X_Axis_Delta
+  - get: L:push_pilot_2_skp
+  - get: L:push_pilot_2_pag
+  - get: L:push_pilot_2_rcl
+  - get: L:push_pilot_2_ent
+#  - #############  FRONT  PANEL -  LOWER  LEFT  #############
+#  - # OXYGEN PANEL
+  - get: L:switch_pilot_mic_sel
+  - get: L:knob_pass_oxy
+  - get: L:btn_event_marker
+#  - # Interior Lights Panel
+  - get: L:lights_emerg_lt
+  - get: L:lights_dayNite
+  - get: L:lights_knob_flood
+  - get: L:lights_knob_el
+  - get: L:lights_knob_lh
+  - get: L:lights_knob_ctr
+#  - # FUEL PANEL
+  - get: L:knob_xfeed
+  - get: L:switch_gravity_xflow
+  - get: L:switch_center_wing_xfer_lh
+  - get: L:switch_center_wing_xfer_rh
+#  - # DC POWER PANEL
+  - get: L:switch_load_shed
+  - get: L:electrical_switch_generator_l
+  - get: L:ELECTRICAL_Switch_Battery_1
+  - get: L:ELECTRICAL_Switch_Battery_2
+  - get: L:electrical_switch_generator_r
+  - get: L:electrical_switch_ext_pwr
+#  - # FUEL BOOST SWITCHES
+  - get: L:switch_fuel_boost_lh
+  - get: L:switch_fuel_boost_rh
+#  - # ENGINE START PANEL
+  - get: A:GENERAL ENG STARTER:1, Bool
+    set: '1 (>K:STARTER1_SET)' # STARTER1_SET
+  - get: A:GENERAL ENG STARTER:2, Bool
+    set: '1 (>K:STARTER2_SET)' # STARTER2_SET
+  - get: A:GENERAL ENG STARTER ACTIVE:1, Bool
+    set: (>K:TOGGLE_STARTER1)
+  - get: A:GENERAL ENG STARTER ACTIVE:2, Bool
+    set: (>K:TOGGLE_STARTER2)
+  - get: L:BLEED_PRESSURE_PSI, Number
+  - get: A:TURB ENG N1:1, Percent
+  - get: A:TURB ENG N1:2, Percent
+#  - # FADEC PANEL
+  - get: L:switch_fadec_reset_lh
+  - get: L:switch_fadec_reset_rh
+#  - # AVIONICS POWER PANEL
+  - get: L:ELECTRICAL_Switch_Avionics_Master_1
+  - get: L:ELECTRICAL_Switch_Avionics_Master_2
+#  - # IGNITION SWITCHES
+  - get: L:Switch_ignition_l
+  - get: L:Switch_ignition_r
+#  - # STBY POWER SW
+  - get: L:switch_stby_pwr
+#  - #############  FRONT  PANEL -  LOWER  RIGHT  #############
+#  - # LANDING GEAR PANEL
+  - get: L:LANDING_GEAR_Gear, Bool
+    set: (>K:GEAR_SET)
+#  - # ANTI-ICE PANEL
+  - get: L:switch_pitot_static_lh
+  - get: L:switch_pitot_static_rh
+  - get: L:switch_wing_inspection_light
+  - get: L:switch_windshield_lh
+  - get: L:switch_windshield_rh
+  - get: L:switch_ws_air
+  - get: L:switch_wing_xover
+  - get: L:switch_engine_ai_lh
+  - get: L:switch_engine_ai_rh
+  - get: L:switch_stabilizer_ai_lh
+  - get: L:switch_stabilizer_ai_rh
+  - get: L:switch_slats_ai
+#  - # HYDRAULICS PANEL
+  - get: L:switch_aux_pump
+  - get: L:switch_pumpA_unload
+  - get: L:switch_pumpB_unload
+  - get: L:switch_anti_skid
+#  - # EXTERNAL & SAFETY LIGHTS
+  - get: L:switch_lights_recognition_antiCollision
+  - get: L:switch_lights_recog
+  - get: L:switch_lights_nav
+  - get: L:switch_lights_flood
+  - get: L:switch_seatBelt
+#  - # PRESSURIZATION PANEL
+  - get: L:switch_cabin_dump_cover
+  - get: A:PRESSURIZATION DUMP SWITCH, Bool
+    set: (>K:PRESSURIZATION_PRESSURE_DUMP_SWITCH)
+  - get: L:switch_iso_vlv_close_cover
+  - get: L:switch_iso_vlv_close
+  - get: L:stick_pressurization_up_dn
+  - get: L:knob_pressurization_rate
+  - get: L:switch_pressurization_altsel
+  - get: L:switch_pressurization_manual
+  - get: L:switch_pac_bleed
+  - get: L:switch_wemac_boost
+  - get: L:switch_pressurization_manual
+  - get: L:VTX_PRESSURIZATION_ALT_GOAL
+  - get: L:knob_pressurization_guage
+  - get: L:pressurization_R_value
+#  - # CKPT, CABIN TEMP and PACs
+  - get: L:knob_environ_ckpt_temp
+  - get: L:knob_environ_ckpt_pac
+  - get: L:knob_environ_ckpt_hp_lp
+  - get: L:knob_environ_temp_selector
+  - get: L:knob_environ_isol_valve
+  - get: L:knob_environ_cabin_temp
+  - get: L:knob_environ_cabin_pac
+  - get: L:knob_environ_cabin_hp_lp
+#  - # RH PANEL Light KNOBS
+  - get: L:lights_knob_rh
+#  - # MIC SEL OXY/HEADSET - CoPilot
+  - get: L:switch_copilot_mic_sel
+#  - #############  GLARESHIELD PANELS #############
+#  - # Thrust Reverser panel     
+  - get: L:switch_thrust_reverser_stow_l
+  - get: L:switch_thrust_reverser_stow_l_state
+  - get: L:switch_thrust_reverser_stow_l_LF
+  - get: L:switch_thrust_reverser_stow_r
+  - get: L:switch_thrust_reverser_stow_r_state
+  - get: L:switch_thrust_reverser_stow_r_LF
+#  - ## FIRE ITEMS ##
+  - get: L:push_apu_fire_cover
+  - get: L:push_apu_fire
+  - get: L:push_engine_fire_1_cover
+  - get: L:engine_fire_1_pushed
+  - get: L:engine_fire_1_pushed, Bool
+    set: 11 (>K:EXTINGUISH_ENGINE_FIRE)
+  - get: L:push_engine_fire_2_cover
+  - get: L:engine_fire_2_pushed
+  - get: L:engine_fire_2_pushed, Bool
+    set: 22 (>K:EXTINGUISH_ENGINE_FIRE)
+#  - # AUTOPILOT PANEL
+  - get: A:AUTOPILOT MASTER, Bool # AUTOPILOT MASTER BTN
+    set: (>K:AP_MASTER)
+  - get: A:AUTOPILOT YAW DAMPER, Bool # AUTOPILOT MASTER BTN
+    set: (>K:YAW_DAMPER_TOGGLE)  
+  - get: A:AUTOPILOT HEADING LOCK, Bool # AUTOPILOT MASTER BTN
+    set: (>K:AP_PANEL_HEADING_HOLD)
+  - get: A:AUTOPILOT NAV1 LOCK, Bool # AUTOPILOT MASTER BTN
+    set: (>K:AP_NAV1_HOLD)
+  - get: A:AUTOPILOT APPROACH HOLD, Bool # AUTOPILOT MASTER BTN
+    set: (>K:AP_APR_HOLD)    
+  - get: A:AUTOPILOT GLIDESLOPE HOLD, Bool # AUTOPILOT MASTER BTN
+    set: (>K:AP_GLIDESLOPE_HOLD)
+  - get: A:AUTOPILOT ALTITUDE LOCK, Bool # AUTOPILOT MASTER BTN
+    set: (>K:AP_ALT_HOLD)  
+#   - get: L:VTX_ALT_HOLD_PUSH, Bool
+  - get: L:XMLVAR_VNAVButtonValue, Bool
+    set: (>B:AUTOPILOT_VNAV_MODE_Toggle)
+  - get: A:AUTOPILOT MAX BANK ID, Number # AUTOPILOT MAX BANK ID
+    set: (>K:AP_MAX_BANK_SET) # may be the B:AUTOPILOT_Bank_Button_Toggle event
+  - get: A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool # AUTOPILOT MASTER BTN
+    set: (>K:FLIGHT_LEVEL_CHANGE)
+  - get: L:AUTOPILOT_Push_CO 
+  - get: A:AUTOPILOT_ VERTICAL HOLD, Bool # AUTOPILOT MASTER BTN
+    set: (>K:AP_PANEL_VS_HOLD)
+  - get: L:AUTOPILOT_Push_MTRIM
+  - get: L:AUTOPILOT_Push_PFDSEL
+#  - #############  Pedistal - UPPER #############
+#  - # HONEYWELL COM1 PANEL
+  - get: A:COM ACTIVE FREQUENCY:1, Mhz  # COM ACTIVE FREQUENCY
+  - get: A:COM STANDBY FREQUENCY:1, Mhz  # COM STANDBY FREQUENCY
+#    set: (>K:COM_STBY_RADIO_SET_HZ)
+  - get: L:COM ACTIVE FREQUENCY:2, Mhz  # COM ACTIVE FREQUENCY  
+  - get: L:COM STANDBY FREQUENCY:2, Mhz  # COM STANDBY FREQUENCY
+#    set: (>K:COM2_STBY_RADIO_SET_HZ)
+  - get: A:TRANSPONDER CODE:1, BCO16  # TRANSPONDER CODE
+  - get: A:ADF ACTIVE FREQUENCY:1, Khz  # ADF ACTIVE FREQUENCY
+  - get: A:NAV ACTIVE FREQUENCY:1, Mhz  # NAV ACTIVE FREQUENCY  
+  - get: A:NAV ACTIVE FREQUENCY:2, Mhz  # NAV ACTIVE FREQUENCY  
+  - get: L:com_1_lsk_1
+  - get: L:com_1_lsk_2
+  - get: L:com_1_lsk_3
+  - get: L:com_1_lsk_4
+  - get: L:com_1_lsk_5
+  - get: L:com_1_lsk_6
+  - get: L:com_1_rsk_1
+  - get: L:com_1_rsk_2
+  - get: L:com_1_rsk_3
+  - get: L:com_1_rsk_4
+  - get: L:com_1_rsk_5
+  - get: L:com_1_rsk_6
+  - get: L:com_1_sq
+  - get: L:com_1_dim
+  - get: L:com_1_half
+  - get: L:com_1_sto
+  - get: L:com_1_id 
+  - get: L:com_1_pge
+  - get: L:com_1_tst
+  - get: L:com_1_dme
+  - get: L:com_1_knob_large
+  - get: L:com_1_knob_small
+#  - # HONEYWELL COM2 PANEL
+  - get: L:com_2_lsk_1
+  - get: L:com_2_lsk_2
+  - get: L:com_2_lsk_3
+  - get: L:com2_lsk_4
+  - get: L:com_2_lsk_5
+  - get: L:com_2_lsk_6
+  - get: L:com_2_rsk_1
+  - get: L:com_2_rsk_2
+  - get: L:com_2_rsk_3
+  - get: L:com_2_rsk_4
+  - get: L:com_2_rsk_5
+  - get: L:com_2_rsk_6
+  - get: L:com_2_sq
+  - get: L:com_2_dim
+  - get: L:com_2_half
+  - get: L:com_2_sto
+  - get: L:com_2_id 
+  - get: L:com_2_pge
+  - get: L:com_2_tst
+  - get: L:com_2_dme
+  - get: L:com_2_knob_large
+  - get: L:com_2_knob_large_LF
+  - get: L:com_2_knob_small
+  - get: L:com_2_knob_small_LF    
+#  - #############  Pedistal - QUADRANT #############
+#  - ## FLT CONTROL SWITCHES ##
+#  - # Nose Up/Dn Trim
+  - get: L:XMLVAR_ElevatorTrim_Switch_PEDESTRAL
+#  - # FLT CNTRL SHUTOFF 1-4
+  - get: L:flt_control_shutoff_1_cover
+  - get: L:flt_control_shutoff_1
+  - get: L:flt_control_shutoff_2_cover
+  - get: L:flt_control_shutoff_2
+  - get: L:flt_control_shutoff_3_cover
+  - get: L:flt_control_shutoff_3
+  - get: L:flt_control_shutoff_4_cover
+  - get: L:flt_control_shutoff_4
+#  - # ENGINE CUTOFF LEVERS
+  - get: L:ENG_CUTOFF_1
+  - get: L:ENG_CUTOFF_1_LF
+  - get: L:ENG_CUTOFF_2
+  - get: L:ENG_CUTOFF_2_LF
+#  - # GROUND IDLE SW
+  - get: L:switch_gnd_idle
+#  - # ENG SYNCH KNOB
+  - get: L:knob_eng_sync
+#  - # VTX REVERSER
+  - get: L:VTX_REVERSER_L
+  - get: L:VTX_REVERSER_R 
+#  - # TAXI and Landing Lights
+  - get: L:switch_landing_taxi
+  - get: L:switch_landing_light_lh
+  - get: L:switch_landing_light_rh
+#  - # KNOB TEST
+  - get: L:knob_test
+#  - #############  Pedistal - LOWER #############
+#  - ## HDG CRS ALT SELECTORS ###
+  - get: A:NAV OBS:1, Degrees
+    set: (>K:VOR1_SET)
+  - get: A:NAV OBS:2, Degrees
+    set: (>K:VOR2_SET)
+  - get: B:AUTOPILOT_Course_Dyn_1_Sync_Push
+  - get: B:AUTOPILOT_Course_Dyn_2_Sync_Push  
+  - get: A:AUTOPILOT VERTICAL HOLD, Bool
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet # 
+    set: "value > current ? '0 (>K:AP_ALT_VAR_INC)' : '0 (>K:AP_ALT_VAR_DEC)'"  
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees
+    set: (>K:HEADING_BUG_SET)
+  - get: A:AUTOPILOT HEADING LOCK DIR:2, Degrees
+  - get: B:AUTOPILOT_Heading_Sync_Push
+#  - # IRS 1 & 2 KNOB
+  - get: L:knob_irs_l
+  - get: L:knob_irs_l_test   
+  - get: L:knob_irs_r
+  - get: L:knob_irs_r_test
+#  - # WEATHER PANEL
+  - get: L:knob_wxr_gain
+  - get: L:knob_wxr_radar
+  - get: L:knob_wxr_tilt
+#  - # Aileron Trim
+  - get: L:XMLVAR_AileronTrim_Switch_1
+#  - # Rudder Trim
+  - get: L:handling_trim_rudder
+#  - # Rudder Trim
+  - get: L:parking_brake_handle
+#  - #############  SIDE PANELS  #############
+########   LEFT SIDE #########
+#  - # LIGHTS - Pilot LEFT side
+  - get: L:light_aux_panel
+  - get: L:knob_map_light_pilot
+#  - # Window VENT CNTRLS
+  - get: L:knob_pilot_window_vent
+  - get: L:knob_pilot_floor_vent
+#  - # IPAD 
+  - get: L:ipad_is_stowed
+  - get: L:MOUSE_tablet_arm_pivot
+  - get: L:MOUSE_tablet_arm_pivot2
+  - get: L:tablet_pivot
+  - get: L:tablet_holder_pivot
+  - get: L:tablet_holder_pivot_2
+  - get: L:tablet_arm_pivot
+  - get: L:tablet_arm_pivot_2
+  - get: L:push_tablet_home
+#  - # Hide Yokes
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+#  - # PIlot & Copilot Shades
+  - get: L:shade_l
+  - get: L:MOUSE_shade_l
+  - get: L:MOUSE_shade_l_2
+  - get: L:shade_r
+  - get: L:MOUSE_shade_r
+  - get: L:MOUSE_shade_r_2
+########   RIGHT SIDE #########
+#  - # LIGHTS - CoPilot side
+  - get: L:knob_map_light_copilot
+#  - # Window VENT CNTRLS
+  - get: L:knob_copilot_window_vent
+  - get: L:knob_copilot_floor_vent
+#  - # APU PANEL
+  - get: L:switch_apu_bleed
+  - get: L:electrical_switch_apu
+  - get: L:electrical_switch_apu_starter_disengage
+  - get: L:electrical_switch_apu_starter
+  - get: L:APU_Test_Active
+  - get: L:electrical_switch_apu_master
+#  - # ELT Panel
+  - get: L:XMLVAR_ELT_STATE  # ELT STATE
+    set: |  
+      switch (value) {
+          case 1: return '(>B:SAFETY_ELT_1_ARM)' 
+          case 2: return '(>B:SAFETY_ELT_1_ON)'  
+          case 3: return '(>B:SAFETY_ELT_1_TEST)' 
+          default: return ''
+      }    
+  - get: L:push_elt_cancel
+  - get: L:push_elt_cancel_LF
+######## - FLAP for monitoring ########
+  - get: L:handling_lever_flaps
+######## - ENGINE ITEMS for monitoring ########
+  - get: L:WT_VIRTUAL_THROTTLE_LEVER_POS_1
+  - get: L:WT_VIRTUAL_THROTTLE_LEVER_POS_2
+  - get: L:ENGINE_THROTTLE_1
+  - get: L:ENGINE_THROTTLE_2
+  - get: L:CE750_EC_throttleCorrection_i
+  - get: L:CE750_EC_throttleCorrection_p
+  - get: L:CE750_EC_throttleCorrection_RAW
+######## FLIGHT MANAGEMENT COMPUTER (FMC) 1 ######## 
+  - get: H:C750_FMC_1_BTN_L1
+  - get: H:C750_FMC_1_BTN_L2
+  - get: H:C750_FMC_1_BTN_L3
+  - get: H:C750_FMC_1_BTN_L4
+  - get: H:C750_FMC_1_BTN_R1
+  - get: H:C750_FMC_1_BTN_R2
+  - get: H:C750_FMC_1_BTN_R3
+  - get: H:C750_FMC_1_BTN_R4
+  - get: H:C750_FMC_1_BTN_PERF
+  - get: H:C750_FMC_1_BTN_NAV
+  - get: H:C750_FMC_1_BTN_PREVPAGE
+  - get: H:C750_FMC_1_BTN_NEXTPAGE
+  - get: H:C750_FMC_1_BTN_FPLN
+  - get: H:C750_FMC_1_BTN_PROG
+  - get: H:C750_FMC_1_BTN_DIR
+  - get: L:knob_fmc_1_dim
+  - get: H:C750_FMC_1_BTN_A 
+  - get: H:C750_FMC_1_BTN_B
+  - get: H:C750_FMC_1_BTN_C
+  - get: H:C750_FMC_1_BTN_D
+  - get: H:C750_FMC_1_BTN_E
+  - get: H:C750_FMC_1_BTN_F
+  - get: H:C750_FMC_1_BTN_G
+  - get: H:C750_FMC_1_BTN_H
+  - get: H:C750_FMC_1_BTN_I
+  - get: H:C750_FMC_1_BTN_J
+  - get: H:C750_FMC_1_BTN_K
+  - get: H:C750_FMC_1_BTN_L
+  - get: H:C750_FMC_1_BTN_M
+  - get: H:C750_FMC_1_BTN_N
+  - get: H:C750_FMC_1_BTN_O
+  - get: H:C750_FMC_1_BTN_P
+  - get: H:C750_FMC_1_BTN_Q
+  - get: H:C750_FMC_1_BTN_R
+  - get: H:C750_FMC_1_BTN_S
+  - get: H:C750_FMC_1_BTN_T
+  - get: H:C750_FMC_1_BTN_U
+  - get: H:C750_FMC_1_BTN_V
+  - get: H:C750_FMC_1_BTN_W
+  - get: H:C750_FMC_1_BTN_X
+  - get: H:C750_FMC_1_BTN_Y
+  - get: H:C750_FMC_1_BTN_Z 
+  - get: H:C750_FMC_1_BTN_DEL
+  - get: H:C750_FMC_1_BTN_CLR
+  - get: H:C750_FMC_1_BTN_CLR_Long
+  - get: H:C750_FMC_1_BTN_1
+  - get: H:C750_FMC_1_BTN_2
+  - get: H:C750_FMC_1_BTN_3
+  - get: H:C750_FMC_1_BTN_4
+  - get: H:C750_FMC_1_BTN_5
+  - get: H:C750_FMC_1_BTN_6
+  - get: H:C750_FMC_1_BTN_7
+  - get: H:C750_FMC_1_BTN_8
+  - get: H:C750_FMC_1_BTN_9
+  - get: H:C750_FMC_1_BTN_0 
+  - get: H:C750_FMC_1_BTN_DOT
+  - get: H:C750_FMC_1_BTN_PLUSMINUS
+  - get: H:C750_FMC_1_BTN_DIV
+######## FLIGHT MANAGEMENT COMPUTER (FMC) 2 ######## 
+  - get: H:C750_FMC_2_BTN_L1
+  - get: H:C750_FMC_2_BTN_L2
+  - get: H:C750_FMC_2_BTN_L3
+  - get: H:C750_FMC_2_BTN_L4
+  - get: H:C750_FMC_2_BTN_R1
+  - get: H:C750_FMC_2_BTN_R2
+  - get: H:C750_FMC_2_BTN_R3
+  - get: H:C750_FMC_2_BTN_R4
+  - get: H:C750_FMC_2_BTN_PERF
+  - get: H:C750_FMC_2_BTN_NAV
+  - get: H:C750_FMC_2_BTN_PREVPAGE
+  - get: H:C750_FMC_2_BTN_NEXTPAGE
+  - get: H:C750_FMC_2_BTN_FPLN
+  - get: H:C750_FMC_2_BTN_PROG
+  - get: H:C750_FMC_2_BTN_DIR
+  - get: L:knob_fmc_2_dim
+  - get: H:C750_FMC_2_BTN_A 
+  - get: H:C750_FMC_2_BTN_B
+  - get: H:C750_FMC_2_BTN_C
+  - get: H:C750_FMC_2_BTN_D
+  - get: H:C750_FMC_2_BTN_E
+  - get: H:C750_FMC_2_BTN_F
+  - get: H:C750_FMC_2_BTN_G
+  - get: H:C750_FMC_2_BTN_H
+  - get: H:C750_FMC_2_BTN_I
+  - get: H:C750_FMC_2_BTN_J
+  - get: H:C750_FMC_2_BTN_K
+  - get: H:C750_FMC_2_BTN_L
+  - get: H:C750_FMC_2_BTN_M
+  - get: H:C750_FMC_2_BTN_N
+  - get: H:C750_FMC_2_BTN_O
+  - get: H:C750_FMC_2_BTN_P
+  - get: H:C750_FMC_2_BTN_Q
+  - get: H:C750_FMC_2_BTN_R
+  - get: H:C750_FMC_2_BTN_S
+  - get: H:C750_FMC_2_BTN_T
+  - get: H:C750_FMC_2_BTN_U
+  - get: H:C750_FMC_2_BTN_V
+  - get: H:C750_FMC_2_BTN_W
+  - get: H:C750_FMC_2_BTN_X
+  - get: H:C750_FMC_2_BTN_Y
+  - get: H:C750_FMC_2_BTN_Z 
+  - get: H:C750_FMC_2_BTN_DEL
+  - get: H:C750_FMC_2_BTN_CLR
+  - get: H:C750_FMC_2_BTN_CLR_Long
+  - get: H:C750_FMC_2_BTN_1
+  - get: H:C750_FMC_2_BTN_2
+  - get: H:C750_FMC_2_BTN_3
+  - get: H:C750_FMC_2_BTN_4
+  - get: H:C750_FMC_2_BTN_5
+  - get: H:C750_FMC_2_BTN_6
+  - get: H:C750_FMC_2_BTN_7
+  - get: H:C750_FMC_2_BTN_8
+  - get: H:C750_FMC_2_BTN_9
+  - get: H:C750_FMC_2_BTN_0 
+  - get: H:C750_FMC_2_BTN_DOT
+  - get: H:C750_FMC_2_BTN_PLUSMINUS
+  - get: H:C750_FMC_2_BTN_DIV
+
+
+
+
+
+
+
+
+
+
+
+

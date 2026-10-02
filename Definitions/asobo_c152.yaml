@@ -1,0 +1,175 @@
+# Original author: https://discord.com/channels/1454265644416765974/1503414525687500840/1503430649640648924
+# Updated: 2026-05-11 16:16:46
+
+#Made By Discord @lolodom
+include:
+  - modules/payload.yaml
+  - modules/fuel.yaml
+
+master:
+
+- get: A:BRAKE LEFT POSITION, Position
+  set: (>K:AXIS_LEFT_BRAKE_SET)
+- get: A:BRAKE RIGHT POSITION, Position
+  set: (>K:AXIS_RIGHT_BRAKE_SET)
+- get: L:HANDLING_ElevatorTrim
+  set: (>B:HANDLING_ElevatorTrim_1_Set)
+
+
+shared:
+#Bottom Panel
+- get: A:RECIP ENG PRIMER:1, percent #?? need test
+- get: B:ELECTRICAL_Alternator_1_Toggle
+- get: B:ELECTRICAL_Battery_1_Toggle
+- get: B:ENGINE_Magneto_1
+  set: (>K:MAGNETO1_SET) 
+- get: L:LIGHTING_GLARESHIELD_1
+  set: (>B:LIGHTING_GLARESHIELD_1_Set)
+- get: B:LIGHTING_CABIN_1_Toggle
+- get: B:DEICE_Pitot_1_Toggle
+- get: B:LIGHTING_NAV_1_Toggle
+- get: B:LIGHTING_STROBE_1_Toggle
+- get: B:LIGHTING_BEACON_1_Toggle
+- get: B:LIGHTING_TAXI_1_Toggle
+- get: B:LIGHTING_LANDING_1_Toggle
+- get: L:ParkingBrake_Position
+- get: A:GENERAL ENG ANTI ICE POSITION:1, position 16k
+  set: (>K:ANTI_ICE_GRADUAL_SET_ENG1) 
+- get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16k
+- get: A:GENERAL ENG MIXTURE LEVER POSITION:1, Position 16k 
+- get: A:FLAPS HANDLE PERCENT, position 16k
+  set: (>B:HANDLING_Flaps_Set)
+- get: Z:XMLVAR_Cabin_Air_1_Position
+# Cabin HT not functional in the aircraft
+
+#MIP
+- get: A:ATTITUDE BARS POSITION, percent
+  set: (>B:INSTRUMENT_Attitude_Indicator_Bars_Set)
+- get: L:XMLVAR_Minutes_Delta
+- get: L:XMLVAR_Hours_Delta
+- get: K:GYRO_DRIFT_SET_EX1
+- get: L:INSTRUMENT_Course_2
+  set: (>B:INSTRUMENT_Course_2_Set)
+- get: L:INSTRUMENT_Course_1
+  set: (>B:INSTRUMENT_Course_1_Set)
+- get: A:COM ACTIVE FREQUENCY:1, Hz
+
+  set: (>K:COM_RADIO_SET_HZ)
+- get: A:COM ACTIVE FREQUENCY:2, Hz
+  set: (>K:COM2_RADIO_SET_HZ)
+
+- get: A:COM STANDBY FREQUENCY:1, Hz 
+  set: (>K:COM_STBY_RADIO_SET_HZ)
+- get: A:COM STANDBY FREQUENCY:2, Hz 
+  set: (>K:COM2_STBY_RADIO_SET_HZ)
+
+- get: A:COM VOLUME:1, Percent
+  set: (>B:NAVCOM_COM1_Volume_Set) 
+- get: A:COM TEST:1, Bool
+  set: (>B:NAVCOM_COM2_Test_Set) 
+
+- get: A:NAV ACTIVE FREQUENCY:1, MHz
+  set: "`${value * 1000000} (>K:NAV1_STBY_SET_HZ)`"
+- get: A:NAV ACTIVE FREQUENCY:2, MHz
+  set: "`${value * 1000000} (>K:NAV2_STBY_SET_HZ)`"
+
+- get: A:NAV STANDBY FREQUENCY:1, MHz
+  set: "`${value * 1000000} (>K:NAV1_STBY_SET_HZ)`"
+- get: A:NAV STANDBY FREQUENCY:2, MHz
+  set: "`${value * 1000000} (>K:NAV2_STBY_SET_HZ)`"
+
+
+
+- get: A:COM VOLUME:2, Percent
+  set: (>B:NAVCOM_COM2_Volume_Set) 
+- get: A:COM TEST:2, Bool
+  set: (>B:NAVCOM_COM2_Test_Set) 
+- get: H:RADIO1_COM_Knob_Small_PUSH
+- get: H:RADIO2_COM_Knob_Small_PUSH
+- get: A:NAV VOLUME:1, Percent
+  set: (>B:NAVCOM_NAV1_Volume_Set) 
+- get: A:NAV VOLUME:2, Percent
+  set: (>B:NAVCOM_NAV2_Volume_Set) 
+- get: B:NAVCOM_COM1_Transmit_Set
+- get: B:NAVCOM_COM2_Transmit_Set
+- get: B:NAVCOM_NAV_Sound_Both_Set
+- get: B:NAVCOM_NAV1_Sound_Set
+- get: B:NAVCOM_NAV2_Sound_Set
+- get: B:NAVCOM_DME1_Sound_Set
+- get: B:NAVCOM_MARKER1_Sound_Set
+- get: B:NAVCOM_Speaker_Set
+- get: A:ADF CARD, degrees
+  set: (>B:INSTRUMENT_ADF_KNOB_Set)
+- get: K:ADF_VOLUME_INC
+- get: K:ADF_VOLUME_DEC
+- get: K:ADF_100_INC
+- get: K:ADF_100_DEC
+- get: K:ADF_10_INC
+- get: K:ADF_10_DEC
+- get: K:ADF_1_INC
+- get: K:ADF_1_DEC
+- get: B:NAVCOM_ADF_Mode_Set
+- get: B:NAVCOM_Transponder_Mode_Set
+- get: K:XPNDR_IDENT_ON
+- get: A:TRANSPONDER CODE:1, Bco16
+  set: (>B:NAVCOM_Transponder_Code_Set)
+
+- get: B:FUEL_Valve_1_Toggle
+- get: A:KOHLSMAN SETTING MB:0, Millibars
+  set: "`${value * 16} (>K:KOHLSMAN_SET)`"
+
+
+#volume and dimming knob doesnt work
+
+- get: B:NAVCOM_AUDIO_Marker_Sensitivity_Toggle
+
+  #covers
+- get: A:COVER ON:0, Bool
+- get: A:COVER ON:2, Bool
+- get: L:1:GPU_Cover_Open_Amount
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # Helped a little bit @afl625

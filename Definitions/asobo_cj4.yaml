@@ -1,0 +1,420 @@
+# Original author: https://discord.com/channels/1454265644416765974/1479515890000068618/1492653275105984693
+# Updated: 2026-04-11 22:31:16
+
+shared:
+  #ON LEFT DOOR
+  - get: B:COMMON_Lock_Battery_Int_Cover_Set
+  - get: L:WT_CJ4_INTERIOR_MASTER
+  - get: B:COMMON_Lock_Battery_Discharge_Cover_Set
+  - get: L:WT_CJ4_BATTERY_DISCONNECT
+  #MIP
+  - get: B:NAVCOM_AUDIO_COM1_Transmit_Set
+  - get: B:NAVCOM_AUDIO_COM2_Transmit_Set
+  - get: A:COM VOLUME:1, Percent
+    set: (>B:NAVCOM_COM1_Volume_Set)
+  - get: A:COM VOLUME:2, Percent
+    set: (>B:NAVCOM_COM2_Volume_Set)
+  - get: A:NAV VOLUME:1, Percent
+    set: (>B:NAVCOM_NAV1_Volume_Set)
+  - get: A:NAV VOLUME:2, Percent
+    set: (>B:NAVCOM_NAV2_Volume_Set)
+  - get: B:NAVCOM_AUDIO_DME1_Sound_Set
+  - get: B:NAVCOM_AUDIO_DME2_Sound_Set
+  - get: B:NAVCOM_AUDIO_MARKER1_Sound_Set
+  - get: B:NAVCOM_AUDIO_ADF1_Sound_Set
+  - get: B:NAVCOM_AUDIO_Marker_Beacon_Mute_Set
+  - get: B:NAVCOM_AUDIO_Speaker_Set
+  - get: B:ELECTRICAL_Alternator_1_Set
+  - get: L:WT_CJ4_BATTERY_SWITCH_POS, Bool #BATTERY
+    set: (>B:ELECTRICAL_Switch_Battery_Master_Set)
+  - get: B:ELECTRICAL_Alternator_2_Set
+  - get: L:CJ4_EMER_LIGHT_ARMED
+  - get: L:WT_CJ4_STBY_FLT_DISPLAY_SWITCH_POS
+    set: (>B:Stby_Flt_Display_Switch_Set)
+  - get: L:WT_CJ4_AVIONICS_SWITCH_POS
+  - get: L:WT_INOP_push_pilot_oxygenMask_mic_Pressed
+    set: (>B:CJ4_AVIONICS_push_pilot_oxygenMask_mic_Set)
+  - get: B:CJ4_AVIONICS_lever_pilot_oxygenSupply_Set
+  - get: L:WT_CJ4_OXYGEN_CONTROL
+  - get: B:COMMON_Lock_Pilot_HYDShutoff_L_Cover_Set
+  - get: B:COMMON_Lock_Pilot_HYDShutoff_R_Cover_Set
+  - get: L:WT_CJ4_HYDRAULIC_SHUTOFF_POSITION_1
+  - get: L:WT_CJ4_HYDRAULIC_SHUTOFF_POSITION_2
+  - get: L:WT_CJ4_MANUAL_PUMP_ENABLED_1
+  - get: L:WT_CJ4_MANUAL_PUMP_ENABLED_2
+  - get: B:FUEL_Transfer_Selector_Set
+  - get: L:PASSENGER_KNOB_AIR_1
+  - get: L:PASSENGER_KNOB_HEAT_1
+  - get: L:WT_CJ4_CLIMATE_CONTROL
+  - get: B:ENGINE_Ignition_1_Set
+  - get: B:ENGINE_Ignition_2_Set
+  - get: B:PRESSURIZATION_Dump_Cover_Set
+  - get: B:PRESSURIZATION_Dump_Set
+  - get: L:WT_CJ4_PRESS_SOURCE
+  - get: L:WT_INOP_PRESSURIZATION_Push_Control_Pressed
+  - get: B:HANDLING_Yoke_Hider_1_Set
+  - get: B:HANDLING_Yoke_Hider_2_Set
+  - get: B:LANDING_GEAR_ParkingBrake_Set
+  - get: H:Generic_Lwr_1_Push_ESC
+  - get: B:CJ4_AVIONICS_CCP_PUSH_DATABASE_1_Set
+  - get: H:Generic_Lwr_1_Push_NAV_DATA
+  - get: H:Generic_Lwr_1_Push_CHART
+  - get: H:Generic_Lwr_1_Push_CAS_PAGE
+  - get: H:Generic_Lwr_1_Push_LWR_MENU
+  - get: H:Generic_Lwr_1_MENU_ADV_INC
+  - get: H:Generic_Lwr_1_MENU_ADV_DEC
+  - get: H:Generic_Lwr_1_DATA_PUSH
+  - get: H:Generic_Lwr_1_DATA_INC
+  - get: H:Generic_Lwr_1_DATA_DEC
+  - get: H:Generic_Lwr_1_Push_MEM1
+  - get: H:Generic_Lwr_1_JOYSTICK_RIGHT 
+  - get: H:Generic_Lwr_1_JOYSTICK_LEFT
+  - get: H:Generic_Lwr_1_JOYSTICK_UP 
+  - get: H:Generic_Lwr_1_JOYSTICK_DOWN
+  - get: B:CJ4_AVIONICS_CCP_PUSH_CURSR_1_Set
+  - get: H:Generic_Lwr_1_Push_MEM2
+  - get: H:Generic_Lwr_1_Push_ZOOM_INC 
+  - get: H:Generic_Lwr_1_Push_ZOOM_DEC
+  - get: H:Generic_Lwr_1_Push_ENG
+  - get: H:Generic_Lwr_1_Push_TERR_WX
+  - get: H:Generic_Lwr_1_Push_TFC
+  - get: H:Generic_Lwr_1_Push_MEM3
+  - get: H:Generic_Lwr_1_Push_SYS
+  - get: H:Generic_Lwr_1_Push_CKLST
+  - get: B:DEICE_Airframe_1_Set
+  - get: B:DEICE_Airframe_2_Set
+  - get: L:WT_INOP_DEICE_Push_Tail_1_Pressed
+  - get: L:WT_INOP_DEICE_Push_Tail_2_Pressed
+  - get: B:LIGHTING_WING_1_Set
+  - get: A:ENG ANTI ICE:1, Bool
+    set: (>K:ANTI_ICE_TOGGLE_ENG1) 
+  - get: A:ENG ANTI ICE:2, Bool
+    set: (>K:ANTI_ICE_TOGGLE_ENG2) 
+  - get: L:DEICE_Pitot_1
+    set: (>B:DEICE_Pitot_1_Toggle)
+  - get: L:DEICE_Pitot_2
+    set: (>B:DEICE_Pitot_2_Toggle)
+  - get: B:CJ4_AVIONICS_DEICE_Push_XFlow_Set
+  - get: B:LANDING_GEAR_Gear_Set
+  - get: H:AP_BARO_Up
+    set: (>B:AUTOPILOT_Baro_3_Inc)
+  - get: H:AP_BARO_Down
+    set: (>B:AUTOPILOT_Baro_3_Dec)
+  - get: L:LIGHTING_POTENTIOMETER_15
+    set: (>B:LIGHTING_POTENTIOMETER_15_Set)
+  - get: L:LIGHTING_POTENTIOMETER_16
+    set: (>B:LIGHTING_POTENTIOMETER_16_Set)
+  - get: L:LIGHTING_POTENTIOMETER_17
+    set: (>B:LIGHTING_POTENTIOMETER_17_Set)
+  - get: L:LIGHTING_POTENTIOMETER_18
+    set: (>B:LIGHTING_POTENTIOMETER_18_Set)
+  - get: L:LIGHTING_PANEL_1 
+    set: (>B:LIGHTING_PANEL_1_Set)
+  - get: B:LIGHTING_BEACON_1_Set
+  - get: B:LIGHTING_NAV_1_Set
+  - get: B:LIGHTING_STROBE_1_Set
+  - get: B:LIGHTING_LOGO_1_Set
+  - get: B:LIGHTING_TAXI_1_Set
+  - get: B:LIGHTING_LANDING_0_Set
+  - get: B:SAFETY_SEATBELTS_PUSH_Set
+  - get: B:SAFETY_PASSENGER_SAFETY_PUSH_Set
+  - get: B:CJ4_AVIONICS_LIGHTING_Push_Light_Pulse_TCAS_Set
+  - get: B:LIGHTING_RECOGNITION_1_Set
+  - get: B:FUEL_FUEL_Push_RunStop_1_Cover_Set
+  - get: B:FUEL_FUEL_Push_RunStop_2_Cover_Set
+  - get: B:FUEL_RunStop_1_Set
+  - get: B:FUEL_RunStop_2_Set
+  - get: A:SPOILERS HANDLE POSITION, position 16k 
+    set: (>K:SPOILERS_SET)
+  - get: B:ENGINE_Throttle_1_Set
+  - get: B:ENGINE_Throttle_2_Set
+  - get: A:FLAPS HANDLE PERCENT, position 16k 
+    set: (>B:HANDLING_Flaps_Set)
+  - get: A:AILERON TRIM PCT, percent 
+    set: "`${value * 163.83} (>K:AILERON_TRIM_SET_EX1)`"
+  - get: A:ELEVATOR TRIM PCT, percent 
+    set: "`${value * 163.83} (>K:ELEVATOR_TRIM_SET)`"
+  - get: A:RUDDER TRIM PCT, percent 
+    set: "`${value * 163.83} (>K:RUDDER_TRIM_SET_EX1)`"
+  - get: B:HANDLING_HANDLING_Push_ElevatorTrim_Secondary_Cover_Set
+  - get: B:HANDLING_Secondary_ElevatorTrim_Available_Set
+  - get: B:LIGHTING_CABIN_1_Set
+  - get: B:LIGHTING_CABIN_2_Set
+  - get: B:LIGHTING_CABIN_3_Set
+  - get: L:TOGGLEVISORL
+  - get: L:TOGGLEVISORR
+  - get: B:CJ4_INT_Pilot_Exit_Push
+  - get: L:OPENDOORBATHROOM
+  - get: B:CJ4_EXT_Emergency_Door_Set
+  - get: H:Generic_Lwr_2_Push_UPR_MENU
+  - get: H:Generic_Lwr_2_Push_ESC
+  - get: H:Generic_Lwr_2_Push_NAV_DATA
+  - get: H:Generic_Lwr_2_Push_CHART
+  - get: H:Generic_Lwr_2_Push_CAS_PAGE
+  - get: H:Generic_Lwr_2_Push_LWR_MENU
+  - get: H:Generic_Lwr_2_MENU_ADV_INC 
+  - get: H:Generic_Lwr_2_MENU_ADV_DEC
+  - get: H:Generic_Lwr_2_DATA_PUSH
+  - get: H:Generic_Lwr_2_DATA_INC 
+  - get: H:Generic_Lwr_2_DATA_DEC
+  - get: H:Generic_Lwr_2_Push_MEM1
+  - get: H:Generic_Lwr_2_JOYSTICK_RIGHT 
+  - get: H:Generic_Lwr_2_JOYSTICK_LEFT
+  - get: H:Generic_Lwr_2_JOYSTICK_UP 
+  - get: H:Generic_Lwr_2_JOYSTICK_DOWN
+  - get: B:CJ4_AVIONICS_CCP_PUSH_CURSR_2_Set
+  - get: H:Generic_Lwr_2_Push_MEM2
+  - get: H:Generic_Lwr_2_Push_ZOOM_INC 
+  - get: H:Generic_Lwr_2_Push_ZOOM_DEC
+  - get: H:Generic_Lwr_2_Push_ENG
+  - get: H:Generic_Lwr_2_Push_TERR_WX
+  - get: H:Generic_Lwr_2_Push_TFC
+  - get: H:Generic_Lwr_2_Push_MEM3
+  - get: H:Generic_Lwr_2_Push_SYS
+  - get: H:Generic_Lwr_2_Push_CKLST
+  - get: L:WT_INOP_Push_Ckpt_Spkr_Mute_Pressed
+  - get: A:COM ACTIVE FREQUENCY:1, Hz
+    set: (>K:COM_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:2, Hz
+    set: (>K:COM2_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:3, Hz
+    set: (>K:COM3_RADIO_SET_HZ)
+  - get: L:PASSENGER_KNOB_AIR_3
+  - get: L:PASSENGER_KNOB_AIR_2
+  - get: L:PASSENGER_KNOB_HEAT_2
+  - get: B:SAFETY_ELT_1_Set
+  #MCDU1
+  - get: H:CJ4_FMC_1_BTN_L1
+  - get: H:CJ4_FMC_1_BTN_L2
+  - get: H:CJ4_FMC_1_BTN_L3
+  - get: H:CJ4_FMC_1_BTN_L4
+  - get: H:CJ4_FMC_1_BTN_L5
+  - get: H:CJ4_FMC_1_BTN_L6
+  - get: H:CJ4_FMC_1_BTN_R1
+  - get: H:CJ4_FMC_1_BTN_R2
+  - get: H:CJ4_FMC_1_BTN_R3
+  - get: H:CJ4_FMC_1_BTN_R4
+  - get: H:CJ4_FMC_1_BTN_R5
+  - get: H:CJ4_FMC_1_BTN_R6
+  - get: H:CJ4_FMC_1_BTN_MSG
+  - get: H:CJ4_FMC_1_BTN_DIR
+  - get: H:CJ4_FMC_1_BTN_FPLN
+  - get: H:CJ4_FMC_1_BTN_LEGS
+  - get: H:CJ4_FMC_1_BTN_DEPARR
+  - get: H:CJ4_FMC_1_BTN_PERF
+  - get: H:CJ4_FMC_1_BTN_DSPL_MENU
+  - get: H:CJ4_FMC_1_BTN_MFD_ADV
+  - get: H:CJ4_FMC_1_BTN_MFD_DATA
+  - get: H:CJ4_FMC_1_BTN_PREVPAGE
+  - get: H:CJ4_FMC_1_BTN_EXEC
+  - get: H:CJ4_FMC_1_BTN_NEXTPAGE
+  - get: H:CJ4_FMC_1_BTN_IDX
+  - get: H:CJ4_FMC_1_BTN_TUN
+  - get: H:CJ4_FMC_1_BTN_CLR
+  - get: L:XMLVAR_MCDU_1_BRIGHTNESS
+  - get: H:CJ4_FMC_1_BTN_A
+  - get: H:CJ4_FMC_1_BTN_B
+  - get: H:CJ4_FMC_1_BTN_C
+  - get: H:CJ4_FMC_1_BTN_D
+  - get: H:CJ4_FMC_1_BTN_E
+  - get: H:CJ4_FMC_1_BTN_F
+  - get: H:CJ4_FMC_1_BTN_G
+  - get: H:CJ4_FMC_1_BTN_H
+  - get: H:CJ4_FMC_1_BTN_I
+  - get: H:CJ4_FMC_1_BTN_J
+  - get: H:CJ4_FMC_1_BTN_K
+  - get: H:CJ4_FMC_1_BTN_L
+  - get: H:CJ4_FMC_1_BTN_M
+  - get: H:CJ4_FMC_1_BTN_N
+  - get: H:CJ4_FMC_1_BTN_O
+  - get: H:CJ4_FMC_1_BTN_P
+  - get: H:CJ4_FMC_1_BTN_Q
+  - get: H:CJ4_FMC_1_BTN_R
+  - get: H:CJ4_FMC_1_BTN_S
+  - get: H:CJ4_FMC_1_BTN_T
+  - get: H:CJ4_FMC_1_BTN_U
+  - get: H:CJ4_FMC_1_BTN_V
+  - get: H:CJ4_FMC_1_BTN_W
+  - get: H:CJ4_FMC_1_BTN_X
+  - get: H:CJ4_FMC_1_BTN_Y
+  - get: H:CJ4_FMC_1_BTN_Z
+  - get: H:CJ4_FMC_1_BTN_1 
+  - get: H:CJ4_FMC_1_BTN_2 
+  - get: H:CJ4_FMC_1_BTN_3 
+  - get: H:CJ4_FMC_1_BTN_4 
+  - get: H:CJ4_FMC_1_BTN_5 
+  - get: H:CJ4_FMC_1_BTN_6 
+  - get: H:CJ4_FMC_1_BTN_7
+  - get: H:CJ4_FMC_1_BTN_8
+  - get: H:CJ4_FMC_1_BTN_9
+  - get: H:CJ4_FMC_1_BTN_0
+  - get: H:CJ4_FMC_1_BTN_SP
+  - get: H:CJ4_FMC_1_BTN_DIV
+  - get: H:CJ4_FMC_1_BTN_DOT
+  - get: H:CJ4_FMC_1_BTN_PLUSMINUS
+  #MCDU2
+  - get: H:CJ4_FMC_2_BTN_L1
+  - get: H:CJ4_FMC_2_BTN_L2
+  - get: H:CJ4_FMC_2_BTN_L3
+  - get: H:CJ4_FMC_2_BTN_L4
+  - get: H:CJ4_FMC_2_BTN_L5
+  - get: H:CJ4_FMC_2_BTN_L6
+  - get: H:CJ4_FMC_2_BTN_R1
+  - get: H:CJ4_FMC_2_BTN_R2
+  - get: H:CJ4_FMC_2_BTN_R3
+  - get: H:CJ4_FMC_2_BTN_R4
+  - get: H:CJ4_FMC_2_BTN_R5
+  - get: H:CJ4_FMC_2_BTN_R6
+  - get: H:CJ4_FMC_2_BTN_MSG
+  - get: H:CJ4_FMC_2_BTN_DIR
+  - get: H:CJ4_FMC_2_BTN_FPLN
+  - get: H:CJ4_FMC_2_BTN_LEGS
+  - get: H:CJ4_FMC_2_BTN_DEPARR
+  - get: H:CJ4_FMC_2_BTN_PERF
+  - get: H:CJ4_FMC_2_BTN_DSPL_MENU
+  - get: H:CJ4_FMC_2_BTN_MFD_ADV
+  - get: H:CJ4_FMC_2_BTN_MFD_DATA
+  - get: H:CJ4_FMC_2_BTN_PREVPAGE
+  - get: H:CJ4_FMC_2_BTN_EXEC
+  - get: H:CJ4_FMC_2_BTN_NEXTPAGE
+  - get: H:CJ4_FMC_2_BTN_IDX
+  - get: H:CJ4_FMC_2_BTN_TUN
+  - get: H:CJ4_FMC_2_BTN_CLR
+  - get: L:XMLVAR_MCDU_2_BRIGHTNESS
+  - get: H:CJ4_FMC_2_BTN_A
+  - get: H:CJ4_FMC_2_BTN_B
+  - get: H:CJ4_FMC_2_BTN_C
+  - get: H:CJ4_FMC_2_BTN_D
+  - get: H:CJ4_FMC_2_BTN_E
+  - get: H:CJ4_FMC_2_BTN_F
+  - get: H:CJ4_FMC_2_BTN_G
+  - get: H:CJ4_FMC_2_BTN_H
+  - get: H:CJ4_FMC_2_BTN_I
+  - get: H:CJ4_FMC_2_BTN_J
+  - get: H:CJ4_FMC_2_BTN_K
+  - get: H:CJ4_FMC_2_BTN_L
+  - get: H:CJ4_FMC_2_BTN_M
+  - get: H:CJ4_FMC_2_BTN_N
+  - get: H:CJ4_FMC_2_BTN_O
+  - get: H:CJ4_FMC_2_BTN_P
+  - get: H:CJ4_FMC_2_BTN_Q
+  - get: H:CJ4_FMC_2_BTN_R
+  - get: H:CJ4_FMC_2_BTN_S
+  - get: H:CJ4_FMC_2_BTN_T
+  - get: H:CJ4_FMC_2_BTN_U
+  - get: H:CJ4_FMC_2_BTN_V
+  - get: H:CJ4_FMC_2_BTN_W
+  - get: H:CJ4_FMC_2_BTN_X
+  - get: H:CJ4_FMC_2_BTN_Y
+  - get: H:CJ4_FMC_2_BTN_Z
+  - get: H:CJ4_FMC_2_BTN_1 
+  - get: H:CJ4_FMC_2_BTN_2 
+  - get: H:CJ4_FMC_2_BTN_3 
+  - get: H:CJ4_FMC_2_BTN_4 
+  - get: H:CJ4_FMC_2_BTN_5 
+  - get: H:CJ4_FMC_2_BTN_6 
+  - get: H:CJ4_FMC_2_BTN_7
+  - get: H:CJ4_FMC_2_BTN_8
+  - get: H:CJ4_FMC_2_BTN_9
+  - get: H:CJ4_FMC_2_BTN_0
+  - get: H:CJ4_FMC_2_BTN_SP
+  - get: H:CJ4_FMC_2_BTN_DIV
+  - get: H:CJ4_FMC_2_BTN_DOT
+  - get: H:CJ4_FMC_2_BTN_PLUSMINUS
+  #FCU
+  - get: B:COMMON_lock_pilot_LEngineFireLight_Cover_Set
+  - get: B:COMMON_lock_copilot_R_EngineFireLight_Cover_Set
+  - get: B:CJ4_AVIONICS_push_pilot_LEngineFireLight_Set
+  - get: H:Generic_Upr_1_Push_NAV
+  - get: H:Generic_Upr_1_Push_PFD_MENU
+  - get: H:Generic_Upr_1_Push_ESC
+  - get: H:Generic_Upr_1_Push_ET
+  - get: H:Generic_Upr_1_Push_TERR_WX
+  - get: H:Generic_Upr_1_Push_FRMT
+  - get: H:Generic_Upr_1_Push_TFC
+  - get: L:XMLVAR_Baro1_ForcedToSTD
+  - get: A:KOHLSMAN SETTING MB:0, Millibar
+    set: "`0 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: H:Generic_Upr_1_Push_REFS_MENU
+  - get: H:Generic_Upr_1_MENU_ADV_DEC
+  - get: H:Generic_Upr_1_MENU_ADV_INC
+  - get: H:Generic_Upr_1_DATA_PUSH
+  - get: H:Generic_Upr_1_DATA_INC
+  - get: H:Generic_Upr_1_DATA_DEC
+  - get: H:Generic_Upr_1_TILT_INC
+  - get: H:Generic_Upr_1_TILT_DEC
+  - get: H:Generic_Upr_1_TILT_PUSH
+  - get: H:Generic_Upr_1_RANGE_INC
+  - get: H:Generic_Upr_1_RANGE_DEC
+  - get: H:Generic_Upr_2_Push_NAV
+  - get: H:Generic_Upr_2_Push_PFD_MENU
+  - get: H:Generic_Upr_2_Push_ESC
+  - get: H:Generic_Upr_2_Push_ET
+  - get: H:Generic_Upr_2_Push_TERR_WX
+  - get: H:Generic_Upr_2_Push_FRMT
+  - get: H:Generic_Upr_2_Push_TFC
+  - get: L:XMLVAR_Baro2_ForcedToSTD
+  - get: H:Generic_Upr_2_Push_REFS_MENU
+  - get: H:Generic_Upr_2_MENU_ADV_DEC
+  - get: H:Generic_Upr_2_MENU_ADV_INC
+  - get: H:Generic_Upr_2_DATA_PUSH
+  - get: H:Generic_Upr_2_DATA_INC
+  - get: H:Generic_Upr_2_DATA_DEC
+  - get: H:Generic_Upr_2_TILT_INC
+  - get: H:Generic_Upr_2_TILT_DEC
+  - get: H:Generic_Upr_2_TILT_PUSH
+  - get: H:Generic_Upr_2_RANGE_INC
+  - get: H:Generic_Upr_2_RANGE_DEC
+  - get: B:AUTOPILOT_FD_1_Mode_Set
+  - get: B:AUTOPILOT_FD_2_Mode_Set
+  - get: A:NAV OBS:1, degrees
+    set: (>K:VOR1_SET)
+  - get: A:NAV OBS:2, degrees
+    set: (>K:VOR2_SET)
+  - get: B:AUTOPILOT_VS_Mode_Set
+  - get: B:AUTOPILOT_VNAV_Mode_Set
+  - get: H:WT21_AHRS_REVERSION_TOGGLE_1
+  - get: H:WT21_ADC_REVERSION_TOGGLE_1
+  - get: H:WT21_AHRS_REVERSION_TOGGLE_2
+  - get: H:WT21_ADC_REVERSION_TOGGLE_2
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, feet per minute 
+    set: (>K:AP_VS_VAR_SET_ENGLISH)
+  - get: B:AUTOPILOT_FLC_Button_Set
+  - get: A:AUTOPILOT MANAGED SPEED IN MACH, Bool 
+    set: (>K:AP_MANAGED_SPEED_IN_MACH_TOGGLE)
+  - get: A:AUTOPILOT AIRSPEED HOLD VAR:1, knots 
+    set: (>K:AP_SPD_VAR_SET) 
+  - get: B:AUTOPILOT_NAV_Mode_Set
+  - get: B:AUTOPILOT_Bank_Button_Set
+  - get: B:AUTOPILOT_Heading_Mode_Set
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, degrees
+    set: (>K:HEADING_BUG_SET)
+  - get: B:AUTOPILOT_Approach_Button_Set
+  - get: A:AUTOPILOT GLIDESLOPE HOLD, Bool
+    set: (>K:AP_APR_HOLD)
+  - get: A:AUTOPILOT BACKCOURSE HOLD, Bool
+  - get: H:AP_ALT_ALERT_CANCEL
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:0, feet
+  - get: B:AUTOPILOT_YD_Button_Set
+  - get: B:AUTOPILOT_Transfer_Mode_Set
+  - get: B:AUTOPILOT_AP_1_Set
+  - get: B:AUTOPILOT_AP_Disconnect_1_Set
+  - get: A:COVER ON:1, Bool
+  - get: A:COVER ON:2, Bool
+  - get: B:CJ4_EXT_Canopy_Cover_Set
+  - get: B:CJ4_EXT_Tie_Downs_Set
+  - get: B:CJ4_EXT_Left_Nose_Cargo_Door_Set
+  - get: B:CJ4_EXT_Fuel_Panel_Door_Set
+  - get: B:CJ4_EXT_Fuel_Cap_Right_Set
+  - get: B:CJ4_EXT_Toilet_Service_Door_Set
+  - get: B:CJ4_EXT_Hydraulic_Service_Panel_Door_Set
+  - get: B:CJ4_EXT_Engine_Right_Service_Door_Set
+  - get: B:CJ4_EXT_Engine_Right_Oil_Service_Door_Set
+  - get: B:CJ4_EXT_Rear_Cargo_Door_Set
+  - get: B:CJ4_EXT_External_Power_Door_Set
+  - get: B:CJ4_EXT_Battery_Access_Door_Set
+  - get: B:CJ4_EXT_Hydraulic_Access_Door_Set
+  - get: B:CJ4_EXT_Fuel_Cap_Left_Set
+  - get: B:ENGINE_Starter_1_Toggle #ENGINE STARTER L
+  - get: B:ENGINE_Starter_2_Toggle #ENGINE STARTER R
+  - get: B:ENGINE_Starter_Disengage_Set

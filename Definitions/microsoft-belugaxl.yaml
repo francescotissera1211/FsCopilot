@@ -1,0 +1,843 @@
+# Original author: https://discord.com/channels/1454265644416765974/1497953358881755146/1554587549874520064
+# Updated: 2026-10-01 11:28:01
+
+
+
+
+
+#Made By @lolodom
+#https://discord.com/channels/1454265644416765974/1497953358881755146
+
+#Have Fun Flying!
+
+
+include:
+  - modules/FSDT_GSX.yaml
+  - modules/HuezZCore.yaml
+  - modules/fuel.yaml
+  - modules/payload.yaml
+  
+master:
+  - get: A:ELEVATOR TRIM PCT, Percent scaler 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+
+  - get: L:INI_SIDESTICK1_POSITION_X, Position 16k
+    set: "`${(value * -16384)} (>K:AXIS_AILERONS_SET)`"
+
+  - get: L:INI_SIDESTICK1_POSITION_Y, Position 16k
+    set: "`${(value * -16384)} (>K:AXIS_ELEVATOR_SET)`"
+
+  - get: L:INI_RUDDER_PEDAL_POSITION, Position 16k
+    set: "`${(value * -16384)} (>K:AXIS_RUDDER_SET)`"  
+
+shared:
+#Red button
+  - get: L:AUTOPILOT_OFF_REQ
+#Centre Ped
+  #MCDU1
+  - get: L:INI_MCDU1_LSK1L
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK1L)' : ''" 
+  - get: L:INI_MCDU1_LSK2L
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK2L)' : ''"
+  - get: L:INI_MCDU1_LSK3L
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK3L)' : ''"
+  - get: L:INI_MCDU1_LSK4L
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK4L)' : ''"
+  - get: L:INI_MCDU1_LSK5L
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK5L)' : ''"
+  - get: L:INI_MCDU1_LSK6L
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK6L)' : ''"
+  - get: L:INI_MCDU1_LSK1R
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK1R)' : ''"
+  - get: L:INI_MCDU1_LSK2R
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK2R)' : ''"
+  - get: L:INI_MCDU1_LSK3R
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK3R)' : ''"
+  - get: L:INI_MCDU1_LSK4R
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK4R)' : ''"
+  - get: L:INI_MCDU1_LSK5R
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK5R)' : ''"
+  - get: L:INI_MCDU1_LSK6R
+    set: "value == 1 ? '1 (>L:INI_MCDU1_LSK6R)' : ''"
+  - get: L:INI_MCDU1_DIR
+    set: "value == 1 ? '1 (>L:INI_MCDU1_DIR)' : ''"
+  - get: L:INI_MCDU1_PROG
+    set: "value == 1 ? '1 (>L:INI_MCDU1_PROG)' : ''"
+  - get: L:INI_MCDU1_PERF
+    set: "value == 1 ? '1 (>L:INI_MCDU1_PERF)' : ''"
+  - get: L:INI_MCDU1_INIT
+    set: "value == 1 ? '1 (>L:INI_MCDU1_INIT)' : ''"
+  - get: L:INI_MCDU1_DATA
+    set: "value == 1 ? '1 (>L:INI_MCDU1_DATA)' : ''"
+  - get: L:INI_MCDU1_FPLAN
+    set: "value == 1 ? '1 (>L:INI_MCDU1_FPLAN)' : ''"
+  - get: L:INI_MCDU1_RADNAV
+    set: "value == 1 ? '1 (>L:INI_MCDU1_RADNAV)' : ''"
+  - get: L:INI_MCDU1_FUEL
+    set: "value == 1 ? '1 (>L:INI_MCDU1_FUEL)' : ''"
+  - get: L:INI_MCDU1_ATC
+    set: "value == 1 ? '1 (>L:INI_MCDU1_ATC)' : ''"
+  - get: L:INI_MCDU1_MENU
+    set: "value == 1 ? '1 (>L:INI_MCDU1_MENU)' : ''"
+  - get: L:INI_MCDU1_AIRPORT
+    set: "value == 1 ? '1 (>L:INI_MCDU1_AIRPORT)' : ''"
+  - get: L:INI_MCDU1_NEXT
+    set: "value == 1 ? '1 (>L:INI_MCDU1_NEXT)' : ''"
+  - get: L:INI_MCDU1_PREV
+    set: "value == 1 ? '1 (>L:INI_MCDU1_PREV)' : ''"
+  - get: L:INI_MCDU1_UARROW
+    set: "value == 1 ? '1 (>L:INI_MCDU1_UARROW)' : ''"
+  - get: L:INI_MCDU1_DOWN
+    set: "value == 1 ? '1 (>L:INI_MCDU1_DOWN)' : ''"
+  - get: L:INI_MCDU1_A
+    set: "value == 1 ? '1 (>L:INI_MCDU1_A)' : ''"
+  - get: L:INI_MCDU1_B
+    set: "value == 1 ? '1 (>L:INI_MCDU1_B)' : ''"
+  - get: L:INI_MCDU1_C
+    set: "value == 1 ? '1 (>L:INI_MCDU1_C)' : ''"
+  - get: L:INI_MCDU1_D
+    set: "value == 1 ? '1 (>L:INI_MCDU1_D)' : ''"
+  - get: L:INI_MCDU1_E
+    set: "value == 1 ? '1 (>L:INI_MCDU1_E)' : ''"
+  - get: L:INI_MCDU1_F
+    set: "value == 1 ? '1 (>L:INI_MCDU1_F)' : ''"
+  - get: L:INI_MCDU1_G
+    set: "value == 1 ? '1 (>L:INI_MCDU1_G)' : ''"
+  - get: L:INI_MCDU1_H
+    set: "value == 1 ? '1 (>L:INI_MCDU1_H)' : ''"
+  - get: L:INI_MCDU1_I
+    set: "value == 1 ? '1 (>L:INI_MCDU1_I)' : ''"
+  - get: L:INI_MCDU1_J
+    set: "value == 1 ? '1 (>L:INI_MCDU1_J)' : ''"
+  - get: L:INI_MCDU1_K
+    set: "value == 1 ? '1 (>L:INI_MCDU1_K)' : ''"
+  - get: L:INI_MCDU1_L
+    set: "value == 1 ? '1 (>L:INI_MCDU1_L)' : ''"
+  - get: L:INI_MCDU1_M
+    set: "value == 1 ? '1 (>L:INI_MCDU1_M)' : ''"
+  - get: L:INI_MCDU1_N
+    set: "value == 1 ? '1 (>L:INI_MCDU1_N)' : ''"
+  - get: L:INI_MCDU1_O
+    set: "value == 1 ? '1 (>L:INI_MCDU1_O)' : ''"
+  - get: L:INI_MCDU1_P
+    set: "value == 1 ? '1 (>L:INI_MCDU1_P)' : ''"
+  - get: L:INI_MCDU1_Q
+    set: "value == 1 ? '1 (>L:INI_MCDU1_Q)' : ''"
+  - get: L:INI_MCDU1_R
+    set: "value == 1 ? '1 (>L:INI_MCDU1_R)' : ''"
+  - get: L:INI_MCDU1_S
+    set: "value == 1 ? '1 (>L:INI_MCDU1_S)' : ''"
+  - get: L:INI_MCDU1_T
+    set: "value == 1 ? '1 (>L:INI_MCDU1_T)' : ''"
+  - get: L:INI_MCDU1_U
+    set: "value == 1 ? '1 (>L:INI_MCDU1_U)' : ''"
+  - get: L:INI_MCDU1_V
+    set: "value == 1 ? '1 (>L:INI_MCDU1_V)' : ''"
+  - get: L:INI_MCDU1_W
+    set: "value == 1 ? '1 (>L:INI_MCDU1_W)' : ''"
+  - get: L:INI_MCDU1_X
+    set: "value == 1 ? '1 (>L:INI_MCDU1_X)' : ''"
+  - get: L:INI_MCDU1_Y
+    set: "value == 1 ? '1 (>L:INI_MCDU1_Y)' : ''"
+  - get: L:INI_MCDU1_Z
+    set: "value == 1 ? '1 (>L:INI_MCDU1_Z)' : ''"
+  - get: L:INI_MCDU1_SLASH
+    set: "value == 1 ? '1 (>L:INI_MCDU1_SLASH)' : ''"
+  - get: L:INI_MCDU1_SP
+    set: "value == 1 ? '1 (>L:INI_MCDU1_SP)' : ''"
+    # 注意：原文件使用 SP 而非 SPACE，此处保留原变量名
+  - get: L:INI_MCDU1_OVERFLY
+    set: "value == 1 ? '1 (>L:INI_MCDU1_OVERFLY)' : ''"
+  - get: L:INI_MCDU1_CLR
+    set: "value == 1 ? '1 (>L:INI_MCDU1_CLR)' : ''"
+  - get: L:INI_MCDU1_0
+    set: "value == 1 ? '1 (>L:INI_MCDU1_0)' : ''"
+  - get: L:INI_MCDU1_1
+    set: "value == 1 ? '1 (>L:INI_MCDU1_1)' : ''"
+  - get: L:INI_MCDU1_2
+    set: "value == 1 ? '1 (>L:INI_MCDU1_2)' : ''"
+  - get: L:INI_MCDU1_3
+    set: "value == 1 ? '1 (>L:INI_MCDU1_3)' : ''"
+  - get: L:INI_MCDU1_4
+    set: "value == 1 ? '1 (>L:INI_MCDU1_4)' : ''"
+  - get: L:INI_MCDU1_5
+    set: "value == 1 ? '1 (>L:INI_MCDU1_5)' : ''"
+  - get: L:INI_MCDU1_6
+    set: "value == 1 ? '1 (>L:INI_MCDU1_6)' : ''"
+  - get: L:INI_MCDU1_7
+    set: "value == 1 ? '1 (>L:INI_MCDU1_7)' : ''"
+  - get: L:INI_MCDU1_8
+    set: "value == 1 ? '1 (>L:INI_MCDU1_8)' : ''"
+  - get: L:INI_MCDU1_9
+    set: "value == 1 ? '1 (>L:INI_MCDU1_9)' : ''"
+  - get: L:INI_MCDU1_DECIMAL
+    set: "value == 1 ? '1 (>L:INI_MCDU1_DECIMAL)' : ''"
+  - get: L:INI_MCDU1_PLUS
+    set: "value == 1 ? '1 (>L:INI_MCDU1_PLUS)' : ''"
+  - get: L:INI_MCDU1_BRT_SWITCH
+
+  # MCDU2
+  - get: L:INI_MCDU2_LSK1L
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK1L)' : ''"
+  - get: L:INI_MCDU2_LSK2L
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK2L)' : ''"
+  - get: L:INI_MCDU2_LSK3L
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK3L)' : ''"
+  - get: L:INI_MCDU2_LSK4L
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK4L)' : ''"
+  - get: L:INI_MCDU2_LSK5L
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK5L)' : ''"
+  - get: L:INI_MCDU2_LSK6L
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK6L)' : ''"
+  - get: L:INI_MCDU2_LSK1R
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK1R)' : ''"
+  - get: L:INI_MCDU2_LSK2R
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK2R)' : ''"
+  - get: L:INI_MCDU2_LSK3R
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK3R)' : ''"
+  - get: L:INI_MCDU2_LSK4R
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK4R)' : ''"
+  - get: L:INI_MCDU2_LSK5R
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK5R)' : ''"
+  - get: L:INI_MCDU2_LSK6R
+    set: "value == 1 ? '1 (>L:INI_MCDU2_LSK6R)' : ''"
+  - get: L:INI_MCDU2_DIR
+    set: "value == 1 ? '1 (>L:INI_MCDU2_DIR)' : ''"
+  - get: L:INI_MCDU2_PROG
+    set: "value == 1 ? '1 (>L:INI_MCDU2_PROG)' : ''"
+  - get: L:INI_MCDU2_PERF
+    set: "value == 1 ? '1 (>L:INI_MCDU2_PERF)' : ''"
+  - get: L:INI_MCDU2_INIT
+    set: "value == 1 ? '1 (>L:INI_MCDU2_INIT)' : ''"
+  - get: L:INI_MCDU2_DATA
+    set: "value == 1 ? '1 (>L:INI_MCDU2_DATA)' : ''"
+  - get: L:INI_MCDU2_FPLAN
+    set: "value == 1 ? '1 (>L:INI_MCDU2_FPLAN)' : ''"
+  - get: L:INI_MCDU2_RADNAV
+    set: "value == 1 ? '1 (>L:INI_MCDU2_RADNAV)' : ''"
+  - get: L:INI_MCDU2_FUEL
+    set: "value == 1 ? '1 (>L:INI_MCDU2_FUEL)' : ''"
+  - get: L:INI_MCDU2_ATC
+    set: "value == 1 ? '1 (>L:INI_MCDU2_ATC)' : ''"
+  - get: L:INI_MCDU2_MENU
+    set: "value == 1 ? '1 (>L:INI_MCDU2_MENU)' : ''"
+  - get: L:INI_MCDU2_AIRPORT
+    set: "value == 1 ? '1 (>L:INI_MCDU2_AIRPORT)' : ''"
+  - get: L:INI_MCDU2_NEXT
+    set: "value == 1 ? '1 (>L:INI_MCDU2_NEXT)' : ''"
+  - get: L:INI_MCDU2_PREV
+    set: "value == 1 ? '1 (>L:INI_MCDU2_PREV)' : ''"
+  - get: L:INI_MCDU2_UARROW
+    set: "value == 1 ? '1 (>L:INI_MCDU2_UARROW)' : ''"
+  - get: L:INI_MCDU2_DOWN
+    set: "value == 1 ? '1 (>L:INI_MCDU2_DOWN)' : ''"
+  - get: L:INI_MCDU2_A
+    set: "value == 1 ? '1 (>L:INI_MCDU2_A)' : ''"
+  - get: L:INI_MCDU2_B
+    set: "value == 1 ? '1 (>L:INI_MCDU2_B)' : ''"
+  - get: L:INI_MCDU2_C
+    set: "value == 1 ? '1 (>L:INI_MCDU2_C)' : ''"
+  - get: L:INI_MCDU2_D
+    set: "value == 1 ? '1 (>L:INI_MCDU2_D)' : ''"
+  - get: L:INI_MCDU2_E
+    set: "value == 1 ? '1 (>L:INI_MCDU2_E)' : ''"
+  - get: L:INI_MCDU2_F
+    set: "value == 1 ? '1 (>L:INI_MCDU2_F)' : ''"
+  - get: L:INI_MCDU2_G
+    set: "value == 1 ? '1 (>L:INI_MCDU2_G)' : ''"
+  - get: L:INI_MCDU2_H
+    set: "value == 1 ? '1 (>L:INI_MCDU2_H)' : ''"
+  - get: L:INI_MCDU2_I
+    set: "value == 1 ? '1 (>L:INI_MCDU2_I)' : ''"
+  - get: L:INI_MCDU2_J
+    set: "value == 1 ? '1 (>L:INI_MCDU2_J)' : ''"
+  - get: L:INI_MCDU2_K
+    set: "value == 1 ? '1 (>L:INI_MCDU2_K)' : ''"
+  - get: L:INI_MCDU2_L
+    set: "value == 1 ? '1 (>L:INI_MCDU2_L)' : ''"
+  - get: L:INI_MCDU2_M
+    set: "value == 1 ? '1 (>L:INI_MCDU2_M)' : ''"
+  - get: L:INI_MCDU2_N
+    set: "value == 1 ? '1 (>L:INI_MCDU2_N)' : ''"
+  - get: L:INI_MCDU2_O
+    set: "value == 1 ? '1 (>L:INI_MCDU2_O)' : ''"
+  - get: L:INI_MCDU2_P
+    set: "value == 1 ? '1 (>L:INI_MCDU2_P)' : ''"
+  - get: L:INI_MCDU2_Q
+    set: "value == 1 ? '1 (>L:INI_MCDU2_Q)' : ''"
+  - get: L:INI_MCDU2_R
+    set: "value == 1 ? '1 (>L:INI_MCDU2_R)' : ''"
+  - get: L:INI_MCDU2_S
+    set: "value == 1 ? '1 (>L:INI_MCDU2_S)' : ''"
+  - get: L:INI_MCDU2_T
+    set: "value == 1 ? '1 (>L:INI_MCDU2_T)' : ''"
+  - get: L:INI_MCDU2_U
+    set: "value == 1 ? '1 (>L:INI_MCDU2_U)' : ''"
+  - get: L:INI_MCDU2_V
+    set: "value == 1 ? '1 (>L:INI_MCDU2_V)' : ''"
+  - get: L:INI_MCDU2_W
+    set: "value == 1 ? '1 (>L:INI_MCDU2_W)' : ''"
+  - get: L:INI_MCDU2_X
+    set: "value == 1 ? '1 (>L:INI_MCDU2_X)' : ''"
+  - get: L:INI_MCDU2_Y
+    set: "value == 1 ? '1 (>L:INI_MCDU2_Y)' : ''"
+  - get: L:INI_MCDU2_Z
+    set: "value == 1 ? '1 (>L:INI_MCDU2_Z)' : ''"
+  - get: L:INI_MCDU2_SLASH
+    set: "value == 1 ? '1 (>L:INI_MCDU2_SLASH)' : ''"
+  - get: L:INI_MCDU2_SP
+    set: "value == 1 ? '1 (>L:INI_MCDU2_SP)' : ''"
+  - get: L:INI_MCDU2_OVERFLY
+    set: "value == 1 ? '1 (>L:INI_MCDU2_OVERFLY)' : ''"
+  - get: L:INI_MCDU2_CLR
+    set: "value == 1 ? '1 (>L:INI_MCDU2_CLR)' : ''"
+  - get: L:INI_MCDU2_0
+    set: "value == 1 ? '1 (>L:INI_MCDU2_0)' : ''"
+  - get: L:INI_MCDU2_1
+    set: "value == 1 ? '1 (>L:INI_MCDU2_1)' : ''"
+  - get: L:INI_MCDU2_2
+    set: "value == 1 ? '1 (>L:INI_MCDU2_2)' : ''"
+  - get: L:INI_MCDU2_3
+    set: "value == 1 ? '1 (>L:INI_MCDU2_3)' : ''"
+  - get: L:INI_MCDU2_4
+    set: "value == 1 ? '1 (>L:INI_MCDU2_4)' : ''"
+  - get: L:INI_MCDU2_5
+    set: "value == 1 ? '1 (>L:INI_MCDU2_5)' : ''"
+  - get: L:INI_MCDU2_6
+    set: "value == 1 ? '1 (>L:INI_MCDU2_6)' : ''"
+  - get: L:INI_MCDU2_7
+    set: "value == 1 ? '1 (>L:INI_MCDU2_7)' : ''"
+  - get: L:INI_MCDU2_8
+    set: "value == 1 ? '1 (>L:INI_MCDU2_8)' : ''"
+  - get: L:INI_MCDU2_9
+    set: "value == 1 ? '1 (>L:INI_MCDU2_9)' : ''"
+  - get: L:INI_MCDU2_DECIMAL
+    set: "value == 1 ? '1 (>L:INI_MCDU2_DECIMAL)' : ''"
+  - get: L:INI_MCDU2_PLUS
+    set: "value == 1 ? '1 (>L:INI_MCDU2_PLUS)' : ''"
+  - get: L:INI_MCDU2_BRT_SWITCH
+
+  #ECAM
+  - get: L:INI_ATT_HDG_STATE
+  - get: L:INI_AIR_DATA_STATE
+  - get: L:INI_FM_STATE
+  - get: L:INI_AUDIO_STATE
+  - get: L:INI_POTENTIOMETER_5
+  - get: L:INI_POTENTIOMETER_6
+  - get: L:PUSH_ECAM_TOCONFIG
+  - get: L:PUSH_ECAM_ENG
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_ENG)' : ''"
+  - get: L:PUSH_ECAM_BLEED
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_BLEED)' : ''"
+  - get: L:PUSH_ECAM_PRESS
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_PRESS)' : ''"
+  - get: L:PUSH_ECAM_ELEC_AC
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_ELEC_AC)' : ''"
+  - get: L:PUSH_ECAM_ELEC_DC
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_ELEC_DC)' : ''"
+  - get: L:PUSH_ECAM_HYD
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_HYD)' : ''"
+  - get: L:PUSH_ECAM_APU
+    set: "value == 1 ? '1 (>B:AIRLINER_ECAM_APU_Set)' : ''"
+  - get: L:PUSH_ECAM_COND
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_COND)' : ''"
+  - get: L:PUSH_ECAM_WHEEL
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_WHEEL)' : ''"
+  - get: L:PUSH_ECAM_DOOR
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_DOOR)' : ''"
+  - get: L:PUSH_ECAM_FCTL
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_FCTL)' : ''"
+  - get: L:PUSH_ECAM_FUEL
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_FUEL)' : ''"
+  - get: L:PUSH_ECAM_ALL
+  - get: L:PUSH_ECAM_CLR
+  - get: L:PUSH_ECAM_STS
+    set: "value == 1 ? '1 (>L:PUSH_ECAM_STS)' : ''"
+  - get: L:PUSH_ECAM_RCL
+
+  #RMP1
+  - get: A:COM ACTIVE FREQUENCY:1, Hz
+    set: (>K:COM_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:3, Hz
+    set: (>K:COM3_RADIO_SET_HZ)
+  - get: L:INI_SELECTED_RADIO_CPT
+  - get: L:INI_COMM_AM_CPT
+  - get: L:INI_COMM_NAV_CPT_COMMAND
+    set: "value == 1 ? '1 (>L:INI_COMM_NAV_CPT_COMMAND)' : ''"
+  - get: L:INI_COMM_VOR_CPT
+  - get: L:INI_COMM_LS_CPT
+  - get: L:INI_COMM_ADF_CPT
+  - get: L:INI_COMM_BFO_CPT
+  - get: L:INI_RMP1_STATE
+  - get: B:AIRLINER_CPT_COM_NAV_Cover_Toggle
+
+  #RMP2
+  - get: A:COM ACTIVE FREQUENCY:2, Hz
+    set: (>K:COM2_RADIO_SET_HZ)
+  - get: L:INI_SELECTED_RADIO_FO
+  - get: L:INI_COMM_AM_FO
+  - get: L:INI_COMM_NAV_FO_COMMAND
+    set: "value == 1 ? '1 (>L:INI_COMM_NAV_FO_COMMAND)' : ''"
+  - get: L:INI_COMM_VOR_FO
+  - get: L:INI_COMM_LS_FO
+  - get: L:INI_COMM_ADF_FO
+  - get: L:INI_COMM_BFO_FO
+  - get: L:INI_RMP2_STATE
+  - get: B:AIRLINER_FO_COM_NAV_Cover_Toggle
+
+  #PED LIGHTING
+  - get: L:INI_POTENTIOMETER_25
+  - get: L:INI_POTENTIOMETER_15
+  - get: L:INI_POTENTIOMETER_22
+  - get: L:ACMS_PRINT_BUTTON
+  - get: L:DFDR_EVENT_BUTTON
+
+  #WEATHER RADAR
+  - get: L:INI_WXR_GAIN
+  - get: L:INI_WX_SYS_SWITCH
+  - get: L:INI_WXR_MODE
+  - get: L:INI_WX_CTRL_SWITCH
+  - get: L:INI_WX_PWS_SWITCH
+  - get: L:INI_WXR_TILT_KNOB
+
+  #TRANSPONDER
+  - get: L:INI_TCAS_STBY_STATE
+  - get: L:INI_TCAS_ATC_STATE
+  - get: L:INI_TCAS_ALT_STATE
+  - get: B:AIRLINER_TCAS_1_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_1_set)' : ''"
+  - get: B:AIRLINER_TCAS_2_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_2_set)' : ''"
+  - get: B:AIRLINER_TCAS_3_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_3_set)' : ''"
+  - get: B:AIRLINER_TCAS_4_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_4_set)' : ''"
+  - get: B:AIRLINER_TCAS_5_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_5_set)' : ''"
+  - get: B:AIRLINER_TCAS_6_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_6_set)' : ''"
+  - get: B:AIRLINER_TCAS_7_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_7_set)' : ''"
+  - get: B:AIRLINER_TCAS_0_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_0_set)' : ''"
+  - get: B:AIRLINER_TCAS_CLR_set
+    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_CLR_set)' : ''"
+  - get: L:INI_TCAS_IDENT_COMMAND
+  - get: L:INI_TCAS_MODE
+  - get: L:INI_TCAS_MODE_PEDESTAL
+
+  #ENGINE STARTERS
+  - get: L:INI_IGNITION_KNOB
+   # set: (>B:AIRLINER_ENG_START)
+  - get: L:INI_MIXTURE_RATIO1_HANDLE
+  - get: L:INI_MIXTURE_RATIO2_HANDLE 
+
+  #THROTTLE
+  - get: L:INI_AUTOTHRUST_TLA:1
+    set: (>L:INI_TLA1_REQUEST)
+  - get: L:INI_AUTOTHRUST_TLA:2
+    set: (>L:INI_TLA2_REQUEST)
+  #SPEED BRK 
+  - get: L:INI_SPOILERS_ARMED, Number
+    set: (>K:SPOILERS_ARM_SET)
+  - get: L:INI_SPOILERS_HANDLE_POSITION
+    set: "`${value * 16384} (>K:INI.SPOILERS_SET)`"
+  #FLAPS
+  - get: A:FLAPS HANDLE PERCENT, position 16k
+    set: (>B:AIRLINER_FLAPS_SET)
+
+  #PARK BRK
+  - get: A:BRAKE PARKING POSITION, Bool
+    set: (>K:PARKING_BRAKE_SET)
+
+  #COCKPIT DOOR
+  - get: L:INI_COCKPIT_DOOR_LOCK_SWITCH
+  - get: L:INI_ECAM_VIDEO_STATE
+
+  #PRINTER
+
+  #TRIM
+  - get: L:XMLVAR_RUDDERTRIM_SWITCH_1
+  - get: L:RUDDER_TRIM_RESET_REQ
+    set: (>L:RESETTING_RUDDER_TRIM)
+
+  #MIP
+  #CAPT MIP
+  - get: L:INI_POTENTIOMETER_81
+  - get: L:INI_POTENTIOMETER_82
+  - get: L:INI_POTENTIOMETER_80
+  - get: L:INI_CPT_PFD_ND_TFR
+  - get: L:INI_EFIS_DMC_NORM_STATE
+  - get: L:INI_LOUDSPEAKER_1
+  - get: L:INI_ATC_MSG_CMD
+  - get: L:INI_AIR_VENT_CPT_ANIMATION
+  - get: L:INI_POTENTIOMETER_55
+  - get: L:INI_POTENTIOMETER_56
+  - get: L:INI_CPT_CONSOLE_SWITCH
+  - get: L:INI_FOOT_WARMER_SWITCH
+  - get: L:INI_CAPT_TRAY_PEDALS
+  - get: L:INI_CAPT_TRAY
+  
+  #Centre MIP
+  - get: L:INI_TERR_ON_CAPT
+  - get: L:INI_NORTH_REF_STATE
+  - get: L:INI_ECAM_DMC_MODE
+  - get: L:INI_ECAM_ND_NORM_MODE
+  - get: L:INI_ISIS_LS_ACTIVE
+  - get: L:INI_ISIS_BUGS_COMMAND
+  - get: L:INI_ISIS_PLUS_COMMAND
+  - get: L:INI_ISIS_MINUS_COMMAND
+  - get: L:INI_ISIS_RST_COMMAND
+  - get: L:INI_ISIS_BARO_PLUS_COMMAND
+  - get: L:INI_ISIS_BARO_MINUS_COMMAND
+  - get: L:INI_ISIS1_BARO_PUSH_COMMAND
+  - get: L:INI_VOR_ADF1_RMI_STATE
+  - get: L:INI_VOR_ADF2_RMI_STATE
+  - get: L:INI_CHR_RESET_COMMAND
+  - get: L:INI_CLOCK_DATE_BUTTON
+  - get: L:INI_CHR_START_COMMAND
+  - get: L:INI_CLOCK_GPS_STATE
+  - get: L:INI_CLOCK_RUN_STATE
+  - get: L:INI_GEAR_HANDLE_STATUS
+  - get: L:INI_GRAVITY_GEAR_OUTER_GAURD
+  - get: L:INI_GRAVITY_GEAR_RIGHT_GAURD
+  - get: L:INI_GRAVITY_GEAR_LEFT_GAURD
+  - get: L:INI_GRAVITY_GEAR_TOGGLE
+  - get: L:INI_TERR_ON_FO
+  - get: L:INI_AUTOBRAKE_LEVEL
+  - get: L:INI_ANTISKID_SWITCH
+  - get: L:INI_BRAKE_FAN_ON
+
+    #FO MIP
+  - get: L:INI_POTENTIOMETER_83
+  - get: L:INI_POTENTIOMETER_85
+  - get: L:INI_POTENTIOMETER_84
+  - get: L:INI_FO_PFD_ND_TFR
+  - get: L:INI_EFIS_DMC_NORM_STATE_FO
+  - get: L:INI_LOUDSPEAKER_2
+  - get: L:INI_AIR_VENT_FO_ANIMATION
+  - get: L:INI_POTENTIOMETER_60
+  - get: L:INI_POTENTIOMETER_57
+  - get: L:INI_FO_CONSOLE_SWITCH
+  - get: L:INI_FO_FOOT_WARMER_SWITCH
+  - get: L:INI_FO_TRAY_PEDALS
+  - get: L:INI_FO_TRAY
+
+   # Glairshield
+   #CPT EFIS
+  - get: L:INI_AUTOLAND_LIGHT_TEST
+  - get: L:INI_MASTER_CAUTION_COMMAND
+  - get: L:INI_MASTER_WARNING_COMMAND
+  - get: L:INI_CPT_CHRONO_BUTTON
+  - get: L:XMLVAR_Baro_Selector_HPA_1
+  - get: L:XMLVAR_Baro1_Mode # Baro knob
+  - get: A:KOHLSMAN SETTING MB:0, Millibars # Baro Display
+    set: "`0 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: L:INI_FD1_ON, Bool
+  - get: L:INI_LS_CAPTAIN, Bool
+  - get: L:INI_MAP_MODE_CAPT_SWITCH
+  - get: L:INI_MAP_RANGE_CAPT_SWITCH
+  - get: L:INI_VOR_ADF1_CAPT_STATE
+  - get: L:INI_VOR_ADF2_CAPT_STATE
+  - get: L:INI_EFIS_CPT_CSTR_BUTTON
+  - get: L:INI_EFIS_CPT_FIXES_BUTTON
+  - get: L:INI_EFIS_CPT_VOR_BUTTON
+  - get: L:INI_EFIS_CPT_NDB_BUTTON
+  - get: L:INI_EFIS_CPT_ARPT_BUTTON
+
+   #FCU
+  - get: L:INI_SPD_MACH_BUTTON
+    set: "value == 1 ? '1 (>L:INI_SPD_MACH_BUTTON)' : ''"
+  - get: L:INI_AIRSPEED_DIAL
+  - get: L:INI_FCU_SELECTED_SPEED_BUTTON
+    set: "value == 1 ? '1 (>L:INI_FCU_SELECTED_SPEED_BUTTON)' : ''"
+  - get: L:INI_FCU_MANAGED_SPEED_BUTTON
+    set: "value == 1 ? '1 (>L:INI_FCU_MANAGED_SPEED_BUTTON)' : ''"
+  - get: L:INI_HEADING_DIAL
+  - get: L:INI_FCU_MANAGED_HEADING_BUTTON
+    set: "value == 1 ? '1 (>L:INI_FCU_MANAGED_HEADING_BUTTON)' : ''"
+  - get: L:INI_FCU_SELECTED_HEADING_BUTTON
+    set: "value == 1 ? '1 (>L:INI_FCU_SELECTED_HEADING_BUTTON)' : ''"
+  - get: L:AP6_BUTTON
+    set: "value == 1 ? '1 (>L:AP6_BUTTON)' : ''"
+  - get: L:INI_FCU_HDG_VS_COMMAND
+  - get: L:INI_AP1_BUTTON
+  - get: L:INI_AP2_BUTTON
+  - get: B:AIRLINER_ATHR_PUSH_Toggle
+  - get: B:AIRLINER_ENG1_ATDISCO_Toggle
+  - get: B:AIRLINER_ENG2_ATDISCO_Toggle
+
+  - get: L:INI_FCU_ALTITUDE_MODE_COMMAND
+  - get: L:INI_ALTITUDE_DIAL
+  - get: L:INI_FCU_ALTITUDE_PULL_COMMAND
+    set: "value == 1 ? '1 (>L:INI_FCU_ALTITUDE_PULL_COMMAND)' : ''"
+  - get: L:INI_FCU_ALTITUDE_PUSH_COMMAND
+    set: "value == 1 ? '1 (>L:INI_FCU_ALTITUDE_PUSH_COMMAND)' : ''"
+  - get: L:A320_FCU_EXPEDITE_COMMAND
+  - get: L:INI_FCU_METRIC_STATE
+  - get: L:INI_VVI_DIAL
+  - get: L:INI_FCU_LEVEL_OFF_COMMAND
+  - get: L:AP7_BUTTON
+    set: "value == 1 ? '1 (>L:AP7_BUTTON)' : ''"
+
+     #FO EFIS
+  - get: L:INI_FO_CHRONO_BUTTON
+  - get: L:XMLVAR_Baro_Selector_HPA_2
+  - get: L:XMLVAR_Baro2_Mode # Baro knob
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # Baro Display
+    set: "`2 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: L:INI_FD2_ON, Bool
+  - get: L:INI_LS_FO, Bool
+  - get: L:INI_MAP_MODE_FO_SWITCH
+  - get: L:INI_MAP_RANGE_FO_SWITCH
+  - get: L:INI_VOR_ADF1_FO_STATE
+  - get: L:INI_VOR_ADF2_FO_STATE
+  - get: L:INI_EFIS_FO_CSTR_BUTTON
+  - get: L:INI_EFIS_FO_FIXES_BUTTON
+  - get: L:INI_EFIS_FO_VOR_BUTTON
+  - get: L:INI_EFIS_FO_NDB_BUTTON
+  - get: L:INI_EFIS_FO_ARPT_BUTTON
+  - get: L:INI_POTENTIOMETER_16
+  - get: L:INI_POTENTIOMETER_17
+
+     #miscellaneous
+  - get: L:INI_FO_WINDOW
+  - get: L:FO_WINDOW_PIN
+  - get: L:INI_ARMREST_FO
+  - get: L:INI_ARMREST_RIGHT_FO
+  - get: B:AIRLINER_FO_OXY_COVER_Toggle
+  - get: B:AIRLINER_WASTE_FO_Toggle
+  - get: B:AIRLINER_FO_FRONTBLIND_CLICK_Toggle
+  - get: B:AIRLINER_FO_VISOR_CLICK_Toggle
+  - get: B:AIRLINER_CTR_VISOR_BASE_Toggle
+
+  - get: L:INI_CAPT_WINDOW
+  - get: L:CPT_WINDOW_PIN
+  - get: L:INI_ARMREST_CAPT
+  - get: L:INI_ARMREST_RIGHT_CAPT
+  - get: B:AIRLINER_CAPT_OXY_COVER_Toggle
+  - get: B:AIRLINER_WASTE_CAPT_Toggle
+  - get: B:AIRLINER_CPT_FRONTBLIND_CLICK_Toggle
+  - get: B:AIRLINER_CPT_VISOR_CLICK_Toggle
+  - get: B:AIRLINER_CTR_VISOR_BASE_Toggle
+  - get: B:AIRLINER_COCKPITDOOR_Toggle
+  - get: B:AIRLINER_CPT_EFB_HOME_Toggle
+
+#OVERHEAD PANEL LEFT
+  - get: B:AIRLINER_CKPT_DOOR_VIDEO_Toggle
+  - get: B:AIRLINER_LDG_SYS_TOGGLE_GAURD_Toggle
+  - get: B:AIRLINER_LDG_SYS_TOGGLE_Set
+  - get: L:INI_IR1_STATE
+  - get: L:INI_IR2_STATE
+  - get: L:INI_IR3_STATE
+  - get: L:INI_IRS1_STATE
+  - get: L:INI_IRS2_STATE
+  - get: L:INI_IRS3_STATE
+  - get: L:INI_ADR1_BUTTON
+  - get: L:INI_ADR2_BUTTON
+  - get: L:INI_ADR3_BUTTON
+  - get: B:AIRLINER_APU_FIRE_HANDLE_Cover_Toggle
+  - get: L:INI_APU_FIRE_TEST
+  - get: B:AIRLINER_APU_AGENT_Toggle
+  - get: B:AIRLINER_TURB_DAMP_Toggle
+  - get: B:AIRLINER_FLTCTL_PRIM1_Toggle
+  - get: B:AIRLINER_FLTCTL_SEC1_Toggle
+  - get: B:AIRLINER_INR_TK_L_Cover_Toggle
+  - get: B:AIRLINER_INR_TK_R_Cover_Toggle
+  - get: B:AIRLINER_INR_TK_L_Toggle
+  - get: B:AIRLINER_INR_TK_R_Toggle
+  - get: B:AIRLINER_EVAC_COMMAND_Cover_Toggle
+  - get: B:AIRLINER_EVAC_COMMAND_Toggle
+  - get: L:INI_EVAC_HORN_OFF_BUTTON
+  - get: B:AIRLINER_EVAC_CPT_TOGGLE_Toggle
+  - get: B:AIRLINER_EMER_GEN_TEST_GAURD_Toggle
+  - get: L:INI_EMER_GEN_TEST
+  - get: B:AIRLINER_LAND_RECOVERY_Toggle
+  - get: B:AIRLINER_MAN_ON_COVER_Toggle
+  - get: L:INI_EMER_ELEC_MAN_ON
+  - get: L:INI_GPWS_TERR_STATE
+  - get: L:INI_GPWS_SYS_STATE
+  - get: L:INI_GPWS_GS_STATE
+  - get: L:INI_GPWS_FLAP_STATE
+  - get: B:AIRLINER_GND_CTL_Toggle
+  - get: B:AIRLINER_MASK_MAN_GAURD_Toggle
+  - get: L:INI_OXYGEN_MASK_MAN
+  - get: B:AIRLINER_OXYGEN_CREW_Toggle
+  - get: L:INI_FLT_RESET_BUTTON
+  - get: L:INI_CALL_ALL_BUTTON
+  - get: L:INI_CAB_REST_BUTTON
+  - get: B:AIRLINER_EMER_CALL_Cover_Toggle
+  - get: B:AIRLINER_EMER_CALL_Toggle
+  - get: L:INI_CALL_PURS_BUTTON
+  - get: L:INI_CALL_FWD_BUTTON
+  - get: L:INI_CALL_MID_BUTTON
+  - get: L:INI_CALL_EXIT_BUTTON
+  - get: L:INI_CALL_AFT_BUTTON
+  - get: L:INI_CPT_RAIN_RPLNT
+  - get: L:CPT_WIPER_SWITCH
+
+  #OVERHEAD PANEL Centre
+  - get: L:INI_POTENTIOMETER_19
+  - get: L:INI_POTENTIOMETER_20
+  - get: B:AIRLINER_TMR_RESET_Toggle
+  - get: B:AIRLINER_SVCE_OVRD_Toggle
+  - get: B:AIRLINER_FADEC_ENG1_Cover_Toggle
+  - get: B:AIRLINER_FADEC_ENG2_Cover_Toggle
+  - get: B:AIRLINER_FADEC_ENG1_Toggle
+  - get: B:AIRLINER_FADEC_ENG2_Toggle
+  - get: L:INI_APU_EXTING_RESET_BUTTON
+  - get: B:AIRLINER_CMC1_Cover_Toggle
+  - get: B:AIRLINER_CMC1_Toggle
+  - get: B:AIRLINER_AIRCOND_RESET_Toggle
+  - get: B:AIRLINER_NWS_BUTTON_Cover_Toggle
+  - get: B:AIRLINER_NWS_BUTTON_Toggle
+  - get: B:AIRLINER_ENG1_FIRE_HANDLE_Cover_Toggle
+  - get: B:AIRLINER_ENG1_FIRE_HANDLE_Toggle
+  - get: B:AIRLINER_ENG1_AGENT1_Toggle
+  - get: B:AIRLINER_ENG1_AGENT2_Toggle
+  - get: L:INI_ENG_FIRE_TEST
+  - get: B:AIRLINER_ENG2_FIRE_HANDLE_Cover_Toggle
+  - get: B:AIRLINER_ENG2_FIRE_HANDLE_Toggle
+  - get: B:AIRLINER_ENG2_AGENT1_Toggle
+  - get: B:AIRLINER_ENG2_AGENT2_Toggle
+  - get: B:AIRLINER_HYD_GREEN_ELEC_Cover_Toggle
+  - get: B:AIRLINER_HYD_GREEN_ELEC_Toggle
+  - get: B:AIRLINER_HYD_GREEN_OFF_Toggle
+  - get: B:AIRLINER_HYD_GREEN_Cover_Toggle
+  - get: B:AIRLINER_HYD_GREEN_Toggle
+  - get: B:AIRLINER_HYD_BLUE_ELEC_Cover_Toggle
+  - get: B:AIRLINER_HYD_BLUE_ELEC_Toggle
+  - get: B:AIRLINER_HYD_BLUE_OFF_Toggle
+  - get: B:AIRLINER_HYD_BLUE_Cover_Toggle
+  - get: B:AIRLINER_HYD_BLUE_Toggle
+  - get: B:AIRLINER_HYD_YELLOW_ELEC_Cover_Toggle
+  - get: B:AIRLINER_HYD_YELLOW_ELEC_Toggle
+  - get: B:AIRLINER_HYD_YELLOW_OFF_Toggle
+  - get: B:AIRLINER_HYD_YELLOW_Cover_Toggle
+  - get: B:AIRLINER_HYD_YELLOW_Toggle
+  - get: B:AIRLINER_HYD_GREEN_ENG2_Cover_Toggle
+  - get: B:AIRLINER_HYD_GREEN_ENG2_Toggle
+  - get: B:AIRLINER_HYD_RAT_MAN_Cover_Toggle
+  - get: B:AIRLINER_HYD_RAT_MAN_Toggle
+  - get: B:AIRLINER_FUEL_ENG1_L1_Toggle
+  - get: B:AIRLINER_FUEL_ENG1_LSTBY_Toggle
+  - get: B:AIRLINER_FUEL_ENG1_L2_Toggle
+  - get: B:AIRLINER_FUEL_XFEED_Toggle
+  - get: B:AIRLINER_FUEL_MODE_Toggle
+  - get: B:AIRLINER_FUEL_FEED_TOGGLE_GAURD_Toggle
+  - get: L:INI_TRIM_TANK_SELECTOR
+  - get: B:AIRLINER_FUEL_TK_XFR_Cover_Set
+  - get: B:AIRLINER_FUEL_TK_XFR_Toggle
+  - get: B:AIRLINER_FUEL_ENG2_R1_Toggle
+  - get: B:AIRLINER_FUEL_ENG2_RSTBY_Toggle
+  - get: B:AIRLINER_FUEL_ENG2_R2_Toggle
+  - get: B:AIRLINER_ELEC_BAT1_Toggle
+  - get: B:AIRLINER_ELEC_BAT2_Toggle
+  - get: B:AIRLINER_ELEC_APU_BAT_Toggle
+  - get: B:AIRLINER_ELEC_BATT_TOGGLE
+  - get: B:AIRLINER_ELEC_AC_ESS_Cover_Set
+  - get: L:INI_AC_ESS_FEED, Bool
+  - get: L:INI_GALLEY_CAB, Bool
+  - get: L:INI_COMMERCIAL_ON, Bool
+  - get: L:INI_BUS_TIE, Bool
+  - get: B:AIRLINER_ELEC_IDG1_Cover_Set
+  - get: B:AIRLINER_ELEC_IDG1_Toggle
+  - get: L:INI_ENG1_GEN_ON, Bool
+  - get: L:INI_APU_GEN_ON, Bool
+  - get: B:AIRLINER_ELEC_EXTB_Toggle
+  - get: B:AIRLINER_ELEC_EXTA_Toggle
+  - get: B:AIRLINER_ELEC_IDG2_Cover_Set
+  - get: B:AIRLINER_ELEC_IDG2_Toggle
+  - get: B:AIRLINER_ELEC_GEN2_Toggle
+  - get: B:AIRLINER_RAM_AIR_Cover_Set
+  - get: B:AIRLINER_RAM_AIR_Toggle
+  - get: B:AIRLINER_PACK1_Toggle
+  - get: B:AIRLINER_PACK2_Toggle
+  - get: B:AIRLINER_ENG1_BLEED_Toggle
+  - get: L:INI_PACK_FLOW
+  - get: L:INI_HOT_AIR_SUPPLY1_ON
+  - get: L:INI_HOT_AIR_SUPPLY2_ON
+  - get: L:INI_AIRCOND_LVL_2
+  - get: L:INI_AIRCOND_LVL_1
+  - get: B:AIRLINER_AIR_APU_BLEED_Toggle
+  - get: L:INI_XBLEED_MODE
+  - get: B:AIRLINER_ENG2_BLEED_Toggle
+  - get: L:INI_WING_ANTI_ICE
+  - get: L:INI_ENG1_ANTI_ICE
+  - get: L:INI_ENG2_ANTI_ICE
+  - get: L:INI_PROBE_HEAT
+  - get: B:AIRLINER_VALVE_SEL_GAURD_Toggle
+  - get: L:INI_CAB_PRESS_VALVE_SEL_SWITCH
+  - get: L:INI_MAN_VS_CONTROL_SWITCH
+  - get: B:AIRLINER_MODE_SEL_Toggle
+  - get: L:INI_LDG_ELEV_KNOB
+  - get: B:AIRLINER_DITCHING_Cover_Toggle
+  - get: B:AIRLINER_DITCHING_Toggle
+  - get: L:INI_STROBE_LIGHT_SWITCH
+  - get: L:INI_BEACON_LIGHT_SWITCH
+  - get: L:INI_WING_LIGHT_SWITCH
+  - get: L:INI_LOGO_LIGHT_SWITCH
+  - get: L:INI_TURNOFF_LIGHT_SWITCH
+  - get: L:INI_LANDING_LIGHT_SWITCH
+  - get: L:INI_TAXI_LIGHT_SWITCH
+  - get: L:INI_APU_MASTER_SWITCH_CMD
+  - get: L:INI_APU_START_BUTTON_CMD
+    set: "value == 1 ? '1 (>L:INI_APU_START_BUTTON_CMD)' : ''" 
+
+  - get: L:INI_STANDBY_COMPASS_SWITCH
+  - get: L:INI_DOME_LIGHT_SWITCH
+  - get: L:INI_STORM_LIGHT_SWITCH
+  - get: L:INI_ANNLT_SWITCH
+  - get: L:INI_SEATBELTS_SWITCH
+  - get: L:INI_NO_SMOKING_SWITCH
+  - get: L:INI_EMER_EXIT_SWITCH
+
+  #OVERHEAD PANEL RIGHT
+  - get: B:AIRLINER_GND_HF_DATA_Toggle
+  - get: B:AIRLINER_IFEC_Toggle
+  - get: B:AIRLINER_PAX_SYS_Toggle
+  - get: L:INI_RMP_COM3_STBY_OUTER_KNOB_TURNED_CLOCKWISE
+    set: "value == 1 ? '1 (>L:INI_RMP_COM3_STBY_OUTER_KNOB_TURNED_CLOCKWISE)' : ''"
+  - get: L:INI_RMP_COM3_STBY_OUTER_KNOB_TURNED_ANTICLOCKWISE
+    set: "value == 1 ? '1 (>L:INI_RMP_COM3_STBY_OUTER_KNOB_TURNED_ANTICLOCKWISE)' : ''"
+  - get: L:INI_RMP_COM3_STBY_INNER_KNOB_TURNED_CLOCKWISE
+    set: "value == 1 ? '1 (>L:INI_RMP_COM3_STBY_INNER_KNOB_TURNED_CLOCKWISE)' : ''"
+  - get: L:INI_RMP_COM3_STBY_INNER_KNOB_TURNED_ANTICLOCKWISE
+    set: "value == 1 ? '1 (>L:INI_RMP_COM3_STBY_INNER_KNOB_TURNED_ANTICLOCKWISE)' : ''"
+  - get: L:INI_SELECTED_RADIO_COM3
+  - get: L:INI_COMM_AM_COM3
+  - get: L:INI_COMM_NAV_COM3_COMMAND
+  - get: L:INI_COMM_VOR_COM3
+  - get: L:INI_COMM_LS_COM3
+  - get: L:INI_COMM_ADF_COM3
+  - get: L:INI_COMM_BFO_COM3
+  - get: L:INI_RMP3_STATE
+  - get: B:AIRLINER_COM3_COM_NAV_Cover_Toggle
+
+  - get: B:AIRLINER_FTL_CTL_PRIM2_Toggle
+  - get: B:AIRLINER_FTL_CTL_SEC2_Toggle
+  - get: B:AIRLINER_FTL_CTL_PRIM3_Toggle
+  - get: B:AIRLINER_BULK_ISO_VALVE_Toggle
+  - get: B:AIRLINER_HOT_AIR_Toggle
+  - get: L:INI_AIRCOND_LVL_3
+  - get: B:AIRLINER_FWD_AGENT_Cover_Toggle
+  - get: B:AIRLINER_FWD_AGENT_Toggle
+  - get: B:AIRLINER_AFT_AGENT_Cover_Toggle
+  - get: B:AIRLINER_AFT_AGENT_Toggle
+  - get: L:INI_SMOKE_TEST_BUTTON
+  - get: B:AIRLINER_VENT_EXTRACT_Toggle
+  - get: B:AIRLINER_VENT_CAB_Toggle
+  - get: B:AIRLINER_MAN_START_1_Cover_Toggle
+  - get: B:AIRLINER_MAN_START_2_Cover_Toggle
+  - get: B:AIRLINER_MAN_START_1_Toggle
+  - get: B:AIRLINER_MAN_START_2_Toggle
+  - get: B:AIRLINER_N1_MODE_1_Cover_Toggle
+  - get: B:AIRLINER_N1_MODE_2_Cover_Toggle
+  - get: B:AIRLINER_N1_MODE_1_Toggle
+  - get: B:AIRLINER_N1_MODE_2_Toggle
+  - get: L:INI_FO_RAIN_RPLNT
+  - get: L:FO_WIPER_SWITCH
+  #COVERS
+  - get: A:COVER ON:0, Bool 
+  - get: A:COVER ON:1, Bool 
+  - get: A:COVER ON:2, Bool

@@ -1,0 +1,316 @@
+# Original author: https://discord.com/channels/1454265644416765974/1543426918072852570/1545498667144712263
+# Updated: 2026-09-04 18:20:01
+
+# SWS Daher KODIAK 100 2024 - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: DKgolfnut
+# Special Thanks: 
+# Date: 9/4/2026 
+
+# Known Issues:
+ # - Some Desync issues with NAV/APR mode. Please ensure the modes on each pilot are the same. If not Pause sim, PNF disconnect and set up Autopilot the same, and reconnect........
+
+# FIXES:
+ # - 9/4/2026
+
+
+include:
+  - modules/AS_G1000_NXi.yaml
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+
+master:
+# TRIMS
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+  - get: A:ELEVATOR TRIM PCT, Percent scaler 16k # ELEVATOR TRIM BTN
+    set: (>K:ELEVATOR_TRIM_SET) 
+  - get: A:RUDDER TRIM PCT, Percent # RUDDER TRIM BTN
+    set: (>K:RUDDER_TRIM_SET) 
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: L:SWS_ENGINE_Lever_Emergencypower_1, Percent
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # PROPELLER 1 LEVER
+    set: (>K:PROP_PITCH1_SET)
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, position 16k # MIXTURE 1 LEVER
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  - get: L:RUDDERINPUT
+shared:
+
+
+########### PILOT PANEL ###########
+## _ESI500 ##
+  - get: H:SWS_ESI500_Knob_Push_1
+  - get: H:SWS_ESI500_Knob_Inc_1
+  - get: H:SWS_ESI500_Knob_Dec_1
+  - get: H:SWS_ESI500_Menu_1
+## - TEST BUTTONS ## are not grabable snce they are IVARS
+## - Power Panel ##
+  - get: B:INSTRUMENT_Switch_Battery_Master_1, Bool
+    set: (>B:INSTRUMENT_Switch_Battery_Master_1_Set)
+  - get: B:ELECTRICAL_Avionics_Bus_1, Bool
+    set: (>B:ELECTRICAL_Avionics_Bus_1_Set)
+  - get: B:INSTRUMENT_Switch_AUX, Bool
+    set: (>B:INSTRUMENT_Switch_AUX_Set)
+  - get: L:1:SWS_FUEL_Switch_Pump_1
+  - get: B:INSTRUMENT_Switch_Pump_1
+    set: |
+      switch (value) {
+         case  0: return '0 (>B:INSTRUMENT_Switch_Pump_1_Set) 1(>K:TOGGLE_ELECT_FUEL_PUMP1)'
+         case  1: return '1 (>B:INSTRUMENT_Switch_Pump_1_Set) 1(>K:TOGGLE_ELECT_FUEL_PUMP1)'
+         case  2: return '2  (>B:INSTRUMENT_Switch_Pump_1_Set)'
+         default: return ''
+        }
+  - get: B:INSTRUMENT_Switch_Ignition_1, Bool
+    set: (>B:INSTRUMENT_Switch_Ignition_1_Set)
+  - get: L:1:SWS_ENGINE_Switch_Starter_1
+  - get: B:INSTRUMENT_Switch_Starter_1
+    set: |
+      switch (value) {
+         case  0: return '0 (>B:INSTRUMENT_Switch_Sarter_1_Set) 1(>K:TOGGLE_STARTER1)'
+         case  1: return '1 (>B:INSTRUMENT_Switch_Sarter_1_Set) 1 (>K:TOGGLE_STARTER1)'
+         case  2: return '2  (>B:INSTRUMENT_Switch_Sarter_1_Set) 1 (>K:TOGGLE_STARTER1)'
+         default: return ''
+        }
+  - get: B:ELECTRICAL_Alternator_1, Bool 
+    set: (>B:ELECTRICAL_Alternator_1_Set)
+  - get: B:ELECTRICAL_Alternator_2, Bool 
+    set: (>B:ELECTRICAL_Alternator_2_Set)
+##- BRAKE Release ##
+
+  - get: L:ParkingBrake_Position
+  - get: B:LANDING_PARKING_BRAKE, Bool
+    set: (>B:LANDING_PARKING_BRAKE_Set)
+  - get: A:BRAKE PARKING POSITION, Bool
+    set: (>K:PARKING_BRAKES)
+## - LIGHTING PANEL ##
+  - get: B:LIGHTING_BEACON_1, Number
+    set: (>B:LIGHTING_BEACON_1_Set)
+  - get: B:LIGHTING_STROBE_1, Number
+    set: (>B:LIGHTING_STROBE_1_Set)
+  - get: B:LIGHTING_NAV_1, Number
+    set: (>B:LIGHTING_NAV_1_Set)
+  - get: B:LIGHTING_TAXI_1, Number
+    set: (>B:LIGHTING_TAXI_1_Set)
+  - get: L:1:SWS_LIGHTING_Switch_Light_Landing_1
+  - get: L:1:SWS_LIGHTING_Switch_Light_CABIN_12
+  - get: B:LIGHTING_GLARESHIELD_1, Number
+    set: (>B:LIGHTING_GLARESHIELD_1_Set)
+  - get: B:LIGHTING_PEDESTRAL_1, Number
+    set: (>B:LIGHTING_PEDESTRAL_1_Set)
+## - ICING PANEL ##
+  - get: B:DEICE_Engine_1, Number
+    set: (>B:DEICE_Engine_1_Set)
+  - get: B:DEICE_Pitot_1, Number
+    set: (>B:DEICE_Pitot_1_Set)
+  - get: B:DEICE_Pitot_2, Number
+    set: (>B:DEICE_Pitot_2_Set)
+  - get: L:1:SWS_DEICE_Switch_AirframeProp
+  - get: B:DEICE_Windshileld_1, Number
+    set: (>B:DEICE_Windshileld_1_Set)
+  - get: L:SWS_DEICE_Kodiak_BackUpPump
+  - get: B:LIGHTING_WING_1, Number
+    set: (>B:LIGHTING_WING_1_Set)
+## - ELT and OXYGEN PANEL ##
+  - get: L:1:SWS_ELECTRICAL_Switch_ELT
+  - get: L:XMLVAR_Oxygen
+########### QUADRANT PANEL ###########
+## - FIREWALL SHUTOFF ##
+  - get: B:FUEL_Cutoff_1, Bool # FIREWALL SHUTOFF
+    set: (>B:FUEL_Cutoff_1_Set)
+## - FLAPS ##
+  - get: A:FLAPS HANDLE PERCENT, Position 16K
+    set: (>B:HANDLING_Flaps_Set)
+## - BREAKERS Panel Row 1 ##
+  - get: B:INSTRUMENT_Breaker_LANDINGLIGHTS, Bool
+    set: (>B:INSTRUMENT_Breaker_LANDINGLIGHTS_Set)
+  - get: B:INSTRUMENT_Breaker_LIGHTNAV, Bool
+    set: (>B:INSTRUMENT_Breaker_LIGHTNAV_Set)
+  - get: B:INSTRUMENT_Breaker_LIGHTSTROBE, Bool
+    set: (>B:INSTRUMENT_Breaker_LIGHTSTROBE_Set)
+  - get: B:INSTRUMENT_Breaker_LIGHTTAXI, Bool
+    set: (>B:INSTRUMENT_Breaker_LIGHTTAXI_Set)
+  - get: B:INSTRUMENT_Breaker_LIGHTICE, Bool
+    set: (>B:INSTRUMENT_Breaker_LIGHTICE_Set)
+  - get: B:INSTRUMENT_Breaker_LIGHTCABIN, Bool
+    set: (>B:INSTRUMENT_Breaker_LIGHTCABIN_Set)
+  - get: B:INSTRUMENT_Breaker_LIGHTPANEL, Bool
+    set: (>B:INSTRUMENT_Breaker_LIGHTPANEL_Set)
+  - get: B:INSTRUMENT_Breaker_Alternator, Bool
+    set: (>B:INSTRUMENT_Breaker_Alternator_Set)
+  - get: B:INSTRUMENT_Breaker_ALTSENSE, Bool
+    set: (>B:INSTRUMENT_Breaker_ALTSENSE_Set)
+  - get: B:INSTRUMENT_Breaker_Generator, Bool
+    set: (>B:INSTRUMENT_Breaker_Generator_Set)
+## - BREAKERS Panel Row 2 ##
+  - get: B:INSTRUMENT_Breaker_StallHeat, Bool
+    set: (>B:INSTRUMENT_Breaker_StallHeat_Set)
+  - get: B:INSTRUMENT_Breaker_ENGINEHEAT, Bool
+    set: (>B:INSTRUMENT_Breaker_ENGINEHEAT_Set)    
+  - get: B:INSTRUMENT_Breaker_StbyIceProt, Bool
+    set: (>B:INSTRUMENT_Breaker_StbyIceProt_Set)
+  - get: B:INSTRUMENT_Breaker_PITOTHEAT1, Bool
+    set: (>B:INSTRUMENT_Breaker_PITOTHEAT1_Set)
+  - get: B:INSTRUMENT_Breaker_PITOTHEAT2, Bool
+    set: (>B:INSTRUMENT_Breaker_PITOTHEAT2_Set)
+  - get: B:INSTRUMENT_Breaker_DEICE, Bool
+    set: (>B:INSTRUMENT_Breaker_DEICE_Set)
+  - get: B:INSTRUMENT_Breaker_DOORSEALS, Bool
+    set: (>B:INSTRUMENT_Breaker_DOORSEALS_Set)
+## - BREAKERS Panel Row 3 ##
+  - get: B:INSTRUMENT_Breaker_PFD1, Bool
+    set: (>B:INSTRUMENT_Breaker_PFD1_Set)
+  - get: B:INSTRUMENT_Breaker_ENGAFM, Bool
+    set: (>B:INSTRUMENT_Breaker_ENGAFM_Set)
+  - get: B:INSTRUMENT_Breaker_AHRS1, Bool
+    set: |
+      switch (value) {
+         case  0: return '0 (>B:INSTRUMENT_Breaker_AHRS1_Set) 0(>B:INSTRUMENT_Breaker_ADC1_Set)'
+         case  1: return '1 (>B:INSTRUMENT_Breaker_AHRS1_Set) 1(>B:INSTRUMENT_Breaker_ADC1_Set)'
+         default: return ''
+        }       
+
+  - get: B:INSTRUMENT_Breaker_NAV1, Bool
+    set: (>B:INSTRUMENT_Breaker_NAV1_Set)
+  - get: B:INSTRUMENT_Breaker_COM1, Bool
+    set: (>B:INSTRUMENT_Breaker_COM1_Set)
+  - get: B:INSTRUMENT_Breaker_AUDIO1, Bool
+    set: (>B:INSTRUMENT_Breaker_AUDIO1_Set)
+  - get: B:INSTRUMENT_Breaker_XPDR, Bool
+    set: (>B:INSTRUMENT_Breaker_XPDR_Set)
+  - get: B:INSTRUMENT_Breaker_ENGGAU, Bool
+    set: (>B:INSTRUMENT_Breaker_ENGGAU_Set)
+  - get: B:INSTRUMENT_Breaker_STALLWARN, Bool
+    set: (>B:INSTRUMENT_Breaker_STALLWARN_Set)
+## - BREAKERS Panel Row 4 ##
+  - get: B:INSTRUMENT_Breaker_PFD2, Bool
+    set: (>B:INSTRUMENT_Breaker_PFD2_Set)
+  - get: B:INSTRUMENT_Breaker_MFD, Bool
+    set: (>B:INSTRUMENT_Breaker_MFD_Set)
+  - get: B:INSTRUMENT_Breaker_AHRS2, Bool
+    set: |
+      switch (value) {
+         case  0: return '0 (>B:INSTRUMENT_Breaker_AHRS2_Set) 0(>B:INSTRUMENT_Breaker_ADC2_Set)'
+         case  1: return '1 (>B:INSTRUMENT_Breaker_AHRS2_Set) 1(>B:INSTRUMENT_Breaker_ADC2_Set)'
+         default: return ''
+        }  
+  - get: B:INSTRUMENT_Breaker_NAV2, Bool
+    set: (>B:INSTRUMENT_Breaker_NAV2_Set)
+  - get: B:INSTRUMENT_Breaker_COM2, Bool
+    set: (>B:INSTRUMENT_Breaker_COM2_Set)
+  - get: B:INSTRUMENT_Breaker_AUDIO2, Bool
+    set: (>B:INSTRUMENT_Breaker_AUDIO2_Set)
+  - get: B:INSTRUMENT_Breaker_ELT, Bool
+    set: (>B:INSTRUMENT_Breaker_ELT_Set)
+  - get: B:INSTRUMENT_Breaker_AVNBUS, Bool
+    set: (>B:INSTRUMENT_Breaker_AVNBUS_Set)
+## - BREAKERS Panel Row 5 ##
+  - get: B:INSTRUMENT_Breaker_XMWX, Bool
+    set: (>B:INSTRUMENT_Breaker_XMWX_Set)
+  - get: B:INSTRUMENT_Breaker_STORMSCOPE, Bool
+    set: (>B:INSTRUMENT_Breaker_STORMSCOPE_Set)
+  - get: B:INSTRUMENT_Breaker_AUTOPILOT, Bool
+    set: (>B:INSTRUMENT_Breaker_AUTOPILOT_Set)
+  - get: B:INSTRUMENT_Breaker_TRIMPITCH, Bool
+    set: (>B:INSTRUMENT_Breaker_TRIMPITCH_Set)
+  - get: B:INSTRUMENT_Breaker_TRIMRDR, Bool
+    set: (>B:INSTRUMENT_Breaker_TRIMRDR_Set)
+  - get: B:INSTRUMENT_Breaker_TRIMAIL, Bool
+    set: (>B:INSTRUMENT_Breaker_TRIMAIL_Set)
+  - get: B:INSTRUMENT_Breaker_FLAPS, Bool
+    set: (>B:INSTRUMENT_Breaker_FLAPS_Set)
+  - get: B:INSTRUMENT_Breaker_YAWDAMP, Bool
+    set: (>B:INSTRUMENT_Breaker_YAWDAMP_Set)
+## - BREAKERS Panel Row 6 ##
+  - get: B:INSTRUMENT_Breaker_LOWFUEL, Bool
+    set: (>B:INSTRUMENT_Breaker_LOWFUEL_Set)
+  - get: B:INSTRUMENT_Breaker_OSGOV, Bool
+    set: (>B:INSTRUMENT_Breaker_OSGOV_Set)
+  - get: B:INSTRUMENT_Breaker_IGNITION, Bool
+    set: (>B:INSTRUMENT_Breaker_IGNITION_Set)
+  - get: B:INSTRUMENT_Breaker_STARTER, Bool
+    set: (>B:INSTRUMENT_Breaker_STARTER_Set)
+  - get: B:INSTRUMENT_Breaker_FLAPIND, Bool
+    set: (>B:INSTRUMENT_Breaker_FLAPIND_Set)
+  - get: B:INSTRUMENT_Breaker_STBYATT, Bool
+    set: (>B:INSTRUMENT_Breaker_STBYATT_Set)
+  - get: B:INSTRUMENT_Breaker_AUXFUELPUMP, Bool
+    set: (>B:INSTRUMENT_Breaker_AUXFUELPUMP_Set)
+  - get: B:INSTRUMENT_Breaker_ELECHEATL, Bool
+    set: (>B:INSTRUMENT_Breaker_ELECHEATL_Set)
+  - get: B:INSTRUMENT_Breaker_ELECHEATR, Bool
+    set: (>B:INSTRUMENT_Breaker_ELECHEATR_Set)
+  - get: B:INSTRUMENT_Breaker_ENVCTL, Bool
+    set: (>B:INSTRUMENT_Breaker_ENVCTL_Set)
+########## MISC ITEMS ##########
+## - DOORS and Window  ##
+  - get: L:1:SWS_EXIT_Knob_Door_1, Bool # PILOT DOOR
+  - get: A:INTERACTIVE POINT OPEN:0, Bool
+    set: 1 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+  - get: A:INTERACTIVE POINT OPEN:2, Bool # PILOT WINDOW
+    set: 3 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+
+  - get: L:1:SWS_EXIT_Knob_Door_2, Bool
+  - get: A:INTERACTIVE POINT OPEN:1, Bool # CoPILOT DOOR
+    set: 2 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+  - get: L:1:SWS_EXIT_Knob_Door_3, Bool # Rear Upper Door Handle
+  - get: A:INTERACTIVE POINT OPEN:3, Bool # Upper Door Open/Close
+    set: 4 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+  - get: L:1:SWS_EXIT_Knob_Door_4, Bool # Rear Lower Door Lever
+  - get: A:INTERACTIVE POINT OPEN:4, Bool # Rear Lower Door Open/Close
+    set: 5 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+## - COCKPIT ITEMS ##
+  - get: L:1:XMLVAR_3D_EFB_Hidden 
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+  - get: L:SWS_MISC_Lever_Harness_1
+  - get: L:SWS_MISC_Lever_Harness_2
+  - get: L:SWS_Kodiak_TankSelector_1
+  - get: L:SWS_Kodiak_TankSelector_2
+  - get: L:LIGHTING_CABIN:3
+    set: (>B:LIGHTING_CABIN_3)
+  - get: A:LIGHT_CABIN:3, Bool # NOT WORKING NEEDS TROUBLESHOOTING
+    set: (>K:CABIN_LIGHTS_SET)
+## - CABIN LIGHTING and Cup Holders ##
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_1
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_2
+
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_4
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_5
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_6
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_7
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_8
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_9
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_10
+  - get: L:SWS_LIGHTING_Switch_Light_CABIN_11
+  - get: L:SWS_LIGHTING_Switch_Light_Landing
+  - get: L:CupHolder_1
+  - get: L:CupHolder_2
+  - get: L:CupHolder_3
+  - get: L:CupHolder_4
+  - get: L:CupHolder_5
+  - get: L:CupHolder_6
+  - get: L:CupHolder_7
+  - get: L:CupHolder_8
+## - EXTERNAL DOORS, Covers, etc. ##
+  - get: A:COVER ON:0, Bool
+    set: 0 (>K:COVER_SET)
+  - get: A:COVER ON:1, Bool
+    set: 1 (>K:COVER_SET)
+  - get: A:COVER ON:2, Bool
+    set: 2 (>K:COVER_SET)
+  - get: A:COVER ON:3, Bool
+    set: 3 (>K:COVER_SET)
+  - get: A:COVER ON:4, Bool
+    set: 4 (>K:COVER_SET)
+  - get: L:1:AIRCRAFT_EngineDoor_L, Bool
+  - get: L:1:AIRCRAFT_EngineDoor_R, Bool
+  - get: L:1:SWS_ENGINE_Check_Oil_1
+  - get: A:YOKE X POSITION LINEAR, Percent
+  - get: A:YOKE Y POSITION LINEAR, Percent
+  - get: L:1:SWS_Exit_Cargopod_1
+  - get: L:1:SWS_Exit_Cargopod_2
+  - get: L:1:SWS_Exit_Cargopod_3
+  - get: L:1:SWS_Exit_Cargopod_4

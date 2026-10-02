@@ -1,0 +1,1832 @@
+# Original author: https://discord.com/channels/1454265644416765974/1473996944371220560/1477770052215374037
+# Updated: 2026-03-01 20:51:36
+
+# Flight1 iFly 737 Max - Boeing 737-8 Max V1.2
+# Created by Hawks1326.
+include:
+- modules/FSDT_GSX.yaml
+master:
+- get: L:VC_Throttle_1_V5_SW_VAL, Number
+  set: "`${Math.min(100, Math.max(0, 100 - value))} (>L:VC_Throttle_1_trigger_VAL)`"
+- get: L:VC_Throttle_2_V5_SW_VAL, Number
+  set: "`${Math.min(100, Math.max(0, 100 - value))} (>L:VC_Throttle_2_trigger_VAL)`"
+- get: A:ELEVATOR POSITION, Position 16k
+  set: "`${value * -1} (>K:AXIS_ELEVATOR_SET)`"
+- get: A:AILERON POSITION, Position 16k
+  set: "`${value * -1} (>K:AXIS_AILERONS_SET)`"
+- get: A:RUDDER POSITION, Position 16k
+  set: "`${value * -1} (>K:AXIS_RUDDER_SET)`"
+- get: A:BRAKE LEFT POSITION EX1, Position 32k
+  set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+- get: A:BRAKE RIGHT POSITION EX1, Position 32k
+  set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+- get: A:RUDDER TRIM PCT, Position 16k
+  set: (>K:RUDDER_TRIM_SET_EX1)
+- get: A:ELEVATOR TRIM PCT, Position 16k
+  set: (>K:ELEVATOR_TRIM_SET)
+- get: A:AILERON TRIM PCT, Position 16k
+  set: (>K:AILERON_TRIM_SET_EX1)
+
+shared:
+#Aft Overhead
+- get: L:VC_ELT_SW_VAL,number
+  set: "`${value > current ? 43 : 42} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_LE_Devices_TEST_SW_VAL,number
+  set: "15 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_Elev_Jam_SW_VAL,number
+  set: "`${value > current ? 17 : 18} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: L:VC_Elev_Jam_SW_VAL,number
+  set: "18 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_IRS_1_SW_VAL,number
+  set: "`${value <= 5 ? 35 : value <= 15 ? 35 : value <= 25 ? 36 : 36} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_IRS_2_SW_VAL,number
+  set: "`${value <= 5 ? 37 : value <= 15 ? 37 : value <= 25 ? 38 : 38} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_DSPL_SEL_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return '9 (>L:VC_Navigation_trigger_VAL)'
+      case 10: return current > value ? '9 (>L:VC_Navigation_trigger_VAL)' : '10 (>L:VC_Navigation_trigger_VAL)'
+      case 20: return '10 (>L:VC_Navigation_trigger_VAL)'
+      default: return ''
+    }
+  skp: L:VC_DSPL_SEL_SW_VAL
+- get: L:VC_DSPL_BRT_SW_VAL,number
+  set: "`${value > current ? 8 : 7} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_SYS_DSPL_SW_VAL,number
+  set: "`${value > current ? 450 : 449} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_Service_Interphone_SW_VAL,number
+  set: "`${value > current ? 10 : 9} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_Dome_Light_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '38 (>L:VC_Miscellaneous_trigger_VAL) 38 (>L:VC_Miscellaneous_trigger_VAL)' : '38 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 10: return current > value ? '38 (>L:VC_Miscellaneous_trigger_VAL)' : '39 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 20: return current < 10 ? '39 (>L:VC_Miscellaneous_trigger_VAL) 39 (>L:VC_Miscellaneous_trigger_VAL)' : '39 (>L:VC_Miscellaneous_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_EEC_1_SW_V5_VAL,number
+  set: "`${value > current ? 9 : 0} (>L:VC_Engine_APU_trigger_VAL)`"
+- get: L:VC_EEC_2_SW_V5_VAL,number
+  set: "`${value > current ? 10 : 0} (>L:VC_Engine_APU_trigger_VAL)`"
+- get: L:VC_Oxygen_SW_VAL,number
+  set: "`${value > current ? 41 : 40} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Flight_Recorder_Test_SW_VAL,number
+  set: "`${value > current ? 5 : 6} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_Overspeed_1_Test_SW_VAL,number
+  set: "`${value > current ? 1 : 2} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Overspeed_2_Test_SW_VAL,number
+  set: "`${value > current ? 3 : 4} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Stall_1_Test_VAL,number
+  set: "`${value > current ? 5 : 6} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Stall_2_Test_VAL,number
+  set: "`${value > current ? 7 : 8} (>L:VC_Warning_Systems_trigger_VAL)`"
+#Forward Overhead
+#Row 1
+- get: L:VC_Flight_Control_A_SW_VAL,number
+  set: "`${value > current ? 2 : 1} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: L:VC_Flight_Control_A_SW_VAL,number
+  set: "2 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_Flight_Control_B_SW_VAL,number
+  set: "`${value > current ? 4 : 3} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: L:VC_Flight_Control_B_SW_VAL,number
+  set: "4 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_Altn_Flap_Master_SW_VAL,number
+  set: "`${value > current ? 6 : 5} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: L:VC_Altn_Flap_Master_SW_VAL,number
+  set: "6 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_Altn_Flap_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '7 (>L:VC_Flight_Control_trigger_VAL) 7 (>L:VC_Flight_Control_trigger_VAL)' : '7 (>L:VC_Flight_Control_trigger_VAL)'
+      case 10: return current > value ? '7 (>L:VC_Flight_Control_trigger_VAL)' : '8 (>L:VC_Flight_Control_trigger_VAL)'
+      case 20: return current < 10 ? '8 (>L:VC_Flight_Control_trigger_VAL) 8 (>L:VC_Flight_Control_trigger_VAL)' : '8 (>L:VC_Flight_Control_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Spoiler_A_SW_VAL,number
+  set: "`${value > current ? 10 : 9} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: L:VC_Spoiler_A_SW_VAL,number
+  set: "10 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_Spoiler_B_SW_VAL,number
+  set: "`${value > current ? 12 : 11} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: L:VC_Spoiler_B_SW_VAL,number
+  set: "12 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_Yaw_Damper_SW_VAL,number
+  set: "14 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_VHF_NAV_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '1 (>L:VC_Navigation_trigger_VAL) 1 (>L:VC_Navigation_trigger_VAL)' : '1 (>L:VC_Navigation_trigger_VAL)'
+      case 10: return current > value ? '1 (>L:VC_Navigation_trigger_VAL)' : '2 (>L:VC_Navigation_trigger_VAL)'
+      case 20: return current < 10 ? '2 (>L:VC_Navigation_trigger_VAL) 2 (>L:VC_Navigation_trigger_VAL)' : '2 (>L:VC_Navigation_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_IRS_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '3 (>L:VC_Navigation_trigger_VAL) 3 (>L:VC_Navigation_trigger_VAL)' : '3 (>L:VC_Navigation_trigger_VAL)'
+      case 10: return current > value ? '3 (>L:VC_Navigation_trigger_VAL)' : '4 (>L:VC_Navigation_trigger_VAL)'
+      case 20: return current < 10 ? '4 (>L:VC_Navigation_trigger_VAL) 4 (>L:VC_Navigation_trigger_VAL)' : '4 (>L:VC_Navigation_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_FMC_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '5 (>L:VC_Navigation_trigger_VAL) 5 (>L:VC_Navigation_trigger_VAL)' : '5 (>L:VC_Navigation_trigger_VAL)'
+      case 10: return current > value ? '5 (>L:VC_Navigation_trigger_VAL)' : '6 (>L:VC_Navigation_trigger_VAL)'
+      case 20: return current < 10 ? '6 (>L:VC_Navigation_trigger_VAL) 6 (>L:VC_Navigation_trigger_VAL)' : '6 (>L:VC_Navigation_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_DSPY_Source_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '1 (>L:VC_Instruments_trigger_VAL) 1 (>L:VC_Instruments_trigger_VAL)' : '1 (>L:VC_Instruments_trigger_VAL)'
+      case 10: return current > value ? '1 (>L:VC_Instruments_trigger_VAL)' : '2 (>L:VC_Instruments_trigger_VAL)'
+      case 20: return current < 10 ? '2 (>L:VC_Instruments_trigger_VAL) 2 (>L:VC_Instruments_trigger_VAL)' : '2 (>L:VC_Instruments_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_DSPY_Control_Panel_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '3 (>L:VC_Instruments_trigger_VAL) 3 (>L:VC_Instruments_trigger_VAL)' : '3 (>L:VC_Instruments_trigger_VAL)'
+      case 10: return current > value ? '3 (>L:VC_Instruments_trigger_VAL)' : '4 (>L:VC_Instruments_trigger_VAL)'
+      case 20: return current < 10 ? '4 (>L:VC_Instruments_trigger_VAL) 4 (>L:VC_Instruments_trigger_VAL)' : '4 (>L:VC_Instruments_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Fuel_Crossfeed_SW_VAL,number
+  set: "1 (>L:VC_Fuel_trigger_VAL)"
+- get: L:VC_Fuel_CENTER_L_SW_VAL,number
+  set: "`${value > current ? 2 : 3} (>L:VC_Fuel_trigger_VAL)`"
+- get: L:VC_Fuel_CENTER_R_SW_VAL,number
+  set: "`${value > current ? 4 : 5} (>L:VC_Fuel_trigger_VAL)`"
+- get: L:VC_Fuel_L_AFT_SW_VAL,number
+  set: "`${value > current ? 6 : 7} (>L:VC_Fuel_trigger_VAL)`"
+- get: L:VC_Fuel_L_FWD_SW_VAL,number
+  set: "`${value > current ? 8 : 9} (>L:VC_Fuel_trigger_VAL)`"
+- get: L:VC_Fuel_R_FWD_SW_VAL,number
+  set: "`${value > current ? 10 : 11} (>L:VC_Fuel_trigger_VAL)`"
+- get: L:VC_Fuel_R_AFT_SW_VAL,number
+  set: "`${value > current ? 12 : 13} (>L:VC_Fuel_trigger_VAL)`"
+#Row 2
+- get: L:VC_Electrical_Maint_SW_VAL,number
+  set: "`${value > current ? 1 : 2} (>L:VC_Electrical_trigger_VAL)`"
+- get: L:VC_DC_Meters_Selector_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 60 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 50 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 40 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : '3 (>L:VC_Electrical_trigger_VAL)'
+      case 10: return current > value ? '3 (>L:VC_Electrical_trigger_VAL)' : '4 (>L:VC_Electrical_trigger_VAL)'
+      case 20: return current > value ? current > 30 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : '3 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : '4 (>L:VC_Electrical_trigger_VAL)'
+      case 30: return current > value ? current > 50 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 40 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : '3 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : '4 (>L:VC_Electrical_trigger_VAL)'
+      case 40: return current > value ? current > 60 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : current > 50 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : '3 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : '4 (>L:VC_Electrical_trigger_VAL)'
+      case 50: return current > value ? current > 60 ? '3 (>L:VC_Electrical_trigger_VAL) 3 (>L:VC_Electrical_trigger_VAL)' : '3 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : '4 (>L:VC_Electrical_trigger_VAL)'
+      case 60: return current > value ? '3 (>L:VC_Electrical_trigger_VAL)' : current > 40 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : '4 (>L:VC_Electrical_trigger_VAL)'
+      case 70: return current > 50 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 40 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '4 (>L:VC_Electrical_trigger_VAL) 4 (>L:VC_Electrical_trigger_VAL)' : '4 (>L:VC_Electrical_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_AC_Meters_Selector_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 60 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 50 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 40 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : '5 (>L:VC_Electrical_trigger_VAL)'
+      case 10: return current > value ? '5 (>L:VC_Electrical_trigger_VAL)' : '6 (>L:VC_Electrical_trigger_VAL)'
+      case 20: return current > value ? current > 30 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : '5 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : '6 (>L:VC_Electrical_trigger_VAL)'
+      case 30: return current > value ? current > 50 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 40 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : '5 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : '6 (>L:VC_Electrical_trigger_VAL)'
+      case 40: return current > value ? current > 60 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : current > 50 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : '5 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : '6 (>L:VC_Electrical_trigger_VAL)'
+      case 50: return current > value ? current > 60 ? '5 (>L:VC_Electrical_trigger_VAL) 5 (>L:VC_Electrical_trigger_VAL)' : '5 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : '6 (>L:VC_Electrical_trigger_VAL)'
+      case 60: return current > value ? '5 (>L:VC_Electrical_trigger_VAL)' : current > 40 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : '6 (>L:VC_Electrical_trigger_VAL)'
+      case 70: return current > 50 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 40 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 30 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 20 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 10 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : current > 0 ? '6 (>L:VC_Electrical_trigger_VAL) 6 (>L:VC_Electrical_trigger_VAL)' : '6 (>L:VC_Electrical_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Battery_SW_VAL,number
+  set: "`${value > current ? 8 : 7} (>L:VC_Electrical_trigger_VAL)`"
+- get: L:VC_CAB_UTIL_SW_VAL,number
+  set: "`${value > current ? 10 : 9} (>L:VC_Electrical_trigger_VAL)`"
+- get: L:VC_IFE_PASS_SEAT_SW_VAL,number
+  set: "`${value > current ? 30 : 29} (>L:VC_Electrical_trigger_VAL)`"
+- get: L:VC_STANDBY_POWER_SW_VAL,number
+  set: "`${value > current ? 12 : 11} (>L:VC_Electrical_trigger_VAL)`"
+- get: L:VC_IDG_1_Disc_SW_VAL,number
+  set: "`${value > current ? 13 : 14} (>L:VC_Electrical_trigger_VAL)`"
+- get: L:VC_IDG_2_Disc_SW_VAL,number
+  set: "`${value > current ? 15 : 16} (>L:VC_Electrical_trigger_VAL)`"
+- get: L:VC_Ground_Power_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0: return '17 (>L:VC_Electrical_trigger_VAL)'
+      case 20: return '18 (>L:VC_Electrical_trigger_VAL)'
+    }
+- get: L:VC_Bus_Transfer_SW_VAL,number
+  set: "`${value > current ? 13 : 14} (>L:VC_Electrical_trigger_VAL)`"
+- get: L:VC_ENG_1_Generator_SW_VAL,number
+  set: |
+    if (value < 5) return '21 (>L:VC_Electrical_trigger_VAL)'
+    if (value >= 15) return '22 (>L:VC_Electrical_trigger_VAL)'
+    return ''
+  skp: L:VC_ENG_1_Generator_SW_VAL
+- get: L:VC_APU_Generator_1_SW_VAL,number
+  set: |
+    if (value < 5) return '25 (>L:VC_Electrical_trigger_VAL)'
+    if (value >= 15) return '26 (>L:VC_Electrical_trigger_VAL)'
+    return ''
+  skp: L:VC_APU_Generator_1_SW_VAL
+- get: L:VC_APU_Generator_2_SW_VAL,number
+  set: |
+    if (value < 5) return '27 (>L:VC_Electrical_trigger_VAL)'
+    if (value >= 15) return '28 (>L:VC_Electrical_trigger_VAL)'
+    return ''
+  skp: L:VC_APU_Generator_2_SW_VAL
+- get: L:VC_ENG_2_Generator_SW_VAL,number
+  set: |
+    if (value < 5) return '23 (>L:VC_Electrical_trigger_VAL)'
+    if (value >= 15) return '24 (>L:VC_Electrical_trigger_VAL)'
+    return ''
+  skp: L:VC_ENG_2_Generator_SW_VAL
+- get: L:VC_Wiper_L_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 20 ? '2 (>L:VC_Anti_Ice_trigger_VAL) 2 (>L:VC_Anti_Ice_trigger_VAL) 2 (>L:VC_Anti_Ice_trigger_VAL)' : current > 10 ? '2 (>L:VC_Anti_Ice_trigger_VAL) 2 (>L:VC_Anti_Ice_trigger_VAL)' : '2 (>L:VC_Anti_Ice_trigger_VAL)'
+      case 10: return current > value ? '2 (>L:VC_Anti_Ice_trigger_VAL)' : '1 (>L:VC_Anti_Ice_trigger_VAL)'
+      case 20: return current > value ? current > 20 ? '2 (>L:VC_Anti_Ice_trigger_VAL) 2 (>L:VC_Anti_Ice_trigger_VAL)' : '2 (>L:VC_Anti_Ice_trigger_VAL)' : current > 10 ? '1 (>L:VC_Anti_Ice_trigger_VAL) 1 (>L:VC_Anti_Ice_trigger_VAL)' : '1 (>L:VC_Anti_Ice_trigger_VAL)'
+      case 30: return current > 20 ? '1 (>L:VC_Anti_Ice_trigger_VAL) 1 (>L:VC_Anti_Ice_trigger_VAL) 1 (>L:VC_Anti_Ice_trigger_VAL)' : current > 10 ? '1 (>L:VC_Anti_Ice_trigger_VAL) 1 (>L:VC_Anti_Ice_trigger_VAL)' : '1 (>L:VC_Anti_Ice_trigger_VAL)'
+      default: return ''
+    }
+#Row 3
+- get: L:VC_CB_Light_Bright_SW_VAL,number
+  set: "`${value > current ? 9 : 8} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_OVHD_Panel_Bright_SW_VAL,number
+  set: "`${value > current ? 11 : 10} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Equipment_Cooling_1_SW_VAL,number
+  set: "`${value > current ? 2 : 1} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Equipment_Cooling_2_SW_VAL,number
+  set: "`${value > current ? 4 : 3} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Emergency_Light_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current <= 10 ? '13 (>L:VC_Miscellaneous_trigger_VAL)' : '13 (>L:VC_Miscellaneous_trigger_VAL) 13 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 10: return current < 10 ? '12 (>L:VC_Miscellaneous_trigger_VAL)' : '13 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 20: return current >= 10 ? '12 (>L:VC_Miscellaneous_trigger_VAL)' : '12 (>L:VC_Miscellaneous_trigger_VAL) 12 (>L:VC_Miscellaneous_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_No_Smoking_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '15 (>L:VC_Miscellaneous_trigger_VAL) 15 (>L:VC_Miscellaneous_trigger_VAL)' : '15 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 10: return current > value ? '15 (>L:VC_Miscellaneous_trigger_VAL)' : '14 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 20: return current < 10 ? '14 (>L:VC_Miscellaneous_trigger_VAL) 14 (>L:VC_Miscellaneous_trigger_VAL)' : '14 (>L:VC_Miscellaneous_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Fasten_Belts_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '17 (>L:VC_Miscellaneous_trigger_VAL) 17 (>L:VC_Miscellaneous_trigger_VAL)' : '17 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 10: return current > value ? '17 (>L:VC_Miscellaneous_trigger_VAL)' : '16 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 20: return current < 10 ? '16 (>L:VC_Miscellaneous_trigger_VAL) 16 (>L:VC_Miscellaneous_trigger_VAL)' : '16 (>L:VC_Miscellaneous_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_ATTEND_SW_VAL,number
+  set: "`${value > current ? 1 : 2} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_GRD_CALL_SW_VAL,number
+  set: "`${value > current ? 3 : 4} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_Wiper_R_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 20 ? '4 (>L:VC_Anti_Ice_trigger_VAL) 4 (>L:VC_Anti_Ice_trigger_VAL) 4 (>L:VC_Anti_Ice_trigger_VAL)' : current > 10 ? '4 (>L:VC_Anti_Ice_trigger_VAL) 4 (>L:VC_Anti_Ice_trigger_VAL)' : '4 (>L:VC_Anti_Ice_trigger_VAL)'
+      case 10: return current > value ? '4 (>L:VC_Anti_Ice_trigger_VAL)' : '3 (>L:VC_Anti_Ice_trigger_VAL)'
+      case 20: return current > value ? current > 20 ? '4 (>L:VC_Anti_Ice_trigger_VAL) 4 (>L:VC_Anti_Ice_trigger_VAL)' : '4 (>L:VC_Anti_Ice_trigger_VAL)' : current > 10 ? '3 (>L:VC_Anti_Ice_trigger_VAL) 3 (>L:VC_Anti_Ice_trigger_VAL)' : '3 (>L:VC_Anti_Ice_trigger_VAL)'
+      case 30: return current > 20 ? '3 (>L:VC_Anti_Ice_trigger_VAL) 3 (>L:VC_Anti_Ice_trigger_VAL) 3 (>L:VC_Anti_Ice_trigger_VAL)' : current > 10 ? '3 (>L:VC_Anti_Ice_trigger_VAL) 3 (>L:VC_Anti_Ice_trigger_VAL)' : '3 (>L:VC_Anti_Ice_trigger_VAL)'
+      default: return ''
+    }
+#Row 4
+- get: L:VC_Window_Heat_1_SW_VAL,number
+  set: "`${value > current ? 8 : 7} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_Window_Heat_2_SW_VAL,number
+  set: "`${value > current ? 10 : 9} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_Window_Heat_Test_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0: return '5 (>L:VC_Anti_Ice_trigger_VAL)'
+      case 20: return '6 (>L:VC_Anti_Ice_trigger_VAL)'
+    }
+- get: L:VC_Window_Heat_3_SW_VAL,number
+  set: "`${value > current ? 12 : 11} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_Window_Heat_4_SW_VAL,number
+  set: "`${value > current ? 14 : 13} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_Probe_Heat_1_SW_VAL,number
+  set: "`${value > current ? 16 : 15} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_Probe_Heat_2_SW_VAL,number
+  set: "`${value > current ? 18 : 17} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_Wing_AntiIce_SW_VAL,number
+  set: "`${value > current ? 20 : 19} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_Engine_1_AntiIce_SW_VAL,number
+  set: "`${value > current ? 22 : 21} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_Engine_2_AntiIce_SW_VAL,number
+  set: "`${value > current ? 24 : 23} (>L:VC_Anti_Ice_trigger_VAL)`"
+- get: L:VC_ENG_1_HYD_SW_VAL,number
+  set: "`${value > current ? 1 : 2} (>L:VC_Hydraulics_trigger_VAL)`"
+- get: L:VC_ELEC_2_HYD_SW_VAL,number
+  set: "`${value > current ? 7 : 8} (>L:VC_Hydraulics_trigger_VAL)`"
+- get: L:VC_ELEC_1_HYD_SW_VAL,number
+  set: "`${value > current ? 5 : 6} (>L:VC_Hydraulics_trigger_VAL)`"
+- get: L:VC_ENG_2_HYD_SW_VAL,number
+  set: "`${value > current ? 3 : 4} (>L:VC_Hydraulics_trigger_VAL)`"
+- get: L:VC_CVR_Erase_SW_VAL,number
+  set: "`${value > current ? 5 : 6} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_CVR_Test_SW_VAL,number
+  set: "`${value > current ? 7 : 8} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_Altitude_HORN_Cutout_SW_VAL,number
+  set: "`${value > current ? 5 : 6} (>L:VC_Air_Systems_trigger_VAL)`"
+#Row 5
+- get: L:VC_AIR_TEMP_Source_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 50 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : current > 40 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : current > 30 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : current > 20 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : current > 10 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : '9 (>L:VC_Air_Systems_trigger_VAL)'
+      case 10: return current > value ? '9 (>L:VC_Air_Systems_trigger_VAL)' : '8 (>L:VC_Air_Systems_trigger_VAL)'
+      case 20: return current > value ? current > 30 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : current > 20 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : '9 (>L:VC_Air_Systems_trigger_VAL)' : current > 10 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : '8 (>L:VC_Air_Systems_trigger_VAL)'
+      case 30: return current > value ? current > 50 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : current > 40 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : '9 (>L:VC_Air_Systems_trigger_VAL)' : current > 10 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 0 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : '8 (>L:VC_Air_Systems_trigger_VAL)'
+      case 40: return current > value ? current > 50 ? '9 (>L:VC_Air_Systems_trigger_VAL) 9 (>L:VC_Air_Systems_trigger_VAL)' : '9 (>L:VC_Air_Systems_trigger_VAL)' : current > 20 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 10 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 0 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : '8 (>L:VC_Air_Systems_trigger_VAL)'
+      case 50: return current > value ? '9 (>L:VC_Air_Systems_trigger_VAL)' : current > 30 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 20 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 10 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 0 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : '8 (>L:VC_Air_Systems_trigger_VAL)'
+      case 60: return current > 40 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 30 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 20 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 10 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : current > 0 ? '8 (>L:VC_Air_Systems_trigger_VAL) 8 (>L:VC_Air_Systems_trigger_VAL)' : '8 (>L:VC_Air_Systems_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_TRIM_AIR_SW_VAL,number
+  set: "`${value > current ? 10 : 11} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Temperature_Selector_1_SW_VAL,number
+  set: "`${value > current ? 12 : 13} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Temperature_Selector_2_SW_VAL,number
+  set: "`${value > current ? 14 : 15} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Temperature_Selector_3_SW_VAL,number
+  set: "`${value > current ? 16 : 17} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_RecircFan_L_SW_VAL,number
+  set: "`${value > current ? 19 : 18} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_RecircFan_R_SW_VAL,number
+  set: "`${value > current ? 21 : 20} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Air_Systems_Test_SW_VAL,number
+  set: "`${value > current ? 22 : 23} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Pack_1_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '24 (>L:VC_Air_Systems_trigger_VAL) 24 (>L:VC_Air_Systems_trigger_VAL)' : '24 (>L:VC_Air_Systems_trigger_VAL)'
+      case 10: return current > value ? '24 (>L:VC_Air_Systems_trigger_VAL)' : '25 (>L:VC_Air_Systems_trigger_VAL)'
+      case 20: return current < 10 ? '25 (>L:VC_Air_Systems_trigger_VAL) 25 (>L:VC_Air_Systems_trigger_VAL)' : '25 (>L:VC_Air_Systems_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Isolation_Valve_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '28 (>L:VC_Air_Systems_trigger_VAL) 28 (>L:VC_Air_Systems_trigger_VAL)' : '28 (>L:VC_Air_Systems_trigger_VAL)'
+      case 10: return current > value ? '28 (>L:VC_Air_Systems_trigger_VAL)' : '29 (>L:VC_Air_Systems_trigger_VAL)'
+      case 20: return current < 10 ? '29 (>L:VC_Air_Systems_trigger_VAL) 29 (>L:VC_Air_Systems_trigger_VAL)' : '29 (>L:VC_Air_Systems_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Pack_2_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '26 (>L:VC_Air_Systems_trigger_VAL) 26 (>L:VC_Air_Systems_trigger_VAL)' : '26 (>L:VC_Air_Systems_trigger_VAL)'
+      case 10: return current > value ? '26 (>L:VC_Air_Systems_trigger_VAL)' : '27 (>L:VC_Air_Systems_trigger_VAL)'
+      case 20: return current < 10 ? '27 (>L:VC_Air_Systems_trigger_VAL) 27 (>L:VC_Air_Systems_trigger_VAL)' : '27 (>L:VC_Air_Systems_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_TRIP_Reset_SW_VAL,number
+  set: "`${value > current ? 30 : 31} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Engine_1_Bleed_Air_SW_VAL,number
+  set: "`${value > current ? 33 : 32} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_APU_Bleed_Air_SW_VAL,number
+  set: "`${value > current ? 37 : 36} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Engine_2_Bleed_Air_SW_VAL,number
+  set: "`${value > current ? 35 : 34} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Flight_Altitude_SW_VAL,number
+  set: "`${Math.abs(value - current) > 50 ? (value < current ? 39 : 38) : (value > current ? 39 : 38)} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Outflow_Valve_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current === 10 ? '42 (>L:VC_Air_Systems_trigger_VAL)' : ''
+      case 20: return current === 10 ? '43 (>L:VC_Air_Systems_trigger_VAL)' : ''
+      case 10: return ''
+      default: return ''
+    }
+- get: L:VC_Landing_Altitude_SW_VAL,number
+  set: "`${Math.abs(value - current) > 50 ? (value < current ? 41 : 40) : (value > current ? 41 : 40)} (>L:VC_Air_Systems_trigger_VAL)`"
+- get: L:VC_Pressurization_Mode_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '44 (>L:VC_Air_Systems_trigger_VAL) 44 (>L:VC_Air_Systems_trigger_VAL)' : '44 (>L:VC_Air_Systems_trigger_VAL)'
+      case 10: return current > value ? '44 (>L:VC_Air_Systems_trigger_VAL)' : '45 (>L:VC_Air_Systems_trigger_VAL)'
+      case 20: return current < 10 ? '45 (>L:VC_Air_Systems_trigger_VAL) 45 (>L:VC_Air_Systems_trigger_VAL)' : '45 (>L:VC_Air_Systems_trigger_VAL)'
+      default: return ''
+    }
+#Lighting Panel
+- get: L:VC_Landing_Light_1_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '18 (>L:VC_Miscellaneous_trigger_VAL) 18 (>L:VC_Miscellaneous_trigger_VAL)' : '18 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 10: return current > value ? '18 (>L:VC_Miscellaneous_trigger_VAL)' : '19 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 20: return current < 10 ? '19 (>L:VC_Miscellaneous_trigger_VAL) 19 (>L:VC_Miscellaneous_trigger_VAL)' : '19 (>L:VC_Miscellaneous_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Landing_Light_2_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '20 (>L:VC_Miscellaneous_trigger_VAL) 20 (>L:VC_Miscellaneous_trigger_VAL)' : '20 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 10: return current > value ? '20 (>L:VC_Miscellaneous_trigger_VAL)' : '21 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 20: return current < 10 ? '21 (>L:VC_Miscellaneous_trigger_VAL) 21 (>L:VC_Miscellaneous_trigger_VAL)' : '21 (>L:VC_Miscellaneous_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Runway_Turnoff_Light_L_SW_VAL,number
+  set: "`${value > current ? 23 : 22} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Runway_Turnoff_Light_R_SW_VAL,number
+  set: "`${value > current ? 25 : 24} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Taxi_Light_SW_VAL,number
+  set: "`${value > current ? 27 : 26} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_APU_SW_VAL,number
+  set: |
+    if (value < 5 && current >= 5) return '7 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 5 && value < 15 && current < 5) return '8 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 5 && value < 15 && current >= 15) return ''
+    if (value >= 15 && current < 5) return '8 (>L:VC_Engine_APU_trigger_VAL) 8 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 15 && current < 15) return '8 (>L:VC_Engine_APU_trigger_VAL)'
+    return ''
+  skp: L:VC_APU_SW_VAL
+- get: L:VC_Engine_1_Start_SW_VAL,number
+  set: |
+    if (value < 5 && current >= 5 && current < 15) return '3 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value < 5 && current >= 15 && current < 25) return '3 (>L:VC_Engine_APU_trigger_VAL) 3 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value < 5 && current >= 25) return '3 (>L:VC_Engine_APU_trigger_VAL) 3 (>L:VC_Engine_APU_trigger_VAL) 3 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 5 && value < 15 && current < 5) return '4 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 5 && value < 15 && current >= 15) return '3 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 15 && value < 25 && current < 5) return '4 (>L:VC_Engine_APU_trigger_VAL) 4 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 15 && value < 25 && current >= 5 && current < 15) return '4 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 15 && value < 25 && current >= 25) return '3 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 25 && current < 5) return '4 (>L:VC_Engine_APU_trigger_VAL) 4 (>L:VC_Engine_APU_trigger_VAL) 4 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 25 && current >= 5 && current < 15) return '4 (>L:VC_Engine_APU_trigger_VAL) 4 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 25 && current >= 15 && current < 25) return '4 (>L:VC_Engine_APU_trigger_VAL)'
+    return ''
+  skp: L:VC_Engine_1_Start_SW_VAL
+- get: L:VC_Ignition_Select_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '2 (>L:VC_Engine_APU_trigger_VAL) 2 (>L:VC_Engine_APU_trigger_VAL)' : '2 (>L:VC_Engine_APU_trigger_VAL)'
+      case 10: return current > value ? '2 (>L:VC_Engine_APU_trigger_VAL)' : '1 (>L:VC_Engine_APU_trigger_VAL)'
+      case 20: return current < 10 ? '1 (>L:VC_Engine_APU_trigger_VAL) 1 (>L:VC_Engine_APU_trigger_VAL)' : '1 (>L:VC_Engine_APU_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Engine_2_Start_SW_VAL,number
+  set: |
+    if (value < 5 && current >= 5 && current < 15) return '5 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value < 5 && current >= 15 && current < 25) return '5 (>L:VC_Engine_APU_trigger_VAL) 5 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value < 5 && current >= 25) return '5 (>L:VC_Engine_APU_trigger_VAL) 5 (>L:VC_Engine_APU_trigger_VAL) 5 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 5 && value < 15 && current < 5) return '6 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 5 && value < 15 && current >= 15) return '5 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 15 && value < 25 && current < 5) return '6 (>L:VC_Engine_APU_trigger_VAL) 6 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 15 && value < 25 && current >= 5 && current < 15) return '6 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 15 && value < 25 && current >= 25) return '5 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 25 && current < 5) return '6 (>L:VC_Engine_APU_trigger_VAL) 6 (>L:VC_Engine_APU_trigger_VAL) 6 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 25 && current >= 5 && current < 15) return '6 (>L:VC_Engine_APU_trigger_VAL) 6 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value >= 25 && current >= 15 && current < 25) return '6 (>L:VC_Engine_APU_trigger_VAL)'
+    return ''
+  skp: L:VC_Engine_2_Start_SW_VAL
+- get: L:VC_Logo_Light_SW_VAL,number
+  set: "`${value > current ? 29 : 28} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Position_Light_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '30 (>L:VC_Miscellaneous_trigger_VAL) 30 (>L:VC_Miscellaneous_trigger_VAL)' : '30 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 10: return current > value ? '30 (>L:VC_Miscellaneous_trigger_VAL)' : '31 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 20: return current < 10 ? '31 (>L:VC_Miscellaneous_trigger_VAL) 31 (>L:VC_Miscellaneous_trigger_VAL)' : '31 (>L:VC_Miscellaneous_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Beacon_Light_SW_VAL,number
+  set: "`${value > current ? 33 : 32} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Wing_Light_SW_VAL,number
+  set: "`${value > current ? 35 : 34} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Wheel_Well_Light_SW_VAL,number
+  set: "`${value > current ? 37 : 36} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Compass_Light_SW_VAL,number
+  set: "`${value > current ? 84 : 85} (>L:VC_Miscellaneous_trigger_VAL)`"
+#EFIS L
+- get: L:VC_CAPT_Chronograph_SW_VAL,number
+  set: "`${value > 5 ? '109 (>L:VC_Instruments_trigger_VAL)' : ''}`"
+  skp: L:VC_CAPT_Chronograph_SW_VAL
+- get: L:VC_Fire_Warning_Light_1_VAL,number
+  set: "`${value > current ? 9 : 10} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Master_Caution_Light_1_VAL,number
+  set: "`${value > current ? 13 : 14} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_System_Annunciator_Light_1_VAL,number
+  set: "`${value > current ? 17 : 18} (>L:VC_Warning_Systems_trigger_VAL)`"
+#MCP
+- get: L:VC_FD_left_SW_VAL,number
+  set: "`${value > current ? 42 : 41} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_AT_SW_VAL,number
+  set: "`${value > current ? 1 : 2} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_N1_SW_VAL,number
+  set: "`${value > 5 ? '45 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_N1_SW_VAL
+- get: L:VC_SPEED_SW_VAL,number
+  set: "`${value > 5 ? '47 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_SPEED_SW_VAL
+- get: L:VC_Changeover_SW_VAL,number
+  set: "`${value > 5 ? '19 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_Changeover_SW_VAL
+- get: L:VC_SPD_INTV_SW_VAL,number
+  set: "`${value > 5 ? '23 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_SPD_INTV_SW_VAL
+- get: L:VC_VNAV_SW_VAL,number
+  set: "`${value > 5 ? '3 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_VNAV_SW_VAL
+- get: L:VC_LVL_CHG_SW_VAL,number
+  set: "`${value > 5 ? '49 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_LVL_CHG_SW_VAL
+- get: L:VC_BANK_LIMIT_SW_VAL,number
+  set: "`${value > current ? 26 : 25} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_HDG_SEL_SW_VAL,number
+  set: "`${value > 5 ? '51 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_HDG_SEL_SW_VAL
+- get: L:VC_LNAV_SW_VAL,number
+  set: "`${value > 5 ? '5 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_LNAV_SW_VAL
+- get: L:VC_VOR_LOC_SW_VAL,number
+  set: "`${value > 5 ? '29 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_VOR_LOC_SW_VAL
+- get: L:VC_APP_SW_VAL,number
+  set: "`${value > 5 ? '53 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_APP_SW_VAL
+- get: L:VC_ALT_HLD_SW_VAL,number
+  set: "`${value > 5 ? '55 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_ALT_HLD_SW_VAL
+- get: L:VC_ALT_INTV_SW_VAL,number
+  set: "`${value > 5 ? '33 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_ALT_INTV_SW_VAL
+- get: L:VC_VS_SW_VAL,number
+  set: "`${value > 5 ? '57 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_VS_SW_VAL
+- get: L:VC_CMD_A_SW_VAL,number
+  set: "`${value > 5 ? '7 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_CMD_A_SW_VAL
+- get: L:VC_CWS_A_SW_VAL,number
+  set: "`${value > 5 ? '37 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_CWS_A_SW_VAL
+- get: L:VC_CMD_B_SW_VAL,number
+  set: "`${value > 5 ? '9 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_CMD_B_SW_VAL
+- get: L:VC_CWS_B_SW_VAL,number
+  set: "`${value > 5 ? '39 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_CWS_B_SW_VAL
+- get: L:VC_DISENGAGE_Bar_SW_VAL,number
+  set: "`${value > 5 ? '60 (>L:VC_Automatic_Flight_trigger_VAL)' : ''}`"
+  skp: L:VC_DISENGAGE_Bar_SW_VAL
+- get: L:VC_FD_right_SW_VAL,number
+  set: "`${value > current ? 44 : 43} (>L:VC_Automatic_Flight_trigger_VAL)`"
+#EFIS R
+- get: L:VC_System_Annunciator_Light_2_VAL,number
+  set: "`${value > current ? 19 : 20} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Master_Caution_Light_2_VAL,number
+  set: "`${value > current ? 15 : 16} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Fire_Warning_Light_2_VAL,number
+  set: "`${value > current ? 11 : 12} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_FO_Chronograph_SW_VAL,number
+  set: "`${value > 5 ? '111 (>L:VC_Instruments_trigger_VAL)' : ''}`"
+  skp: L:VC_FO_Chronograph_SW_VAL
+#EFB 1
+- get: L:VC_EFB_CAPT_BRT_SW_VAL,number
+  set: "`${value == 10 ? '34 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_BRT_SW_VAL
+- get: L:VC_EFB_CAPT_MENU_SW_VAL,number
+  set: "`${value == 10 ? '36 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_MENU_SW_VAL
+- get: L:VC_EFB_CAPT_BACKSPACE_SW_VAL,number
+  set: "`${value == 10 ? '38 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_BACKSPACE_SW_VAL
+- get: L:VC_EFB_CAPT_PGUP_SW_VAL,number
+  set: "`${value == 10 ? '40 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_PGUP_SW_VAL
+- get: L:VC_EFB_CAPT_PGDN_SW_VAL,number
+  set: "`${value == 10 ? '42 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_PGDN_SW_VAL
+- get: L:VC_EFB_CAPT_XFR_SW_VAL,number
+  set: "`${value == 10 ? '44 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_XFR_SW_VAL
+- get: L:VC_EFB_CAPT_ENTER_SW_VAL,number
+  set: "`${value == 10 ? '46 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_ENTER_SW_VAL
+- get: L:VC_EFB_CAPT_PWR_SW_VAL,number
+  set: "`${value == 10 ? 48 : ''} (>L:VC_EFB_trigger_VAL)`"
+  skp: L:VC_EFB_CAPT_PWR_SW_VAL
+- get: L:VC_EFB_CAPT_R1_SW_VAL,number
+  set: "`${value == 10 ? '17 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_R1_SW_VAL
+- get: L:VC_EFB_CAPT_R2_SW_VAL,number
+  set: "`${value == 10 ? '19 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_R2_SW_VAL
+- get: L:VC_EFB_CAPT_R3_SW_VAL,number
+  set: "`${value == 10 ? '21 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_R3_SW_VAL
+- get: L:VC_EFB_CAPT_R4_SW_VAL,number
+  set: "`${value == 10 ? '23 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_R4_SW_VAL
+- get: L:VC_EFB_CAPT_R5_SW_VAL,number
+  set: "`${value == 10 ? '25 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_R5_SW_VAL
+- get: L:VC_EFB_CAPT_R6_SW_VAL,number
+  set: "`${value == 10 ? '27 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_R6_SW_VAL
+- get: L:VC_EFB_CAPT_R7_SW_VAL,number
+  set: "`${value == 10 ? '29 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_R7_SW_VAL
+- get: L:VC_EFB_CAPT_R8_SW_VAL,number
+  set: "`${value == 10 ? '31 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_R8_SW_VAL
+- get: L:VC_EFB_CAPT_ARROW_RIGHT_SW_VAL,number
+  set: "`${value == 10 ? '60 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_ARROW_RIGHT_SW_VAL
+- get: L:VC_EFB_CAPT_ARROW_LEFT_SW_VAL,number
+  set: "`${value == 10 ? '58 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_ARROW_LEFT_SW_VAL
+- get: L:VC_EFB_CAPT_ARROW_DN_SW_VAL,number
+  set: "`${value == 10 ? '56 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_ARROW_DN_SW_VAL
+- get: L:VC_EFB_CAPT_ARROW_UP_SW_VAL,number
+  set: "`${value == 10 ? '54 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_ARROW_UP_SW_VAL
+- get: L:VC_EFB_CAPT_ZOOM_OUT_SW_VAL,number
+  set: "`${value == 10 ? '52 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_ZOOM_OUT_SW_VAL
+- get: L:VC_EFB_CAPT_ZOOM_IN_SW_VAL,number
+  set: "`${value == 10 ? '50 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_ZOOM_IN_SW_VAL
+- get: L:VC_EFB_CAPT_L8_SW_VAL,number
+  set: "`${value == 10 ? '15 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_L8_SW_VAL
+- get: L:VC_EFB_CAPT_L7_SW_VAL,number
+  set: "`${value == 10 ? '13 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_L7_SW_VAL
+- get: L:VC_EFB_CAPT_L6_SW_VAL,number
+  set: "`${value == 10 ? '11 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_L6_SW_VAL
+- get: L:VC_EFB_CAPT_L5_SW_VAL,number
+  set: "`${value == 10 ? '9 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_L5_SW_VAL
+- get: L:VC_EFB_CAPT_L4_SW_VAL,number
+  set: "`${value == 10 ? '7 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_L4_SW_VAL
+- get: L:VC_EFB_CAPT_L3_SW_VAL,number
+  set: "`${value == 10 ? '5 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_L3_SW_VAL
+- get: L:VC_EFB_CAPT_L2_SW_VAL,number
+  set: "`${value == 10 ? '3 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_L2_SW_VAL
+- get: L:VC_EFB_CAPT_L1_SW_VAL,number
+  set: "`${value == 10 ? '1 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_CAPT_L1_SW_VAL
+#EFB 2
+- get: L:VC_EFB_FO_BRT_SW_VAL,number
+  set: "`${value == 10 ? '134 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_BRT_SW_VAL
+- get: L:VC_EFB_FO_MENU_SW_VAL,number
+  set: "`${value == 10 ? '136 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_MENU_SW_VAL
+- get: L:VC_EFB_FO_BACKSPACE_SW_VAL,number
+  set: "`${value == 10 ? '138 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_BACKSPACE_SW_VAL
+- get: L:VC_EFB_FO_PGUP_SW_VAL,number
+  set: "`${value == 10 ? '140 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_PGUP_SW_VAL
+- get: L:VC_EFB_FO_PGDN_SW_VAL,number
+  set: "`${value == 10 ? '142 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_PGDN_SW_VAL
+- get: L:VC_EFB_FO_XFR_SW_VAL,number
+  set: "`${value == 10 ? '144 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_XFR_SW_VAL
+- get: L:VC_EFB_FO_ENTER_SW_VAL,number
+  set: "`${value == 10 ? '146 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_ENTER_SW_VAL
+- get: L:VC_EFB_FO_PWR_SW_VAL,number
+  set: "`${value == 10 ? 148 : ''} (>L:VC_EFB_trigger_VAL)`"
+  skp: L:VC_EFB_FO_PWR_SW_VAL
+- get: L:VC_EFB_FO_R1_SW_VAL,number
+  set: "`${value == 10 ? '117 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_R1_SW_VAL
+- get: L:VC_EFB_FO_R2_SW_VAL,number
+  set: "`${value == 10 ? '119 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_R2_SW_VAL
+- get: L:VC_EFB_FO_R3_SW_VAL,number
+  set: "`${value == 10 ? '121 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_R3_SW_VAL
+- get: L:VC_EFB_FO_R4_SW_VAL,number
+  set: "`${value == 10 ? '123 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_R4_SW_VAL
+- get: L:VC_EFB_FO_R5_SW_VAL,number
+  set: "`${value == 10 ? '125 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_R5_SW_VAL
+- get: L:VC_EFB_FO_R6_SW_VAL,number
+  set: "`${value == 10 ? '127 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_R6_SW_VAL
+- get: L:VC_EFB_FO_R7_SW_VAL,number
+  set: "`${value == 10 ? '129 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_R7_SW_VAL
+- get: L:VC_EFB_FO_R8_SW_VAL,number
+  set: "`${value == 10 ? '131 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_R8_SW_VAL
+- get: L:VC_EFB_FO_ARROW_RIGHT_SW_VAL,number
+  set: "`${value == 10 ? '160 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_ARROW_RIGHT_SW_VAL
+- get: L:VC_EFB_FO_ARROW_LEFT_SW_VAL,number
+  set: "`${value == 10 ? '158 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_ARROW_LEFT_SW_VAL
+- get: L:VC_EFB_FO_ARROW_DN_SW_VAL,number
+  set: "`${value == 10 ? '156 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_ARROW_DN_SW_VAL
+- get: L:VC_EFB_FO_ARROW_UP_SW_VAL,number
+  set: "`${value == 10 ? '154 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_ARROW_UP_SW_VAL
+- get: L:VC_EFB_FO_ZOOM_OUT_SW_VAL,number
+  set: "`${value == 10 ? '152 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_ZOOM_OUT_SW_VAL
+- get: L:VC_EFB_FO_ZOOM_IN_SW_VAL,number
+  set: "`${value == 10 ? '150 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_ZOOM_IN_SW_VAL
+- get: L:VC_EFB_FO_L8_SW_VAL,number
+  set: "`${value == 10 ? '115 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_L8_SW_VAL
+- get: L:VC_EFB_FO_L7_SW_VAL,number
+  set: "`${value == 10 ? '113 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_L7_SW_VAL
+- get: L:VC_EFB_FO_L6_SW_VAL,number
+  set: "`${value == 10 ? '111 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_L6_SW_VAL
+- get: L:VC_EFB_FO_L5_SW_VAL,number
+  set: "`${value == 10 ? '109 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_L5_SW_VAL
+- get: L:VC_EFB_FO_L4_SW_VAL,number
+  set: "`${value == 10 ? '107 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_L4_SW_VAL
+- get: L:VC_EFB_FO_L3_SW_VAL,number
+  set: "`${value == 10 ? '105 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_L3_SW_VAL
+- get: L:VC_EFB_FO_L2_SW_VAL,number
+  set: "`${value == 10 ? '103 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_L2_SW_VAL
+- get: L:VC_EFB_FO_L1_SW_VAL,number
+  set: "`${value == 10 ? '101 (>L:VC_EFB_trigger_VAL)' : ''}`"
+  skp: L:VC_EFB_FO_L1_SW_VAL
+#Oxy Masks and MIP
+- get: L:VC_FlightCrew1_Reading_Light_Switch_VAL,number
+  set: "`${value > current ? 102 : 103} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FlightCrew1_Reading_Light_Switch_VAL,number
+  set: "`${value > current ? 105 : 104} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FLIGHTCREW1_READING_LIGHT_BRACKET,number
+  set: "`${value > current ? 106 : 107} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FLIGHTCREW1_READING_LIGHT_BRACKET,number
+  set: "`${value > current ? 105 : 104} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_OXYGEN_1_TEST_SW_VAL,number
+  set: "`${value > current ? 134 : 135} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_1_Emergency_SW_VAL,number
+  set: "`${value > current ? 137 : 138} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_1_Emergency_PushPull_SW_VAL,number
+  set: "`${value > current ? 140 : 139} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Chart_Light_CAPT_PushPull_SW_VAL,number
+  set: "`${value > current ? 76 : 77} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Chart_Light_CAPT_SW_VAL,number
+  set: "`${value > current ? 78 : 79} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Map_Light_CAPT_PushPull_SW_VAL,number
+  set: "`${value > current ? 68 : 69} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Map_Light_CAPT_SW_VAL,number
+  set: "`${value > current ? 70 : 71} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_CAPT_FOOT_AIR_SW_VAL,number
+  set: "77 (>L:VC_Anti_Ice_trigger_VAL)"
+- get: L:VC_CAPT_WINDSHIELD_AIR_SW_VAL,number
+  set: "78 (>L:VC_Anti_Ice_trigger_VAL)"
+- get: L:VC_CAPT_Main_Panel_Light_SW_VAL,number
+  set: "`${value > current ? 114 : 113} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_CAPT_OUTBD_DU_BRT_OUTER_SW_VAL,number
+  set: "`${value > current ? 122 : 121} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_CAPT_OUTBD_DU_BRT_INNER_SW_VAL,number
+  set: "`${value > current ? 126 : 125} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_CAPT_INBD_DU_BRT_OUTER_SW_VAL,number
+  set: "`${value > current ? 130 : 129} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_CAPT_INBD_DU_BRT_INNER_SW_VAL,number
+  set: "`${value > current ? 134 : 133} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_CAPT_Display_Selector_SW_VAL,number
+  set: "`${value > current ? 118 : 117} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_Background_Bright_SW_VAL,number
+  set: "`${value > current ? 138 : 137} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_AFDS_Flood_Bright_SW_VAL,number
+  set: "`${value > current ? 140 : 139} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_CAPT_YOKE_Move_VAL,number
+  set: "37 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_Autopilot_Disconnect_1_SW_VAL,number
+  set: "`${value > current ? 77 : 78} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_AP_AT_Test_1_SW_VAL,number
+  set: |
+    if (value === 0) return '70 (>L:VC_Automatic_Flight_trigger_VAL)'
+    if (value === 20) return '69 (>L:VC_Automatic_Flight_trigger_VAL)'
+    return ''
+- get: L:VC_AP_1_Indicators_Light_VAL,number
+  set: "`${value > current ? 61 : 62} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_AT_1_Indicators_Light_VAL,number
+  set: "`${value > current ? 65 : 66} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_FMC_1_Indicators_Light_VAL,number
+  set: "`${value > current ? 39 : 40} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_Lights_Test_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 10 ? '44 (>L:VC_Miscellaneous_trigger_VAL) 44 (>L:VC_Miscellaneous_trigger_VAL)' : '44 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 10: return current > value ? '44 (>L:VC_Miscellaneous_trigger_VAL)' : '45 (>L:VC_Miscellaneous_trigger_VAL)'
+      case 20: return current < 10 ? '45 (>L:VC_Miscellaneous_trigger_VAL) 45 (>L:VC_Miscellaneous_trigger_VAL)' : '45 (>L:VC_Miscellaneous_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_ISFD_APP_SW_VAL,number
+  set: "`${value > current ? 95 : 96} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_ISFD_HPIN_SW_VAL,number
+  set: "`${value > current ? 97 : 98} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_ISFD_Brightness_SW_inc_VAL,number
+  set: "`${value > current ? 99 : 100} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_ISFD_Brightness_SW_dec_VAL,number
+  set: "`${value > current ? 101 : 102} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_ISFD_ATT_RST_SW_VAL,number
+  set: "`${value > current ? 103 : 104} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_ISFD_BARO_SW_STD_VAL,number
+  set: "`${value > current ? 105 : 106} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_ISFD_BARO_SW_STD_VAL,number
+  set: "`${value > current ? 108 : 107} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_Gear_Lever_VAL,number
+  set: "`${value <= 50 ? 1 : 2} (>L:VC_Gear_trigger_VAL)`"
+  skp: L:VC_Gear_Lever_VAL
+- get: L:VC_Gear_Lock_Override_SW_VAL,number
+  set: "`${value > current ? 3 : 4} (>L:VC_Gear_trigger_VAL)`"
+- get: L:VC_Gear_Steering_SW_VAL,number
+  set: "`${value > current ? 5 : 6} (>L:VC_Gear_trigger_VAL)`"
+- get: L:VC_Fuel_Flow_SW_VAL,number
+  set: |
+    if (value === 0) return '26 (>L:VC_Engine_APU_trigger_VAL)'
+    if (value === 20) return '25 (>L:VC_Engine_APU_trigger_VAL)'
+    return ''
+- get: L:VC_SELECTOR_L_Outer_SW_VAL,number
+  set: "`${value > current ? 141 : 142} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_SELECTOR_L_Inner_SW_VAL,number
+  set: "`${value > current ? 143 : 144} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_Autobrake_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 40 ? '9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL)' : current > 30 ? '9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL)' : current > 20 ? '9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL)' : current > 10 ? '9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL)' : '9 (>L:VC_Gear_trigger_VAL)'
+      case 10: return current > value ? '9 (>L:VC_Gear_trigger_VAL)' : '10 (>L:VC_Gear_trigger_VAL)'
+      case 20: return current > value ? current > 40 ? '9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL)' : current > 30 ? '9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL)' : '9 (>L:VC_Gear_trigger_VAL)' : current < 10 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : '10 (>L:VC_Gear_trigger_VAL)'
+      case 30: return current > value ? current > 40 ? '9 (>L:VC_Gear_trigger_VAL) 9 (>L:VC_Gear_trigger_VAL)' : '9 (>L:VC_Gear_trigger_VAL)' : current < 10 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : current < 20 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : '10 (>L:VC_Gear_trigger_VAL)'
+      case 40: return current > value ? '9 (>L:VC_Gear_trigger_VAL)' : current < 10 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : current < 20 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : current < 30 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : '10 (>L:VC_Gear_trigger_VAL)'
+      case 50: return current < 10 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : current < 20 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : current < 30 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : current < 40 ? '10 (>L:VC_Gear_trigger_VAL) 10 (>L:VC_Gear_trigger_VAL)' : '10 (>L:VC_Gear_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_MFD_ENG_SW_VAL,number
+  set: "15 (>L:VC_Engine_APU_trigger_VAL)"
+- get: L:VC_MFD_INFO_SW_VAL,number
+  set: "19 (>L:VC_Engine_APU_trigger_VAL)"
+- get: L:VC_MFD_SYS_SW_VAL,number
+  set: "17 (>L:VC_Engine_APU_trigger_VAL)"
+- get: L:VC_MFD_CR_SW_VAL,number
+  set: "21 (>L:VC_Engine_APU_trigger_VAL)"
+- get: L:VC_ENG_TFR_SW_VAL,number
+  set: "23 (>L:VC_Engine_APU_trigger_VAL)"
+- get: L:VC_SELECTOR_R_Outer_SW_VAL,number
+  set: "`${value > current ? 147 : 148} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_SELECTOR_R_Inner_SW_VAL,number
+  set: "`${value > current ? 149 : 150} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_AP_AT_Test_2_SW_VAL,number
+  set: |
+    if (value === 0) return '71 (>L:VC_Automatic_Flight_trigger_VAL)'
+    if (value === 20) return '72 (>L:VC_Automatic_Flight_trigger_VAL)'
+    return ''
+- get: L:VC_AP_2_Indicators_Light_VAL,number
+  set: "`${value > current ? 63 : 64} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_AT_2_Indicators_Light_VAL,number
+  set: "`${value > current ? 67 : 68} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_FMC_2_Indicators_Light_VAL,number
+  set: "`${value > current ? 41 : 42} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_GPWS_Test_SW_VAL,number
+  set: "23 (>L:VC_Warning_Systems_trigger_VAL)"
+- get: L:VC_Flap_Inhibit_SW_VAL,number
+  set: "`${value > current ? 25 : 26} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Gear_Inhibit_SW_VAL,number
+  set: "`${value > current ? 27 : 28} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Terr_Inhibit_SW_VAL,number
+  set: "`${value > current ? 29 : 30} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_Runway_Inhibit_SW_VAL,number
+  set: "`${value > current ? 31 : 32} (>L:VC_Warning_Systems_trigger_VAL)`"
+- get: L:VC_FO_Display_Selector_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return '120 (>L:VC_Instruments_trigger_VAL)'
+      case 10: return current > value ? '120 (>L:VC_Instruments_trigger_VAL)' : '119 (>L:VC_Instruments_trigger_VAL)'
+      case 20: return '119 (>L:VC_Instruments_trigger_VAL)'
+      default: return ''
+    }
+  skp: L:VC_FO_Display_Selector_SW_VAL
+- get: L:VC_FO_INBD_DU_BRT_OUTER_SW_VAL,number
+  set: "`${value > current ? 131 : 132} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_FO_INBD_DU_BRT_INNER_SW_VAL,number
+  set: "`${value > current ? 135 : 136} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_FO_Main_Panel_Light_SW_VAL,number
+  set: "`${value > current ? 115 : 116} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_FO_OUTBD_DU_BRT_OUTER_SW_VAL,number
+  set: "`${value > current ? 123 : 124} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_FO_OUTBD_DU_BRT_INNER_SW_VAL,number
+  set: "`${value > current ? 127 : 128} (>L:VC_Instruments_trigger_VAL)`"
+- get: L:VC_FO_YOKE_Move_VAL,number
+  set: "38 (>L:VC_Flight_Control_trigger_VAL)"
+- get: L:VC_Autopilot_Disconnect_2_SW_VAL,number
+  set: "`${value > current ? 79 : 80} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_FO_WINDSHIELD_AIR_SW_VAL,number
+  set: "80 (>L:VC_Anti_Ice_trigger_VAL)"
+- get: L:VC_FO_FOOT_AIR_SW_VAL,number
+  set: "79 (>L:VC_Anti_Ice_trigger_VAL)"
+- get: L:VC_Map_Light_FO_PushPull_SW_VAL,number
+  set: "`${value > current ? 72 : 73} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Map_Light_FO_SW_VAL,number
+  set: "`${value > current ? 74 : 75} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Chart_Light_FO_PushPull_SW_VAL,number
+  set: "`${value > current ? 80 : 81} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Chart_Light_FO_SW_VAL,number
+  set: "`${value > current ? 82 : 83} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_2_Test_SW_VAL,number
+  set: "`${value > current ? 141 : 142} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_2_Emergency_SW_VAL,number
+  set: "`${value > current ? 144 : 145} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_2_Emergency_PushPull_SW_VAL,number
+  set: "`${value > current ? 147 : 146} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FlightCrew2_Reading_Light_Switch_VAL,number
+  set: "`${value > current ? 108 : 109} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FlightCrew2_Reading_Light_Switch_VAL,number
+  set: "`${value > current ? 111 : 110} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FLIGHTCREW2_READING_LIGHT_BRACKET,number
+  set: "`${value > current ? 112 : 113} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FLIGHTCREW2_READING_LIGHT_BRACKET,number
+  set: "`${value > current ? 111 : 110} (>L:VC_Miscellaneous_trigger_VAL)`"
+#FMC 1
+- get: L:VC_CDU1_LSK_1L_SW_VAL,number
+  set: "`${value > 5 ? '43 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_1L_SW_VAL
+- get: L:VC_CDU1_LSK_2L_SW_VAL,number
+  set: "`${value > 5 ? '45 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_2L_SW_VAL
+- get: L:VC_CDU1_LSK_3L_SW_VAL,number
+  set: "`${value > 5 ? '47 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_3L_SW_VAL
+- get: L:VC_CDU1_LSK_4L_SW_VAL,number
+  set: "`${value > 5 ? '49 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_4L_SW_VAL
+- get: L:VC_CDU1_LSK_5L_SW_VAL,number
+  set: "`${value > 5 ? '51 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_5L_SW_VAL
+- get: L:VC_CDU1_LSK_6L_SW_VAL,number
+  set: "`${value > 5 ? '53 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_6L_SW_VAL
+- get: L:VC_CDU1_LSK_1R_SW_VAL,number
+  set: "`${value > 5 ? '55 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_1R_SW_VAL
+- get: L:VC_CDU1_LSK_2R_SW_VAL,number
+  set: "`${value > 5 ? '57 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_2R_SW_VAL
+- get: L:VC_CDU1_LSK_3R_SW_VAL,number
+  set: "`${value > 5 ? '59 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_3R_SW_VAL
+- get: L:VC_CDU1_LSK_4R_SW_VAL,number
+  set: "`${value > 5 ? '61 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_4R_SW_VAL
+- get: L:VC_CDU1_LSK_5R_SW_VAL,number
+  set: "`${value > 5 ? '63 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_5R_SW_VAL
+- get: L:VC_CDU1_LSK_6R_SW_VAL,number
+  set: "`${value > 5 ? '65 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LSK_6R_SW_VAL
+- get: L:VC_CDU1_INITREF_SW_VAL,number
+  set: "`${value > 5 ? '67 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_INITREF_SW_VAL
+- get: L:VC_CDU1_RTE_SW_VAL,number
+  set: "`${value > 5 ? '69 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_RTE_SW_VAL
+- get: L:VC_CDU1_DEPARR_SW_VAL,number
+  set: "`${value > 5 ? '71 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_DEPARR_SW_VAL
+- get: L:VC_CDU1_ATC_SW_VAL,number
+  set: "`${value > 5 ? '73 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_ATC_SW_VAL
+- get: L:VC_CDU1_VNAV_SW_VAL,number
+  set: "`${value > 5 ? '75 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_VNAV_SW_VAL
+- get: L:VC_CDU1_BRT_SW_VAL,number
+  set: "`${value > current ? 180 : 181} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_CDU1_FIX_SW_VAL,number
+  set: "`${value > 5 ? '77 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_FIX_SW_VAL
+- get: L:VC_CDU1_LEGS_SW_VAL,number
+  set: "`${value > 5 ? '79 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_LEGS_SW_VAL
+- get: L:VC_CDU1_HOLD_SW_VAL,number
+  set: "`${value > 5 ? '81 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_HOLD_SW_VAL
+- get: L:VC_CDU1_FMCCOMM_SW_VAL,number
+  set: "`${value > 5 ? '83 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_FMCCOMM_SW_VAL
+- get: L:VC_CDU1_PROG_SW_VAL,number
+  set: "`${value > 5 ? '85 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_PROG_SW_VAL
+- get: L:VC_CDU1_EXEC_SW_VAL,number
+  set: "`${value > 5 ? '95 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_EXEC_SW_VAL
+- get: L:VC_CDU1_MENU_SW_VAL,number
+  set: "`${value > 5 ? '87 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_MENU_SW_VAL
+- get: L:VC_CDU1_N1LIMIT_SW_VAL,number
+  set: "`${value > 5 ? '89 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_N1LIMIT_SW_VAL
+- get: L:VC_CDU1_PREVPAGE_SW_VAL,number
+  set: "`${value > 5 ? '91 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_PREVPAGE_SW_VAL
+- get: L:VC_CDU1_NEXTPAGE_SW_VAL,number
+  set: "`${value > 5 ? '93 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_NEXTPAGE_SW_VAL
+- get: L:VC_CDU1_1_SW_VAL,number
+  set: "`${value > 5 ? '98 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_1_SW_VAL
+- get: L:VC_CDU1_2_SW_VAL,number
+  set: "`${value > 5 ? '100 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_2_SW_VAL
+- get: L:VC_CDU1_3_SW_VAL,number
+  set: "`${value > 5 ? '102 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_3_SW_VAL
+- get: L:VC_CDU1_4_SW_VAL,number
+  set: "`${value > 5 ? '104 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_4_SW_VAL
+- get: L:VC_CDU1_5_SW_VAL,number
+  set: "`${value > 5 ? '106 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_5_SW_VAL
+- get: L:VC_CDU1_6_SW_VAL,number
+  set: "`${value > 5 ? '108 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_6_SW_VAL
+- get: L:VC_CDU1_7_SW_VAL,number
+  set: "`${value > 5 ? '110 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_7_SW_VAL
+- get: L:VC_CDU1_8_SW_VAL,number
+  set: "`${value > 5 ? '112 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_8_SW_VAL
+- get: L:VC_CDU1_9_SW_VAL,number
+  set: "`${value > 5 ? '114 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_9_SW_VAL
+- get: L:VC_CDU1_Point_SW_VAL,number
+  set: "`${value > 5 ? '176 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_Point_SW_VAL
+- get: L:VC_CDU1_0_SW_VAL,number
+  set: "`${value > 5 ? '96 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_0_SW_VAL
+- get: L:VC_CDU1_AddMinus_SW_VAL,number
+  set: "`${value > 5 ? '178 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_AddMinus_SW_VAL
+- get: L:VC_CDU1_A_SW_VAL,number
+  set: "`${value > 5 ? '116 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_A_SW_VAL
+- get: L:VC_CDU1_B_SW_VAL,number
+  set: "`${value > 5 ? '118 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_B_SW_VAL
+- get: L:VC_CDU1_C_SW_VAL,number
+  set: "`${value > 5 ? '120 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_C_SW_VAL
+- get: L:VC_CDU1_D_SW_VAL,number
+  set: "`${value > 5 ? '122 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_D_SW_VAL
+- get: L:VC_CDU1_E_SW_VAL,number
+  set: "`${value > 5 ? '124 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_E_SW_VAL
+- get: L:VC_CDU1_F_SW_VAL,number
+  set: "`${value > 5 ? '126 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_F_SW_VAL
+- get: L:VC_CDU1_G_SW_VAL,number
+  set: "`${value > 5 ? '128 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_G_SW_VAL
+- get: L:VC_CDU1_H_SW_VAL,number
+  set: "`${value > 5 ? '130 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_H_SW_VAL
+- get: L:VC_CDU1_I_SW_VAL,number
+  set: "`${value > 5 ? '132 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_I_SW_VAL
+- get: L:VC_CDU1_J_SW_VAL,number
+  set: "`${value > 5 ? '134 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_J_SW_VAL
+- get: L:VC_CDU1_K_SW_VAL,number
+  set: "`${value > 5 ? '136 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_K_SW_VAL
+- get: L:VC_CDU1_L_SW_VAL,number
+  set: "`${value > 5 ? '138 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_L_SW_VAL
+- get: L:VC_CDU1_M_SW_VAL,number
+  set: "`${value > 5 ? '140 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_M_SW_VAL
+- get: L:VC_CDU1_N_SW_VAL,number
+  set: "`${value > 5 ? '142 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_N_SW_VAL
+- get: L:VC_CDU1_O_SW_VAL,number
+  set: "`${value > 5 ? '144 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_O_SW_VAL
+- get: L:VC_CDU1_P_SW_VAL,number
+  set: "`${value > 5 ? '146 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_P_SW_VAL
+- get: L:VC_CDU1_Q_SW_VAL,number
+  set: "`${value > 5 ? '148 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_Q_SW_VAL
+- get: L:VC_CDU1_R_SW_VAL,number
+  set: "`${value > 5 ? '150 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_R_SW_VAL
+- get: L:VC_CDU1_S_SW_VAL,number
+  set: "`${value > 5 ? '152 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_S_SW_VAL
+- get: L:VC_CDU1_T_SW_VAL,number
+  set: "`${value > 5 ? '154 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_T_SW_VAL
+- get: L:VC_CDU1_U_SW_VAL,number
+  set: "`${value > 5 ? '156 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_U_SW_VAL
+- get: L:VC_CDU1_V_SW_VAL,number
+  set: "`${value > 5 ? '158 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_V_SW_VAL
+- get: L:VC_CDU1_W_SW_VAL,number
+  set: "`${value > 5 ? '160 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_W_SW_VAL
+- get: L:VC_CDU1_X_SW_VAL,number
+  set: "`${value > 5 ? '162 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_X_SW_VAL
+- get: L:VC_CDU1_Y_SW_VAL,number
+  set: "`${value > 5 ? '164 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_Y_SW_VAL
+- get: L:VC_CDU1_Z_SW_VAL,number
+  set: "`${value > 5 ? '166 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_Z_SW_VAL
+- get: L:VC_CDU1_SP_SW_VAL,number
+  set: "`${value > 5 ? '168 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_SP_SW_VAL
+- get: L:VC_CDU1_DEL_SW_VAL,number
+  set: "`${value > 5 ? '170 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_DEL_SW_VAL
+- get: L:VC_CDU1_SLA5H_SW_VAL,number
+  set: "`${value > 5 ? '172 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_SLASH_SW_VAL
+- get: L:VC_CDU1_CLR_SW_VAL,number
+  set: "`${value > 5 ? '174 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU1_CLR_SW_VAL
+#FMC 2
+- get: L:VC_CDU2_LSK_1L_SW_VAL,number
+  set: "`${value > 5 ? '182 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_1L_SW_VAL
+- get: L:VC_CDU2_LSK_2L_SW_VAL,number
+  set: "`${value > 5 ? '184 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_2L_SW_VAL
+- get: L:VC_CDU2_LSK_3L_SW_VAL,number
+  set: "`${value > 5 ? '186 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_3L_SW_VAL
+- get: L:VC_CDU2_LSK_4L_SW_VAL,number
+  set: "`${value > 5 ? '188 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_4L_SW_VAL
+- get: L:VC_CDU2_LSK_5L_SW_VAL,number
+  set: "`${value > 5 ? '190 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_5L_SW_VAL
+- get: L:VC_CDU2_LSK_6L_SW_VAL,number
+  set: "`${value > 5 ? '192 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_6L_SW_VAL
+- get: L:VC_CDU2_LSK_1R_SW_VAL,number
+  set: "`${value > 5 ? '194 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_1R_SW_VAL
+- get: L:VC_CDU2_LSK_2R_SW_VAL,number
+  set: "`${value > 5 ? '196 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_2R_SW_VAL
+- get: L:VC_CDU2_LSK_3R_SW_VAL,number
+  set: "`${value > 5 ? '198 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_3R_SW_VAL
+- get: L:VC_CDU2_LSK_4R_SW_VAL,number
+  set: "`${value > 5 ? '200 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_4R_SW_VAL
+- get: L:VC_CDU2_LSK_5R_SW_VAL,number
+  set: "`${value > 5 ? '202 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_5R_SW_VAL
+- get: L:VC_CDU2_LSK_6R_SW_VAL,number
+  set: "`${value > 5 ? '204 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LSK_6R_SW_VAL
+- get: L:VC_CDU2_INITREF_SW_VAL,number
+  set: "`${value > 5 ? '206 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_INITREF_SW_VAL
+- get: L:VC_CDU2_RTE_SW_VAL,number
+  set: "`${value > 5 ? '208 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_RTE_SW_VAL
+- get: L:VC_CDU2_DEPARR_SW_VAL,number
+  set: "`${value > 5 ? '210 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_DEPARR_SW_VAL
+- get: L:VC_CDU2_ATC_SW_VAL,number
+  set: "`${value > 5 ? '212 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_ATC_SW_VAL
+- get: L:VC_CDU2_VNAV_SW_VAL,number
+  set: "`${value > 5 ? '214 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_VNAV_SW_VAL
+- get: L:VC_CDU2_BRT_SW_VAL,number
+  set: "`${value > current ? 319 : 320} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_CDU2_FIX_SW_VAL,number
+  set: "`${value > 5 ? '216 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_FIX_SW_VAL
+- get: L:VC_CDU2_LEGS_SW_VAL,number
+  set: "`${value > 5 ? '218 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_LEGS_SW_VAL
+- get: L:VC_CDU2_HOLD_SW_VAL,number
+  set: "`${value > 5 ? '220 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_HOLD_SW_VAL
+- get: L:VC_CDU2_FMCCOMM_SW_VAL,number
+  set: "`${value > 5 ? '222 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_FMCCOMM_SW_VAL
+- get: L:VC_CDU2_PROG_SW_VAL,number
+  set: "`${value > 5 ? '224 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_PROG_SW_VAL
+- get: L:VC_CDU2_EXEC_SW_VAL,number
+  set: "`${value > 5 ? '234 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_EXEC_SW_VAL
+- get: L:VC_CDU2_MENU_SW_VAL,number
+  set: "`${value > 5 ? '226 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_MENU_SW_VAL
+- get: L:VC_CDU2_N1LIMIT_SW_VAL,number
+  set: "`${value > 5 ? '228 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_N1LIMIT_SW_VAL
+- get: L:VC_CDU2_PREVPAGE_SW_VAL,number
+  set: "`${value > 5 ? '230 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_PREVPAGE_SW_VAL
+- get: L:VC_CDU2_NEXTPAGE_SW_VAL,number
+  set: "`${value > 5 ? '232 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_NEXTPAGE_SW_VAL
+- get: L:VC_CDU2_1_SW_VAL,number
+  set: "`${value > 5 ? '237 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_1_SW_VAL
+- get: L:VC_CDU2_2_SW_VAL,number
+  set: "`${value > 5 ? '239 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_2_SW_VAL
+- get: L:VC_CDU2_3_SW_VAL,number
+  set: "`${value > 5 ? '241 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_3_SW_VAL
+- get: L:VC_CDU2_4_SW_VAL,number
+  set: "`${value > 5 ? '243 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_4_SW_VAL
+- get: L:VC_CDU2_5_SW_VAL,number
+  set: "`${value > 5 ? '245 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_5_SW_VAL
+- get: L:VC_CDU2_6_SW_VAL,number
+  set: "`${value > 5 ? '247 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_6_SW_VAL
+- get: L:VC_CDU2_7_SW_VAL,number
+  set: "`${value > 5 ? '249 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_7_SW_VAL
+- get: L:VC_CDU2_8_SW_VAL,number
+  set: "`${value > 5 ? '251 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_8_SW_VAL
+- get: L:VC_CDU2_9_SW_VAL,number
+  set: "`${value > 5 ? '253 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_9_SW_VAL
+- get: L:VC_CDU2_Point_SW_VAL,number
+  set: "`${value > 5 ? '315 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_Point_SW_VAL
+- get: L:VC_CDU2_0_SW_VAL,number
+  set: "`${value > 5 ? '235 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_0_SW_VAL
+- get: L:VC_CDU2_AddMinus_SW_VAL,number
+  set: "`${value > 5 ? '317 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_AddMinus_SW_VAL
+- get: L:VC_CDU2_A_SW_VAL,number
+  set: "`${value > 5 ? '255 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_A_SW_VAL
+- get: L:VC_CDU2_B_SW_VAL,number
+  set: "`${value > 5 ? '257 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_B_SW_VAL
+- get: L:VC_CDU2_C_SW_VAL,number
+  set: "`${value > 5 ? '259 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_C_SW_VAL
+- get: L:VC_CDU2_D_SW_VAL,number
+  set: "`${value > 5 ? '261 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_D_SW_VAL
+- get: L:VC_CDU2_E_SW_VAL,number
+  set: "`${value > 5 ? '263 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_E_SW_VAL
+- get: L:VC_CDU2_F_SW_VAL,number
+  set: "`${value > 5 ? '265 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_F_SW_VAL
+- get: L:VC_CDU2_G_SW_VAL,number
+  set: "`${value > 5 ? '267 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_G_SW_VAL
+- get: L:VC_CDU2_H_SW_VAL,number
+  set: "`${value > 5 ? '269 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_H_SW_VAL
+- get: L:VC_CDU2_I_SW_VAL,number
+  set: "`${value > 5 ? '271 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_I_SW_VAL
+- get: L:VC_CDU2_J_SW_VAL,number
+  set: "`${value > 5 ? '273 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_J_SW_VAL
+- get: L:VC_CDU2_K_SW_VAL,number
+  set: "`${value > 5 ? '275 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_K_SW_VAL
+- get: L:VC_CDU2_L_SW_VAL,number
+  set: "`${value > 5 ? '277 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_L_SW_VAL
+- get: L:VC_CDU2_M_SW_VAL,number
+  set: "`${value > 5 ? '279 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_M_SW_VAL
+- get: L:VC_CDU2_N_SW_VAL,number
+  set: "`${value > 5 ? '281 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_N_SW_VAL
+- get: L:VC_CDU2_O_SW_VAL,number
+  set: "`${value > 5 ? '283 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_O_SW_VAL
+- get: L:VC_CDU2_P_SW_VAL,number
+  set: "`${value > 5 ? '285 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_P_SW_VAL
+- get: L:VC_CDU2_Q_SW_VAL,number
+  set: "`${value > 5 ? '287 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_Q_SW_VAL
+- get: L:VC_CDU2_R_SW_VAL,number
+  set: "`${value > 5 ? '289 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_R_SW_VAL
+- get: L:VC_CDU2_S_SW_VAL,number
+  set: "`${value > 5 ? '291 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_S_SW_VAL
+- get: L:VC_CDU2_T_SW_VAL,number
+  set: "`${value > 5 ? '293 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_T_SW_VAL
+- get: L:VC_CDU2_U_SW_VAL,number
+  set: "`${value > 5 ? '295 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_U_SW_VAL
+- get: L:VC_CDU2_V_SW_VAL,number
+  set: "`${value > 5 ? '297 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_V_SW_VAL
+- get: L:VC_CDU2_W_SW_VAL,number
+  set: "`${value > 5 ? '299 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_W_SW_VAL
+- get: L:VC_CDU2_X_SW_VAL,number
+  set: "`${value > 5 ? '301 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_X_SW_VAL
+- get: L:VC_CDU2_Y_SW_VAL,number
+  set: "`${value > 5 ? '303 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_Y_SW_VAL
+- get: L:VC_CDU2_Z_SW_VAL,number
+  set: "`${value > 5 ? '305 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_Z_SW_VAL
+- get: L:VC_CDU2_SP_SW_VAL,number
+  set: "`${value > 5 ? '307 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_SP_SW_VAL
+- get: L:VC_CDU2_DEL_SW_VAL,number
+  set: "`${value > 5 ? '309 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_DEL_SW_VAL
+- get: L:VC_CDU2_SLASH_SW_VAL,number
+  set: "`${value > 5 ? '311 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_SLASH_SW_VAL
+- get: L:VC_CDU2_CLR_SW_VAL,number
+  set: "`${value > 5 ? '313 (>L:VC_Navigation_trigger_VAL)' : ''}`"
+  skp: L:VC_CDU2_CLR_SW_VAL
+#Throttle Quadrant
+- get: L:VC_Autothrottle_Disconnect_1_SW_VAL,number
+  set: "`${value > current ? 73 : 74} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_Autothrottle_Disconnect_2_SW_VAL,number
+  set: "`${value > current ? 75: 76} (>L:VC_Automatic_Flight_trigger_VAL)`"
+- get: L:VC_Engine_1_Start_Lever_VAL,number
+  set: "`${value > current ? 11 : 12} (>L:VC_Engine_APU_trigger_VAL)`"
+- get: L:VC_Engine_2_Start_Lever_VAL,number
+  set: "`${value > current ? 13 : 14} (>L:VC_Engine_APU_trigger_VAL)`"
+- get: L:VC_Parking_Brake_SW_VAL,number
+  set: "`${value > current ? 8 : 7} (>L:VC_Gear_trigger_VAL)`"
+- get: L:VC_Stab_Trim_PRI_SW_VAL,number
+  set: "`${value > current ? 23 : 24} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: L:VC_Stab_Trim_BU_SW_VAL,number
+  set: "`${value > current ? 25 : 26} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: A:FLAPS HANDLE INDEX, Number
+  set: "`${value > current ? '(>K:FLAPS_INCR)' : value < current ? '(>K:FLAPS_DECR)' : ''}`"
+- get: A:SPOILERS HANDLE POSITION, Percent
+  set: "`${value * 163.83} (>K:SPOILERS_SET)`"
+#Lower Pedestal
+- get: L:VC_OVHT_DET_1_SW_VAL,number
+  set: "`${value > current ? 1 : 2} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_Fire_Test_SW_VAL,number
+  set: |
+    if (value < 5 && current >= 5) return '5 (>L:VC_Fire_Protection_trigger_VAL)'
+    if (value > 15 && current <= 15) return '6 (>L:VC_Fire_Protection_trigger_VAL)'
+    return ''
+  skp: L:VC_Fire_Test_SW_VAL
+- get: L:VC_Engine_1_Fire_Pull_SW_VAL,number
+  set: "`${value > current ? 7 : 8} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_Engine_1_Fire_Rotate_SW_VAL,number
+  set: "`${value > current ? 9 : 10} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_APU_Fire_Pull_SW_VAL,number
+  set: "`${value > current ? 15 : 16} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_APU_Fire_Rotate_SW_VAL,number
+  set: "`${value > current ? 17 : 18} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_OVHT_DET_2_SW_VAL,number
+  set: "`${value > current ? 3 : 4} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_Engine_2_Fire_Pull_SW_VAL,number
+  set: "`${value > current ? 11 : 12} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_Engine_2_Fire_Rotate_SW_VAL,number
+  set: "`${value > current ? 13 : 14} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_EXT_Test_SW_VAL,number
+  set: "`${value > current ? 21 : 22} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_RTP_1_HF_SENS_SW_VAL,number
+  set: "`${value > current ? 65 : 66} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_1_OFF_SW_VAL,number
+  set: "`${value > current ? 17 : 18} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_1_VHF1_SW_VAL,number
+  set: "`${value > current ? 23 : 24} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_1_HF1_SW_VAL,number
+  set: "`${value > current ? 41 : 42} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_1_VHF2_SW_VAL,number
+  set: "`${value > current ? 29 : 30} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_1_AM_SW_VAL,number
+  set: "`${value > current ? 47 : 48} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_1_VHF3_SW_VAL,number
+  set: "`${value > current ? 35 : 36} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_1_HF2_SW_VAL,number
+  set: "`${value > current ? 53 : 54} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_1_Test_SW_VAL,number
+  set: "`${value > current ? 59 : 60} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_Cargo_Fire_Test_SW_VAL,number
+  set: "`${value > current ? 27 : 28} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_DET_Select_1_SW_VAL,number
+  set: "`${value > current ? 23 : 24} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_DET_Select_2_SW_VAL,number
+  set: "`${value > current ? 25: 26} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_FWD_Cargo_FIRE_SW_V5_VAL,number
+  set: "29 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_AFT_Cargo_FIRE_SW_V5_VAL,number
+  set: "29 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_CARGO_FIRE_Discharge_SW_V5_VAL,number
+  set: "`${value > current ? 31 : 0} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_CARGO_FIRE_Discharge_COVER_SW_V5_VAL,number
+  set: "`${value > current ? 31 : 0} (>L:VC_Fire_Protection_trigger_VAL)`"
+- get: L:VC_RTP_2_HF_SENS_SW_VAL,number
+  set: "`${value > current ? 67 : 68} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_2_OFF_SW_VAL,number
+  set: "`${value > current ? 19 : 20} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_2_VHF1_SW_VAL,number
+  set: "`${value > current ? 25 : 26} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_2_HF1_SW_VAL,number
+  set: "`${value > current ? 43 : 44} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_2_VHF2_SW_VAL,number
+  set: "`${value > current ? 31 : 32} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_2_AM_SW_VAL,number
+  set: "`${value > current ? 49 : 50} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_2_VHF3_SW_VAL,number
+  set: "`${value > current ? 37 : 38} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_2_HF2_SW_VAL,number
+  set: "`${value > current ? 55 : 56} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_2_Test_SW_VAL,number
+  set: "`${value > current ? 61 : 62} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_NAV_1_Test_SW_VAL,number
+  set: "`${value > current ? 325 : 326} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_NAV_1_Mode_Down_SW_VAL,number
+  set: "329 (>L:VC_Navigation_trigger_VAL)"
+- get: L:VC_NAV_1_Mode_Up_SW_VAL,number
+  set: "333 (>L:VC_Navigation_trigger_VAL)"
+- get: L:VC_WXR_Alt_1_SW_VAL,number
+  set: "`${value > current ? 423 : 424} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_WXR_Mode_1_SW_VAL,number
+  set: "`${value > current ? 415 : 416} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_WXR_Gain_1_SW_VAL,number
+  set: "`${value > current ? 419 : 420} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_WXR_System_Control_SW_VAL,number
+  set: "`${value > current ? 413 : 414} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_WXR_Gain_2_SW_VAL,number
+  set: "`${value > current ? 421 : 422} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_WXR_Mode_2_SW_VAL,number
+  set: "`${value > current ? 417 : 418} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_WXR_Alt_2_SW_VAL,number
+  set: "`${value > current ? 425 : 426} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_NAV_2_Test_SW_VAL,number
+  set: "`${value > current ? 327 : 328} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_NAV_2_Mode_Down_SW_VAL,number
+  set: "331 (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_NAV_2_Mode_Up_SW_VAL,number
+  set: "335 (>L:VC_Navigation_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_01_VOL_SW_VAL,number
+  set: "113 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_01_VOL_SW_VAL,number
+  set: "`${value > current ? 117 : 116} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_02_VOL_SW_VAL,number
+  set: "122 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_02_VOL_SW_VAL,number
+  set: "`${value > current ? 126 : 125} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_03_VOL_SW_VAL,number
+  set: "131 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_03_VOL_SW_VAL,number
+  set: "`${value > current ? 135 : 134} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_04_VOL_SW_VAL,number
+  set: "140 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_04_VOL_SW_VAL,number
+  set: "`${value > current ? 144 : 143} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_05_VOL_SW_VAL,number
+  set: "149 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_05_VOL_SW_VAL,number
+  set: "`${value > current ? 153 : 152} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_06_VOL_SW_VAL,number
+  set: "158 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_06_VOL_SW_VAL,number
+  set: "`${value > current ? 162 : 161} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_07_VOL_SW_VAL,number
+  set: "167 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_07_VOL_SW_VAL,number
+  set: "`${value > current ? 171 : 170} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_08_VOL_SW_VAL,number
+  set: "176 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_08_VOL_SW_VAL,number
+  set: "`${value > current ? 180 : 179} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_09_VOL_SW_VAL,number
+  set: "185 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_09_VOL_SW_VAL,number
+  set: "`${value > current ? 189 : 188} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_10_VOL_SW_VAL,number
+  set: "194 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_10_VOL_SW_VAL,number
+  set: "`${value > current ? 198 : 197} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_11_VOL_SW_VAL,number
+  set: "203 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_11_VOL_SW_VAL,number
+  set: "`${value > current ? 207 : 206} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_12_VOL_SW_VAL,number
+  set: "212 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_12_VOL_SW_VAL,number
+  set: "`${value > current ? 216 : 215} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_13_VOL_SW_VAL,number
+  set: "221 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_13_VOL_SW_VAL,number
+  set: "`${value > current ? 225 : 224} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_14_VOL_SW_VAL,number
+  set: "230 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_14_VOL_SW_VAL,number
+  set: "`${value > current ? 234 : 233} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_15_VOL_SW_VAL,number
+  set: "239 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_15_VOL_SW_VAL,number
+  set: "`${value > current ? 243 : 242} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_RVC_16_VOL_SW_VAL,number
+  set: "248 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_1_RVC_16_VOL_SW_VAL,number
+  set: "`${value > current ? 252 : 251} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_Push_to_Talk_SW_VAL,number
+  set: "`${value > current ? 258 : 257} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_Filter_SW_VAL,number
+  set: "`${value > current ? 263 : 264} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_AltNorm_SW_VAL,number
+  set: "`${value > current ? 270 : 269} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_SAT1_SW_VAL,number
+  set: "`${value > current ? 275 : 276} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_1_SAT2_SW_VAL,number
+  set: "`${value > current ? 281 : 282} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_01_VOL_SW_VAL,number
+  set: "114 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_01_VOL_SW_VAL,number
+  set: "`${value > current ? 119 : 118} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_02_VOL_SW_VAL,number
+  set: "123 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_02_VOL_SW_VAL,number
+  set: "`${value > current ? 128 : 127} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_03_VOL_SW_VAL,number
+  set: "132 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_03_VOL_SW_VAL,number
+  set: "`${value > current ? 137 : 136} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_04_VOL_SW_VAL,number
+  set: "141 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_04_VOL_SW_VAL,number
+  set: "`${value > current ? 146 : 145} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_05_VOL_SW_VAL,number
+  set: "150 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_05_VOL_SW_VAL,number
+  set: "`${value > current ? 155 : 154} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_06_VOL_SW_VAL,number
+  set: "159 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_06_VOL_SW_VAL,number
+  set: "`${value > current ? 164 : 163} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_07_VOL_SW_VAL,number
+  set: "168 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_07_VOL_SW_VAL,number
+  set: "`${value > current ? 173 : 172} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_08_VOL_SW_VAL,number
+  set: "177 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_08_VOL_SW_VAL,number
+  set: "`${value > current ? 182 : 181} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_09_VOL_SW_VAL,number
+  set: "186 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_09_VOL_SW_VAL,number
+  set: "`${value > current ? 191 : 190} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_10_VOL_SW_VAL,number
+  set: "195 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_10_VOL_SW_VAL,number
+  set: "`${value > current ? 200 : 199} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_11_VOL_SW_VAL,number
+  set: "204 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_11_VOL_SW_VAL,number
+  set: "`${value > current ? 209 : 208} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_12_VOL_SW_VAL,number
+  set: "213 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_12_VOL_SW_VAL,number
+  set: "`${value > current ? 218 : 217} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_13_VOL_SW_VAL,number
+  set: "222 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_13_VOL_SW_VAL,number
+  set: "`${value > current ? 227 : 226} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_14_VOL_SW_VAL,number
+  set: "231 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_14_VOL_SW_VAL,number
+  set: "`${value > current ? 236 : 235} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_15_VOL_SW_VAL,number
+  set: "240 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_15_VOL_SW_VAL,number
+  set: "`${value > current ? 245 : 244} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_RVC_16_VOL_SW_VAL,number
+  set: "249 (>L:VC_Communications_trigger_VAL)"
+- get: L:VC_ACP_2_RVC_16_VOL_SW_VAL,number
+  set: "`${value > current ? 254 : 253} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_Push_to_Talk_SW_VAL,number
+  set: "`${value > current ? 260 : 259} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_Filter_SW_VAL,number
+  set: "`${value > current ? 266 : 265} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_AltNorm_SW_VAL,number
+  set: "`${value > current ? 271 : 272} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_SAT1_SW_VAL,number
+  set: "`${value > current ? 277 : 278} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ACP_2_SAT2_SW_VAL,number
+  set: "`${value > current ? 283 : 284} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_HF_SENS_SW_VAL,number
+  set: "`${value > current ? 69 : 70} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_OFF_SW_VAL,number
+  set: "`${value > current ? 21 : 22} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_VHF1_SW_VAL,number
+  set: "`${value > current ? 27 : 28} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_HF1_SW_VAL,number
+  set: "`${value > current ? 45 : 46} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_VHF2_SW_VAL,number
+  set: "`${value > current ? 33 : 34} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_AM_SW_VAL,number
+  set: "`${value > current ? 51 : 52} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_VHF3_SW_VAL,number
+  set: "`${value > current ? 39 : 40} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_HF2_SW_VAL,number
+  set: "`${value > current ? 57 : 58} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_RTP_3_Test_SW_VAL,number
+  set: "`${value > current ? 63 : 64} (>L:VC_Communications_trigger_VAL)`"
+- get: L:VC_ADF_Left_Mode_SW_VAL,number
+  set: "`${value > current ? 442 : 441} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_ADF_Left_Test_SW_VAL,number
+  set: "`${value > current ? 445 : 446} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_ADF_Right_Mode_SW_VAL,number
+  set: "`${value > current ? 444 : 443} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_ADF_Right_Test_SW_VAL,number
+  set: "`${value > current ? 447 : 448} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_ADF_Tone_SW_VAL,number
+- get: A:COM ACTIVE FREQUENCY:1, Frequency BCD16
+  set: (>K:COM_RADIO_SET)
+- get: A:COM ACTIVE FREQUENCY:2, Frequency BCD16
+  set: (>K:COM2_RADIO_SET)
+- get: A:NAV ACTIVE FREQUENCY:1, Frequency BCD16
+  set: (>K:NAV1_RADIO_SET)
+- get: A:NAV ACTIVE FREQUENCY:2, Frequency BCD16
+  set: (>K:NAV2_RADIO_SET)
+- get: A:ADF ACTIVE FREQUENCY:1, Frequency ADF BCD32
+  set: (>K:ADF_ACTIVE_SET)
+- get: A:ADF ACTIVE FREQUENCY:2, Frequency ADF BCD32
+  set: (>K:ADF2_ACTIVE_SET)
+- get: L:VC_Transponder_ALT_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 0 ? '381 (>L:VC_Navigation_trigger_VAL)' : ''
+      case 10: return current < 10 ? '382 (>L:VC_Navigation_trigger_VAL)' : ''
+      default: return ''
+    }
+- get: L:VC_Transponder_ATC_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 0 ? '383 (>L:VC_Navigation_trigger_VAL)' : ''
+      case 10: return current < 10 ? '384 (>L:VC_Navigation_trigger_VAL)' : ''
+      default: return ''
+    }
+- get: L:VC_Transponder_Reply_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 0 ? '385 (>L:VC_Navigation_trigger_VAL)' : ''
+      case 10: return current < 10 ? '386 (>L:VC_Navigation_trigger_VAL)' : ''
+      default: return ''
+    }
+- get: L:VC_Transponder_Airspace_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current <= 10 ? '405 (>L:VC_Navigation_trigger_VAL)' : '405 (>L:VC_Navigation_trigger_VAL) 405 (>L:VC_Navigation_trigger_VAL)'
+      case 10: return current < 10 ? '406 (>L:VC_Navigation_trigger_VAL)' : '405 (>L:VC_Navigation_trigger_VAL)'
+      case 20: return current >= 10 ? '406 (>L:VC_Navigation_trigger_VAL)' : '406 (>L:VC_Navigation_trigger_VAL) 406 (>L:VC_Navigation_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Transponder_Mode_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current <= 10 ? '407 (>L:VC_Navigation_trigger_VAL)' : current <= 20 ? '407 (>L:VC_Navigation_trigger_VAL) 407 (>L:VC_Navigation_trigger_VAL)' : '407 (>L:VC_Navigation_trigger_VAL) 407 (>L:VC_Navigation_trigger_VAL) 407 (>L:VC_Navigation_trigger_VAL)'
+      case 10: return current < 10 ? '408 (>L:VC_Navigation_trigger_VAL)' : '407 (>L:VC_Navigation_trigger_VAL)'
+      case 20: return current < 10 ? '408 (>L:VC_Navigation_trigger_VAL) 408 (>L:VC_Navigation_trigger_VAL)' : current < 20 ? '408 (>L:VC_Navigation_trigger_VAL)' : '407 (>L:VC_Navigation_trigger_VAL)'
+      case 30: return current <= 0 ? '408 (>L:VC_Navigation_trigger_VAL) 408 (>L:VC_Navigation_trigger_VAL) 408 (>L:VC_Navigation_trigger_VAL)' : current <= 10 ? '408 (>L:VC_Navigation_trigger_VAL) 408 (>L:VC_Navigation_trigger_VAL)' : '408 (>L:VC_Navigation_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Transponder_Test_SW_VAL,number
+  set: "`${value > current ? 410 : 409} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_Transponder_IDENT_SW_VAL,number
+  set: "`${value > current ? 412 : 411} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_Transponder_ALT_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 0 ? '381 (>L:VC_Navigation_trigger_VAL)' : ''
+      case 10: return current < 10 ? '382 (>L:VC_Navigation_trigger_VAL)' : ''
+      default: return ''
+    }
+- get: L:VC_Transponder_ATC_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 0 ? '383 (>L:VC_Navigation_trigger_VAL)' : ''
+      case 10: return current < 10 ? '384 (>L:VC_Navigation_trigger_VAL)' : ''
+      default: return ''
+    }
+- get: L:VC_Transponder_Reply_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current > 0 ? '385 (>L:VC_Navigation_trigger_VAL)' : ''
+      case 10: return current < 10 ? '386 (>L:VC_Navigation_trigger_VAL)' : ''
+      default: return ''
+    }
+- get: L:VC_Transponder_Airspace_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current <= 10 ? '405 (>L:VC_Navigation_trigger_VAL)' : '405 (>L:VC_Navigation_trigger_VAL) 405 (>L:VC_Navigation_trigger_VAL)'
+      case 10: return current < 10 ? '406 (>L:VC_Navigation_trigger_VAL)' : '405 (>L:VC_Navigation_trigger_VAL)'
+      case 20: return current >= 10 ? '406 (>L:VC_Navigation_trigger_VAL)' : '406 (>L:VC_Navigation_trigger_VAL) 406 (>L:VC_Navigation_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Transponder_Mode_SW_VAL,number
+  set: |
+    switch (value) {
+      case 0:  return current <= 10 ? '407 (>L:VC_Navigation_trigger_VAL)' : current <= 20 ? '407 (>L:VC_Navigation_trigger_VAL) 407 (>L:VC_Navigation_trigger_VAL)' : '407 (>L:VC_Navigation_trigger_VAL) 407 (>L:VC_Navigation_trigger_VAL) 407 (>L:VC_Navigation_trigger_VAL)'
+      case 10: return current < 10 ? '408 (>L:VC_Navigation_trigger_VAL)' : '407 (>L:VC_Navigation_trigger_VAL)'
+      case 20: return current < 10 ? '408 (>L:VC_Navigation_trigger_VAL) 408 (>L:VC_Navigation_trigger_VAL)' : current < 20 ? '408 (>L:VC_Navigation_trigger_VAL)' : '407 (>L:VC_Navigation_trigger_VAL)'
+      case 30: return current <= 0 ? '408 (>L:VC_Navigation_trigger_VAL) 408 (>L:VC_Navigation_trigger_VAL) 408 (>L:VC_Navigation_trigger_VAL)' : current <= 10 ? '408 (>L:VC_Navigation_trigger_VAL) 408 (>L:VC_Navigation_trigger_VAL)' : '408 (>L:VC_Navigation_trigger_VAL)'
+      default: return ''
+    }
+- get: L:VC_Transponder_Test_SW_VAL,number
+  set: "`${value > current ? 410 : 409} (>L:VC_Navigation_trigger_VAL)`"
+- get: L:VC_Transponder_IDENT_SW_VAL,number
+  set: "`${value > current ? 412 : 411} (>L:VC_Navigation_trigger_VAL)`"
+- get: A:TRANSPONDER CODE:1, BCO16
+  set: (>K:XPNDR_SET)
+- get: L:VC_Aft_Electronics_Flood_Light_SW_VAL,number
+  set: "`${value > current ? 47 : 46} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Aft_Electronics_Panel_Light_SW_VAL,number
+  set: "`${value > current ? 49 : 48} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Stabilizer_Trim_Override_SW_VAL,number
+  set: "`${value > current ? 31 : 32} (>L:VC_Flight_Control_trigger_VAL)`"
+- get: L:VC_FLT_DK_Door_SW_VAL,number
+  set: "`${value > current ? 51 : 50} (>L:VC_Miscellaneous_trigger_VAL)`"
+#Cockpit Door
+- get: L:VC_CockpitDoor_VAL,number
+  set: "200 (>L:VC_Miscellaneous_trigger_VAL)"
+#Oxy Masks/Reading Lights
+- get: L:VC_Oxygen_3_Test_SW_VAL,number
+  set: "`${value > current ? 148 : 149} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_3_Emergency_SW_VAL,number
+  set: "`${value > current ? 151 : 152} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_3_Emergency_PushPull_SW_VAL,number
+  set: "`${value > current ? 154 : 153} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_4_Test_SW_VAL,number
+  set: "`${value > current ? 155 : 156} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_4_Emergency_SW_VAL,number
+  set: "`${value > current ? 158 : 159} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_Oxygen_4_Emergency_PushPull_SW_VAL,number
+  set: "`${value > current ? 161 : 160} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FlightCrew3_Reading_Light_Switch_VAL,number
+  set: "`${value > current ? 114 : 115} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FlightCrew3_Reading_Light_Switch_VAL,number
+  set: "`${value > current ? 117 : 116} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FLIGHTCREW3_READING_LIGHT_BRACKET,number
+  set: "`${value > current ? 118 : 119} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FLIGHTCREW3_READING_LIGHT_BRACKET,number
+  set: "`${value > current ? 117 : 116} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FlightCrew4_Reading_Light_Switch_VAL,number
+  set: "`${value > current ? 120 : 121} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FlightCrew4_Reading_Light_Switch_VAL,number
+  set: "`${value > current ? 123 : 122} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FLIGHTCREW4_READING_LIGHT_BRACKET,number
+  set: "`${value > current ? 124 : 125} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_FLIGHTCREW4_READING_LIGHT_BRACKET,number
+  set: "`${value > current ? 123 : 122} (>L:VC_Miscellaneous_trigger_VAL)`"
+#Jumpseat
+- get: L:VC_FirstObserverSeat_VAL,number
+  set: "7 (>L:VC_Miscellaneous_trigger_VAL)"
+#Cockpit Chart Lights
+- get: L:VC_MAP_LIGHT_CAPT,number
+  set: "`${value > current ? 94 : 95} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_MAP_LIGHT_CAPT_BRACKET,number
+  set: "`${value > current ? 96 : 97} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_MAP_LIGHT_FO,number
+  set: "`${value > current ? 98 : 99} (>L:VC_Miscellaneous_trigger_VAL)`"
+- get: L:VC_MAP_LIGHT_FO_BRACKET,number
+  set: "`${value > current ? 100 : 101} (>L:VC_Miscellaneous_trigger_VAL)`"
+#Manual Gear Door
+- get: L:VC_Manual_Gear_Door_SW_VAL,number
+  set: "11 (>L:VC_Gear_trigger_VAL)"
+- get: L:VC_Manual_LeftGear_Handle_SW_VAL,number
+  set: "13 (>L:VC_Gear_trigger_VAL)"
+- get: L:VC_Manual_NoseGear_Handle_SW_VAL,number
+  set: "12 (>L:VC_Gear_trigger_VAL)"
+- get: L:VC_Manual_RightGear_Handle_SW_VAL,number
+  set: "14 (>L:VC_Gear_trigger_VAL)"

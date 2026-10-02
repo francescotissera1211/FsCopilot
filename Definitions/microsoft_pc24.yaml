@@ -1,0 +1,765 @@
+# Original author: https://discord.com/channels/1454265644416765974/1540790319220793526/1540790475630313563
+# Updated: 2026-08-22 18:31:19
+
+# Microsoft Pilatus PC24 variant - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: DKgolfnut
+# Special Thanks: 
+# Date: 8/16/2026 
+
+# Known Issues:
+  # - Initial release all functions working. 
+  # - 8/22/2026
+   # - STROBE/BEACON LIGHT SWITCH will not synch, I have tried numerous ways to solve this but have not been successful.
+   # - PFD CONTROL FUNCTIONS that have more than 2 positions will not synch. I have raised this to Yuri for a potential issue with his core program. *** The functions are NAV SEL, NAV PREVIEW, SINGLE and DOUBLE COURSE needles. ***
+   # - SIMBRIEF works through MSFS2024 TABLET IMPORT for FUEL and FP prior to entering into Flight. EACH PILOT MUST do this prior to entering flight and joining the FSC session. 
+
+# FIXED:
+  # - 8/16/2026
+   # - 
+
+include:
+  - modules/fuel.yaml
+  - modules/payload.yaml
+  - modules/radios.yaml
+  - modules/transponder.yaml
+master: 
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+  - get: A:ELEVATOR TRIM PCT, Position 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: B:HANDLING_ELEVATORTRIM_YOKE
+  - get: A:RUDDER TRIM PCT, Position 16k
+    
+  - get: L:HANDLING_RudderTrim
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+    set: (>K:THROTTLE1_SET)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, position 16k # Throttle 1 LEVER
+    set: (>K:THROTTLE2_SET)
+
+  - get: B:ENGINE_THROTTLE_1
+  - get: B:ENGINE_THROTTLE_2
+
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+shared:
+######### Example #########
+  - get: A:FUEL TANK SELECTOR:1, Enum
+    set: |
+      switch (value) {
+        case 0: return '(>K:FUEL_SELECTOR_OFF)'
+        case 1: return '(>K:FUEL_SELECTOR_ALL)'        
+        case 19: return '(>K:FUEL_SELECTOR_LEFT_MAIN)'
+        case 20: return '(>K:FUEL_SELECTOR_RIGHT_MAIN)'
+        default: return ''
+      }  
+
+######### Main PANEL - Upper ##########
+#### - AUTOPILOT PANEL ####
+  - get: H:AP_PITCH_WHEEL_TURNED
+  - get: A:AUTOPILOT PITCH HOLD, Bool
+  - get: B:AUTOPILOT_VS_Mode
+    set: (>B:AUTOPILOT_VS_Mode_Toggle)
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, feet per minute
+    set: (>K:AP_VS_VAR_SET_ENGLISH)
+  - get: L:XMLVAR_AUTOPILOT_PUSH_BANK_1
+    set: (>B:AUTOPILOT_Bank_Set) 
+  - get: A:AUTOPILOT APPROACH HOLD, Bool
+  - get: A:AUTOPILOT GLIDESLOPE HOLD, Bool
+  - get: B:AUTOPILOT_Heading_Mode
+    set: (>B:AUTOPILOT_Heading_Mode_Toggle)
+  - get: L:XMLVAR_AUTOPILOT_KNOB_HDG_TRK
+    set: (>B:INSTRUMENT_HDG_TRK_Set)
+  - get: H:AP_HEADING_SYNC
+    set: (>B:AUTOPILOT_Heading_Sync_Set)
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, degrees
+    set: (>K:HEADING_BUG_SET) 
+  - get: A:AUTOPILOT NAV1 LOCK, Bool
+    set: (>B:AUTOPILOT_Nav_Mode_Set)
+  - get: L:WT_Epic2_AutoThrottle_Status
+  - get: B:AUTOPILOT_AutoThrottle 
+    set: (>B:AUTOPILOT_AutoThrottle_Toggle)
+  - get: L:XMLVAR_FMS_MAN
+    set: (>B:INSTRUMENT_FMS_MAN_Set)
+  - get: A:AUTOPILOT MANAGED SPEED IN MACH, Bool
+  - get: A:AUTOPILOT MACH HOLD VAR:1, mach  
+    set: (>K:AP_MACH_VAR_SET)
+  - get: A:AUTOPILOT AIRSPEED HOLD VAR:1, knots
+    set: (>K:AP_SPD_VAR_SET)
+  - get: A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool
+    set: (>B:AUTOPILOT_FLC_Button_Toggle)
+  - get: B:AUTOPILOT_FLC_Button
+  - get: B:AUTOPILOT_Altitude_Button 
+    set: (>B:AUTOPILOT_Altitude_Button_Set)
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:0, feet
+  - get: H:AP_KNOB_UP
+  - get: H:AP_KNOB_DOWN
+  - get: B:AUTOPILOT_VNAV_Mode
+    set: (>B:AUTOPILOT_VNAV_Mode_Set)
+  - get: H:MINIMUMS_PRESS
+    set: 0 (>B:INSTRUMENT_AUTOPILOT_KNOB_MIN_INNER_Push_Push)
+  - get: B:INSTRUMENT_AUTOPILOT_KNOB_INNER
+  - get: H:MINIMUMS_INC
+  - get: H:MINIMUMS_DEC
+  - get: A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1, Bool
+    set: 1 (>K:TOGGLE_FLIGHT_DIRECTOR)
+  - get: B:AUTOPILOT_FD_1_Mode
+    set: (>B:AUTOPILOT_FD_1_Mode_Toggle) 
+  - get: B:INSTRUMENT_AUTOPILOT_LR
+    set: (>B:INSTRUMENT_Autopilot_LR_Set) 
+  - get: L:XMLVAR_AUTOPILOT_PUSH_LR  
+  - get: A:AUTOPILOT MASTER, Bool
+    set: (>B:AUTOPILOT_AP_1_Set)
+  - get: A:AUTOPILOT YAW DAMPER, Bool
+    set: (>B:AUTOPILOT_YD_Button_Set)
+
+#### - ANNUNCIATOR PANEL ####
+  - get: L:PUSH_ANUN_PC24_WARNING, Number
+  - get: L:CARENADO_MASTER_WARNING_PUSH
+    set: |
+      switch (value) {
+        case 0: return '0 (>B:SAFETY_CARENADO_MASTER_WARNING_PUSH_Release)'
+        case 1: return '0 (>B:SAFETY_CARENADO_MASTER_WARNING_PUSH_Push)'        
+        default: return ''
+      }  
+  - get: L:PUSH_ANUN_PC24_CAUTION, Number
+  - get: L:CARENADO_MASTER_CAUTION_PUSH
+    set: |
+      switch (value) {
+        case 0: return '0 (>B:SAFETY_CARENADO_MASTER_CAUTION_PUSH_Release)'
+        case 1: return '0 (>B:SAFETY_CARENADO_MASTER_CAUTION_PUSH_Push)'        
+        default: return ''
+      } 
+#### - KMA28 AUDIO PANEL ####
+  - get: B:NAVCOM_AUDIO_Speaker, Bool
+    set: (>B:NAVCOM_AUDIO_Speaker_Toggle)
+  - get: B:NAVCOM_AUDIO_ICS, Bool
+    set: (>B:NAVCOM_AUDIO_ICS_Toggle)
+  - get: B:NAVCOM_AUDIO_COM1_RECEIVE, Bool
+    set: (>B:NAVCOM_AUDIO_COM1_Receive_Toggle)
+  - get: B:NAVCOM_AUDIO_COM2_RECEIVE, Bool
+    set: (>B:NAVCOM_AUDIO_COM2_Receive_Toggle) 
+  - get: B:NAVCOM_AUDIO_NAV1_RECEIVE, Bool
+    set: (>B:NAVCOM_AUDIO_NAV1_Receive_Toggle) 
+  - get: B:NAVCOM_AUDIO_NAV2_RECEIVE, Bool
+    set: (>B:NAVCOM_AUDIO_NAV2_Receive_Toggle)
+  - get: B:NAVCOM_AUDIO_ADF1_RECEIVE, Bool
+    set: (>B:NAVCOM_AUDIO_ADF1_Receive_Toggle)  
+  - get: B:NAVCOM_AUDIO_DME1_RECEIVE, Bool
+    set: (>B:NAVCOM_AUDIO_DME1_Receive_Toggle)
+  - get: B:NAVCOM_AUDIO_AUX_RECEIVE, Bool
+    set: (>B:NAVCOM_AUDIO_AUX_Receive_Toggle)
+  - get: B:NAVCOM_AUDIO_MARKER1_SOUND, Bool 
+    set: (>B:NAVCOM_AUDIO_MARKER1_Sound_Toggle) 
+  - get: A:AUDIO PANEL VOLUME 
+    set: (>B:NAVCOM_AUDIO_Pilot Volume_set) 
+#### - FIRE PANELS ####
+  - get: L:SWITCH_BOTTLE_ARMED_L1
+  - get: L:SWITCH_BOTTLE_ARMED_L2
+  - get: L:SWITCH_BOTTLE_ARMED_R1
+  - get: L:SWITCH_BOTTLE_ARMED_R2
+  - get: L:FIRE_BOTTLES_ALLOW_L
+  - get: L:FIRE_BOTTLES_ALLOW_R
+  - get: L:COVER_SWITCH_ENG_FIRE_L
+  - get: L:_SWITCH_Eng_Fire_L
+    set: (B:SAFETY_SWITCH_Eng_Fire_L_Set)  
+  - get: L:COVER_SWITCH_ENG_FIRE_R
+  - get: L:_SWITCH_Eng_Fire_R
+    set: (B:SAFETY_SWITCH_Eng_Fire_R_Set) 
+######### PEDISTAL PANEL - UPPER ##########
+  - get: H:MFD_1_SOFTKEY_1
+    set: (>B:MFD_1_SOFTKEY_1_Set)
+  - get: H:MFD_1_SOFTKEY_2
+    set: (>B:MFD_1_SOFTKEY_2_Set)
+  - get: H:MFD_1_SOFTKEY_3
+    set: (>B:MFD_1_SOFTKEY_3_Set)
+  - get: H:MFD_1_SOFTKEY_4
+    set: (>B:MFD_1_SOFTKEY_4_Set)
+  - get: H:MFD_1_SOFTKEY_5
+    set: (>B:MFD_1_SOFTKEY_5_Set)
+  - get: H:MFD_1_SOFTKEY_6
+    set: (>B:MFD_1_SOFTKEY_6_Set)
+  - get: H:MFD_1_SOFTKEY_7
+    set: (>B:MFD_1_SOFTKEY_7_Set)
+  - get: H:MFD_1_SOFTKEY_8
+    set: (>B:MFD_1_SOFTKEY_8_Set)
+  - get: H:MFD_1_SOFTKEY_9
+    set: (>B:MFD_1_SOFTKEY_9_Set)
+  - get: H:MFD_1_SOFTKEY_10
+    set: (>B:MFD_1_SOFTKEY_10_Set)    
+  - get: H:MFD_1_SOFTKEY_11
+    set: (>B:MFD_1_SOFTKEY_11_Set)    
+  - get: H:MFD_1_SOFTKEY_12
+    set: (>B:MFD_1_SOFTKEY_12_Set)    
+  - get: H:MFD_1_SOFTKEY_13
+    set: (>B:MFD_1_SOFTKEY_13_Set)    
+  - get: H:MFD_1_SOFTKEY_14
+    set: (>B:MFD_1_SOFTKEY_14_Set)    
+  - get: H:MFD_1_SOFTKEY_15
+    set: (>B:MFD_1_SOFTKEY_15_Set)    
+  - get: H:MFD_1_SOFTKEY_16
+    set: (>B:MFD_1_SOFTKEY_16_Set)    
+  - get: H:MFD_1_SOFTKEY_17
+    set: (>B:MFD_1_SOFTKEY_17_Set)    
+  - get: H:MFD_1_SOFTKEY_18
+    set: (>B:MFD_1_SOFTKEY_18_Set)    
+  - get: H:MFD_1_SOFTKEY_19
+    set: (>B:MFD_1_SOFTKEY_19_Set)    
+  - get: H:MFD_1_SOFTKEY_20
+    set: (>B:MFD_1_SOFTKEY_20_Set)    
+  - get: H:MFD_1_SOFTKEY_21
+    set: (>B:MFD_1_SOFTKEY_21_Set)    
+  - get: H:MFD_1_SOFTKEY_22
+    set: (>B:MFD_1_SOFTKEY_22_Set)    
+  - get: H:MFD_1_SOFTKEY_23    
+    set: (>B:MFD_1_SOFTKEY_23_Set)    
+  - get: H:MFD_1_SOFTKEY_24    
+    set: (>B:MFD_1_SOFTKEY_24_Set)    
+
+######### PEDISTAL PANEL - QUADRANT ##########
+#  - get: B:INSTRUMENT_CAR_IE_KNOB_WINDSHIELD
+  - get: L:XMLVAR_knob_windshield
+    set: (>B:INSTRUMENT_CAR_IE_KNOB_WINDSHIELD_Set)
+
+  - get: L:PC24_Bleed_Air_Source_Switch_State
+    set: (>B:INSTRUMENT_CAR_IE_KNOB_BLEED_Set)
+
+  - get: B:INSTRUMENT_CAR_IE_KNOB_IPS
+    set: |
+      switch (value) {
+        case 0: return '(>B:INSTRUMENT_CAR_IE_KNOB_IPS_Man)'
+        case 1: return '(>B:INSTRUMENT_CAR_IE_KNOB_IPS_Auto)'
+        case 2: return '(>B:INSTRUMENT_CAR_IE_KNOB_IPS_Nai)'
+        case 3: return '(>B:INSTRUMENT_CAR_IE_KNOB_IPS_All)'
+        default: return ''
+      }
+  - get: L:PRESSURIZATION_SWITCH_CABINPRESSDUMP_COVER
+  - get: A:PRESSURIZATION_DUMP_SWITCH, Bool
+    set: (>B:PRESSURIZATION_Dump_Set)
+  - get: L:XMLVAR_knob_modeauto
+    set: (>B:INSTRUMENT_CAR_IE_KNOB_MODEAUTO_Set)
+### AIRBRAKE and FLAP PANELS ###
+  - get: B:INSTRUMENT_HANDLING_LEVER_SPOILERS
+    set: |
+      switch (value) {
+        case 0: return '(>B:INSTRUMENT_HANDLING_LEVER_SPOILERS_0)'
+        case 1: return '(>B:INSTRUMENT_HANDLING_LEVER_SPOILERS_1)'
+        case 2: return '(>B:INSTRUMENT_HANDLING_LEVER_SPOILERS_2)'
+        case 3: return '(>B:INSTRUMENT_HANDLING_LEVER_SPOILERS_3)'
+        default: return ''
+      }
+  - get: A:FLAPS HANDLE PERCENT, Position 16k  
+    set: (>K:FLAPS_SET)
+
+#### LIGHTING DIMMER PANEL ####
+  - get: L:LIGHTING_POTENTIOMETER_7
+    set: (>B:LIGHTING_POTENTIOMETER_7_Set)
+  - get: L:LIGHTING_POTENTIOMETER_9
+    set: (>B:LIGHTING_POTENTIOMETER_9_Set)
+  - get: L:LIGHTING_POTENTIOMETER_15
+    set: (>B:LIGHTING_POTENTIOMETER_15_Set)
+  - get: L:LIGHTING_GLARESHIELD_1
+    set: (>B:LIGHTING_GLARESHIELD_1_Set)
+  - get: L:LIGHTING_POTENTIOMETER_20
+    set: (>B:LIGHTING_POTENTIOMETER_20_Set)
+  - get: L:LIGHTING_POTENTIOMETER_10
+    set: (>B:LIGHTING_POTENTIOMETER_10_Set)
+  - get: L:LIGHTING_POTENTIOMETER_8
+    set: (>B:LIGHTING_POTENTIOMETER_8_Set)
+
+######### PEDISTAL PANEL - LOWER ##########
+  - get: A:BRAKE PARKING POSITION, Bool
+    set: (>B:LANDING_GEAR_ParkingBrake_Set)
+  - get: L:EMER_COM
+  - get: L:C90GTX_EMER_COM_BTN_Push, Number
+    set: (>B:Carenado_IE_Button_EMER_COM_Set)
+  - get: L:COVER_SWITCH_1
+
+######### Main PANEL - Left ##########
+#### - PFD PANELS 1,2 &  MFD 2 ####
+#### - PILOT PFD 1 CONTROLLER PANEL ####
+  - get: H:PFDCTL_1_BARO_PUSH
+  - get: L:XMLVAR_BARO1_ForcedToSTD
+  - get: L:XMLVAR_BARO2_ForcedToSTD
+  - get: H:PFDCTL_1_BARO_INC
+  - get: H:PFDCTL_1_BARO_DEC
+  - get: A:KOHLSMAN SETTING MB:1, Millibars # ALTIMETER CALIBRATION
+    set: "`1 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # ALTIMETER CALIBRATION
+    set: "`2 ${value * 16} (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # ALTIMETER CALIBRATION
+    set: "`3 ${value * 16} (>K:KOHLSMAN_SET)`"   
+  - get: H:PFDCTRL_1_NAV_SEL
+  - get: H:PFDCTRL_1_NAV_PREVIEW
+  - get: H:PFDCTRL_1_BRG1
+  - get: H:PFDCTRL_1_BRG2
+  - get: H:PFDCTRL_1_HSI
+  - get: H:PFDCTRL_1_ET
+  - get: H:PFDCTRL_1_RANGE_PUSH
+  - get: H:PFDCTRL_1_RANGE_INC
+    set: 1 (>B:INSTRUMENT_PFDCTRL_1_RANGE_Inc)
+  - get: H:PFDCTRL_1_RANGE_DEC
+    set: 1 (>B:INSTRUMENT_PFDCTRL_1_RANGE_Dec)
+  - get: A:NAV OBS:1, degrees
+    set: (>K:VOR1_SET)
+  - get: B:AUTOPILOT_Course_1_Sync
+    set: (>K:VOR1_SET) 
+  - get: H:PFDCTRL_1_IDENT
+    set: 0 (>B:INSTRUMENT_PFDCTRL_1_IDENT_PUSH_Set)
+  - get: H:PFDCTRL_1_VFR
+    set: 0 (>B:INSTRUMENT_PFDCTRL_1_VFR_PUSH_Set)
+  - get: H:PFDCTRL_1_DME
+    set: 0 (>B:INSTRUMENT_PFDCTRL_1_DME_PUSH_Set)
+  - get: H:PFDCTRL_1_DETAIL
+    set: 0 (>B:INSTRUMENT_PFDCTRL_1_DETAIL_PUSH_Set)
+
+## - PFD1 Soft Keys
+  - get: H:PFD_1_SOFTKEY_1
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_1_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_2
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_2_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_3
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_3_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_4
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_4_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_5
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_5_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_6
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_6_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_7
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_7_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_8
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_8_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_9
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_9_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_10
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_10_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_11
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_11_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_12
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_12_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_13
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_13_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_14
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_14_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_15
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_15_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_16
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_16_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_17
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_17_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_18
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_18_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_19
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_19_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_20
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_20_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_21
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_21_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_22
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_22_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_23
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_23_PUSH_Set)
+  - get: H:PFD_1_SOFTKEY_24
+    set: (>B:INSTRUMENT_PFD_1_SOFTKEY_24_PUSH_Set)  
+###### MFD 2 Center Panel
+  - get: H:MFD_2_SOFTKEY_1
+    set: (>B:MFD_2_SOFTKEY_1_Set)
+  - get: H:MFD_2_SOFTKEY_2
+    set: (>B:MFD_2_SOFTKEY_2_Set)
+  - get: H:MFD_2_SOFTKEY_3
+    set: (>B:MFD_2_SOFTKEY_3_Set)
+  - get: H:MFD_2_SOFTKEY_4
+    set: (>B:MFD_2_SOFTKEY_4_Set)
+  - get: H:MFD_2_SOFTKEY_5
+    set: (>B:MFD_2_SOFTKEY_5_Set)
+  - get: H:MFD_2_SOFTKEY_6
+    set: (>B:MFD_2_SOFTKEY_6_Set)
+  - get: H:MFD_2_SOFTKEY_7
+    set: (>B:MFD_2_SOFTKEY_7_Set)
+  - get: H:MFD_2_SOFTKEY_8
+    set: (>B:MFD_2_SOFTKEY_8_Set)
+  - get: H:MFD_2_SOFTKEY_9
+    set: (>B:MFD_2_SOFTKEY_9_Set)
+  - get: H:MFD_2_SOFTKEY_10
+    set: (>B:MFD_2_SOFTKEY_10_Set)    
+  - get: H:MFD_2_SOFTKEY_11
+    set: (>B:MFD_2_SOFTKEY_11_Set)    
+  - get: H:MFD_2_SOFTKEY_12
+    set: (>B:MFD_2_SOFTKEY_12_Set)    
+  - get: H:MFD_2_SOFTKEY_13
+    set: (>B:MFD_2_SOFTKEY_13_Set)    
+  - get: H:MFD_2_SOFTKEY_14
+    set: (>B:MFD_2_SOFTKEY_14_Set)    
+  - get: H:MFD_2_SOFTKEY_15
+    set: (>B:MFD_2_SOFTKEY_15_Set)    
+  - get: H:MFD_2_SOFTKEY_16
+    set: (>B:MFD_2_SOFTKEY_16_Set)    
+  - get: H:MFD_2_SOFTKEY_17
+    set: (>B:MFD_2_SOFTKEY_17_Set)    
+  - get: H:MFD_2_SOFTKEY_18
+    set: (>B:MFD_2_SOFTKEY_18_Set)    
+  - get: H:MFD_2_SOFTKEY_19
+    set: (>B:MFD_2_SOFTKEY_19_Set)    
+  - get: H:MFD_2_SOFTKEY_20
+    set: (>B:MFD_2_SOFTKEY_20_Set)    
+  - get: H:MFD_2_SOFTKEY_21
+    set: (>B:MFD_2_SOFTKEY_21_Set)    
+  - get: H:MFD_2_SOFTKEY_22
+    set: (>B:MFD_2_SOFTKEY_22_Set)    
+  - get: H:MFD_2_SOFTKEY_23    
+    set: (>B:MFD_2_SOFTKEY_23_Set)    
+  - get: H:MFD_2_SOFTKEY_24    
+    set: (>B:MFD_2_SOFTKEY_24_Set) 
+
+#### - PILOT PFD 2 CONTROLLER PANEL ####
+  - get: H:PFDCTRL_2_BARO_INC
+  - get: H:PFDCTRL_2_BARO_DEC
+  - get: H:PFDCTRL_2_NAV_SEL
+  - get: H:PFDCTRL_2_NAV_PREVIEW
+  - get: H:PFDCTRL_2_BRG1
+  - get: H:PFDCTRL_2_BRG2
+  - get: H:PFDCTRL_2_HSI
+  - get: H:PFDCTRL_2_ET
+  - get: H:PFDCTRL_2_RANGE_PUSH
+  - get: H:PFDCTRL_2_RANGE_INC
+  - get: H:PFDCTRL_2_RANGE_DEC
+  - get: A:NAV OBS:2, degrees
+    set: (>K:VOR2_SET)
+  - get: B:AUTOPILOT_Course_2_Sync
+    set: (>K:VOR2_SET) 
+  - get: H:PFDCTRL_2_IDENT
+    set: 0 (>B:INSTRUMENT_PFDCTRL_2_IDENT_PUSH_Set)
+  - get: H:PFDCTRL_2_VFR
+    set: 0 (>B:INSTRUMENT_PFDCTRL_2_VFR_PUSH_Set)
+  - get: H:PFDCTRL_2_DME
+    set: 0 (>B:INSTRUMENT_PFDCTRL_2_DME_PUSH_Set)
+  - get: H:PFDCTRL_2_DETAIL
+    set: 0 (>B:INSTRUMENT_PFDCTRL_2_DETAIL_PUSH_Set)
+## - PFD 2 SOFTKEYS
+  - get: H:PFD_2_SOFTKEY_1
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_1_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_2
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_2_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_3
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_3_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_4
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_4_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_5
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_5_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_6
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_6_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_7
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_7_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_8
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_8_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_9
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_9_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_10
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_10_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_11
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_11_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_12
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_12_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_13
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_13_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_14
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_14_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_15
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_15_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_16
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_16_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_17
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_17_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_18
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_18_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_19
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_19_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_20
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_20_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_21
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_21_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_22
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_22_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_23
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_23_PUSH_Set)
+  - get: H:PFD_2_SOFTKEY_24
+    set: (>B:INSTRUMENT_PFD_2_SOFTKEY_24_PUSH_Set)  
+
+######### OVERHEAD Internal Lights PANEL ##########
+  - get: L:XMLVAR_LIGHTING_SW_COCKPIT_LIGHT
+    set: |
+      switch (value) {
+        case 0: return '(>B:INSTRUMENT_LIGHTING_SW_COCKPIT_LIGHT_on)'
+        case 1: return '(>B:INSTRUMENT_LIGHTING_SW_COCKPIT_LIGHT_arm)'        
+        case 2: return '(>B:INSTRUMENT_LIGHTING_SW_COCKPIT_LIGHT_off)'
+        default: return ''
+      }
+  - get: L:XMLVAR_LIGHTING_SW_CABIN_LIGHT
+    set: |
+      switch (value) {
+        case 0: return '(>B:INSTRUMENT_LIGHTING_SW_CABIN_LIGHT_on)'
+        case 1: return '(>B:INSTRUMENT_LIGHTING_SW_CABIN_LIGHT_arm)'        
+        case 2: return '(>B:INSTRUMENT_LIGHTING_SW_CABIN_LIGHT_off)'
+        default: return ''
+      }
+  - get: A:CABIN NO SMOKING ALERT SWITCH, Bool
+    set: (>B:AIRLINER_No_Smoking_Toggle)  
+  - get: A:CABIN SEATBELTS ALERT SWITCH, Bool
+    set: (>B:AIRLINER_Seatbelts_Toggle)  
+######### OVERHEAD ELECTRICAL SYSTEMS PANEL ##########
+  - get: L:ELECTRICAL_SWITCH_BUS_TIE_COVER
+  - get: B:INSTRUMENT_ELECTRICAL_SWITCH_BUS_TIE_COVER, Bool
+    set: (>B:INSTRUMENT_ELECTRICAL_SWITCH_BUS_TIE_COVER_Toggle)
+  - get: L:ELECTRICAL_SWITCH_BUS_TIE
+  - get: B:INSTRUMENT_ELECTRICAL_SWITCH_BUS_TIE, Bool
+    set: (>B:INSTRUMENT_ELECTRICAL_SWITCH_BUS_TIE_Toggle)
+  - get: L:ENGINE_PUSH_STARTER_1
+    set: |
+      switch (value) {
+        case 0: return '(>B:SAFETY_ENGINE_PUSH_STARTER_1_Release)'
+        case 1: return '1 (>K:STARTER1_SET) (>B:SAFETY_ENGINE_PUSH_STARTER_1_Push)'
+        default: return ''
+      }
+  - get: L:ENGINE_PUSH_STARTER_2
+    set: |
+      switch (value) {
+        case 0: return '(>B:SAFETY_ENGINE_PUSH_STARTER_2_Release)'
+        case 1: return '1 (>K:STARTER2_SET) (>B:SAFETY_ENGINE_PUSH_STARTER_2_Push)'
+        default: return ''
+      }
+  - get: A:GENERAL ENG MASTER ALTERNATOR:1, Bool
+    set: | 
+       switch (value) {
+          case 0: return '1 0 (>K:2:ALTERNATOR_SET)'
+          case 1: return '1 1 (>K:2:ALTERNATOR_SET)'
+          default: return ''
+       } 
+  - get: A:GENERAL ENG MASTER ALTERNATOR:2, Bool
+    set: | 
+       switch (value) {
+          case 0: return '2 0 (>K:2:ALTERNATOR_SET)'
+          case 1: return '2 1 (>K:2:ALTERNATOR_SET)'
+          default: return ''
+       }
+  - get: B:ELECTRICAL_Battery_1, Bool
+    set: (>B:ELECTRICAL_Battery_1_Toggle)
+  - get: B:ELECTRICAL_Battery_2, Bool
+    set: (>B:ELECTRICAL_Battery_2_Toggle)
+  - get: L:ENGINE_SWITCH_IGNITION_1
+  - get: B:INSTRUMENT_ENGINE_SWITCH_IGNITION_1, Bool
+    set: (>B:INSTRUMENT_ENGINE_SWITCH_IGNITION_1_Toggle)
+  - get: L:ENGINE_SWITCH_IGNITION_2
+  - get: B:INSTRUMENT_ENGINE_SWITCH_IGNITION_2, Bool
+    set: (>B:INSTRUMENT_ENGINE_SWITCH_IGNITION_2_Toggle)  
+  - get: B:ELECTRICAL_ExternalPower_1, Bool
+    set: (>B:ELECTRICAL_ExternalPower_1_Toggle)
+######### OVERHEAD External Lights PANEL ##########
+  - get: A:LIGHT WING:1
+    set: (>B:LIGHTING_WING_1_Set)  
+  - get: B::LIGHTING_WING_1, Number
+    set: (>B:LIGHTING_WING_1_Toggle)
+  - get: L:LIGHTING_SWITCH_nav_light
+    set: (>B:INSTRUMENT_LIGHTING_SWITCH_NAV_LIGHT_Set)
+  - get: B:INSTRUMENT_LIGHTING_SWITCH_STROBE_BEACON
+#    set: (>B:INSTRUMENT_LIGHTING_SWITCH_STROBE_BEACON_Set)
+  - get: L:XMLVAR_LIGHTING_SWITCH_STROBE_BEACON
+    set: (>B:INSTRUMENT_LIGHTING_SWITCH_STROBE_BEACON_Set) (>B:INSTRUMENT_LIGHTING_SWITCH_STROBE_BEACON_Set) (>B:INSTRUMENT_LIGHTING_SWITCH_STROBE_BEACON_Set) (>B:INSTRUMENT_LIGHTING_SWITCH_STROBE_BEACON_Set) (>B:INSTRUMENT_LIGHTING_SWITCH_STROBE_BEACON_Set) (>B:INSTRUMENT_LIGHTING_SWITCH_STROBE_BEACON_Set)
+
+  - get: A:LIGHT BEACON:1
+  - get: A:LIGHT STROBE:1
+  - get: L:LIGHTING_TAXI:1
+    set: (>B:LIGHTING_TAXI_1_Set)
+  - get: B:LIGHTING_TAXI_1
+    set: (>B:LIGHTING_TAXI_1_Toggle)
+  - get: L:XMLVAR_LIGHTING_SWITCH_LANDING_PULSE
+    set: (>B:INSTRUMENT_LIGHTING_SWITCH_LANDING_PULSE_Set)
+  - get: L:XMLVAR_LIGHTING_SWITCH_RECOG_PULSE
+    set: (>B:INSTRUMENT_LIGHTING_SWITCH_RECOG_PULSE_Set)
+  - get: L:LIGHTING_CABIN_13
+    set: (>B:LIGHTING_CABIN_13_Set)
+  - get: L:LIGHTING_CABIN_14
+    set: (>B:LIGHTING_CABIN_14_Set) 
+
+######### MISCELLANEOUS ITEMS ##########
+  - get: L:CARENADO_SUN_VISOR_1
+  - get: L:CARENADO_SUN_VISOR_2
+  - get: L:XMLVAR_YokeHidden1 
+    set: (>B:HANDLING_Yoke_Hider_1_Toggle)
+  - get: L:XMLVAR_YokeHidden2 
+    set: (>B:HANDLING_Yoke_Hider_2_Toggle)   
+  - get: L:LANDING_GEAR_Gear
+    set: (>B:LANDING_GEAR_Gear_Set)
+  - get: L:CARVAR_Switch_oxygen
+  - get: B:INSTRUMENT_CAR_Switch_oxygen, Bool
+    set: (>B:INSTRUMENT_CAR_Switch_oxygen_Toggle)
+  - get: B:INSTRUMENT_ELECTRICAL_BREAK_CABIN_PWR, Bool
+    set: (>B:INSTRUMENT_ELECTRICAL_BREAK_CABIN_PWR_Toggle)
+######### CABIN FEATURES ###########
+  - get: L:LIGHTING_CABIN_1
+    set: (>B:LIGHTING_CABIN_1_Set)
+  - get: L:LIGHTING_CABIN_2
+    set: (>B:LIGHTING_CABIN_2_Set)
+  - get: L:LIGHTING_CABIN_3
+    set: (>B:LIGHTING_CABIN_3_Set)
+  - get: L:LIGHTING_CABIN_4
+    set: (>B:LIGHTING_CABIN_4_Set)
+  - get: L:LIGHTING_CABIN_5
+    set: (>B:LIGHTING_CABIN_5_Set)
+  - get: L:LIGHTING_CABIN_6
+    set: (>B:LIGHTING_CABIN_6_Set)
+  - get: L:LIGHTING_CABIN_7
+    set: (>B:LIGHTING_CABIN_7_Set)
+  - get: L:LIGHTING_CABIN_8
+    set: (>B:LIGHTING_CABIN_8_Set)
+  - get: L:LIGHTING_CABIN_9
+    set: (>B:LIGHTING_CABIN_9_Set)
+  - get: L:LIGHTING_CABIN_10
+    set: (>B:LIGHTING_CABIN_10_Set)
+  - get: L:LIGHTING_CABIN_11
+    set: (>B:LIGHTING_CABIN_11_Set)
+  - get: L:LIGHTING_CABIN_12
+    set: (>B:LIGHTING_CABIN_12_Set)
+  - get: L:LIGHTING_CABIN_15
+    set: (>B:LIGHTING_CABIN_15_Set)  
+  - get: B:INSTRUMENT_CAR_switch_door_cabin, Bool
+    set: (>B:INSTRUMENT_CAR_switch_door_cabin_Set) 
+  - get: B:SAFETY_CARENADO_EXIT_HAND_0
+  - get: L:1:EXIT_AIRCRAFT, Bool
+    set: (>B:SAFETY_CARENADO_EXIT_HAND_0_Set)
+  - get: L:1:ENTER_AIRCRAFT, Bool
+    set: (>B:SAFETY_CARENADO_EXIT_HAND_0_Set)  
+  - get: L:TablePassenger1
+    set: (>B:INSTRUMENT_CARENADO_PASSENGER_TABLE_1_Set)
+  - get: L:TablePassenger2
+    set: (>B:INSTRUMENT_CARENADO_PASSENGER_TABLE_2_Set)
+  - get: L:TablePassenger3
+    set: (>B:INSTRUMENT_CARENADO_PASSENGER_TABLE_3_Set)
+  - get: L:TablePassenger4
+    set: (>B:INSTRUMENT_CARENADO_PASSENGER_TABLE_4_Set)
+  - get: L:CabinPersiana1, Number
+  - get: L:CabinPersiana2, Number
+  - get: L:CabinPersiana3, Number
+  - get: L:CabinPersiana4, Number
+  - get: L:CabinPersiana5, Number
+  - get: L:CabinPersiana6, Number
+  - get: L:CabinPersiana7, Number
+  - get: L:CabinPersiana8, Number
+  - get: L:CabinPersiana9, Number
+  - get: L:CabinPersiana10, Number
+  - get: L:CabinPersiana11, Number
+  - get: L:CabinPersiana12, Number
+  - get: L:CabinPersiana13, Number
+  - get: L:CabinPersiana14, Number
+  - get: L:CabinPersiana15, Number
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

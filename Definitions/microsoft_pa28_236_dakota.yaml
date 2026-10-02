@@ -4,7 +4,6 @@
 include:
   - modules/AS_GNS530.yaml
   - modules/AS_GNS430.yaml
-  - modules/fuel.yaml
 shared:
   #CLOCK
   - get: L:XMLVAR_INSTRUMENT_Knob_Clock
@@ -32,7 +31,6 @@ shared:
   #AUTOPILOT HEADING
   - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees
     set: (>B:INSTRUMENT_HEADING_Set)
-  #  set: "`1 ${value} (>K:2:HEADING_BUG_SET)`"
   #FUEL PANEL
   - get: B:INSTRUMENT_FUEL_REMAINING_Set
   - get: B:INSTRUMENT_FUEL_USED_Set
@@ -53,7 +51,7 @@ shared:
   - get: B:SAFETY_ELT_Set
   - get: B:FUEL_SELECTOR_Set
   #RUDDER TRIM
-  - get: A:RUDDER TRIM PCT, Number
+  - get: A:RUDDER TRIM PCT, Number 
     set: (>K:RUDDER_TRIM_SET_EX1)
   #PARKING BRAKE
   - get: B:LANDING_PARKING_BRAKE_Set
@@ -93,49 +91,22 @@ shared:
   - get: B:INSTRUMENT_ADF_PUSH_SETRESET_BUTTON_Set
   - get: B:INSTRUMENT_ADF_KNOB_VOLUME_Set
   - get: B:INSTRUMENT_ADF_KNOB_FREQUENCY_MHZ_Set
-  # AUTOPILOT
-  # might not be working.. ? cant see it in the js
   - get: B:AUTOPILOT_YAW_DAMPER_Set
-  # - get: B:AUTOPILOT_AUTOPILOT_Set
-  - get: A:AUTOPILOT MASTER, Bool # AP
-    set: (>K:AP_MASTER)
+  - get: B:AUTOPILOT_AUTOPILOT_Set
   - get: B:AUTOPILOT_FLIGHT_DIRECTOR_Set
-  # - get: B:AUTOPILOT_HEADING_Set
-  - get: A:AUTOPILOT HEADING LOCK, Bool # HDG
-    set: "value ? '(>K:AP_HDG_HOLD)' : '(>K:AP_BANK_HOLD)'"
-  - get: A:AUTOPILOT BANK HOLD, Bool # ROL
-  # - get: B:AUTOPILOT_NAVIGATION_Set
-  - get: A:AUTOPILOT NAV1 LOCK, Bool # NAV
-    set: "value ? '(>K:AP_NAV1_HOLD)' : '(>K:AP_BANK_HOLD)'"
-  # - get: B:AUTOPILOT_APPROACH_Set
-  - get: A:AUTOPILOT APPROACH HOLD, Bool # APR
-    set: "value ? '(>K:AP_APR_HOLD)' : '(>K:AP_BANK_HOLD)'"
-  # - get: B:AUTOPILOT_REV_Set
-  - get: A:AUTOPILOT BACKCOURSE HOLD, Bool # REV
-    set: "value ? '(>K:AP_BC_HOLD)' : '(>K:AP_BANK_HOLD)'"
-  # - get: B:AUTOPILOT_ALTITUDE_HOLD_Set
-  - get: A:AUTOPILOT ALTITUDE LOCK, Bool # ALT
-    set: "value ? '(>K:AP_PITCH_LEVELER_OFF) (>K:AP_ALT_HOLD_ON)' : '(>K:AP_ALT_HOLD_OFF) (>K:AP_PITCH_LEVELER_ON)'"
-  # - get: B:AUTOPILOT_UP_Set
-  # - get: B:AUTOPILOT_DOWN_Set
-  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, Feet per minute # VS VALUE
-  # - get: B:AUTOPILOT_ARM_Set
-  - get: A:AUTOPILOT GLIDESLOPE ARM, Bool # GS ARM
-  - get: A:AUTOPILOT ALTITUDE ARM, Bool # ALT ARM
-  # - get: B:AUTOPILOT_VS_MODE_Set
-  - get: A:AUTOPILOT VERTICAL HOLD, Bool # VS
-    set: "value ? '(>K:AP_PITCH_LEVELER_OFF) (>K:AP_PANEL_VS_ON)' : '(>K:AP_PANEL_VS_OFF) (>K:AP_PITCH_LEVELER_ON)'"
-  # - get: H:KFC225_Knob_Outer_INC
-  # - get: H:KFC225_Knob_Outer_DEC
-  # - get: H:KFC225_Knob_Inner_INC
-  # - get: H:KFC225_Knob_Inner_DEC
-  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet # ALT VALUE
-    set: "current == 0 ? `1 ${value} (>K:2:AP_ALT_VAR_SET_ENGLISH)` : `${value} (>A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet)`"
-  - get: A:KOHLSMAN SETTING MB:2, Millibars
-    set: "`${value * 16} 0 (>K:2:KOHLSMAN_SET)`"
-  # they're in the script.. but idk what the frick they do
-  - get: A:AUTOPILOT PITCH HOLD, Bool # PIT
-  - get: A:AUTOPILOT GLIDESLOPE ACTIVE, Bool # GS
+  - get: B:AUTOPILOT_HEADING_Set
+  - get: B:AUTOPILOT_NAVIGATION_Set
+  - get: B:AUTOPILOT_APPROACH_Set
+  - get: B:AUTOPILOT_REV_Set
+  - get: B:AUTOPILOT_ALTITUDE_HOLD_Set
+  - get: B:AUTOPILOT_UP_Set
+  - get: B:AUTOPILOT_DOWN_Set
+  - get: B:AUTOPILOT_ARM_Set
+  - get: B:AUTOPILOT_VS_MODE_Set
+  - get: H:KFC225_Knob_Outer_INC
+  - get: H:KFC225_Knob_Outer_DEC
+  - get: H:KFC225_Knob_Inner_INC
+  - get: H:KFC225_Knob_Inner_DEC
   #LIGHTS
   - get: B:LIGHTING_NAVIGATION_LIGHTS_Set
   - get: B:LIGHTING_LANDING_LIGHTS_Set
@@ -147,6 +118,7 @@ shared:
   - get: B:LIGHTING_CABIN_LIGHT_Set
   - get: B:FUEL_PUMP_Set
   - get: B:DEICE_PITOT_HEAT_Set
+  - get: B:COMMON_TOP_LOCK_Set
   #BATTERY
   - get: B:ELECTRICAL_BATTERY_Set
   - get: B:ELECTRICAL_ALTERNATOR_Set

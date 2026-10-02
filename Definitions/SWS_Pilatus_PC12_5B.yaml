@@ -1,0 +1,723 @@
+# Original author: https://discord.com/channels/1454265644416765974/1485656523492298904/1492999680907280594
+# Updated: 2026-04-12 21:27:45
+
+# SWS Pilatus PC-12 - FS CoPilot shared cockpit
+# Version 0.5
+ 
+include:
+  - modules/AS_GNS530.yaml # ADDED BY DKGOLFNUT
+  - modules/AS_GNS430.yaml # ADDED BY DKGOLFNUT
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+# SWS Pilatus PC-12 - FS Copilot shared cockpit starter
+# Revised from the user's last working YAML plus captured event notes.
+# Notes for this revision:
+# - BARO sync remains intentionally disabled because it is a known FS CoPilot knob desync issue and the community workaround is to let each pilot set BARO locally.
+# - Added more position trackers and custom-event fallbacks for the remaining trouble spots: flaps, gear, condition lever animation, KAS297 knobs, probe heat, AP test, and TOGA.
+# - Prefer direct A:/L: state tracking and pulse the captured cockpit event when state differs.
+# - If any item double-toggles in testing, comment that entry out and keep the tracking helper only.
+
+master:
+  # ---------- PRIMARY FLIGHT CONTROLS / TRIM ----------
+  - get: A:AILERON TRIM PCT, Percent
+    set: (>K:AILERON_TRIM_SET_EX1)
+
+  - get: A:ELEVATOR TRIM PCT, Percent
+    set: (>K:ELEVATOR_TRIM_SET)
+
+  - get: A:RUDDER TRIM PCT, Percent
+    set: (>K:RUDDER_TRIM_SET)
+
+  # Trim animation helper / indicator
+  - get: L:HANDLING_AILERON_ELEVATOR_Trim_Position, Number
+
+  # ---------- CONTROL COLUMN / PEDALS (ANIMATION SYNC) ----------
+  - get: A:YOKE X POSITION, Percent over 100
+  - get: A:YOKE Y POSITION, Percent over 100
+  - get: A:RUDDER POSITION, Percent
+
+  # ---------- ENGINE CORE ----------
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k
+    set: (>K:THROTTLE1_SET)
+
+  # Condition lever: PF-only control is acceptable, but we now also push the captured custom events so the monitoring side animation has a better chance to follow the detents.
+  # Captured mapping from your notes:
+  # 0 = cutoff, 1 = ground idle, 2 = flight idle.
+  - get: L:ENGINE_Lever_Condition_1, Number
+    set: "value == 0 ? '0 (>A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100) 0 (>L:ENGINE_Lever_Condition_1) (>B:FUEL_1_Condition_Lever_Cut_Off)' : value == 1 ? '0.01 (>A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100) 1 (>L:ENGINE_Lever_Condition_1) (>B:FUEL_1_Condition_Lever_Low_Idle)' : '1 (>A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100) 2 (>L:ENGINE_Lever_Condition_1) (>B:FUEL_1_Condition_Lever_High_Idle)'"
+
+  # Position helpers for debugging / animation tracking
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100
+  - get: L:ENGINE_Lever_Condition_1, Number
+  - get: A:GENERAL ENG FUEL VALVE:1, Bool
+
+  - get: A:GENERAL ENG STARTER:1, Bool
+    set: (>K:TOGGLE_STARTER1)
+
+  - get: L:ENGINE_Push_Ignition_1, Bool
+    set: "`${value} (>L:ENGINE_Push_Ignition_1, Bool)`"
+
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, Percent
+
+  # ---------- PARKING BRAKE ----------
+  # Parking brake only in master. Flaps and gear are kept out of master for this pass.
+  - get: A:BRAKE PARKING POSITION, Bool
+    set: (>K:PARKING_BRAKE_SET)
+
+# #### AUTOTHROTTLE TO GA #### I recommend thsi being inthe Master area
+  - get: L:WT_TOGA_ACTIVE, Bool
+    set: (>K:AUTO_THROTTLE_TO_GA)
+
+shared:
+########## ADDITIONAL FROM DKGOLFNUT ################
+# - #### ENVIRONTMENTAL CONTROLS ####
+  - get: L:SWS_PRESSURIZATION_Switch_ECS_Mode, Number
+  - get: L:PRESSURIZATION_Switch_Dump_Cover, Bool  
+  - get: L:PRESSURIZATION_Switch_Dump, Bool
+  - get: L:SWS_PC12_AIRCONDITIONING_Knob_ECS_Temperature, Number
+  - get: L:SWS_AIRCONDITIONING_Switch_ManualTempControl_Cover, Bool
+  - get: L:SWS_AIRCONDITIONING_Switch_ManualTempControl, Bool
+  - get: L:SWS_PRESSURIZATION_Knob_ManualControlValve, Percent
+  - get: L:SWS_PRESSURIZATION_Knob_CabinAlt, ft
+  - get: L:SWS_PRESSURIZATION_Knob_CabinAlt_Rate, ft/min
+
+# - #### ELT SWITCH ####
+  - get: L:XMLVAR_ELT_STATE, Number
+    set: |
+      switch (value) {
+          case  1: return '(>B:SAFETY_ELT_1_Arm)'
+          case  2: return '(>B:SAFETY_ELT_1_On)'
+          case  3: return '(>B:SAFETY_ELT_1_Test)'
+          default: return ''
+      }
+# - #### EFIS and AHRS -1 and 2 switches ####
+  - get: L:SWS_EFIS50_Switch_Reversionary_1, Bool
+  - get: L:SWS_LIGHTING_Switch_Light_Recognition_Pulse, Bool
+  - get: L:SWS_INSTRUMENT_Switch_GyroControl_1_ModeSelector, Bool
+  - get: L:SWS_INSTRUMENT_Switch_GyroControl_1_Adjust, Number
+  - get: L:SWS_INSTRUMENT_Switch_GyroControl_2_ModeSelector, Bool
+  - get: L:SWS_INSTRUMENT_Switch_GyroControl_2_Adjust, Number
+# - #### BARO SET ####
+  - get: L:INSTRUMENT_Altimeter_1, Number
+    set: (>B:INSTRUMENT_Altimeter_1_Set)
+  - set: B:INSTRUMENT_Altimeter_1, Number
+  - get: L:INSTRUMENT_Altimeter_2, Number
+    set: (>B:INSTRUMENT_Altimeter_2_Set)
+  - set: B:INSTRUMENT_Altimeter_2, Number 
+  - get: L:INSTRUMENT_Altimeter_3, Number
+    set: (>B:INSTRUMENT_Altimeter_3_Set)
+  - set: B:INSTRUMENT_Altimeter_3, Number  
+# - #### CDI ####
+  - get: L:INSTRUMENT_CDI_Compass_2, Degrees
+# - #### RMI 1 & 2 Instrument Needles ####
+  - get: L:RMI_1_Needle_1_Selector, Bool 
+  - get: L:RMI_2_Needle_1_Selector, Bool
+  - get: L:RMI_1_Needle_2_Selector, Bool
+  - get: L:RMI_2_Needle_2_Selector, Bool
+
+# - #### BUTTONS around Altimeter ####
+  - get: L:TAWS_Push_TerrainInhibit, Bool
+  - get: L:TAWS_Push_Test_1, Bool
+  - get: L:SWS_EFIS50_AHRS_1_Source, Bool
+  - get: L:TAWS_Push_Test_2, Bool
+  - get: L:SWS_EFIS50_AHRS_2_Source, Bool
+# - #### EFIS CONTROL PANEL 1 & 2 ####
+  - get: L:SWS_EFIS50_Push_RALT_1, Bool
+  - get: L:SWS_EFIS50_Push_RALT_2, Bool
+  - get: L:SWS_EFIS50_Push_TestRef_1, Bool
+  - get: L:SWS_EFIS50_Push_TestRef_2, Bool
+  - get: SWS_EFIS50_Decision_Height_1, Feet
+  - get: SWS_EFIS50_Decision_Height_1_Pull, Bool
+  - get: SWS_EFIS50_Decision_Height_2, Feet
+  - get: SWS_EFIS50_Decision_Height_2_Pull, Bool
+  - get: H:SWS_EFIS50_Push_HSI_1
+  - get: H:SWS_EFIS50_Push_HSI_2
+  - get: H:SWS_EFIS50_Push_Arc_1, Bool
+  - get: H:SWS_EFIS50_Push_Arc_2, Bool
+  - get: H:SWS_EFIS50_Push_Nav_1, Bool
+  - get: H:SWS_EFIS50_Push_Nav_2, Bool
+  - get: H:SWS_EFIS50_Push_RangeInc_1, Bool
+  - get: H:SWS_EFIS50_Push_RangeInc_2, Bool
+  - get: H:SWS_EFIS50_Push_RangeDec_1, Bool
+  - get: H:SWS_EFIS50_Push_RangeDec_2, Bool
+  - get: L:LIGHTING_POTENTIOMETER_2, Number
+    set: (>B:LIGHTING_POTENTIOMETER_2_Set)
+  - get: L:LIGHTING_POTENTIOMETER_9, Number
+    set: (>B:LIGHTING_POTENTIOMETER_9_Set)
+  - get: H:SWS_EFIS50_Push_SelectPointer1_1, Bool
+  - get: H:SWS_EFIS50_Push_SelectPointer1_2, Bool  
+  - get: H:SWS_EFIS50_Push_SelectPointer2_1, Bool
+  - get: H:SWS_EFIS50_Push_SelectPointer2_2, Bool
+  - get: H:SWS_EFIS50_Push_SelectReference_1, Bool
+  - get: H:SWS_EFIS50_Push_SelectReference_2, Bool
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees
+    set: (>K:HEADING_BUG_SET)
+
+# GMA340 - AUDIO PANEL
+  - get: L:GMA340_ANNUNCIATOR_TEST
+  - get: L:GMA340_Knob_Volume_Pilot_1, Percent # VOL
+  - get: L:GMA340_Knob_Squelch_Pilot_1, Percent # Squelch
+  - get: L:GMA340_Knob_Volume_CoPilot_1, Percent # VOL
+  - get: L:GMA340_Knob_Squelch_CoPilot_1, Percent # Squelch
+  - get: A:MARKER BEACON SENSITIVITY HIGH, Bool # HI
+    set: (>K:MARKER_BEACON_SENSITIVITY_HIGH)
+  - get: A:MARKER BEACON TEST MUTE, Bool # T/M
+    set: (>K:MARKER_BEACON_TEST_MUTE)
+  - get: A:INTERCOM MODE, Enum # ISO/ALL/CREW
+    set: (>K:INTERCOM_MODE_SET)
+  - get: A:COM RECEIVE:1, Bool # COM1
+    set: (>K:COM1_RECEIVE_SELECT)
+  - get: A:COM RECEIVE:2, Bool # COM2
+    set: (>K:COM2_RECEIVE_SELECT)
+  - get: A:COM RECEIVE:3, Bool # COM2
+    set: (>K:COM3_RECEIVE_SELECT)
+  - get: A:NAV SOUND:1, Bool # NAV1
+    set: (>K:RADIO_VOR1_IDENT_TOGGLE)
+  - get: A:NAV SOUND:2, Bool # NAV2
+    set: (>K:RADIO_VOR2_IDENT_TOGGLE)
+  - get: A:MARKER SOUND, Bool # MKR
+    set: (>K:MARKER_SOUND_TOGGLE)
+  - get: A:INTERCOM SYSTEM ACTIVE, Bool # ICS
+    set: (>K:TOGGLE_ICS)
+  - get: A:ADF SOUND:1, Bool # ADF
+    set: (>K:RADIO_ADF_IDENT_TOGGLE) # AUX
+  - get: L:XMLVAR_AudioPanel_1
+  - get: A:DME SOUND:1, Bool # DME
+    set: (>K:RADIO_DME1_IDENT_TOGGLE)
+  - get: A:SPEAKER ACTIVE, Bool # SPR
+    set: (>K:TOGGLE_SPEAKER)
+  - get: Z:AUDIO_Knob_Selector_1 # MIC
+    set: |
+      switch (value) {
+          case   0: return '(>H:KMA28_TRANSMISSION_KNOB_COM3)'
+          case  20: return '(>H:KMA28_TRANSMISSION_KNOB_COM2)'
+          case  40: return '(>H:KMA28_TRANSMISSION_KNOB_COM1)'
+          case  60: return '(>H:KMA28_TRANSMISSION_KNOB_COM1_2)'
+          case  80: return '(>H:KMA28_TRANSMISSION_KNOB_COM2_1)'
+          case 100: return '(>H:KMA28_TRANSMISSION_KNOB_TEL)'
+          default: return ''
+      }
+  - get: B:NAVCOM_AUDIO_TRANSMIT, Number # TRANSMITTER   
+# - #### AUTOPILOT KAS297 ALT/VERT SPEED Panel ####
+  - get: H:AUTOPILOT_KAS297B_Push_VerticalSpeed_1
+  - get: H:AUTOPILOT_KAS297B_Push_AltitudeSelect_1
+  - get: L:AUTOPILOT_KAS297B_Push_AltitudeSelect_1
+  - get: L:AUTOPILOT_KAS297B_MODE, Bool
+  - get: H:SWS_KAS297_Inner_Knob_CCW
+  - get: H:SWS_KAS297_Inner_Knob_CW
+  - get: H:SWS_KAS297_Outer_Knob_CCW
+  - get: H:SWS_KAS297_Outer_Knob_CW
+###########  KING/BENDIX  KNS87 NUMEROUS issues with TUNING KNOBS ###########  
+  - get: H:adf_AntAdf # KNS87 ADF Button
+  - get: H:adf_bfo # KNS87 ADF BFO Button
+  - get: H:adf_frqTransfert # KNS87 ADF Transfer Button
+  - get: H:adf_FltEt # KNS87 ADF FLT ET Button
+  - get: H:adf_SetRst # KNS87 ADF SET REST Button
+  - get: A:CIRCUIT SWITCH ON:46, Bool # KNS87 ADF ON/OFFSwitch
+  - get: A:ADF VOLUME:1, percent 
+    set: "value > current ? '0 (>K:ADF_VOLUME_INC)' : '0 (>K:ADF_VOLUME_DEC)'"
+  - get: A:ADF STANDBY FREQUENCY:1, Frequency ADF BCD32
+    set: (>K:ADF_STBY_SET)
+  - get: A:ADF ACTIVE FREQUENCY:1, Frequency ADF BCD32
+    set: (>K:ADF_ACTIVE_SET)
+  - get: L:var_adfKnobPulled, bool # KNS87 ADF inner knob pulled
+###########   GARMIN GTX330 TRANSPONDER   ########### 
+  - get: A:TRANSPONDER IDENT:1, Bool
+    set: "value ? '1 (>K:XPNDR_IDENT_ON)' : '1 (>K:XPNDR_IDENT_OFF)'"
+  - get: H:TransponderON  # TRANSPONDER ON BUTTON
+  - get: H:TransponderOFF   # TRANSPONDER OFF BUTTON
+  - get: H:TransponderALT   # TRANSPONDER ALT BUTTON
+  - get: H:TransponderSTBY   # TRANSPONDER STBY BUTTON
+  - get: H:TransponderIDT   # TRANSPONDER IDENT BUTTON
+  - get: H:TransponderVFR   # TRANSPONDER VFR BUTTON  
+  - get: H:TransponderFUNC   # TRANSPONDER FUNC BUTTON
+  - get: H:TransponderCRSR   # TRANSPONDER CRSR BUTTON
+  - get: H:TransponderSTARTSTOP   # TRANSPONDER STARTSTOP BUTTON
+  - get: H:TransponderCLR    # TRANSPONDER CLR BUTTON
+  - get: H:Transponder0   # TRANSPONDER 0 BUTTON
+  - get: H:Transponder1   # TRANSPONDER 1 BUTTON
+  - get: H:Transponder2   # TRANSPONDER 2 BUTTON
+  - get: H:Transponder3   # TRANSPONDER 3 BUTTON
+  - get: H:Transponder4   # TRANSPONDER 4 BUTTON
+  - get: H:Transponder5   # TRANSPONDER 5 BUTTON
+  - get: H:Transponder6   # TRANSPONDER 6 BUTTON
+  - get: H:Transponder7   # TRANSPONDER 7 BUTTON
+  - get: H:Transponder8   # TRANSPONDER 8 BUTTON
+  - get: H:Transponder9   # TRANSPONDER 9 BUTTON
+  - get: A:TRANSPONDER CODE:1, BCO16  # TRANSPONDER CODE
+    set: (>K:XPNDR_SET)
+
+# - #### MISCELLANEOUS ####
+  - get: L:SWS_MISC_Visor_Extend_1
+  - get: L:SWS_MISC_Visor_Extend_1_Button, Bool
+  - get: L:SWS_MISC_Visor_Extend_2
+  - get: L:SWS_MISC_Visor_Extend_2_Button, Bool
+  - get: B:HANDLING_Yoke_Hider_1
+    set: (>B:HANDLING_Yoke_Hider_1_Toggle)
+  - get: B:HANDLING_Yoke_Hider_2
+    set: (>B:HANDLING_Yoke_Hider_2_Toggle)  
+  - get: L:SWS_MISC_Armrest_Pilot_L Bool  
+  - get: L:SWS_MISC_Armrest_Pilot_R Bool
+  - get: L:SWS_MISC_Armrest_Copilot_L Bool
+  - get: L:SWS_MISC_Armrest_Copilot_R Bool
+  - get: L:SWS_MISC_LavatoryDoor
+  - get: L:SWS_MISC_LavatoryWindow  
+  - get: L:SWS_MISC_ToiletCover
+  - get: L:SWS_MISC_Drawer_L_Upper
+  - get: L:SWS_MISC_Drawer_L_Lower
+  - get: L:SWS_MISC_Drawer_R_Upper
+  - get: L:SWS_MISC_Drawer_R_Lower
+  - get: L:SWS_MISC_Sunshade_R1
+  - get: L:SWS_MISC_Sunshade_R2
+  - get: L:SWS_MISC_Sunshade_R3
+  - get: L:SWS_MISC_Sunshade_R4
+  - get: L:SWS_MISC_Sunshade_R5
+  - get: L:SWS_MISC_Sunshade_L1
+  - get: L:SWS_MISC_Sunshade_L2
+  - get: L:SWS_MISC_Sunshade_L3
+  - get: L:SWS_MISC_Sunshade_L4
+  - get: L:SWS_MISC_Sunshade_L5
+  - get: L:SWS_MISC_SeatPassenger_1
+  - get: L:SWS_MISC_SeatPassenger_2 
+  - get: L:SWS_MISC_SeatPassenger_3
+  - get: L:SWS_MISC_SeatPassenger_4
+  - get: L:SWS_MISC_SeatPassenger_5
+  - get: L:SWS_MISC_SeatPassenger_6
+  - get: L:SWS_MISC_Armrest_Passenger_1
+  - get: L:SWS_MISC_Armrest_Passenger_2
+  - get: L:SWS_MISC_Armrest_Passenger_3
+  - get: L:SWS_MISC_Armrest_Passenger_4
+  - get: L:SWS_MISC_Armrest_Passenger_5
+  - get: L:SWS_MISC_Armrest_Passenger_6
+
+
+# - #### OVERHEAD ITEMS ####
+  - get: L:DEICE_Pitot_1, Bool # DEICE PITOT BTN
+    set: (>K:PITOT_HEAT_SET)
+
+
+########## ADDITIONAL FROM DKGOLFNUT ################
+  # =========================================================
+  # SHARED FLAPS / GEAR
+  # =========================================================
+
+  # Shared flap/gear using direct handle state setters for this test pass.
+  # This reverts only these items away from the custom step-event experiment.
+  - get: A:FLAPS HANDLE PERCENT, position 16k
+    set: (>K:FLAPS_SET)
+
+  - get: A:FLAPS HANDLE PERCENT, Percent over 100
+  - get: A:TRAILING EDGE FLAPS LEFT ANGLE, Degrees
+  - get: A:FLAPS NUM HANDLE POSITIONS, Number
+
+  - get: A:GEAR HANDLE POSITION, Bool
+    set: (>K:GEAR_SET)
+
+  - get: A:GEAR HANDLE POSITION, Bool
+  - get: A:GEAR CENTER POSITION, Percent
+
+  # Shared condition lever tracking only. PF-only control remains acceptable,
+  # but these trackers help the monitoring side follow detents/animation state.
+  - get: L:ENGINE_Lever_Condition_1, Number
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100
+
+  # =========================================================
+  # DEICE / ANTI-ICE
+  # =========================================================
+
+  - get: A:PROP DEICE SWITCH:1, Bool
+    set: (>K:TOGGLE_PROPELLER_DEICE)
+
+  # Boots master / interval
+  - get: A:CIRCUIT SWITCH ON:61, Bool
+    set: 61 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+
+  - get: A:STRUCTURAL DEICE SWITCH, Bool
+  - get: L:SWS_DEICE_Push_BootsInterval, Bool
+    set: "`${value} (>L:SWS_DEICE_Push_BootsInterval, Bool)`"
+
+  - get: L:SWS_DEICE_Push_InertSep_1, Bool
+    set: "`${value} (>L:SWS_DEICE_Push_InertSep_1)`"
+
+  - get: L:XMLVAR_InertSep1_Deployment, Number
+
+
+  # Windshield heat circuits and intensity trackers
+  - get: A:CIRCUIT SWITCH ON:63, Bool
+    set: 63 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+
+  - get: A:CIRCUIT SWITCH ON:86, Bool
+    set: 86 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+
+  - get: L:DEICE_WINDSHIELD_L_INTENSITY, Bool
+    set: "`${value} (>L:DEICE_WINDSHIELD_L_INTENSITY, Bool)`"
+
+  - get: L:DEICE_WINDSHIELD_R_INTENSITY, Bool
+    set: "`${value} (>L:DEICE_WINDSHIELD_R_INTENSITY, Bool)`"
+
+
+  # =========================================================
+  # AIR CONDITIONING / ENVIRONMENTAL
+  # =========================================================
+
+  - get: L:SWS_PC12_AIRCONDITIONING_Knob_ECS_Temperature, Enum
+    set: "`${value} (>L:SWS_PC12_AIRCONDITIONING_Knob_ECS_Temperature, Enum)`"
+
+  - get: L:SWS_PC12_AIRCONDITIONING_ACTemperatureSetting, Celsius
+
+  - get: L:SWS_AIRCONDITIONING_Switch_ManualTempControl, Enum
+    set: "`${value} (>L:SWS_AIRCONDITIONING_Switch_ManualTempControl, Enum)`"
+
+  - get: L:SWS_AIRCONDITIONING_Push_SYS, Bool
+  - get: L:SWS_AIRCONDITIONING_Push_FANS, Bool
+  - get: L:SWS_AIRCONDITIONING_Push_RECIRCCOOL, Bool
+  - get: L:SWS_AIRCONDITIONING_Push_CabinHeat, Bool
+  - get: L:SWS_AIRCONDITIONING_VentMode, Bool
+  - get: L:SWS_AIRCONDITIONING_ACVent_Cap_Pilot1, Bool
+  - get: L:SWS_AIRCONDITIONING_ACVent_Cap_Pilot2, Bool
+  - get: L:SWS_AIRCONDITIONING_ACVent_Cap_Copilot1, Bool
+  - get: L:SWS_AIRCONDITIONING_ACVent_Cap_Copilot2, Bool
+
+  # =========================================================
+  # FUEL
+  # =========================================================
+
+  # Fuel pumps: use the captured push-button LVars and expose actual sim pump state for tracking.
+  - get: L:FUEL_Push_Pump_1, Bool
+    set: "`${value} (>L:FUEL_Push_Pump_1, Bool)`"
+
+  - get: L:FUEL_Push_Pump_2, Bool
+    set: "`${value} (>L:FUEL_Push_Pump_2, Bool)`"
+
+  - get: A:GENERAL ENG FUEL PUMP ON:1, Bool
+  - get: A:GENERAL ENG FUEL PUMP ON:2, Bool
+  - get: A:FUEL TANK SELECTOR:1, Enum
+
+  # Fuel emergency shutoff / firewall valve
+  - get: A:GENERAL ENG FUEL VALVE:1, Bool
+    set: (>K:TOGGLE_FUEL_VALVE_ENG1)
+
+  # EIS test/reset buttons
+  - get: L:SWS_PC12_EIS_Push_Fuel_Reset, Bool
+    set: "`${value} (>L:SWS_PC12_EIS_Push_Fuel_Reset, Bool)`"
+
+  - get: L:SWS_PC12_EIS_Push_Test, Bool
+    set: "`${value} (>L:SWS_PC12_EIS_Push_Test, Bool)`"
+
+  # =========================================================
+  # ELECTRICAL / PROTECTION
+  # =========================================================
+
+  - get: L:ELECTRICAL_Switch_BATTERY_Bus_1, Bool
+    set: "`${value} (>L:ELECTRICAL_Switch_BATTERY_Bus_1, Bool)`"
+
+  # Battery 2: use the captured battery-2 toggle event.
+  - get: A:ELECTRICAL MASTER BATTERY:2, Bool
+    set: (>B:ELECTRICAL_Battery_2_Toggle)
+
+  - get: L:ELECTRICAL_Switch_Master_Power, Number
+    set: "`${value} (>L:ELECTRICAL_Switch_Master_Power, Number)`"
+
+  # Cover is tracked separately so both state and position can be seen.
+  - get: L:ELECTRICAL_Cover_Master_Power, Bool
+    set: "`${value} (>L:ELECTRICAL_Cover_Master_Power, Bool)`"
+
+  - get: L:SWS_ELECTRICAL_Switch_EPS, Number
+    set: "`${value} (>L:SWS_ELECTRICAL_Switch_EPS, Number)`"
+
+  # Non-essential override
+  - get: L:ELECTRICAL_Switch_NONESS_Bus, Bool
+    set: "`${value} (>L:ELECTRICAL_Switch_NONESS_Bus, Bool)`"
+
+  # Inverter / standby bus
+  - get: L:ELECTRICAL_Switch_26VAC_Bus, Bool
+    set: "`${value} (>L:ELECTRICAL_Switch_26VAC_Bus, Bool)`"
+
+  - get: L:ELECTRICAL_Switch_STBY_Bus, Bool
+    set: "`${value} (>L:ELECTRICAL_Switch_STBY_Bus, Bool)`"
+
+  # Prop system circuit breaker
+  - get: A:CIRCUIT BREAKER PULLED:4, Bool
+    set: 3 4 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+
+  - get: A:GENERAL ENG MASTER ALTERNATOR:1, Bool
+    set: (>K:TOGGLE_ALTERNATOR1)
+
+  - get: A:GENERAL ENG MASTER ALTERNATOR:2, Bool
+    set: (>K:TOGGLE_ALTERNATOR2)
+
+  - get: A:AVIONICS MASTER SWITCH, Bool
+    set: (>K:AVIONICS_MASTER_SET)
+
+  - get: L:SWS_ELECTRICAL_ExternalPowerConnected, Bool
+
+  # Fire / lamp / stick pusher / horn silencer test buttons
+  - get: L:SAFETY_Push_TestLamp, Bool
+    set: "`${value} (>L:SAFETY_Push_TestLamp, Bool)`"
+
+  - get: L:SAFETY_Push_TestFireWarning, Bool
+    set: "`${value} (>L:SAFETY_Push_TestFireWarning, Bool)`"
+
+  - get: L:SAFETY_Push_TestStickPusher, Bool
+    set: "`${value} (>L:SAFETY_Push_TestStickPusher, Bool)`"
+
+  - get: L:SAFETY_Push_StickPusher_Interrupt_1, Bool
+    set: "`${value} (>L:SAFETY_Push_StickPusher_Interrupt_1, Bool)`"
+
+  - get: L:SAFETY_Push_StickPusher_Interrupt_2, Bool
+    set: "`${value} (>L:SAFETY_Push_StickPusher_Interrupt_2, Bool)`"
+
+  - get: L:SAFETY_Push_HornSilencer, Bool 
+    set: "`${value} (>L:SAFETY_Push_HornSilencer, Bool)`"
+
+  - get: L:SAFETY_Push_Warning_1, Bool
+    set: (>K:MASTER_WARNING_ACKNOWLEDGE)
+
+  - get: L:SAFETY_Push_Caution_1, Bool
+    set: (>K:MASTER_CAUTION_ACKNOWLEDGE)
+
+  - get: L:SAFETY_Push_Warning_2, Bool
+    set: (>K:MASTER_WARNING_ACKNOWLEDGE)
+
+  - get: L:SAFETY_Push_Caution_2, Bool
+    set: (>K:MASTER_CAUTION_ACKNOWLEDGE)
+
+  # =========================================================
+  # LIGHTING - EXTERIOR / CABIN / PANEL
+  # =========================================================
+
+  - get: A:LIGHT LANDING:1, Bool
+    set: (>K:LANDING_LIGHTS_SET)
+
+  - get: A:LIGHT LANDING:2, Bool
+    set: (>K:LANDING_LIGHTS_SET)
+
+  - get: A:LIGHT TAXI:1, Bool
+    set: (>K:TOGGLE_TAXI_LIGHTS)
+
+  - get: A:LIGHT NAV:1, Bool
+    set: (>K:TOGGLE_NAV_LIGHTS)
+
+  - get: A:LIGHT STROBE:1, Bool
+    set: (>K:STROBES_TOGGLE)
+
+  - get: A:LIGHT BEACON:1, Bool
+    set: (>K:TOGGLE_BEACON_LIGHTS)
+
+  - get: A:LIGHT RECOGNITION, Bool
+    set: (>K:TOGGLE_RECOGNITION_LIGHTS)
+
+  - get: L:LIGHTING_WING_1, Bool
+    set: "`${value} (>L:LIGHTING_WING_1)`"
+
+  - get: L:LIGHTING_CABIN_1, Number
+    set: "`${value} (>B:LIGHTING_CABIN_1_Set)`"
+
+  - get: L:LIGHTING_CABIN_3, Number
+    set: "`${value} (>B:LIGHTING_CABIN_3_Set)`"
+
+  - get: L:LIGHTING_CABIN_5, Bool
+    set: "`5 ${value} >K:2:CABIN_LIGHTS_SET)`"
+
+  - get: A:LIGHT WING:1, Bool
+    set: (>K:TOGGLE_WING_LIGHTS)
+
+  # Cabin foot light is circuit 107.
+  - get: A:CIRCUIT SWITCH ON:107, Bool
+    set: 107 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+
+  # Cabin advisory / panel / flood trackers.
+  # These are primarily tracking helpers because the exact setter semantics still need confirmation.
+  - get: L:SWS_LIGHTING_Switch_AdvisoryBrightness, Bool
+  - get: A:LIGHT POTENTIOMETER:69, Percent over 100
+  - get: A:LIGHT PANEL ON:1, Bool
+
+  - get: A:LIGHT CABIN ON:1, Bool
+    set: 1 (>K:TOGGLE_CABIN_LIGHTS)
+
+  - get: A:LIGHT CABIN ON:2, Bool
+    set: 2 (>K:TOGGLE_CABIN_LIGHTS)
+
+  - get: A:LIGHT CABIN ON:3, Bool
+    set: 3 (>K:TOGGLE_CABIN_LIGHTS)
+
+  - get: A:LIGHT CABIN ON:4, Bool
+    set: 4 (>K:TOGGLE_CABIN_LIGHTS)
+
+  - get: A:LIGHT CABIN ON:5, Bool
+    set: 5 (>K:TOGGLE_CABIN_LIGHTS)
+
+  - get: A:LIGHT CABIN ON:6, Bool
+    set: 6 (>K:TOGGLE_CABIN_LIGHTS)
+
+  - get: A:LIGHT CABIN ON:7, Bool
+    set: 7 (>K:TOGGLE_CABIN_LIGHTS)
+
+  - get: L:LIGHTING_Push_CargoDoor_Light, Bool
+  - get: A:LIGHT POTENTIOMETER:21, Percent over 100
+  - get: A:LIGHT POTENTIOMETER:22, Percent over 100
+  - get: A:LIGHT POTENTIOMETER:23, Percent over 100
+  - get: A:LIGHT POTENTIOMETER:24, Percent over 100
+  - get: A:LIGHT POTENTIOMETER:25, Percent over 100
+  - get: A:LIGHT POTENTIOMETER:26, Percent over 100
+  - get: A:LIGHT POTENTIOMETER:27, Percent over 100
+  - get: A:LIGHT POTENTIOMETER:28, Percent over 100
+  - get: A:LIGHT POTENTIOMETER:29, Percent over 100
+
+  # Passenger signs
+  - get: A:CABIN SEATBELTS ALERT SWITCH, Bool
+    set: (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+
+  - get: A:CABIN NO SMOKING ALERT SWITCH, Bool
+    set: (>K:CABIN_NO_SMOKING_ALERT_SWITCH_TOGGLE)
+
+  # =========================================================
+  # AUTOPILOT - CORE MODES / KAS297
+  # =========================================================
+
+  - get: A:AUTOPILOT MASTER, Bool
+    set: (>K:AP_MASTER)
+
+  - get: A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1, Bool
+    set: (>K:TOGGLE_FLIGHT_DIRECTOR)
+
+  - get: A:AUTOPILOT YAW DAMPER, Bool
+    set: (>K:YAW_DAMPER_TOGGLE)
+
+  - get: A:AUTOPILOT HEADING LOCK, Bool
+    set: (>K:AP_HDG_HOLD)
+
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees
+    set: "`1 ${value} (>K:2:HEADING_BUG_SET)`"
+
+  - get: A:AUTOPILOT NAV1 LOCK, Bool
+    set: (>K:AP_NAV1_HOLD)
+
+  - get: A:AUTOPILOT APPROACH HOLD, Bool
+    set: (>K:AP_APR_HOLD)
+
+  # Half-bank button on the KMC321 panel uses the captured custom B-event.
+  - get: A:AUTOPILOT MAX BANK ID, Number
+    set: "`${value} (A:AUTOPILOT MAX BANK ID, Number) != if{ (>B:AUTOPILOT_Bank_Button_Toggle) }`"
+
+  - get: A:AUTOPILOT BACKCOURSE HOLD, Bool
+    set: (>K:AP_BC_HOLD)
+
+  - get: A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool
+    set: (>K:FLIGHT_LEVEL_CHANGE)
+
+  - get: A:AUTOPILOT AIRSPEED HOLD VAR, Knots
+    set: "`${value} (>K:AP_SPD_VAR_SET)`"
+
+  # AP test
+  # Use the captured local test-active flag and the custom push event only.
+  - get: L:KMC321_TEST_ACTIVE, Bool
+    set: "`${value} (L:KMC321_TEST_ACTIVE, Bool) != if{ (>B:AUTOPILOT_TEST_1_Push) ${value} (>L:KMC321_TEST_ACTIVE, Bool) ${value} if{ 0 (>L:SWS_AUTOPILOT_1_TEST_COMPLETED, Bool) } }`"
+
+  # Track the underlying AP targets so knob desync is easier to see in testing.
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, Feet per minute
+
+  - get: A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1, Bool
+
+  # KAS297B Selected Vertical Speed (VALUE SYNC)
+  - get: L:SWS_KAS297B_Autopilot_Selected_Vertical_Speed
+    set: "`${value} (>L:SWS_KAS297B_Autopilot_Selected_Vertical_Speed)`"
+
+  # KMC321 VS Down
+  - get: L:AUTOPILOT_Knob_VerticalSpeed_1, Number
+    set: "value == -1 ? '(>B:AUTOPILOT_VS_DOWN_Push)' : ''"
+
+  # KMC321 VS Up
+  - get: L:AUTOPILOT_Knob_VerticalSpeed_1, Number
+    set: "value == 1 ? '(>B:AUTOPILOT_VS_UP_Push)' : ''"
+
+  # =========================================================
+  # NAV / CDI / ALTIMETER / BARO
+  # =========================================================
+
+  # Captain reference bug remains synced. # COMMENTED OUT BY DKGOLFNUT
+#  - get: L:INSTRUMENT_Knob_Altimeter_ReferenceBug_1, Degrees
+#    set: "`${value} (>L:INSTRUMENT_Knob_Altimeter_ReferenceBug_1, Degrees)`"
+
+  # STD button kept as momentary pulse.
+  - get: A:KOHLSMAN SETTING STD:1, Bool
+    set: "value ? '1 (>K:BAROMETRIC_STD_PRESSURE)' : ''"
+
+  # get: A:GPS DRIVES NAV1, Bool
+  # set: (>K:TOGGLE_GPS_DRIVES_NAV1)
+
+  - get: A:GPS OBS VALUE, Degrees
+    set: (>K:GPS_OBS_SET)
+
+  - get: A:NAV OBS:1, Degrees
+    set: (>K:VOR1_SET)
+
+  - get: A:NAV OBS:2, Degrees
+    set: (>K:VOR2_SET)
+
+  # =========================================================
+  # GTN 750 / 650 HARD BUTTONS
+  # =========================================================
+
+  # GTN 750 Direct-To
+  - get: H:GTN750_DirectToPush
+    set: "value ? '(>H:GTN750_DirectToPush)' : ''"
+
+  # GTN 750 Home (short press)
+  - get: H:GTN750_HomePush
+    set: "value ? '(>H:GTN750_HomePush)' : ''"
+
+  # GTN 750 Home (long press) - optional
+  - get: H:GTN750_HomePushLong
+    set: "value ? '(>H:GTN750_HomePushLong)' : ''"
+
+  # GTN 650 Direct-To
+  - get: H:GTN650_2_DirectToPush
+    set: "value ? '(>H:GTN650_2_DirectToPush)' : ''"
+
+  # GTN 650 Home (short press)
+  - get: H:GTN650_2_HomePush
+    set: "value ? '(>H:GTN650_2_HomePush)' : ''"
+
+  # GTN 650 Home (long press) - optional
+  - get: H:GTN650_2_HomePushLong
+    set: "value ? '(>H:GTN650_2_HomePushLong)' : ''"
+
+  # =========================================================
+  # DOORS / EXITS / WINDOWS
+  # =========================================================
+
+  - get: A:INTERACTIVE POINT OPEN:0, Percent
+    set: 1 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+
+  - get: A:INTERACTIVE POINT OPEN:1, Percent 
+    set: 2 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+
+  - get: A:INTERACTIVE POINT OPEN:2, Percent
+    set: 3 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+
+  - get: A:SMOKE ENABLE:1, Bool
+
+  - get: A:INTERACTIVE POINT OPEN:3, Percent
+    set: 4 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)
+
+  # Sunshade now tracked on both sides.
+  - get: Z:SWS_MISC_SunshadePlaced, Bool
+    set: "`${value} (>L:SWS_MISC_SunshadePlaced, Bool)`"
+
+  # =========================================================
+  # MISC / CABIN / OPTIONAL
+  # =========================================================
+
+  - get: L:SWS_Push_ToiletFlush, Bool
+  - get: L:SWS_LIGHTING_TIMER_45_SEC, Bool
+  - get: L:SWS_MISC_FlexyLight_LeftRight_1, Number
+  - get: L:SWS_MISC_FlexyLight_UpDown_1, Number
+  - get: L:SWS_MISC_FlexyLight_LeftRight_2, Number
+  - get: L:SWS_MISC_FlexyLight_UpDown_2, Number
+
+  - get: L:SWS_MISC_Visor_1
+  - get: L:SWS_MISC_Visor_2
+  - get: L:SWS_HANDLING_ControlLockPosition

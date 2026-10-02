@@ -1,0 +1,1251 @@
+# Original author: https://discord.com/channels/1454265644416765974/1476939041256771728/1501974449103311001
+# Updated: 2026-05-07 15:50:18
+
+# JustFlight RJ Professional- FsCopilot YAML Configuration
+# Version: 0.0.7
+# Date: 5/7/2026
+# Created by: Dkgolfnut
+# Special Thanks to @type10hitomaru for feedback and testing. Cheers!
+
+# KNOWN ISSUES:
+  # - Radio 1 &2 Xfer Btn's were left unsynched on purpose. **BOTH PILOTS MUST MANUALLY SYNC USING TXFR BTN's**
+  # - ALL BTNS on MCP (ALT HLD,LNAV, VS, etc.) & Engine Config (MSTR, TOGA, MCT, CLIMB) need a long press (Push and Hold for 2-3 seconds) to work.
+
+# Fixes:
+ # - 5/7/2026 
+  # - Corrected Right FMC L logic
+ # - 4/12/2026 
+  # - Yury Updated Syntax for :1 showing before argument and K:2: logic 
+ # - MARCH 2, 2026
+  # - Moved Fuel Latch's from Master to Shared
+  # - Removed XFER BTN's on Radio Com1 & 2 due to desync issues. 
+  
+include:
+
+master:
+##  - ## THROTTLE CONTROLS ##
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Percent
+    set: K:THROTTLE1_SET
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, Percent
+    set: K:THROTTLE2_SET
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:3, Percent
+    set: K:THROTTLE3_SET
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:4, Percent
+    set: K:THROTTLE4_SET
+  - get: L:PED_MID_Eng1_throttle_drag_VC1
+  - get: L:PED_MID_Eng2_throttle_drag_VC
+  - get: L:PED_MID_Eng3_throttle_drag_VC1
+  - get: L:PED_MID_Eng4_throttle_drag_VC1
+  - get: L:PED_MID_Eng1_throttle_shaft_VC1
+  - get: L:PED_MID_Eng2_throttle_shaft_VC1
+  - get: L:PED_MID_Eng3_throttle_shaft_VC1
+  - get: L:PED_MID_Eng4_throttle_shaft_VC1
+  - get: L:PED_MID_TRP_Disc_L  
+  - get: L:PED_MID_TRP_Disc_L_IsDown
+  - get: L:PED_MID_TRP_Disc_R
+  - get: L:PED_MID_TRP_Disc_R_IsDown
+  - get: A:BRAKE LEFT POSITION, Position
+    set: K:AXIS_LEFT_BRAKE_SET
+  - get: A:BRAKE RIGHT POSITION, Position
+    set: K:AXIS_RIGHT_BRAKE_SET
+##  - ## TRIMS ##
+  - get: L:PED_MID_Elev_trim_wheel
+  - get: L:PED_MID_Rudder_trim_wheel
+  - get: L:PED_MID_Ail_trim_wheel
+
+shared: 
+
+##  - #############  CoPILOT PANELS - Front #############
+  - get: L:R_ANNUNS_Idnt1_IsDown
+  - get: L:R_ANNUNS_Idnt1
+  - get: L:R_ANNUNS_Idnt2_IsDown
+  - get: L:R_ANNUNS_Idnt2
+
+##  - ## MWS PANEL ##
+  - get: L:R_MISC_MWS_Dim
+  - get: L:R_MISC_MWS_Ctrl
+  - get: L:R_MISC_MWS_Test
+##  - ## GPWS and LAND FLAPS BTNS ##
+  - get: L:R_ANNUNS_FlapWarnOvrd_button_IsDown
+  - get: L:R_ANNUNS_FlapWarnOvrd_button
+  - get: L:R_ANNUNS_FlapWarnOvrd_cover
+  - get: L:R_ANNUNS_TerrainInhibit_IsDown
+  - get: L:R_ANNUNS_TerrainInhibit
+  - get: L:R_ANNUNS_TerrainInhibit_cover
+  - get: L:R_ANNUNS_LandFlap_IsDown
+  - get: L:R_ANNUNS_LandFlap
+  - get: L:R_ANNUNS_SteepApp_IsDown
+  - get: L:R_ANNUNS_SteepApp
+
+##  - ## Decision Ht, PFD & ND WX brightness ##
+  - get: L:R_MISC_DH_knob
+  - get: L:R_MISC_DH_inc
+  - get: L:R_MISC_DH_dec
+  - get: L:R_MISC_Test_dim_IsDown
+  - get: L:R_MISC_Test_dim
+  - get: L:R_MISC_PFD_brt
+  - get: L:R_MISC_ND_brt
+  - get: L:R_MISC_WX_brt
+
+##  - ## TRP PANEL (TEMPS) ##
+  - get: L:R_TRP_Mstr_IsDown
+  - get: L:R_TRP_Mstr
+  - get: L:R_TRP_TOGA_IsDown
+  - get: L:R_TRP_TOGA
+  - get: L:R_TRP_MCT_IsDown
+  - get: L:R_TRP_MCT
+  - get: L:R_TRP_Climb_IsDown
+  - get: L:R_TRP_Climb
+  - get: L:R_TRP_Knob_outer
+  - get: L:R_TRP_Knob_inner 
+##  - ## RMI - CoPilot ##
+  - get: L:R_RMI_NAV1_mode_button
+  - get: L:R_RMI_NAV2_mode_button
+##  - ## FlightDeck Air ##
+  - get: L:R_MISC_FltDeckAir_IsDown
+  - get: L:R_MISC_FltDeckAir
+##  - ## Animal Bay Heat ##
+  - get: L:R_MISC_AnimalHeat_cover
+  - get: L:R_MISC_AnimalHeat_IsDown
+  - get: L:R_MISC_AnimalHeat
+##  - ## Altitude Indicator - CoPilot ##
+  - get: L:R_ALT_Baro_knob # L:R_ALT_Baro_knob
+  - get: L:L_ALT_Baro_knob # L:L_ALT_Baro_knob 
+  - get: L:JF_RJ_Baro_sync, Bool # JF_RJ_Baro_sync 
+  - get: A:KOHLSMAN SETTING MB:1, Millibars # A:KOHLSMAN SETTING MB:1
+    set: "`1 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # A:KOHLSMAN SETTING MB:2
+    set: "`2 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # A:KOHLSMAN SETTING MB:3
+    set: "`3 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:4, Millibars # A:KOHLSMAN SETTING MB:4
+    set: "`4 ${value * 16} (>K:2:KOHLSMAN_SET)`"    
+  - get: L:JF_RJ_FGS_Nav_Source
+  - get: L:JF_RJ_FGS_Baro_sync
+  - get: L:JF_RJ_ADC1_baro_press
+  - get: L:JF_RJ_ADC2_baro_press
+  - get: L:L_ALT_Bug_knob
+  - get: L:L_ALT_Bug
+  - get: L:R_ALT_Bug_knob
+  - get: L:R_ALT_Bug
+
+
+##  - ## Chrono - CoPilot ##
+  - get: L:R_CLOCK_seconds_set
+  - get: L:R_CLOCK_hours_set
+  - get: L:R_CLOCK_mode
+  - get: L:R_CLOCK_elapsed
+  - get: L:R_CLOCK_time_reset_IsDown
+  - get: L:R_CLOCK_time_reset
+##  - ## Avionics Cooling Fans Panel ##
+  - get: L:R_MISC_Cooling_fan
+  - get: L:R_MISC_EFIS_Reset_IsDown
+  - get: L:R_MISC_EFIS_Reset
+  - get: L:R_MISC_EFIS_mstr
+##  - #############  CoPILOT PANELS - Right Arm #############
+##  - ## IRS ALIGNMENT Panel ##
+  - get: L:R_SIDE_MSU_mode_nav1
+  - get: L:R_SIDE_MSU_mode_nav1_pull
+  - get: L:R_SIDE_MSU_mode_nav2
+  - get: L:R_SIDE_MSU_mode_nav2_pull
+
+##  - ## CoPilot Audio Panel ##
+  - get: L:R_SIDE_Audio_VHF1_sel
+  - get: L:R_SIDE_Audio_VHF2_sel
+  - get: L:R_SIDE_Audio_VHF3_sel
+  - get: L:R_SIDE_Audio_HF1_sel
+  - get: L:R_SIDE_Audio_HF2_sel
+  - get: L:R_SIDE_Audio_Int_sel
+  - get: L:R_SIDE_Audio_PA_sel
+  - get: L:R_SIDE_Audio_Boom
+  - get: L:R_SIDE_Audio_VHF1_vol
+  - get: L:R_SIDE_Audio_VHF1_vol_push
+  - get: L:R_SIDE_Audio_VHF2_vol
+  - get: L:R_SIDE_Audio_VHF2_vol_push
+  - get: L:R_SIDE_Audio_VHF3_vol
+  - get: L:R_SIDE_Audio_VHF3_vol_push
+  - get: L:R_SIDE_Audio_HF1_vol
+  - get: L:R_SIDE_Audio_HF1_vol_push
+  - get: L:R_SIDE_Audio_HF2_vol
+  - get: L:R_SIDE_Audio_HF2_vol_push
+  - get: L:R_SIDE_Audio_PA_vol
+  - get: L:R_SIDE_Audio_RT
+  - get: L:R_SIDE_Audio_Mkr
+  - get: L:R_SIDE_Audio_Mkr_push
+  - get: L:R_SIDE_Audio_DME
+  - get: L:R_SIDE_Audio_DME_push
+  - get: L:R_SIDE_Audio_VOR
+  - get: L:R_SIDE_Audio_VOR_push
+  - get: L:R_SIDE_Audio_ADF1
+  - get: L:R_SIDE_Audio_ADF1_push
+  - get: L:R_SIDE_Audio_ADF2
+  - get: L:R_SIDE_Audio_ADF2_push
+  - get: L:R_SIDE_Audio_Int
+  - get: L:R_SIDE_Audio_Int_push
+  - get: L:R_SIDE_Audio_ILS
+  - get: L:R_SIDE_Audio_ILS_push
+  - get: L:R_SIDE_Audio_INOP
+  - get: L:R_SIDE_Audio_INOP_push
+  - get: L:R_SIDE_Audio_Voice
+  - get: L:R_SIDE_Audio_test
+##  - ## LIGHTS PANEL ##
+  - get: L:R_SIDE_Lights_FltKit
+  - get: L:R_SIDE_Lights_Push_Knob
+  - get: L:R_SIDE_Lights_Push_Sill_IsDown
+  - get: L:R_SIDE_Lights_Push_Sill
+  - get: L:R_SIDE_Lights_Push_Lap_IsDown
+  - get: L:R_SIDE_Lights_Push_Lap
+  - get: L:R_SIDE_Lights_Flood
+  - get: L:R_SIDE_Lights_Insts
+##  - ## CoPilot Drop Out OXYGEN BTN ##
+  - get: L:R_SIDE_Oxy_cover
+  - get: L:R_SIDE_Oxy_button_IsDown
+  - get: L:R_SIDE_Oxy_button
+##  - # FWD FLOOR AIR LEVER
+  - get: L:R_SIDE_Floor_air
+##  - # F/DECK AIR LEVER
+  - get: L:R_SIDE_Fdeck_air
+##  - ## CoPilot OXYGEN Test ##
+  - get: L:R_SIDE_Oxy_main_vlv
+  - get: L:R_SIDE_Oxy_test
+  - get: L:R_SIDE_Oxy_test_IsDown
+##  - ## Lower Left Panel - CVR ##
+  - get: L:R_SIDE_28v_switch
+  - get: L:R_SIDE_CVR_Erase_IsDown
+  - get: L:R_SIDE_CVR_Erase
+  - get: L:R_SIDE_CVR_Test_IsDown
+  - get: L:R_SIDE_CVR_Test
+
+##  - #############  GLARESHIELD PANELS #############
+##  - # Paper Chart - SHOW/HIDE
+  - get: L:Paper_chart_stow
+##  - ## Alert Buttons Left and Right sides ##
+  - get: L:L_COAMING_LiftSplr_push_IsDown
+  - get: L:L_COAMING_LiftSplr_push
+  - get: L:R_COAMING_LiftSplr_push_IsDown
+  - get: L:R_COAMING_LiftSplr_push
+  - get: L:L_COAMING_GndProx_push_IsDown
+  - get: L:L_COAMING_GndProx_push
+  - get: L:R_COAMING_GndProx_push_IsDown
+  - get: L:R_COAMING_GndProx_push
+  - get: L:L_COAMING_MWS_Red_IsDown
+  - get: L:L_COAMING_MWS_Red
+  - get: L:R_COAMING_MWS_Red_IsDown
+  - get: L:R_COAMING_MWS_Red
+  - get: L:L_COAMING_MWS_Amber_IsDown
+  - get: L:L_COAMING_MWS_Amber
+  - get: L:R_COAMING_MWS_Amber_IsDown
+  - get: L:R_COAMING_MWS_Amber
+
+##  - ## VHF NAV/DME PANEL ##
+  - get: L:L_VHFNAV_Mode
+  - get: L:R_VHFNAV_Mode
+  - get: L:L_VHFNAV_Flip, Bool # Left
+    set: (>K:NAV1_RADIO_SWAP)
+  - get: L:R_VHFNAV_Flip, Bool # Right
+    set: (>K:NAV2_RADIO_SWAP)
+  - get: L:JF_RJ_VHF1_StbyFreq 
+  - get: L:JF_RJ_VHF1_ActiveFreq 
+  - get: L:JF_RJ_VHF2_StbyFreq
+  - get: L:JF_RJ_VHF2_ActiveFreq
+  - get: L:L_VHFNAV_Test_IsDown
+  - get: L:L_VHFNAV_Test
+  - get: L:R_VHFNAV_Test_IsDown
+  - get: L:R_VHFNAV_Test
+  - get: L:L_VHFNAV_Knob_outer
+  - get: L:R_VHFNAV_Knob_outer
+  - get: L:L_VHFNAV_Knob_inner
+  - get: L:R_VHFNAV_Knob_inner
+
+##  - ## MCP PANEL ##
+  - get: L:JF_RJ_AP_CRS1
+  - get: L:MCP_CRS1_sel, Number 
+  - get: L:MCP_NAV1_dig1
+  - get: L:MCP_NAV1_dig2
+  - get: L:MCP_NAV1_dig3
+  - get: L:MCP_NAV1_dig4
+  - get: L:MCP_NAV1_dig5 
+  - get: L:JF_RJ_AP_CRS2
+  - get: L:MCP_CRS2_sel, Number  
+  - get: L:MCP_NAV2_dig1
+  - get: L:MCP_NAV2_dig2
+  - get: L:MCP_NAV2_dig3
+  - get: L:MCP_NAV2_dig4
+  - get: L:MCP_NAV2_dig5
+  - get: L:MCP_FD_L_switch
+  - get: L:MCP_FD_R_switch
+  - get: L:MCP_Mode_MA_left_il1
+  - get: L:MCP_Mode_MA_right_il1
+  - get: L:JF_RJ_AP_FDSync # Validate this
+  - get: L:MCP_AT_switch
+  - get: L:MCP_AT_il1
+  - get: L:MCP_Mode_Thrust
+  - get: L:MCP_Mode_Thrust_il
+  - get: L:MCP_Mode_Thrust_IsDown
+  - get: L:MCP_Mode_LvlChg
+  - get: L:MCP_Mode_LvlChg_il
+  - get: L:MCP_Mode_LvlChg_il
+  - get: L:MCP_Mode_LvlChg_IsDown
+#  - get: L:MCP_Mode_LvlChg_LeftLeaveToRun, number
+  - get: L:MCP_Mode_MA_left_il1
+  - get: L:MCP_Mode_MA_right_il1
+  - get: L:MCP_Mode_CO
+  - get: L:MCP_Mode_CO_IsDown
+  - get: L:JF_RJ_AP_IAS # Validate this
+#  - get: L:JF_RJ_AP_IAS_CUR # Validate this
+  - get: L:JF_RJ_AP_MACH # Validate this
+  - get: L:JF_RJ_APFD_Speed_Mode # Validate this
+  - get: L:MCP_Mode_Speed_sel
+  - get: L:MCP_Mode_Speed_sel_inc
+  - get: L:MCP_Mode_Speed_sel_dec
+  - get: L:MCP_Mode_LNAV 
+  - get: L:MCP_Mode_LNAV_il
+  - get: L:MCP_Mode_LNAV_IsDown
+  - get: L:MCP_Mode_VNAV 
+  - get: L:MCP_Mode_VNAV_il
+  - get: L:MCP_Mode_VNAV_IsDown
+  - get: L:MCP_Mode_HDG
+  - get: L:MCP_Mode_HDG_il
+  - get: L:MCP_Mode_HDG_IsDown
+  - get: L:JF_RJ_AP_HDG
+  - get: L:MCP_HDG_sel
+  - get: L:MCP_Bank_sel, Number 
+  - get: L:MCP_Mode_VL
+  - get: L:MCP_Mode_VL_il
+  - get: L:MCP_Mode_VL_IsDown
+  - get: L:MCP_Mode_MLS 
+  - get: L:MCP_Mode_MLS_il
+  - get: L:MCP_Mode_MLS_IsDown
+  - get: L:MCP_Mode_APP 
+  - get: L:MCP_Mode_APP_il
+  - get: L:MCP_Mode_APP_IsDown
+  - get: L:JF_RJ_AP_ALT
+  - get: L:MCP_Mode_ALT 
+  - get: L:MCP_Mode_ALT_il
+  - get: L:MCP_Mode_ALT_IsDown
+  - get: L:MCP_Alt_sel_knob
+  - get: L:JF_RJ_AP_VS
+  - get: L:JF_RJ_AP_PITCH_MODE
+  - get: L:MCP_Mode_VS
+  - get: L:MCP_Mode_VS_il
+  - get: L:MCP_Mode_VS_IsDown
+  - get: L:MCP_VS_sel_knob
+  - get: L:MCP_VS_sel_inc
+  - get: L:MCP_VS_sel_dec
+  - get: L:JF_RJ_AP_LOC1_BCK
+  - get: L:MCP_NAV_split
+# AP Engage Switch's
+  - get: L:MCP_Mode_NAV1
+  - get: L:MCP_Mode_NAV1_il1
+  - get: L:MCP_Mode_NAV1_IsDown
+  - get: L:MCP_Mode_NAV1
+  - get: L:MCP_Mode_NAV2
+  - get: L:MCP_Mode_NAV2_il1
+  - get: L:MCP_Mode_NAV2_IsDown
+  - get: L:MCP_Mode_NAV2
+  - get: L:MCP_Disc_switch
+
+##  - #############  MISCELLENEOUS ITEMS - COCKPIT #############
+##  - ## EFB - Pilot ##
+  - get: L:EFB_L_Left_LC
+  - get: L:EFB_L_Right_LC
+  - get: L:EFB_L_Up_LC
+  - get: L:EFB_L_Down_LC
+  - get: L:EFB_L_Home_SC
+  - get: L:EFB_DIGITAL_SOUND
+  - get: L:EFB_L_Home_SC
+  - get: L:EFB_INVERTER_DISABLED
+  - get: L:EFB_L_vis
+  - get: L:EFB_POSITION
+  - get: L:EFB_PUSH_CHOCKS
+  - get: L:EFB_PUSH_CHOCKS_1
+  - get: L:EFB_PUSH_CHOCKS_2
+  - get: L:EFB_PUSH_ECOVER
+  - get: L:EFB_PUSH_FCOVER
+#  - get: L:EFB_GPU
+  - get: L:EFB_PUSH_GPU
+  - get: L:EFB_PUSH_PCOVER
+  - get: L:EFB_PUSH_PILOT
+  - get: L:EFB_PUSH_PLUGS_1
+  - get: L:EFB_PUSH_PLUGS_2
+##  - ## EXT Commands from EFB ## Can add EXT_Aileron, Elevator, Rudde, etc....... if needed
+  - get: L:EXT_Chocks
+  - get: L:EXT_Door_cargo_aft
+  - get: L:EXT_Door_serv_fuselage
+  - get: L:EXT_Door_cargo_fwd
+  - get: L:EXT_Door_pax_1l
+  - get: L:EXT_Door_PAX_1L_handle
+  - get: L:EXT_Door_pax_1r
+  - get: L:EXT_Door_PAX_1R_handle
+  - get: L:EXT_Door_pax_2l
+  - get: L:EXT_Door_PAX_2L_handle
+  - get: L:EXT_Door_pax_2r
+  - get: L:EXT_Door_PAX_2R_handle
+  - get: L:EXT_Door_stairs
+  - get: L:EXT_Door_stairs_light
+  - get: L:EXT_Door_stairs_pos
+  - get: L:EXT_Door_stairs_pos_sound
+  - get: L:EXT_Door_stairs_extend_pos
+#  - get: L:EXT_Door_stairs_angle
+  - get: L:EXT_Door_stairs_slide_pos
+  - get: L:EXT_GPU # verify all GPU 
+  - get: L:GPU_RUNNING
+#  - get: L:gpu_running
+  - get: L:EXT_Pos
+  - get: L:EXT_Power_cable
+  - get: L:EXT_Tailskid 
+  - get: L:EXT_Wiper_L
+  - get: L:EXT_Wiper_R  
+
+##  - ## EFB - CoPilot ##
+  - get: L:EFB_R_Left_LC
+  - get: L:EFB_R_Right_LC
+  - get: L:EFB_R_Up_LC
+  - get: L:EFB_R_Down_LC
+  - get: L:EFB_R_vis
+#  - # Cup Holders
+  - get: L:L_SIDE_Cupholder
+  - get: L:R_SIDE_Cupholder
+#  - # SILL Visibility
+  - get: L:Left_sill
+  - get: L:Right_sill
+#  - # HIDE YOKES
+  - get: L:L_SIDE_PedalAdjust
+  - get: L:R_SIDE_PedalAdjust
+##  - ## Yoke Buttons Left and Right ##
+#  - # INT / RT BTNS
+  - get: L:FLTCTRLS_RT_button_L
+  - get: L:FLTCTRLS_RT_button_R
+#  - # AP DISCONNECT
+  - get: L:FLTCTRLS_AP_button_L_IsDown
+  - get: L:FLTCTRLS_AP_button_L
+  - get: L:FLTCTRLS_AP_button_R_IsDown
+  - get: L:FLTCTRLS_AP_button_R
+#  - # Paper Checklists
+  - get: L:Paper_checklist_vis_L
+  - get: L:Paper_checklist_vis_R
+#  - # Toggle Controls Lock
+  - get: L:FLTCTRLS_Lock
+  - get: L:FLTCTRLS_Yoke_pitch_LC
+##  - ## SunVISORS ##
+  - get: L:L_SIDE_Sunvisor_attached
+  - get: L:L_SIDE_Sunvisor_slide
+  - get: L:R_SIDE_Sunvisor_attached
+  - get: L:R_SIDE_Sunvisor_slide
+##  - ## SEAT CONTROLS ##
+#  - # CoPilot
+  - get: L:SEATS_R_armrest_L
+  - get: L:SEATS_R_armrest_R
+  - get: L:SEATS_R_slide
+#  - # PILOT SEAT
+  - get: L:SEATS_L_armrest_L
+  - get: L:SEATS_L_armrest_R
+  - get: L:SEATS_L_slide
+#  - # JUMP SEAT
+  - get: L:SEATS_Observer
+##  - ## DOORS - COCKPIT ##
+  - get: L:DOOR_cockpit_security_lock_LC
+  - get: L:DOOR_cockpit_security_latch_LC
+
+##  - #############  MISCELLENEOUS ITEMS - CABIN Area #############
+##  - ## DOORS - CABIN ##
+  - get: L:VC_DOOR1_Handle_clickspot_LC
+  - get: L:VC_DOOR2_Handle_clickspot_LC
+  - get: L:VC_DOOR3_Handle_clickspot_LC
+  - get: L:VC_DOOR4_Handle_clickspot_LC
+  - get: L:VC_Stairs_Clickspot_LC
+##  - ## CABIN - COFFEE MAKER CNTLS ##
+  - get: L:FWD_CAB_GALLEY_Coffee_power
+  - get: L:FWD_CAB_GALLEY_Coffee_brew
+  - get: L:FWD_CAB_GALLEY_Coffee_hotwater
+  - get: L:FWD_CAB_GALLEY_Coffee_coldwater
+##  - ## CABIN - LIGHTING CNTLS PANEL Over DOOR ##
+#  - # POWER
+  - get: L:FWD_CAB_OVHD_Power
+#  - # PIPE HEATERS
+  - get: L:FWD_CAB_OVHD_PipeHeater1_CB
+  - get: L:FWD_CAB_OVHD_PipeHeater2_CB
+#  - # ENTRY LIGHTS
+  - get: L:FWD_CAB_OVHD_Lights_Fwd_Entry
+  - get: L:FWD_CAB_OVHD_Lights_Aft_Entry
+#  - # CENTER LIGHTS
+  - get: L:FWD_CAB_OVHD_Lights_Centre1
+#  - # 
+  - get: L:FWD_CAB_OVHD_Lights_Centre2
+  - get: L:FWD_CAB_OVHD_Lights_Centre_Dim
+#  - # SIDE LIGHTS
+  - get: L:FWD_CAB_OVHD_Lights_L_Side
+  - get: L:FWD_CAB_OVHD_Lights_R_Side
+  - get: L:FWD_CAB_OVHD_Lights_Side_Dim
+#  - # TOILET LIGHTS
+  - get: L:FWD_CAB_OVHD_Lights_Front_Toilet
+  - get: L:FWD_CAB_OVHD_Lights_Rear_Toilet
+#  - # Circuit BREAKERS 
+  - get: L:FWD_CAB_OVHD_ReadingLights_1_CB
+  - get: L:FWD_CAB_OVHD_ReadingLights_2_CB
+  - get: L:FWD_CAB_OVHD_ReadingLights_R_CB
+  - get: L:FWD_CAB_OVHD_ReadingLights_L_CB
+  - get: L:FWD_CAB_OVHD_ToiletHeater_Front_CB
+  - get: L:FWD_CAB_OVHD_ToiletHeater_Rear_C
+##  - ## Emergency Lights ##
+  - get: L:CAB_CNTRLS_Fwd_EmerLt
+  - get: L:CAB_CNTRLS_Fwd_EmerLt_guard
+##  - ## BECKER MUSIC SYSTEM PANEL ##
+  - get: L:FA_Music_power_button_IsDown
+  - get: L:FA_Music_power_button
+  - get: L:FA_Music_menu_button_IsDown
+  - get: L:FA_Music_menu_button
+  - get: L:FA_Music_data_knob
+  - get: L:FA_Music_data_knob_INC
+  - get: L:FA_Music_data_knob_DEC
+  - get: L:FA_Music_play_button_IsDown
+  - get: L:FA_Music_play_button
+  - get: L:FA_Music_next_button_IsDown
+  - get: L:FA_Music_next_button
+  - get: L:FA_Music_prev_button_IsDown
+  - get: L:FA_Music_prev_button
+
+##  - #############  OVERHEAD PANELS - LEFT #############
+#  - # SPEAKER SWITCH
+  - get: L:OVHD_AUX_L_spkr
+#  - # LAP LIGHT
+  - get: L:OVHD_AUX_L_Lap_lt_posX
+  - get: L:OVHD_AUX_L_Lap_lt_posY
+
+##  - ## AVIONICS PANEL ##
+  - get: L:OVHD_MISC_YD_master_1
+  - get: L:OVHD_MISC_YD_master_2
+  - get: L:OVHD_MISC_FGC_sel
+  - get: L:OVHD_MISC_AP_master_1
+  - get: L:OVHD_MISC_AP_master_2
+  - get: L:OVHD_MISC_Avionics_master_1
+  - get: L:OVHD_MISC_Avionics_master_2
+  - get: L:OVHD_MISC_GrdnIgn
+  - get: L:OVHD_MISC_BrkFans
+
+##  - ## AntiSkid 7 Lift Spoilers PANEL ##
+  - get: L:OVHD_MISC_AntiSkid_guard
+  - get: L:OVHD_MISC_AntiSkid
+  - get: L:OVHD_MISC_AutoSplr_guard
+  - get: L:OVHD_MISC_AutoSplr
+  - get: L:OVHD_MISC_LiftSplrs_yel
+  - get: L:OVHD_MISC_LiftSplrs_grn
+ ##  - ## HYDRAULIC SWITCH PANEL ##   
+  - get: L:OVHD_HYD_Eng2_pump
+  - get: L:OVHD_HYD_DC_pump_guard
+  - get: L:OVHD_HYD_DC_pump
+  - get: L:OVHD_HYD_AC_pump
+  - get: L:OVHD_HYD_PTU
+  - get: L:OVHD_HYD_Eng3_pump
+
+ ##  - ## FUEL SWITCH PANEL ##   
+  - get: L:OVHD_FUEL_CtrXfr
+  - get: L:OVHD_FUEL_Xfeed
+  - get: L:OVHD_FUEL_L_stby
+  - get: L:OVHD_FUEL_ComFeed_L
+  - get: L:OVHD_FUEL_ComFeed_R
+  - get: L:OVHD_FUEL__R_stby
+  - get: L:OVHD_FUEL_Pump_L_outer
+  - get: L:OVHD_FUEL_Pump_L_inner
+  - get: L:OVHD_FUEL_Pump_R_inner
+  - get: L:OVHD_FUEL_Pump_R_outer
+
+##  - ## CALL PANEL BUTTONS ## 
+  - get: L:OVHD_L_LWR_StbyComp_IsDown
+  - get: L:OVHD_L_LWR_StbyComp
+  - get: L:OVHD_L_LWR_CnclCall_IsDown
+  - get: L:OVHD_L_LWR_CnclCall
+  - get: L:OVHD_L_LWR_EmerCall_IsDown
+  - get: L:OVHD_L_LWR_EmerCall
+  - get: L:OVHD_L_LWR_CabCall_IsDown
+  - get: L:OVHD_L_LWR_CabCall
+  - get: L:OVHD_L_LWR_GrndCall_IsDown
+  - get: L:OVHD_L_LWR_GrndCall
+  - get: L:OVHD_L_LWR_DimGlare1
+
+##  - #############  OVERHEAD PANELS - MIDDLE CENTER TOP #############
+##  - ## CONSOLE LIGHT MOVEMENT ##
+  - get: L:OVHD_MISC_Console_lt_posX
+  - get: L:OVHD_MISC_Console_lt_posY
+##  - ## FIRE DETECTION PANEL ##
+  - get: L:OVHD_FIREHANDLES_Eng1_loop
+  - get: L:OVHD_FIREHANDLES_Eng2_loop
+  - get: L:OVHD_FIREHANDLES_Eng3_loop
+  - get: L:OVHD_FIREHANDLES_Eng4_loop
+  - get: L:OVHD_FIREHANDLES_Eng1
+  - get: L:OVHD_FIREHANDLES_Eng1_pull
+  - get: L:OVHD_FIREHANDLES_Eng2
+  - get: L:OVHD_FIREHANDLES_Eng2_pull
+  - get: L:OVHD_FIREHANDLES_Eng3
+  - get: L:OVHD_FIREHANDLES_Eng3_pull
+  - get: L:OVHD_FIREHANDLES_Eng4
+  - get: L:OVHD_FIREHANDLES_Eng4_pull
+
+##  - #############  OVERHEAD PANELS - UPPER MIDDLE ROW 1 #############
+##  - ## ELECTRIC PANEL SWITCHES ##
+  - get: L:OVHD_ELEC_DC_sel
+  - get: L:OVHD_ELEC_AC_sel
+  - get: L:OVHD_ELEC_Batt1_on
+  - get: L:OVHD_ELEC_Batt2_on
+  - get: L:OVHD_ELEC_ExtAC
+  - get: L:OVHD_ELEC_BusTie_AC
+  - get: L:OVHD_ELEC_BusTie_DC
+  - get: L:OVHD_ELEC_StbyInv
+  - get: L:OVHD_ELEC_StbyGen
+  - get: L:OVHD_ELEC_Gen1
+  - get: L:OVHD_ELEC_Galley
+  - get: L:OVHD_ELEC_APU_gen
+  - get: L:OVHD_ELEC_Gen4
+
+##  - #############  OVERHEAD PANELS - UPPER MIDDLE ROW 2 #############
+##  - ## APU PANEL SWITCHES ##
+  - get: L:OVHD_APU_FireExt_cover
+  - get: L:OVHD_APU_FireExt_button_IsDown
+  - get: L:OVHD_APU_FireExt_button
+  - get: L:OVHD_APU_StartStop_guard
+  - get: L:OVHD_APU_StartStop
+
+##  - ## ENGINES PANEL SWITCHES ##
+  - get: L:OVHD_ENG_StartPwr_guard
+  - get: L:OVHD_ENG_StartPwr
+  - get: L:OVHD_ENG_StartSel
+  - get: L:OVHD_ENG_StartMaster
+  - get: L:OVHD_ENG_FltStart
+  - get: L:OVHD_ENG_ContIgn_A
+  - get: L:OVHD_ENG_ContIgn_B
+  - get: L:OVHD_ENG_StartMode
+  - get: L:OVHD_ENG_StartMode
+    set: (>K:STARTER1_SET), 
+  - get: L:OVHD_ENG_StartMode
+    set: (>K:STARTER2_SET)
+  - get: L:OVHD_ENG_StartMode
+    set: (>K:STARTER3_SET)
+  - get: L:OVHD_ENG_StartMode
+    set: (>K:STARTER4_SET)    
+  - get: L:OVHD_ENG_StarterOp_il
+
+##  - ## ENGINES Anti_ICE PANEL SWITCHES ##
+  - get: L:OVHD_ICE_Eng1
+  - get: L:OVHD_ICE_Eng2
+  - get: L:OVHD_ICE_Eng3
+  - get: L:OVHD_ICE_Eng4
+##  - #############  OVERHEAD PANELS - UPPER MIDDLE ROW 3 #############
+##  - ## PRESSURIZATION & Ice PROTECTION PANEL SWITCHES ##
+#  - get: L:JF_RJ_OVHD_LDG_ALT
+#  - get: L:JF_RJ_OVHD_LDG_ALT_ANNUN #
+#  - get: L:OVHD_PRESS_Ldg_alt
+#  - get: L:OVHD_PRESS_Ldg_alt_inc
+#    set: (>L:OVHD_PRESS_Ldg_alt_inc)
+#  - get: L:OVHD_PRESS_Ldg_alt_dec
+#    set: (>L:OVHD_PRESS_Ldg_alt_dec)
+#  - get: L:JF_RJ_OVHD_MAN_RATE
+#  - get: L:JF_RJ_OVHD_MAN_RATE_DIR
+#  - get: L:JF_RJ_OVHD_PRESS_MAN_RATE
+#  - get: L:OVHD_PRESS_Man_rate
+#  - get: L:OVHD_PRESS_Man_rate_inc
+#    set: (>L:OVHD_PRESS_Man_rate_inc)
+#  - get: L:OVHD_PRESS_Man_rate_dec
+#    set: (>L:OVHD_PRESS_Man_rate_dec)
+  - get: L:OVHD_PRESS_Mode_sel 
+  - get: L:OVHD_PRESS_Mode_sel_IsDown
+  - get: L:OVHD_PRESS_Mode_auto_il
+  - get: L:OVHD_PRESS_Mode_auto_annun
+  - get: L:OVHD_PRESS_Mode_man_il 
+  - get: L:OVHD_PRESS_Mode_man_annun
+  - get: L:OVHD_PRESS_Clear
+  - get: L:OVHD_PRESS_Clear_IsDown
+  - get: L:OVHD_PRESS_Valves_mode
+  - get: L:OVHD_PRESS_Valves_mode_pull
+  - get: L:OVHD_ICE_L_ScreenHeat
+  - get: L:OVHD_ICE_R_ScreenHeat
+  - get: L:OVHD_ICE_AuxVane
+  - get: L:OVHD_ICE_L_Pitot
+  - get: L:OVHD_ICE_R_Pitot
+  - get: L:OVHD_ICE_Outer_wing
+  - get: L:OVHD_ICE_Inner_wing
+  - get: L:OVHD_ICE_Detect
+  - get: L:OVHD_ICE_Detect_cover
+  - get: L:OVHD_ICE_Tail
+
+##  - #############  OVERHEAD PANELS - LOWER CENTER #############
+##  - ## PRESSURIZATION PANEL SWITCHES ##
+  - get: L:OVHD_CTR_LWR_L_wash_IsDown
+  - get: L:OVHD_CTR_LWR_L_wash_LeftLeaveToRun
+  - get: L:OVHD_CTR_LWR_L_rain_IsDown
+  - get: L:OVHD_CTR_LWR_L_rain_LeftLeaveToRun
+  - get: L:OVHD_CTR_LWR_EmerLts
+  - get: L:OVHD_CTR_LWR_RwyExitLts
+  - get: L:OVHD_CTR_LWR_L_LdgLts
+  - get: L:OVHD_CTR_LWR_R_LdgLts
+  - get: L:OVHD_CTR_LWR_L_wipers
+  - get: L:OVHD_CTR_LWR_R_wipers
+  - get: L:OVHD_CTR_LWR_FastenBelts
+  - get: L:OVHD_CTR_LWR_R_rain_IsDown
+  - get: L:OVHD_CTR_LWR_R_rain_LeftLeaveToRun
+  - get: L:OVHD_CTR_LWR_R_wash_IsDown
+  - get: L:OVHD_CTR_LWR_R_wash_IsDown_LeftLeaveToRun
+
+##  - #############  OVERHEAD PANELS - GROUND TEST PANEL #############
+##  - ## PRESSURIZATION PANEL SWITCHES ##
+  - get: L:OVHD_GRNDTEST_Ovspd_eng1_IsDown
+  - get: L:OVHD_GRNDTEST_Ovspd_eng1
+  - get: L:OVHD_GRNDTEST_Ovspd_eng2_IsDown
+  - get: L:OVHD_GRNDTEST_Ovspd_eng2
+  - get: L:OVHD_GRNDTEST_Ovspd_eng3_IsDown
+  - get: L:OVHD_GRNDTEST_Ovspd_eng3_IsDown
+  - get: L:OVHD_GRNDTEST_Ovspd_eng4_IsDown
+  - get: L:OVHD_GRNDTEST_Ovspd_eng4
+  - get: L:OVHD_GRNDTEST_Fire_eng1_IsDown
+  - get: L:OVHD_GRNDTEST_Fire_eng1
+  - get: L:OVHD_GRNDTEST_Fire_eng2_IsDown
+  - get: L:OVHD_GRNDTEST_Fire_eng2
+  - get: L:OVHD_GRNDTEST_Fire_eng3_IsDown
+  - get: L:OVHD_GRNDTEST_Fire_eng3
+  - get: L:OVHD_GRNDTEST_Fire_eng4_IsDown
+  - get: L:OVHD_GRNDTEST_Fire_eng4
+  - get: L:OVHD_GRNDTEST_APU_fire_IsDown
+  - get: L:OVHD_GRNDTEST_APU_fire
+  - get: L:OVHD_GRNDTEST_APU_ovspd_IsDown
+  - get: L:OVHD_GRNDTEST_APU_ovspd
+  - get: L:OVHD_GRNDTEST_Exting_IsDown
+  - get: L:OVHD_GRNDTEST_Exting
+  - get: L:OVHD_GRNDTEST_Smoke_IsDown
+  - get: L:OVHD_GRNDTEST_Smoke
+  - get: L:OVHD_GRNDTEST_StallWarn_1_IsDown
+  - get: L:OVHD_GRNDTEST_StallWarn_1
+  - get: L:OVHD_GRNDTEST_StallWarn_2_IsDown
+  - get: L:OVHD_GRNDTEST_StallWarn_2
+  - get: L:OVHD_GRNDTEST_ZoneLoops_A_IsDown
+  - get: L:OVHD_GRNDTEST_ZoneLoops_A
+  - get: L:OVHD_GRNDTEST_ZoneLoops_B_IsDown
+  - get: L:OVHD_GRNDTEST_ZoneLoops_B
+  - get: L:OVHD_GRNDTEST_StallWarn_1_IsDown
+  - get: L:OVHD_GRNDTEST_StallWarn_1
+  - get: L:OVHD_GRNDTEST_StallWarn_2_IsDown
+  - get: L:OVHD_GRNDTEST_StallWarn_2
+  - get: L:OVHD_GRNDTEST_NoseSquat_1_IsDown
+  - get: L:OVHD_GRNDTEST_NoseSquat_1
+  - get: L:OVHD_GRNDTEST_NoseSquat_2_IsDown
+  - get: L:OVHD_GRNDTEST_NoseSquat_2
+  - get: L:OVHD_GRNDTEST_ADC_1_IsDown
+  - get: L:OVHD_GRNDTEST_ADC_1
+  - get: L:OVHD_GRNDTEST_ADC_2_IsDown
+  - get: L:OVHD_GRNDTEST_ADC_2
+  - get: L:OVHD_GRNDTEST_AntiSkid_yel_IsDown
+  - get: L:OVHD_GRNDTEST_AntiSkid_yel
+  - get: L:OVHD_GRNDTEST_AntiSkid_grn_IsDown
+  - get: L:OVHD_GRNDTEST_AntiSkid_grn
+  - get: L:OVHD_GRNDTEST_RearBay_IsDown
+  - get: L:OVHD_GRNDTEST_RearBay
+  - get: L:OVHD_GRNDTEST_FlapSafety_IsDown
+  - get: L:OVHD_GRNDTEST_FlapSafety
+  - get: L:OVHD_GRNDTEST_FlapCtrl_yel_IsDown
+  - get: L:OVHD_GRNDTEST_FlapCtrl_yel
+  - get: L:OVHD_GRNDTEST_FlapCtrl_grn_IsDown
+  - get: L:OVHD_GRNDTEST_FlapCtrl_grn
+  - get: L:OVHD_GRNDTEST_GrndPressn
+  - get: L:OVHD_GRNDTEST_Horn_IsDown
+  - get: L:OVHD_GRNDTEST_Horn
+  - get: L:OVHD_GRNDTEST_SquatSw_L_IsDown
+  - get: L:OVHD_GRNDTEST_SquatSw_L
+  - get: L:OVHD_GRNDTEST_SquatSw_R_IsDown
+  - get: L:OVHD_GRNDTEST_SquatSw_R
+
+##  - #############  OVERHEAD PANELS - RIGHT #############
+#  - # SPEAKER SWITCH
+  - get: L:OVHD_AUX_R_spkr
+#  - # LAP LIGHT MOVEMENT
+  - get: L:OVHD_AUX_R_Lap_lt_posX
+  - get: L:OVHD_AUX_R_Lap_lt_posY
+
+##  - ## LIGHTING & NOTICES PANEL SWITCHES ##
+  - get: L:OVHD_LTS_Entry
+  - get: L:OVHD_LTS_WingLts
+  - get: L:OVHD_LTS_Logo
+  - get: L:OVHD_LTS_NoSmkg
+  - get: L:OVHD_LTS_CabinEmer_guard
+  - get: L:OVHD_LTS_CabinEmer
+  - get: L:OVHD_LTS_BEACON
+  - get: L:OVHD_LTS_Strobe
+  - get: L:OVHD_LTS_Nav
+
+##  - ## Air Conditioning PANEL SWITCHES ##
+  - get: L:OVHD_AIRCOND_FltDeck_mode
+  - get: L:OVHD_AIRCOND_FltDeck_Temp_sel
+  - get: L:OVHD_AIRCOND_FltDeck_fan
+  - get: L:OVHD_AIRCOND_Cabin_fan
+  - get: L:OVHD_AIRCOND_Cabin_temp_sel
+  - get: L:OVHD_AIRCOND_Cabin_mode
+  - get: L:OVHD_AIRCOND_L_duct_sel
+  - get: L:OVHD_AIRCOND_R_duct_sel
+  - get: L:OVHD_AIRCOND_Cabin_air
+  - get: L:OVHD_AIRCOND_Pack1
+  - get: L:OVHD_AIRCOND_Pack2
+  - get: L:OVHD_AIRCOND_Ram_air
+
+##  - ## Air SUPPLY PANEL SWITCHES ##
+  - get: L:OVHD_AIRSUPPLY_Apu
+  - get: L:OVHD_AIRSUPPLY_L_wing
+  - get: L:OVHD_AIRSUPPLY_R_wing
+  - get: L:OVHD_AIRSUPPLY_Eng1
+  - get: L:OVHD_AIRSUPPLY_Eng2
+  - get: L:OVHD_AIRSUPPLY_Eng3
+  - get: L:OVHD_AIRSUPPLY_Eng4
+
+##  - ## ANNUNCIATOR PANEL SWITCHES ##
+  - get: L:OVHD_R_LWR_DimInsts
+  - get: L:OVHD_R_LWR_DimPanel
+  - get: L:OVHD_R_LWR_Annun_dim
+  - get: L:OVHD_R_LWR_Annun_ctrl
+  - get: L:OVHD_R_LWR_Annun_test_IsDown
+  - get: L:OVHD_R_LWR_Annun_test
+
+##  - #############  PEDISTAL - UPPER FMC area #############
+##  - ## FMC - 1 BUTTONS##
+  - get: L:GNLU910_L_FMS_InitRef_ANIM
+  - get: L:GNLU910_L_FMS_Rte_ANIM
+  - get: L:GNLU910_L_FMS_Legs_ANIM
+  - get: L:GNLU910_L_FMS_DepArr_ANIM
+  - get: L:GNLU910_L_FMS_Vnav_ANIM
+  - get: L:GNLU910_L_FMS_Hold_ANIM
+  - get: L:GNLU910_L_FMS_Menu_ANIM
+  - get: L:GNLU910_L_FMS_Atc_ANIM
+  - get: L:GNLU910_L_FMS_InitRef_ANIM
+  - get: L:GNLU910_L_FMS_InitRef_ANIM
+  - get: L:GNLU910_L_FMS_InitRef_ANIM
+  - get: L:GNLU910_L_FMS_InitRef_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_1L_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_2L_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_3L_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_4L_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_5L_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_6L_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_1R_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_2R_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_3R_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_4R_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_5R_ANIM
+  - get: L:GNLU910_L_FMS_Lsk_6R_ANIM
+  - get: L:GNLU910_L_FMS_BrtDim_ANIM
+  - get: L:GNLU910_L_FMS_PrvNxt_ANIM
+  - get: L:GNLU910_L_FMS_Clr_ANIM
+  - get: L:GNLU910_L_FMS_Del_ANIM
+  - get: L:GNLU910_L_FMS_Sp_ANIM
+  - get: L:GNLU910_L_FMS_Fix_ANIM
+  - get: L:GNLU910_L_FMS_NavRad_ANIM
+  - get: L:GNLU910_L_FMS_Prog_ANIM
+  - get: L:GNLU910_L_FMS_Exec_ANIM
+  - get: L:GNLU910_L_FMS_1_ANIM
+  - get: L:GNLU910_L_FMS_2_ANIM
+  - get: L:GNLU910_L_FMS_3_ANIM
+  - get: L:GNLU910_L_FMS_4_ANIM
+  - get: L:GNLU910_L_FMS_5_ANIM
+  - get: L:GNLU910_L_FMS_6_ANIM
+  - get: L:GNLU910_L_FMS_7_ANIM
+  - get: L:GNLU910_L_FMS_8_ANIM
+  - get: L:GNLU910_L_FMS_9_ANIM
+  - get: L:GNLU910_L_FMS_0_ANIM
+  - get: L:GNLU910_L_FMS_Dot_ANIM
+  - get: L:GNLU910_L_FMS_PlusMinus_ANIM
+  - get: L:GNLU910_L_FMS_A_ANIM
+  - get: L:GNLU910_L_FMS_B_ANIM
+  - get: L:GNLU910_L_FMS_C_ANIM
+  - get: L:GNLU910_L_FMS_D_ANIM
+  - get: L:GNLU910_L_FMS_E_ANIM
+  - get: L:GNLU910_L_FMS_F_ANIM
+  - get: L:GNLU910_L_FMS_G_ANIM
+  - get: L:GNLU910_L_FMS_H_ANIM
+  - get: L:GNLU910_L_FMS_I_ANIM
+  - get: L:GNLU910_L_FMS_J_ANIM
+  - get: L:GNLU910_L_FMS_K_ANIM
+  - get: L:GNLU910_L_FMS_L_ANIM
+  - get: L:GNLU910_L_FMS_M_ANIM
+  - get: L:GNLU910_L_FMS_N_ANIM
+  - get: L:GNLU910_L_FMS_O_ANIM
+  - get: L:GNLU910_L_FMS_P_ANIM
+  - get: L:GNLU910_L_FMS_Q_ANIM
+  - get: L:GNLU910_L_FMS_R_ANIM
+  - get: L:GNLU910_L_FMS_S_ANIM
+  - get: L:GNLU910_L_FMS_T_ANIM
+  - get: L:GNLU910_L_FMS_U_ANIM
+  - get: L:GNLU910_L_FMS_V_ANIM
+  - get: L:GNLU910_L_FMS_W_ANIM
+  - get: L:GNLU910_L_FMS_X_ANIM
+  - get: L:GNLU910_L_FMS_Y_ANIM
+  - get: L:GNLU910_L_FMS_Z_ANIM
+  - get: L:GNLU910_L_FMS_Div_ANIM
+##  - ## FMC - 2 BUTTONS ##
+  - get: L:GNLU910_R_FMS_InitRef_ANIM
+  - get: L:GNLU910_R_FMS_Rte_ANIM
+  - get: L:GNLU910_R_FMS_Legs_ANIM
+  - get: L:GNLU910_R_FMS_DepArr_ANIM
+  - get: L:GNLU910_R_FMS_Vnav_ANIM
+  - get: L:GNLU910_R_FMS_Hold_ANIM
+  - get: L:GNLU910_R_FMS_Menu_ANIM
+  - get: L:GNLU910_R_FMS_Atc_ANIM
+  - get: L:GNLU910_R_FMS_InitRef_ANIM
+  - get: L:GNLU910_R_FMS_InitRef_ANIM
+  - get: L:GNLU910_R_FMS_InitRef_ANIM
+  - get: L:GNLU910_R_FMS_InitRef_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_1L_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_2L_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_3L_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_4L_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_5L_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_6L_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_1R_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_2R_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_3R_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_4R_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_5R_ANIM
+  - get: L:GNLU910_R_FMS_Lsk_6R_ANIM
+  - get: L:GNLU910_R_FMS_BrtDim_ANIM
+  - get: L:GNLU910_R_FMS_PrvNxt_ANIM
+  - get: L:GNLU910_R_FMS_Clr_ANIM
+  - get: L:GNLU910_R_FMS_Del_ANIM
+  - get: L:GNLU910_R_FMS_Sp_ANIM
+  - get: L:GNLU910_R_FMS_Fix_ANIM
+  - get: L:GNLU910_R_FMS_NavRad_ANIM
+  - get: L:GNLU910_R_FMS_Prog_ANIM
+  - get: L:GNLU910_R_FMS_Exec_ANIM
+  - get: L:GNLU910_R_FMS_1_ANIM
+  - get: L:GNLU910_R_FMS_2_ANIM
+  - get: L:GNLU910_R_FMS_3_ANIM
+  - get: L:GNLU910_R_FMS_4_ANIM
+  - get: L:GNLU910_R_FMS_5_ANIM
+  - get: L:GNLU910_R_FMS_6_ANIM
+  - get: L:GNLU910_R_FMS_7_ANIM
+  - get: L:GNLU910_R_FMS_8_ANIM
+  - get: L:GNLU910_R_FMS_9_ANIM
+  - get: L:GNLU910_R_FMS_0_ANIM
+  - get: L:GNLU910_R_FMS_Dot_ANIM
+  - get: L:GNLU910_R_FMS_PlusMinus_ANIM
+  - get: L:GNLU910_R_FMS_A_ANIM
+  - get: L:GNLU910_R_FMS_B_ANIM
+  - get: L:GNLU910_R_FMS_C_ANIM
+  - get: L:GNLU910_R_FMS_D_ANIM
+  - get: L:GNLU910_R_FMS_E_ANIM
+  - get: L:GNLU910_R_FMS_F_ANIM
+  - get: L:GNLU910_R_FMS_G_ANIM
+  - get: L:GNLU910_R_FMS_H_ANIM
+  - get: L:GNLU910_R_FMS_I_ANIM
+  - get: L:GNLU910_R_FMS_J_ANIM
+  - get: L:GNLU910_R_FMS_K_ANIM
+  - get: L:GNLU910_R_FMS_L_ANIM
+  - get: L:GNLU910_R_FMS_M_ANIM
+  - get: L:GNLU910_R_FMS_N_ANIM
+  - get: L:GNLU910_R_FMS_O_ANIM
+  - get: L:GNLU910_R_FMS_P_ANIM
+  - get: L:GNLU910_R_FMS_Q_ANIM
+  - get: L:GNLU910_R_FMS_R_ANIM
+  - get: L:GNLU910_R_FMS_S_ANIM
+  - get: L:GNLU910_R_FMS_T_ANIM
+  - get: L:GNLU910_R_FMS_U_ANIM
+  - get: L:GNLU910_R_FMS_V_ANIM
+  - get: L:GNLU910_R_FMS_W_ANIM
+  - get: L:GNLU910_R_FMS_X_ANIM
+  - get: L:GNLU910_R_FMS_Y_ANIM
+  - get: L:GNLU910_R_FMS_Z_ANIM
+  - get: L:GNLU910_R_FMS_Div_ANIM
+##  - ## PED PILOT KNOBS & BTNS ##
+  - get: L:PED_FWD_L_NAV_BRG
+  - get: L:PED_FWD_L_NAV_Range
+  - get: L:PED_FWD_L_NAV_Format
+  - get: L:PED_FWD_L_NAV_CRS
+  - get: L:PED_FWD_L_NAV_2crs_IsDown
+  - get: L:PED_FWD_L_NAV_2crs
+  - get: L:PED_FWD_L_NAV_naid_IsDown
+  - get: L:PED_FWD_L_NAV_naid
+  - get: L:PED_FWD_L_NAV_arpt_IsDown
+  - get: L:PED_FWD_L_NAV_arpt
+  - get: L:PED_FWD_L_NAV_grp_IsDown
+  - get: L:PED_FWD_L_NAV_grp
+  - get: L:PED_FWD_L_NAV_data_IsDown
+  - get: L:PED_FWD_L_NAV_data
+##  - ## PED CoPILOT KNOBS & BTNS ##
+  - get: L:PED_FWD_R_NAV_BRG
+  - get: L:PED_FWD_R_NAV_Range
+  - get: L:PED_FWD_R_NAV_Format
+  - get: L:PED_FWD_R_NAV_CRS
+  - get: L:PED_FWD_R_NAV_2crs_IsDown
+  - get: L:PED_FWD_R_NAV_2crs
+  - get: L:PED_FWD_R_NAV_naid_IsDown
+  - get: L:PED_FWD_R_NAV_naid
+  - get: L:PED_FWD_R_NAV_arpt_IsDown
+  - get: L:PED_FWD_R_NAV_arpt
+  - get: L:PED_FWD_R_NAV_grp_IsDown
+  - get: L:PED_FWD_R_NAV_grp
+  - get: L:PED_FWD_R_NAV_data_IsDown
+  - get: L:PED_FWD_R_NAV_data
+##  - ## WEATHER RADAR KNOBS & BTNS ##
+  - get: L:PED_FWD_WX_Range
+  - get: L:PED_FWD_WX_Gain
+  - get: L:PED_FWD_WX_Stab
+  - get: L:PED_FWD_WX_Int
+  - get: L:PED_FWD_WX_Tilt
+  - get: L:PED_FWD_WX_Off
+  - get: L:PED_FWD_WX_Stby
+  - get: L:PED_FWD_WX_Wx
+  - get: L:PED_FWD_WX_Cyc
+  - get: L:PED_FWD_WX_Map
+  - get: L:PED_FWD_WX_Azim_IsDown
+  - get: L:PED_FWD_WX_Azim
+  - get: L:PED_FWD_WX_Scan_IsDown
+  - get: L:PED_FWD_WX_Scan
+  - get: L:PED_FWD_WX_Frz_IsDown
+  - get: L:PED_FWD_WX_Frz
+  - get: L:PED_FWD_WX_Tgt_IsDown
+  - get: L:PED_FWD_WX_Tgt
+##  - ## FMS/EFIS DISPLAY KNOBS & BTNS ##
+  - get: L:PED_FWD_CTR_TerrainDisp_IsDown
+  - get: L:PED_FWD_CTR_TerrainDisp
+  - get: L:PED_FWD_CTR_Split
+##  - #############  PEDISTAL - QUADRANT area #############
+##  - ## Engine Fuel latch btn's omn Throttle levers   
+  - get: L:PED_MID_Eng1_latch, Bool
+  - get: L:PED_MID_Eng2_latch, Bool 
+  - get: L:PED_MID_Eng3_latch, Bool 
+  - get: L:PED_MID_Eng4_latch, Bool 
+##  - ## FLAPS ##
+  - get: L:PED_MID_FlapBaulkOvrd
+  - get: L:PED_MID_Flap_Lever
+  - get: L:PED_MID_Airbrake # AirBRAKE (SPOILER) LEVER
+##  - ## PANEL LTS (ON/DIM) ### 
+  - get: L:PED_MID_Panel_lights_IsDown
+  - get: L:PED_MID_Panel_lights
+##  - # CHECK CONFIG BTN
+  - get: L:PED_MID_Config_IsDown
+  - get: L:PED_MID_Config
+  - get: L:PED_MID_Horn_IsDown
+  - get: L:PED_MID_Horn
+##  - #############  PEDISTAL - MIDDLE area #############
+ # - # Disconnect Levers
+  - get: L:PED_MID_Elv_disc
+  - get: L:PED_MID_Ail_disc
+##  - # BRAKE PANEL LEVERS & SWITCHES
+  - get: L:PED_MID_Brakes_lever
+  - get: L:PED_MID_Brakes_select
+  - get: L:PED_MID_Brakes_emer
+##  - #############  PEDISTAL - LOWER LEFT area #############
+##  - ## VHF- 1 BTN's, Knobs & SWITCHES ##
+  - get: L:PED_AFT_L_VHF_vhf1_IsDown
+  - get: L:PED_AFT_L_VHF_vhf1
+  - get: L:PED_AFT_L_VHF_vhf2_IsDown
+  - get: L:PED_AFT_L_VHF_vhf2
+  - get: L:PED_AFT_L_VHF_vhf3_IsDown
+  - get: L:PED_AFT_L_VHF_vhf3
+  - get: L:PED_AFT_L_VHF_hf1_IsDown
+  - get: L:PED_AFT_L_VHF_hf1
+  - get: L:PED_AFT_L_VHF_hf2_IsDown
+  - get: L:PED_AFT_L_VHF_hf2
+
+#  - get: L:PED_AFT_L_VHF_xfer
+  - get: L:PED_AFT_L_VHF_outer
+  - get: L:PED_AFT_L_VHF_inner
+##  - ## TRANSPONDER BTN's, Knobs & SWITCHES ##
+  - get: L:PED_AFT_XPDR_Rptg
+  - get: L:PED_AFT_XPDR_Sel
+  - get: L:PED_AFT_XPDR_Traffic
+  - get: L:PED_AFT_XPDR_1_IsDown
+  - get: L:PED_AFT_XPDR_2_IsDown
+  - get: L:PED_AFT_XPDR_3_IsDown
+  - get: L:PED_AFT_XPDR_4_IsDown
+  - get: L:PED_AFT_XPDR_5_IsDown
+  - get: L:PED_AFT_XPDR_6_IsDown
+  - get: L:PED_AFT_XPDR_7_IsDown
+  - get: L:PED_AFT_XPDR_0_IsDown
+  - get: L:PED_AFT_XPDR_CLR_IsDown
+  - get: L:PED_AFT_XPDR_Range
+  - get: L:PED_AFT_XPDR_Mode
+  - get: L:PED_AFT_XPDR_Test_IsDown
+  - get: L:PED_AFT_XPDR_Ident_IsDown
+  - get: L:PED_AFT_Brake_test
+  - get: L:PED_AFT_Brake_test_IsDown
+  - get: L:PED_AFT_ELC_store_IsDown
+  - get: L:PED_AFT_ELC_store
+  - get: L:PED_AFT_ELT_cover
+  - get: L:PED_AFT_ELT_switch
+  - get: L:PED_AFT_MISC_Cupholder
+  - get: L:Emer_gear-Door, Bool
+  - get: L:Emer_gear_handle_LC, Bool
+
+##  - #############  PEDISTAL - LOWER RIGHT area #############
+##  - ## VHF- 2 BTN's, Knobs & SWITCHES ##
+  - get: L:PED_AFT_R_VHF_vhf1_IsDown
+  - get: L:PED_AFT_R_VHF_vhf1
+  - get: L:PED_AFT_R_VHF_vhf2_IsDown
+  - get: L:PED_AFT_R_VHF_vhf2
+  - get: L:PED_AFT_R_VHF_vhf3_IsDown
+  - get: L:PED_AFT_R_VHF_vhf3
+  - get: L:PED_AFT_R_VHF_hf1_IsDown
+  - get: L:PED_AFT_R_VHF_hf1
+  - get: L:PED_AFT_R_VHF_hf2_IsDown
+  - get: L:PED_AFT_R_VHF_hf2
+  - get: L:PED_AFT_R_VHF_outer
+  - get: L:PED_AFT_R_VHF_inner
+##  - ## ADF RADIO SWITCHES ## 
+  - get: L:PED_AFT_R_ADF1_Mode
+  - get: L:PED_AFT_R_ADF1_Outer
+  - get: L:PED_AFT_R_ADF1_Middle
+  - get: L:PED_AFT_R_ADF1_Inner
+  - get: L:PED_AFT_R_ADF1_BFO
+  - get: L:PED_AFT_R_ADF2_BFO
+  - get: L:PED_AFT_R_ADF2_Outer
+  - get: L:PED_AFT_R_ADF2_Middle
+  - get: L:PED_AFT_R_ADF2_Inner
+  - get: L:PED_AFT_R_ADF2_Mode
+##  - ## FDR PANEL SWITCHES ## 
+  - get: L:PED_AFT_FDR_test_IsDown
+  - get: L:PED_AFT_FDR_test
+  - get: L:PED_AFT_FDR_event_IsDown
+  - get: L:PED_AFT_FDR_event
+##  - ## FLIGHT DECK DPPR and LIGHTS PANEL ## 
+  - get: L:PED_AFT_MISC_door
+  - get: L:PED_AFT_MISC_FwdConsole
+  - get: L:PED_AFT_MISC_AftConsole
+  - get: L:PED_AFT_MISC_ConsoleFlood
+##  - #############  PILOT PANELS - Left ARM #############
+  - get: L:L_SIDE_Oxy_button_IsDown
+  - get: L:L_SIDE_Oxy_button
+  - get: L:L_SIDE_Floor_air
+  - get: L:L_SIDE_Fdeck_air
+  - get: L:L_SIDE_Oxy_test
+  - get: L:L_SIDE_Oxy_test_IsDown
+##  - ## Lower Left Panel - CVR ##
+  - get: L:L_SIDE_28v_switch
+  - get: L:L_SIDE_CVR_Erase_IsDown
+  - get: L:L_SIDE_CVR_Erase
+  - get: L:L_SIDE_CVR_Test_IsDown
+  - get: L:L_SIDE_CVR_Test
+##  - ## PILOT AUDIO Panel ##
+  - get: L:PED_FWD_L_Audio_VHF1_sel
+  - get: L:PED_FWD_L_Audio_VHF2_sel
+  - get: L:PED_FWD_L_Audio_VHF3_sel
+  - get: L:PED_FWD_L_Audio_HF1_sel
+  - get: L:PED_FWD_L_Audio_HF2_sel
+  - get: L:PED_FWD_L_Audio_Int_sel
+  - get: L:PED_FWD_L_Audio_PA_sel
+  - get: L:PED_FWD_L_Audio_Boom
+  - get: L:PED_FWD_L_Audio_VHF1_vol
+  - get: L:PED_FWD_L_Audio_VHF1_vol_push
+  - get: L:PED_FWD_L_Audio_VHF2_vol
+  - get: L:PED_FWD_L_Audio_VHF2_vol_push
+  - get: L:PED_FWD_L_Audio_VHF3_vol
+  - get: L:PED_FWD_L_Audio_VHF3_vol_push
+  - get: L:PED_FWD_L_Audio_HF1_vol
+  - get: L:PED_FWD_L_Audio_HF1_vol_push
+  - get: L:PED_FWD_L_Audio_HF2_vol
+  - get: L:PED_FWD_L_Audio_HF2_vol_push
+  - get: L:PED_FWD_L_Audio_PA_vol
+  - get: L:PED_FWD_L_Audio_RT
+  - get: L:PED_FWD_L_Audio_Mkr
+  - get: L:PED_FWD_L_Audio_Mkr_push
+  - get: L:PED_FWD_L_Audio_DME
+  - get: L:PED_FWD_L_Audio_DME_push
+  - get: L:PED_FWD_L_Audio_VOR
+  - get: L:PED_FWD_L_Audio_VOR_push
+  - get: L:PED_FWD_L_Audio_ADF1
+  - get: L:PED_FWD_L_Audio_ADF1_push
+  - get: L:PED_FWD_L_Audio_ADF2
+  - get: L:PED_FWD_L_Audio_ADF2_push
+  - get: L:PED_FWD_L_Audio_Int_vol
+  - get: L:PED_FWD_L_Audio_Int_vol_push
+  - get: L:PED_FWD_L_Audio_ILS
+  - get: L:PED_FWD_L_Audio_ILS_push
+  - get: L:PED_FWD_L_Audio_INOP
+  - get: L:PED_FWD_L_Audio_INOP_push
+  - get: L:PED_FWD_L_Audio_Voice
+  - get: L:PED_FWD_L_Audio_test
+##  - ## LIGHTS PANEL ##
+  - get: L:L_SIDE_Lights_FltKit
+  - get: L:L_SIDE_Lights_Push_Knob
+  - get: L:L_SIDE_Lights_Push_Sill_IsDown
+  - get: L:L_SIDE_Lights_Push_Sill
+  - get: L:L_SIDE_Lights_Push_Lap_IsDown
+  - get: L:L_SIDE_Lights_Push_Lap
+  - get: L:L_SIDE_Lights_Flood
+  - get: L:L_SIDE_Lights_Insts
+##  - #############  PILOT PANELS - FRONT LEFT  #############
+##  - ## CHRONO SWITCHES ##
+  - get: L:L_CLOCK_seconds_set
+  - get: L:L_CLOCK_hours_set
+  - get: L:L_CLOCK_mode
+  - get: L:L_CLOCK_elapsed
+  - get: L:L_CLOCK_time_reset_IsDown
+  - get: L:L_CLOCK_time_reset
+##  - ## Decision Height, PFD & ND/WX Brightness KNOBS  ##
+  - get: L:L_MISC_DH_knob
+  - get: L:L_MISC_DH_inc
+  - get: L:L_MISC_DH_dec
+  - get: L:L_MISC_Test_dim_IsDown
+  - get: L:L_MISC_Test_dim
+  - get: L:L_MISC_PFD_brt
+  - get: L:L_MISC_ND_brt
+  - get: L:L_MISC_WX_brt
+  - get: L:L_RMI_NAV1_mode_button
+  - get: L:L_RMI_NAV2_mode_button
+##  - ## EFIS MASTER PANEL SWITCHES ##
+  - get: L:L_MISC_HDG_cover
+  - get: L:L_MISC_HDG_switch
+  - get: L:L_MISC_EFIS_mstr
+  - get: L:L_MISC_EFIS_cover
+  - get: L:L_MISC_EFIS_switch
+  - get: L:L_MISC_AIRDATA_cover
+  - get: L:L_MISC_AIRDATA_switch
+  - get: L:L_MISC_ATT_cover
+  - get: L:L_MISC_ATT_switch
+##  - ## MKR ANNUNCIATOR PANEL SWITCHES ##
+  - get: L:L_MISC_MKR_sense
+  - get: L:L_MISC_Annun_dim
+  - get: L:L_MISC_Annun_test_IsDown
+  - get: L:L_MISC_Annun_test
+##  - ## Altitude Indicator Knobs & SWITCHES ##
+  - get: L:L_ALT_Baro_knob
+  - get: L:JF_RJ_FGS_Nav_Source
+  - get: L:JF_RJ_FGS_Baro_sync
+  - get: L:L_ALT_Bug_knob
+##  - ## STALL INDT 1&2 BTN's & SWITCHES ##
+  - get: L:L_ANNUNS_Idnt1_IsDown
+  - get: L:L_ANNUNS_Idnt1
+  - get: L:L_ANNUNS_Idnt2_IsDown
+  - get: L:L_ANNUNS_Idnt2
+  - get: L:L_STBY_ADI_Knob_LC
+  - get: L:L_STBY_ALT_Knob
+##  - #############  PILOT PANELS - FRONT MIDDLE  #############
+##  - ## FUEL Quantity BTN ##
+  - get: L:CTR_MISC_Fuel_qty_IsDown
+  - get: L:CTR_MISC_Fuel_qty
+  - get: L:CTR_MISC_Vibn_IsDown
+  - get: L:CTR_MISC_Vibn
+##  - ## FADEC CONFIG BTN's ##
+  - get: L:CTR_ENG1_FADEC_switch_IsDown
+  - get: L:CTR_ENG1_FADEC_switch
+  - get: L:CTR_ENG2_FADEC_switch_IsDown
+  - get: L:CTR_ENG2_FADEC_switch
+  - get: L:CTR_ENG3_FADEC_switch_IsDown
+  - get: L:CTR_ENG3_FADEC_switch
+  - get: L:CTR_ENG4_FADEC_switch_IsDown
+  - get: L:CTR_ENG4_FADEC_switch
+##  - ## Engine 1 & 2 CONFIG BTN's ##
+  - get: L:CTR_ENG1_N1_bug_knob
+  - get: L:CTR_ENG1_N1_bug_knob_pull
+  - get: L:CTR_EICAS_L_Test_IsDown
+  - get: L:CTR_EICAS_L_Test
+  - get: L:CTR_EICAS_L_Fuel_reset_IsDown
+  - get: L:CTR_EICAS_L_Fuel_reset
+  - get: L:CTR_ENG2_N1_bug_knob
+  - get: L:CTR_ENG2_N1_bug_knob_pull
+##  - ## Engine 3 & 4 CONFIG BTN's ##
+  - get: L:CTR_ENG3_N1_bug_knob
+  - get: L:CTR_ENG3_N1_bug_knob_pull
+  - get: L:CTR_EICAS_R_Test_IsDown
+  - get: L:CTR_EICAS_R_Test
+  - get: L:CTR_EICAS_R_Fuel_reset_IsDown
+  - get: L:CTR_EICAS_R_Fuel_reset
+  - get: L:CTR_ENG4_N1_bug_knob
+  - get: L:CTR_ENG4_N1_bug_knob_pull
+#  - LANDING GEAR
+  - get: L:CTR_MISC_Gear_handle
+  - get: L:CTR_MISC_Gear_handle_LC, Bool
+  - get: L:CTR_MISC_Gear_handle_il
+  - get: L:CTR_MISC_Gear_override

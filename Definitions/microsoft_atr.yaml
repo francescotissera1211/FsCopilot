@@ -1,0 +1,1553 @@
+# Original author: https://discord.com/channels/1454265644416765974/1513607381865599279/1514623786656333865
+# Updated: 2026-06-12 18:36:27
+
+# Microsoft ATR 42-600 / ATR 72-600 / Freighter / STOL
+# Aircraft folder: microsoft_atr
+# Updated: 08/06/2026
+# Created By: JustGreg
+# Version: 0.1.1
+
+include:
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+master:
+  # ── Flight Controls — analog levers, Pilot Flying only ──────────────────────
+  - get: L:MSATR_THR_LEVER1_POS
+    set: "`${Math.round(value)} (>L:MSATR_THR_LEVER1_POS)`"
+  - get: L:MSATR_THR_LEVER2_POS
+    set: "`${Math.round(value)} (>L:MSATR_THR_LEVER2_POS)`"
+  - get: A:ELEVATOR TRIM PCT, Percent              # Elevator trim
+    set: "`${value * 163.83} (>K:ELEVATOR_TRIM_SET)`"
+  - get: A:AILERON TRIM PCT, Percent               # Aileron trim
+    set: "`${value * 163.83} (>K:AILERON_TRIM_SET_EX1)`"
+  - get: A:RUDDER TRIM PCT, Percent                # Rudder trim
+    set: "`${value * 163.83} (>K:RUDDER_TRIM_SET_EX1)`"
+
+shared:
+  - get: L:MSATR_CONDITION1_POS
+  - get: L:MSATR_CONDITION2_POS
+  - get: A:FLAPS HANDLE INDEX, Number
+    set: |
+      switch(Math.round(value)) {
+        case 0: return '(>K:FLAPS_UP)';
+        case 1: return '(>K:FLAPS_1)';
+        case 2: return '(>K:FLAPS_2)';
+        default: return '';
+      }
+  # ── Autopilot — mode buttons ────────────────────────────────────────────────
+# Autopilot — mode buttons
+# AP Engage toggle
+  - get: A:AUTOPILOT MASTER, Bool
+    set: "1 (>L:MSATR_FGCP_AP)"
+  - get: L:MSATR_FGCP_STAT_HDG_SEL, Bool                   # HDG mode
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_HEADING_KEY_Set) 0 (>B:AUTOPILOT_AUTOPILOT_PUSH_HEADING_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_HEADING_KEY_Set) 1 (>B:AUTOPILOT_AUTOPILOT_PUSH_HEADING_KEY_Set)'"
+  - get: L:MSATR_FGCP_STAT_ALT                             # ALT mode
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_ALTITUDE_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_ALTITUDE_KEY_Set)'"
+  - get: L:MSATR_FGCP_STAT_NAV, Bool                       # NAV mode
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_NAVIGATION_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_NAVIGATION_KEY_Set)'"
+  - get: L:MSATR_FGCP_APP                                  # APR mode (momentary pulse)
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_APPROACH_KEY_Set)' : ''"
+  - get: L:MSATR_FGCP_STAT_BC                              # Back-course
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_BACKCOURSE_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_BACKCOURSE_KEY_Set)'"
+  - get: L:MSATR_FGCP_STAT_FD1, Bool                       # FD 1
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_FLIGHTDIRECTOR_1_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_FLIGHTDIRECTOR_1_KEY_Set)'"
+  - get: L:MSATR_FGCP_STAT_FD2, Bool                       # FD 2
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_FLIGHTDIRECTOR_2_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_FLIGHTDIRECTOR_2_KEY_Set)'"
+  - get: L:MSATR_FGCP_STAT_IAS                             # Speed mode (IAS)
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_SPEED_KEY_Set) 0 (>B:AUTOPILOT_AUTOPILOT_PUSH_SPEED_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_SPEED_KEY_Set) 1 (>B:AUTOPILOT_AUTOPILOT_PUSH_SPEED_KEY_Set)'"
+  - get: L:MSATR_FGCP_STAT_VS                              # VS mode
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_VERTICALSPEED_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_VERTICALSPEED_KEY_Set)'"
+  - get: L:MSATR_FGCP_STAT_YD                              # Yaw damper
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_YAWDAMPER_KEY_Set)' : '0 (>B:AUTOPILOT_AUTOPILOT_PUSH_YAWDAMPER_KEY_Set)'"
+  - get: L:MSATR_FGCP_VNAV                                 # VNAV mode (momentary pulse)
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_VERTICALNAVIGATION_KEY_Set)' : ''"
+  - get: L:MSATR_FGCP_STAT_AP                              # AP standby
+    set: "value < 0.5 ? '1 (>B:AUTOPILOT_AUTOPILOT_PUSH_STANDBY_KEY_Set)' : ''"
+
+  # ATR-specific modes — no standard SimVar, read from FGCP status L: variables
+  - get: L:MSATR_FGCP_STAT_VNAV, Bool                      # VNAV
+    set: "value >= 0.5 ? '1 (>L:MSATR_FGCP_VNAV)' : ''"
+  - get: L:MSATR_FGCP_CPL_CPT_LT                           # CPL
+    set: "value >= 0.5 ? '1 (>L:MSATR_FGCP_CPL)' : ''"
+  - get: L:MSATR_FGCP_STAT_MAN_SPD                         # Speed hold
+    set: "1 (>B:INSTRUMENT_PUSH_SPD_SEL_1_KEY_Set) 0 (>B:INSTRUMENT_PUSH_SPD_SEL_1_KEY_Set)"
+  - get: L:MSATR_FGCP_TGT                                  # Target speed knob 1
+    set: "`${Math.round(value)} (>L:MSATR_FGCP_TGT)`"
+  # ── Autopilot — selected values ─────────────────────────────────────────────
+  - get: L:MSATR_FGCP_SELALT                               # Selected altitude
+    set: "`${Math.round(value)} (>L:MSATR_FGCP_SELALT)`"
+  - get: A:AUTOPILOT VERTICAL HOLD VAR, Feet per minute    # Selected V/S
+    set: "`${Math.round(value)} (>K:AP_VS_VAR_SET_ENGLISH)`"
+
+  # - get: L:MSATR_SEL_HDG                                   # Selected heading
+  #   set: "`${Math.round(value)} (>K:HEADING_BUG_SET)`"
+  - get: L:MSATR_SEL_HDG                                   # Selected heading
+    set: "`${Math.round(value)} (>L:MSATR_SEL_HDG) 1 (>L:MSATR_SEL_HDG_CHANGED)`"
+  - get: L:MSATR_SEL_HDG_SYNC                              # HDG sync (momentary)
+    set: "value >= 0.5 ? '1 (>B:AUTOPILOT_HEADING_SYNC_Set) 0 (>B:AUTOPILOT_HEADING_SYNC_Set)' : ''"
+
+  - get: L:MSATR_SEL_HDG_CHANGED                           # Fires 1 on heading change
+    set: "value >= 0.5 ? '0 (>L:MSATR_SEL_HDG_CHANGED)' : ''"
+  - get: A:NAV OBS:1, Degrees                              # CRS 1
+    set: "`${Math.round(value)} (>K:VOR1_OBS_SET)`"
+  - get: A:NAV OBS:2, Degrees                              # CRS 2
+    set: "`${Math.round(value)} (>K:VOR2_OBS_SET)`"
+  - get: L:MSATR_SEL_SPD                                   # Speed target (read-only, cannot be set externally)
+  - get: L:MSATR_FGCP_WHEEL_VALUE                          # Selected V/S (actual value)
+    set: "`${Math.round(value)} (>L:MSATR_FGCP_WHEEL_VALUE)`"
+
+  - get: A:KOHLSMAN SETTING MB:1, Millibars                 # Baro captain
+    set: "`${Math.round(value * 16)} (>K:KOHLSMAN_SET)`"
+
+  - get: B:INSTRUMENT_KNOB_BARO_SET_1_PUSH                  # Baro STD push captain
+    set: "1 (>L:MSATR_BARO_STD_1)"
+
+  - get: A:KOHLSMAN SETTING MB:2, Millibars                 # Baro F/O
+    set: "`${Math.round(value * 16)} (>K:2:KOHLSMAN_SET)`"
+
+  - get: B:INSTRUMENT_KNOB_BARO_SET_2_PUSH                  # Baro STD push F/O
+    set: "1 (>L:MSATR_BARO_STD_2)"
+
+  - get: L:MSATR_DH_VALUE_1                                 # DH captain → update F/O
+    set: "`${Math.round(value)} (>B:INSTRUMENT_KNOB_DH_MDA_VALUE_2_Set)`"
+
+  - get: L:MSATR_DH_VALUE_2                                 # DH F/O → update captain
+    set: "`${Math.round(value)} (>B:INSTRUMENT_KNOB_DH_MDA_VALUE_1_Set)`"
+  - get: L:MSATR_DH_TOGGLE_1
+    set: "`${Math.round(value)} (>L:MSATR_DH_TOGGLE_1) ${Math.round(value)} (>L:MSATR_DH_TOGGLE_2)`"
+  - get: L:MSATR_DH_TOGGLE_2
+    set: "`${Math.round(value)} (>L:MSATR_DH_TOGGLE_1) ${Math.round(value)} (>L:MSATR_DH_TOGGLE_2)`"
+
+  # ATR-specific knobs — no SimVar equivalent, keep B:
+  - get: L:MSATR_FGCP_SRC1                                 # AP mode knob 1
+  - get: L:MSATR_FGCP_SRC2                                 # AP mode knob 2
+  - get: B:AUTOPILOT_KNOB_TGT_1                            # Speed/target knob 1
+  - get: B:AUTOPILOT_KNOB_TGT_2                            # Speed/target knob 2
+  - get: B:AUTOPILOT_CABPRESS_KNOB_MAN_SET                 # Cabin press manual set
+  - get: L:MSATR_FGCP_CRS1
+  - get: L:MSATR_FGCP_CRS2
+
+  - get: A:COM ACTIVE FREQUENCY:1, Hz
+    set: (>K:COM_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:2, Hz
+    set: (>K:COM2_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:3, Hz
+    set: (>K:COM3_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:1, Hz # doesn't work
+    set: (>K:COM_STBY_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:2, Hz # doesn't work
+    set: (>K:COM2_STBY_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:3, Hz # doesn't work
+    set: (>K:COM2_STBY_RADIO_SET_HZ)
+  - get: A:TRANSPONDER CODE:1, BCO16 # XPDR Code
+    set: (>K:XPNDR_SET)
+  - get: A:TRANSPONDER IDENT:1, Bool # Ident
+  - get: A:TRANSPONDER STATE:1, Enum # XPDR StandBy/On/Alt
+
+    #DOORS
+  - get: A:INTERACTIVE POINT GOAL:0, Bool
+    set: "1 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:1, Bool
+    set: "2 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:2, Bool
+    set: "3 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:3, Bool
+    set: "4 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:4, Bool
+    set: "5 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:5, Bool
+    set: "6 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:6, Bool
+    set: "7 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:7, Bool
+    set: "8 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:10, Bool
+    set: "11 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:11, Bool
+    set: "12 (>K:TOGGLE_AIRCRAFT_EXIT)"
+  - get: A:INTERACTIVE POINT GOAL:12, Bool
+    set: "13 (>K:TOGGLE_AIRCRAFT_EXIT)"
+
+  - get: A:CONTACT POINT STEER ANGLE:0, Radians
+    set: (>K:STEERING_SET)
+
+  # ── Engine ──────────────────────────────────────────────────────────────────
+  - get: L:MSATR_ENGS_MODE                          # Engine start selector knob (0=OFF, 1=CRANK, 2=START_A, 3=START_B, 4=START_AB)
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:ENGINE_ENGINE_KNOB_STARTER_STATE_0)'
+          case 1: return '(>B:ENGINE_ENGINE_KNOB_STARTER_STATE_1)'
+          case 2: return '(>B:ENGINE_ENGINE_KNOB_STARTER_STATE_2)'
+          case 3: return '(>B:ENGINE_ENGINE_KNOB_STARTER_STATE_3)'
+          case 4: return '(>B:ENGINE_ENGINE_KNOB_STARTER_STATE_4)'
+          default: return ''
+      }
+  - get: L:MSATR_ENG_PWRMGT_1          # Power mgmt inner knob
+  - get: L:MSATR_ENG_PWRMGT_2          # Power mgmt outer knob
+  - get: B:ENGINE_ENGINE_KNOB_PWRMGT_TOGGLE         # Power mgmt push
+  - get: B:ENGINE_ENGINE_PUSH_IGNITION              # Ignition push
+    set: "(L:MSATR_ENGS_IGN) ! (>L:MSATR_ENGS_IGN)"
+  - get: B:ENGINE_ENGINE_PUSH_IGNITION_COVER        # Ignition cover
+  - get: L:MSATR_ENGS_START1                        # Start engine 1 (long-press=1, release=0)
+    set: "value >= 0.5 ? '1 1 (>B:ENGINE_ENGINE_PUSH_STARTER_1_KEY_PUSH_LONG)' : '0 (>B:ENGINE_ENGINE_PUSH_STARTER_1_KEY_RELEASE)'"
+  - get: L:MSATR_ENGS_START2                        # Start engine 2 (long-press=1, release=0)
+    set: "value >= 0.5 ? '1 1 (>B:ENGINE_ENGINE_PUSH_STARTER_2_KEY_PUSH_LONG)' : '0 (>B:ENGINE_ENGINE_PUSH_STARTER_2_KEY_RELEASE)'"
+  - get: B:ENGINE_ENGINE_LEVER_THROTTLE_1_PUSH_GOAROUND_KEY  # TOGA 1
+    set: "1 (>L:MSATR_ENG_GA1)"
+  - get: B:ENGINE_ENGINE_LEVER_THROTTLE_2_PUSH_GOAROUND_KEY  # TOGA 2
+    set: "1 (>L:MSATR_ENG_GA2)"
+  - get: B:ENGINE_KNOB_ATPCS_TEST                   # ATPCS test knob
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:ENGINE_KNOB_ATPCS_TEST_STATE_0)'
+          case 1: return '(>B:ENGINE_KNOB_ATPCS_TEST_STATE_1)'
+          case 2: return '(>B:ENGINE_KNOB_ATPCS_TEST_STATE_2)'
+          case 3: return '(>B:ENGINE_KNOB_ATPCS_TEST_STATE_3)'
+          case 4: return '(>B:ENGINE_KNOB_ATPCS_TEST_STATE_4)'
+          default: return ''
+      }
+  - get: B:ENGINE_PUSH_APM                          # APM push
+    set: "(L:MSATR_ENG_APM) ! (>L:MSATR_ENG_APM)"
+  - get: L:MSATR_ATPCS                              # ATPCS button
+  - get: B:ENGINE_PUSH_BOOST                        # Boost push
+    set: "(L:MSATR_ENG_BOOST) ! (>L:MSATR_ENG_BOOST)"
+  - get: B:ENGINE_PUSH_EEC1                         # EEC 1
+    set: "(L:MSATR_ENG_EEC1) ! (>L:MSATR_ENG_EEC1)"
+  - get: B:ENGINE_PUSH_EEC2                         # EEC 2
+    set: "(L:MSATR_ENG_EEC2) ! (>L:MSATR_ENG_EEC2)"
+  - get: B:ENGINE_PUSH_PEC1                         # PEC 1
+    set: "(L:MSATR_ENG_PEC1) ! (>L:MSATR_ENG_PEC1)"
+  - get: B:ENGINE_PUSH_PEC2                         # PEC 2
+    set: "(L:MSATR_ENG_PEC2) ! (>L:MSATR_ENG_PEC2)"
+  - get: L:MSATR_ENG_APM_TEST                       # APM test
+  - get: B:ENGINE_PUSH_PEDESTAL_BACK_ATPCS_TEST     # ATPCS test (pedestal)
+    set: "`${value} (B:ENGINE_PUSH_PEDESTAL_BACK_ATPCS_TEST, Number) != if{ (>B:ENGINE_PUSH_PEDESTAL_BACK_ATPCS_TEST_Toggle) }`"
+  - get: B:ENGINE_SWITCH_PROP_BRAKE                 # Prop brake switch
+    set: "(L:MSATR_ENGS_PROP_BRK) ! (>L:MSATR_ENGS_PROP_BRK)"
+  - get: B:ENGINE_SWITCH_PROP_BRAKE_LOCK            # Prop brake cover/lock
+    set: "`${value} (B:ENGINE_SWITCH_PROP_BRAKE_LOCK, Number) != if{ (>B:ENGINE_SWITCH_PROP_BRAKE_LOCK_Toggle) }`"
+
+  # Trim
+  - get: 
+
+  # ── Fuel ────────────────────────────────────────────────────────────────────
+  - get: L:MSATR_FUEL_XFEED
+  - get: L:MSATR_FUEL_PUMP1
+  - get: L:MSATR_FUEL_PUMP2
+
+  # ── Handling / Ground Controls ───────────────────────────────────────────────
+  - get: B:HANDLING_HANDLING_LEVER_GUSTLOCK         # Gust lock lever
+    set: "value >= 0.5 ? '(>B:HANDLING_HANDLING_LEVER_GUSTLOCK_ON)' : '(>B:HANDLING_HANDLING_LEVER_GUSTLOCK_OFF)'"
+  - get: B:HANDLING_HANDLING_YOKE_L_SWITCH_ELEVATORTRIM  # Capt trim switch
+  - get: B:HANDLING_HANDLING_YOKE_R_SWITCH_ELEVATORTRIM  # F/O trim switch
+  - get: B:HANDLING_LEVER_IDLE_GATE                 # Idle gate lever
+    set: "(L:MSATR_ENG_IDLE_GATE) ! (>L:MSATR_ENG_IDLE_GATE)"
+  - get: B:HANDLING_RUDDERTRIM_RESET                # Rudder trim reset button
+  - get: B:HANDLING_SWITCH_FLT_CTL                  # Flight control switch (0=High, 1=Auto, 2=Low)
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:HANDLING_SWITCH_FLT_CTL_0)'
+          case 1: return '(>B:HANDLING_SWITCH_FLT_CTL_1)'
+          case 2: return '(>B:HANDLING_SWITCH_FLT_CTL_2)'
+          default: return ''
+      }
+  - get: L:MSATR_SWITCH_FLT_CTL_COVER              # Flight control cover state
+  - get: B:HANDLING_Switch_FLT_CTL_cover            # Flight control cover
+    set: "`${value} (B:HANDLING_Switch_FLT_CTL_cover, Number) != if{ (>B:HANDLING_Switch_FLT_CTL_cover_Toggle) }`"
+    skp: B:HANDLING_Switch_FLT_CTL_cover
+  - get: B:HANDLING_SWITCH_NW_STEERING              # Nose wheel steering
+    set: "(L:MSATR_NW_STEERING) ! (>L:MSATR_NW_STEERING)"
+  - get: B:HANDLING_SWITCH_NW_STEERING_COVER        # NW steering cover
+    set: "`${value} (B:HANDLING_SWITCH_NW_STEERING_COVER, Number) != if{ (>B:HANDLING_SWITCH_NW_STEERING_COVER_Toggle) }`"
+  - get: L:MSATR_PARK_EMER_BRK
+
+  # ── Landing Gear ─────────────────────────────────────────────────────────────
+  - get: A:GEAR HANDLE POSITION, Bool               # Gear lever (1=up, 0=down)
+    set: "value >= 0.5 ? '(>K:GEAR_DOWN)' : '(>K:GEAR_UP)'"
+    skp: B:LANDING_GEAR_GEAR  
+  - get: B:LANDING_GEAR_LANDING_GEAR_PUSH_ANTISKID            # Anti-skid
+    set: "(L:MSATR_GEAR_ASKID) ! (>L:MSATR_GEAR_ASKID)"
+  - get: L:MSATR_GEAR_ASKID_TEST                        # Anti-skid test
+
+  # ── Electrical ──────────────────────────────────────────────────────────────
+  - get: L:MSATR_ELEC_BAT_SWITCH
+  - get: B:ELECTRICAL_SWITCH_BATTERY_MASTER_LOCK              # Battery cover
+  - get: B:ELECTRICAL_ELECTRICAL_SWITCH_BATTERYSELECTOR       # Battery selector
+    set: "(L:MSATR_ELEC_BAT_SEL) ! (>L:MSATR_ELEC_BAT_SEL)"
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_ACW_BTC                 # ACW BTC
+    set: "(L:MSATR_ACWF_BTC) ! (>L:MSATR_ACWF_BTC)"
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_ACW_BTC_COVER           # ACW BTC cover
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_ACW_EXT_PWR             # External power
+    set: "(L:MSATR_ACWF_EXTPWR) ! (>L:MSATR_ACWF_EXTPWR)"
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_ACW_GEN1                # Generator 1
+    set: "(L:MSATR_ACWF_GEN1) ! (>L:MSATR_ACWF_GEN1)"
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_ACW_GEN2                # Generator 2
+    set: "(L:MSATR_ACWF_GEN2) ! (>L:MSATR_ACWF_GEN2)"
+  - get: L:MSATR_ELEC_EMER_BAT_CHRG
+  - get: L:MSATR_ELEC_MAIN_BAT_CHRG
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_DCSVCE                  # DC service
+    set: "(L:MSATR_ELEC_DC_SVC_UTIL_BUS) ! (>L:MSATR_ELEC_DC_SVC_UTIL_BUS)"
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_STBY_BUS               # Standby bus
+    set: "(L:MSATR_ELEC_STBY_BUS) ! (>L:MSATR_ELEC_STBY_BUS)"
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_STBY_BUS_COVER         # Standby bus cover
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_TRU                     # TRU
+    set: "(L:MSATR_ELEC_TRU) ! (>L:MSATR_ELEC_TRU)"
+  - get: B:ELECTRICAL_ELECTRICAL_PUSH_TRU_COVER              # TRU cover
+  - get: B:ELECTRICAL_ELECTRICAL_SWITCH_BTC                   # BTC switch
+    set: "(L:MSATR_ELEC_BTC) ! (>L:MSATR_ELEC_BTC)"
+  - get: B:ELECTRICAL_ELECTRICAL_SWITCH_BTC_COVER            # BTC cover
+  - get: B:ELECTRICAL_ELECTRICAL_SWITCH_DC_1                  # DC bus 1
+    set: "(L:MSATR_ELEC_DCGEN1) ! (>L:MSATR_ELEC_DCGEN1)"
+  - get: B:ELECTRICAL_ELECTRICAL_SWITCH_DC_2                  # DC bus 2
+    set: "(L:MSATR_ELEC_DCGEN2) ! (>L:MSATR_ELEC_DCGEN2)"
+  - get: B:ELECTRICAL_ELECTRICAL_SWITCH_EXTERNALPOWER        # Ext power switch
+    set: "(L:MSATR_ELEC_DC_EXTPWR) ! (>L:MSATR_ELEC_DC_EXTPWR)"
+  - get: L:MSATR_FCTL_MFC_1A
+  - get: L:MSATR_FCTL_MFC_1B
+  - get: L:MSATR_FCTL_MFC_2A
+  - get: L:MSATR_FCTL_MFC_2B
+  - get: B:ELECTRICAL_SWITCH_DATABUS                          # Data bus switch
+  - get: B:ELECTRICAL_SWITCH_DATABUS_LOCK                     # Data bus cover
+  - get: B:ELECTRICAL_SWITCH_ELEC_BTC                        # Elec BTC
+  - get: B:ELECTRICAL_SWITCH_ELEC_BTC_LOCK                   # Elec BTC cover
+  - get: B:ELECTRICAL_SWITCH_ENG_SELECT                       # Engine select
+  - get: B:ELECTRICAL_SWITCH_ENG_SELECT_LOCK                  # Engine select cover
+  - get: B:ELECTRICAL_SWITCH_ENG1_PLA                        # ENG 1 PLA switch
+  - get: B:ELECTRICAL_SWITCH_ENG1_PLA_LOCK                   # ENG 1 PLA cover
+  - get: B:ELECTRICAL_SWITCH_ENG1_TRIM_LRU                   # ENG 1 trim LRU
+  - get: B:ELECTRICAL_SWITCH_ENG1_TRIM_LRU_LOCK              # ENG 1 trim cover
+  - get: B:ELECTRICAL_SWITCH_ENG2_PLA                        # ENG 2 PLA switch
+  - get: B:ELECTRICAL_SWITCH_ENG2_PLA_LOCK                   # ENG 2 PLA cover
+  - get: B:ELECTRICAL_SWITCH_ENG2_TRIM_LRU                   # ENG 2 trim LRU
+  - get: B:ELECTRICAL_SWITCH_ENG2_TRIM_LRU_LOCK              # ENG 2 trim cover
+  - get: B:ELECTRICAL_SWITCH_PROP_FEATH_PUMP                 # Prop feathering pump
+  - get: B:ELECTRICAL_SWITCH_PROP_FEATH_PUMP_LOCK            # Prop feathering cover
+  - get: B:ELECTRICAL_SWITCH_PROP_OVSPEED                    # Prop overspeed
+  - get: B:ELECTRICAL_SWITCH_PROP_OVSPEED_LOCK               # Prop overspeed cover
+
+  # ── De-ice ──────────────────────────────────────────────────────────────────
+  - get: B:DEICE_DEICE_PUSH_AFR_AIRBLEED            # AFR airbleed de-ice
+    set: "(L:MSATR_AICE_FRAME_BLEED) ! (>L:MSATR_AICE_FRAME_BLEED)"
+  - get: B:DEICE_DEICE_PUSH_AILERONS                # Aileron de-ice
+    set: "(L:MSATR_AICE_AIL_AICE) ! (>L:MSATR_AICE_AIL_AICE)"
+  - get: B:DEICE_DEICE_PUSH_AIRFRAME                # Airframe de-ice
+    set: "(L:MSATR_AICE_FRAME_DEICE) ! (>L:MSATR_AICE_FRAME_DEICE)"
+  - get: B:DEICE_DEICE_PUSH_AUTO                    # Auto de-ice
+    set: "(L:MSATR_AICE_MODE_AUTO) ! (>L:MSATR_AICE_MODE_AUTO)"
+  - get: B:DEICE_DEICE_PUSH_ENGINE_1                # Engine 1 de-ice
+    set: "(L:MSATR_AICE_ENG1_DEICE) ! (>L:MSATR_AICE_ENG1_DEICE)"
+  - get: B:DEICE_DEICE_PUSH_ENGINE_2                # Engine 2 de-ice
+    set: "(L:MSATR_AICE_ENG2_DEICE) ! (>L:MSATR_AICE_ENG2_DEICE)"
+  - get: B:DEICE_DEICE_PUSH_MODE                    # De-ice mode
+    set: "(L:MSATR_AICE_DEICE_OVRD) ! (>L:MSATR_AICE_DEICE_OVRD)"
+  - get: B:DEICE_DEICE_PUSH_MODE_COVER              # De-ice mode cover
+  - get: L:MSATR_AICE_PROP_AICE_MODE                # De-ice mode SAT
+  - get: B:DEICE_DEICE_PUSH_PROPELLER_1             # Prop de-ice 1
+    set: "(L:MSATR_AICE_PROP1_AICE) ! (>L:MSATR_AICE_PROP1_AICE)"
+  - get: B:DEICE_DEICE_PUSH_PROPELLER_2             # Prop de-ice 2
+    set: "(L:MSATR_AICE_PROP2_AICE) ! (>L:MSATR_AICE_PROP2_AICE)"
+  - get: B:DEICE_DEICE_PUSH_RUDDER                  # Rudder de-ice
+    set: "(L:MSATR_AICE_RUD_AICE) ! (>L:MSATR_AICE_RUD_AICE)"
+  - get: L:MSATR_AICE_DEICE_MODE
+  - get: B:DEICE_DEICE_PUSH_SIDEWINDOWS             # Side window heat
+    set: "(L:MSATR_AICE_SIDE_WND) ! (>L:MSATR_AICE_SIDE_WND)"
+  - get: B:DEICE_PUSH_ICE                           # Ice push
+    set: "(L:MSATR_AICE_ICE) ! (>L:MSATR_AICE_ICE)"
+  - get: B:DEICE_PUSH_PROBES_CAPT                   # Captain probes heat
+    set: "(L:MSATR_AICE_PROBES_CPT) ! (>L:MSATR_AICE_PROBES_CPT)"
+  - get: B:DEICE_PUSH_PROBES_FO                     # F/O probes heat
+    set: "(L:MSATR_AICE_PROBES_FO) ! (>L:MSATR_AICE_PROBES_FO)"
+  - get: B:DEICE_PUSH_PROBES_STBY                   # Standby probes heat
+    set: "(L:MSATR_AICE_PROBES_STBY) ! (>L:MSATR_AICE_PROBES_STBY)"
+  - get: L:MSATR_ICE_TEST                           # Ice detection test
+  - get: B:DEICE_PUSH_WINDSHIELD_HTG_L              # Windshield heat left
+    set: "(L:MSATR_AICE_WSHLD_LEFT) ! (>L:MSATR_AICE_WSHLD_LEFT)"
+  - get: B:DEICE_PUSH_WINDSHIELD_HTG_R              # Windshield heat right
+    set: "(L:MSATR_AICE_WSHLD_RIGHT) ! (>L:MSATR_AICE_WSHLD_RIGHT)"
+
+  # ── Pressurization ──────────────────────────────────────────────────────────
+  - get: B:PRESSURIZATION_CABPRESS_KNOB_SELECT      # Cabin pressure selector
+  - get: B:PRESSURIZATION_CABPRESS_PUSH_DITCH       # Ditching
+    set: "(L:MSATR_CPRS_DITCH) ! (>L:MSATR_CPRS_DITCH)"
+  - get: B:PRESSURIZATION_CABPRESS_PUSH_DITCH_COVER # Ditching cover
+  - get: B:PRESSURIZATION_CABPRESS_PUSH_MODE        # Pressurization mode
+    set: "(L:MSATR_CPRS_MODE) ! (>L:MSATR_CPRS_MODE)"
+  - get: B:PRESSURIZATION_CABPRESS_PUSH_SOURCE_SEL  # Source selector
+    set: "(L:MSATR_CPRS_SRCSEL) ! (>L:MSATR_CPRS_SRCSEL)"
+  - get: B:PRESSURIZATION_PUSH_DUMP                 # Pressure dump
+    set: "(L:MSATR_CPRS_DUMP) ! (>L:MSATR_CPRS_DUMP)"
+  - get: B:PRESSURIZATION_PUSH_DUMP_COVER           # Dump cover
+
+  # ── Lighting ────────────────────────────────────────────────────────────────
+  - get: B:LIGHTING_LIGHTING_SWITCH_LIGHT_BEACON_1  # Beacon
+    set: "(L:MSATR_ELTS_BEACON) ! (>L:MSATR_ELTS_BEACON)"
+  - get: B:LIGHTING_LIGHTING_SWITCH_LIGHT_LANDING_1 # Landing light 1
+    set: "(L:MSATR_ELTS_LDG_LEFT) ! (>L:MSATR_ELTS_LDG_LEFT)"
+  - get: B:LIGHTING_LIGHTING_SWITCH_LIGHT_LANDING_2 # Landing light 2
+    set: "(L:MSATR_ELTS_LDG_RIGHT) ! (>L:MSATR_ELTS_LDG_RIGHT)"
+  - get: L:MSATR_ELTS_LOGO
+  - get: B:LIGHTING_LIGHTING_SWITCH_LIGHT_NAV_1     # Navigation lights
+    set: "(L:MSATR_ELTS_NAV) ! (>L:MSATR_ELTS_NAV)"
+  - get: B:LIGHTING_LIGHTING_SWITCH_LIGHT_STROBE_1  # Strobe
+    set: "(L:MSATR_ELTS_STROBE) ! (>L:MSATR_ELTS_STROBE)"
+  - get: B:LIGHTING_LIGHTING_SWITCH_LIGHT_TAXI_1    # Taxi light
+    set: "(L:MSATR_ELTS_TAXI_TO) ! (>L:MSATR_ELTS_TAXI_TO)"
+  - get: L:MSATR_ELTS_WING
+  - get: L:MSATR_ILTS_MINCAB
+  - get: L:MSATR_ILTS_COMPASS
+  - get: L:MSATR_STBY_COMPASS
+  - get: L:MSATR_ILTS_DOME
+  - get: B:LIGHTING_LIGHTING_SWITCH_STORM           # Storm light
+    set: "(L:MSATR_ILTS_STORM) ! (>L:MSATR_ILTS_STORM)"
+  - get: B:LIGHTING_LIGHTING_KNOB_CONSOLE_1         # Console light 1 (capt)
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_ILTS_CONSOLE_CPT)`"
+  - get: L:MSATR_ILTS_FLOOD_KNOB             # Flood light
+  - get: B:LIGHTING_LIGHTING_KNOB_PANEL_MAIN        # Main panel light
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_MAIN_STATE_0)'
+          case 1: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_MAIN_STATE_1)'
+          case 2: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_MAIN_STATE_2)'
+          case 3: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_MAIN_STATE_3)'
+          case 4: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_MAIN_STATE_4)'
+          case 5: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_MAIN_STATE_5)'
+          default: return ''
+      }
+  - get: B:LIGHTING_LIGHTING_KNOB_PANEL_OVERHEAD    # Overhead panel light
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_OVERHEAD_STATE_0)'
+          case 1: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_OVERHEAD_STATE_1)'
+          case 2: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_OVERHEAD_STATE_2)'
+          case 3: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_OVERHEAD_STATE_3)'
+          case 4: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_OVERHEAD_STATE_4)'
+          case 5: return '(>B:LIGHTING_LIGHTING_KNOB_PANEL_OVERHEAD_STATE_5)'
+          default: return ''
+      }
+  - get: B:LIGHTING_LIGHTING_KNOB_READING_1         # Reading light 1 (capt)
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_ILTS_READING_CPT)`"
+  - get: B:INSTRUMENT_LIGHTING_KNOB_CONSOLE_2       # Console light 2 (F/O)
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_ILTS_CONSOLE_FO)`"
+  - get: B:INSTRUMENT_LIGHTING_KNOB_READING_2       # Reading light 2 (F/O)
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_ILTS_READING_FO)`"
+  - get: B:INSTRUMENT_CONSOLE_COVER_L        # Console cover left
+    set: "`${value} (B:INSTRUMENT_CONSOLE_COVER_L, Number) != if{ (>B:INSTRUMENT_CONSOLE_COVER_L_Toggle) }`"
+  - get: B:INSTRUMENT_CONSOLE_COVER_R        # Console cover right
+    set: "`${value} (B:INSTRUMENT_CONSOLE_COVER_R, Number) != if{ (>B:INSTRUMENT_CONSOLE_COVER_R_Toggle) }`"
+  - get: B:LIGHTING_SWITCH_ANNLT                    # Annunciator lights
+    set: "(L:MSATR_ITLS_ANNLT) ! (>L:MSATR_ITLS_ANNLT)"
+
+  # ── Instruments — PFD / ADI / General ───────────────────────────────────────
+  - get: B:INSTRUMENT_KNOB_BARO_SET_1               # Baro knob captain
+  - get: B:INSTRUMENT_KNOB_BARO_SET_1_PUSH          # Baro STD push captain
+    set: "1 (>L:MSATR_BARO_STD_1)"
+  - get: B:INSTRUMENT_KNOB_BARO_SET_2               # Baro knob F/O
+  - get: B:INSTRUMENT_KNOB_BARO_SET_2_PUSH          # Baro STD push F/O
+    set: "1 (>L:MSATR_BARO_STD_2)"
+  - get: B:INSTRUMENT_KNOB_DH_MDA_SET_1             # DH/MDA mode captain
+    set: "(L:MSATR_DH_TOGGLE_1) ! (>L:MSATR_DH_TOGGLE_1)"
+  - get: B:INSTRUMENT_KNOB_DH_MDA_SET_2             # DH/MDA mode F/O
+    set: "(L:MSATR_DH_TOGGLE_2) ! (>L:MSATR_DH_TOGGLE_2)"
+  - get: B:INSTRUMENT_KNOB_DH_MDA_VALUE_1           # DH/MDA value captain
+  - get: B:INSTRUMENT_KNOB_DH_MDA_VALUE_2           # DH/MDA value F/O
+  - get: B:INSTRUMENT_PUSH_ADC_1                    # ADC 1 source
+    set: "(L:MSATR_AHRS_ADC1) ! (>L:MSATR_AHRS_ADC1)"
+  - get: B:INSTRUMENT_PUSH_ADC_2                    # ADC 2 source
+    set: "(L:MSATR_AHRS_ADC2) ! (>L:MSATR_AHRS_ADC2)"
+  - get: L:MSATR_AHRS_ATTHDG_1                            # ATTHDG
+  - get: L:MSATR_AHRS_ATTHDG_2                            # ATTHDG
+  - get: L:MSATR_AHRS_ADC_1                            # ADC
+  - get: L:MSATR_AHRS_ADC_2                            # ADC
+  - get: L:MSATR_COMM_AUDIO_SEL1                            # AUDIO SEL 1
+  - get: L:MSATR_COMM_AUDIO_SEL2                            # AUDIO SEL 2
+  - get: B:INSTRUMENT_PUSH_SPD_SEL_1_KEY            # Speed select 1
+  - get: B:INSTRUMENT_PUSH_SPD_SEL_2_KEY            # Speed select 2
+  - get: L:MSATR_EFIS_DISPLAY1
+  - get: L:MSATR_EFIS_DISPLAY2
+  - get: L:MSATR_OXYMASK_TEST_1
+  - get: L:MSATR_OXYMASK_TEST_2
+  - get: B:INSTRUMENT_PUSH_STEEP_APP                # Steep approach
+    set: "(L:MSATR_FGCP_STEEP_APP) ! (>L:MSATR_FGCP_STEEP_APP)"
+  - get: B:INSTRUMENT_PUSH_TERR_1                   # TERR on ND
+    set: "(L:MSATR_TAWS_TERR) ! (>L:MSATR_TAWS_TERR)"
+  - get: B:INSTRUMENT_PUSH_TERR_1_COVER             # TERR cover
+  - get: B:INSTRUMENT_PUSH_2SET_OVSPD_KEY           # Overspeed 2nd set
+  - get: B:INSTRUMENT_PUSH_ALERT_RESET_KEY          # Alert reset
+    set: "1 (>L:MSATR_FWS_ALERT_RESET)"
+  - get: B:INSTRUMENT_PUSH_ASYM_TEST_KEY            # Asymmetry test
+  - get: B:INSTRUMENT_PUSH_ELAPS_TM_KEY             # Elapsed time
+  - get: B:INSTRUMENT_PUSH_ELV_CLUTCH_KEY           # Elevator clutch
+  - get: B:INSTRUMENT_PUSH_ELV_CLUTCH_COVER         # Elevator clutch cover
+  - get: B:INSTRUMENT_PUSH_EXHAUST_MODE             # Exhaust mode
+    set: "(L:MSATR_VENT_EXHAUST_MODE) ! (>L:MSATR_VENT_EXHAUST_MODE)"
+  - get: B:INSTRUMENT_PUSH_FLOW                     # Flow push
+    set: "(L:MSATR_AIRC_FLOW_SEL) ! (>L:MSATR_AIRC_FLOW_SEL)"
+  - get: B:INSTRUMENT_PUSH_GND_CTL                  # Ground control
+    set: "(L:MSATR_FDR_GNDCTL) ! (>L:MSATR_FDR_GNDCTL)"
+  - get: B:INSTRUMENT_PUSH_RAM_AIR                  # Ram air
+    set: "(L:MSATR_ABLD_RAM_AIR) ! (>L:MSATR_ABLD_RAM_AIR)"
+  - get: B:INSTRUMENT_PUSH_RAM_AIR_COVER            # Ram air cover
+  - get: B:INSTRUMENT_PUSH_RECIRC_FAN1              # Recirc fan 1
+    set: "(L:MSATR_AIRC_RECIRC1) ! (>L:MSATR_AIRC_RECIRC1)"
+  - get: B:INSTRUMENT_PUSH_RECIRC_FAN2              # Recirc fan 2
+    set: "(L:MSATR_AIRC_RECIRC2) ! (>L:MSATR_AIRC_RECIRC2)"
+  - get: B:INSTRUMENT_PUSH_AIRBLEED_VALVE_1         # Airbleed valve 1
+    set: "(L:MSATR_ABLD_ENG1_BLEED) ! (>L:MSATR_ABLD_ENG1_BLEED)"
+  - get: B:INSTRUMENT_PUSH_AIRBLEED_VALVE_2         # Airbleed valve 2
+    set: "(L:MSATR_ABLD_ENG2_BLEED) ! (>L:MSATR_ABLD_ENG2_BLEED)"
+  - get: B:INSTRUMENT_ELECTRICAL_PUSH_ENGINE_BLEED_1  # Engine bleed 1
+    set: "(L:MSATR_ABLD_ENG1_BLEED) ! (>L:MSATR_ABLD_ENG1_BLEED)"
+  - get: B:INSTRUMENT_ELECTRICAL_PUSH_ENGINE_BLEED_2  # Engine bleed 2
+    set: "(L:MSATR_ABLD_ENG2_BLEED) ! (>L:MSATR_ABLD_ENG2_BLEED)"
+  - get: L:MSATR_AIRC_COMPT_TEMP_MODE               # Temp selector 1
+  - get: L:MSATR_AIRC_CABIN_TEMP_MODE               # Temp selector 2
+  - get: B:INSTRUMENT_KNOB_TEMP_1                   # Temp knob 1
+  - get: B:INSTRUMENT_KNOB_TEMP_2                   # Temp knob 2
+  - get: B:INSTRUMENT_PUSH_AUDIO1_SEL              # Audio 1 selector
+  - get: B:INSTRUMENT_PUSH_AUDIO2_SEL              # Audio 2 selector
+  - get: L:MSATR_AIRC_COMPT_SEL             # Compartment selector
+  - get: B:INSTRUMENT_SWITCH_AVIONIC_VENT          # Avionics vent (0=pos2, 1=pos1, 2=pos0)
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:INSTRUMENT_SWITCH_AVIONIC_VENT_2)'
+          case 1: return '(>B:INSTRUMENT_SWITCH_AVIONIC_VENT_1)'
+          case 2: return '(>B:INSTRUMENT_SWITCH_AVIONIC_VENT_0)'
+          default: return ''
+      }
+  - get: B:INSTRUMENT_SWITCH_AVIONIC_VENT_LOCK     # Avionics vent cover
+    set: "`${value} (B:INSTRUMENT_SWITCH_AVIONIC_VENT_LOCK, Number) != if{ (>B:INSTRUMENT_SWITCH_AVIONIC_VENT_LOCK_Toggle) }`"
+  - get: B:INSTRUMENT_SWITCH_EMER_AUDIO_CANCEL     # Emergency audio cancel
+  - get: B:INSTRUMENT_SWITCH_EMER_AUDIO_CANCEL_COVER  # Emer audio cover
+  - get: B:INSTRUMENT_SWITCH_LEFT                  # Switch left
+  - get: B:INSTRUMENT_KNOB_ELEC_IND               # Electrical indicator knob
+  - get: B:INSTRUMENT_KNOB_WARN                   # Warning knob
+  - get: L:MSATR_AICE_WIPER_FO
+  - get: B:INSTRUMENT_KNOB_LOUDPEAKERS_1          # Loudspeaker 1
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_COMM_SPEAKER_CPT)`"
+  - get: B:INSTRUMENT_KNOB_LOUDPEAKERS_2          # Loudspeaker 2
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_COMM_SPEAKER_FO)`"
+  - get: B:INSTRUMENT_EXTRACTAIRFLOW_SWITCH       # Extract airflow switch
+  - get: B:INSTRUMENT_EXTRACTAIRFLOW_COVER        # Extract airflow cover
+
+  # ── Hydraulics ──────────────────────────────────────────────────────────────
+  - get: B:INSTRUMENT_HYDRAULICS_PUSH_AUXPUMP          # Aux hydraulic pump
+    set: "(L:MSATR_HYDR_AUX) ! (>L:MSATR_HYDR_AUX)"
+  - get: L:MSATR_HYDR_AUX_PUMP_GNDCTL
+  - get: B:INSTRUMENT_HYDRAULICS_PUSH_BLUEPUMP          # Blue hydraulic pump
+    set: "(L:MSATR_HYDR_BLUE) ! (>L:MSATR_HYDR_BLUE)"
+  - get: B:INSTRUMENT_HYDRAULICS_PUSH_CROSSFEED         # Hydraulic crossfeed
+    set: "(L:MSATR_HYDR_XFEED) ! (>L:MSATR_HYDR_XFEED)"
+  - get: B:INSTRUMENT_HYDRAULICS_PUSH_GREENPUMP         # Green hydraulic pump
+    set: "(L:MSATR_HYDR_GREEN) ! (>L:MSATR_HYDR_GREEN)"
+
+  # ── IESI (Integrated Electronic Standby Instrument) ─────────────────────────
+  - get: B:INSTRUMENT_KNOB_MAIN_PANEL_IESI_SET          # IESI set knob
+  - get: L:MSATR_IESI_MENU     # IESI menu
+    set: "1 (>L:MSATR_IESI_MENU)"
+  - get: L:MSATR_IESI_MINUS    # IESI –
+    set: "1 (>L:MSATR_IESI_MINUS)"
+  - get: L:MSATR_IESI_PLUS     # IESI +
+    set: "1 (>L:MSATR_IESI_PLUS)"
+  - get: L:MSATR_IESI_SEL      # IESI select
+    set: "1 (>L:MSATR_IESI_SEL)"
+  - get: L:MSATR_IESI_STD      # IESI STD
+    set: "1 (>L:MSATR_IESI_STD)"
+  - get: L:MSATR_IESI_SET     # IESI test
+    set: "1 (>L:MSATR_IESI_SET)"
+
+  # ── Display Screens — brightness/power (5 screens) ──────────────────────────
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_1_B         # Screen 1 brightness
+    set: "1 (>L:MSATR_MPNL_DISP1_BRT)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_1_C         # Screen 1 contrast
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_1_PWR_KEY   # Screen 1 power
+    set: "(L:MSATR_MPNL_DISP1_PWR) ! (>L:MSATR_MPNL_DISP1_PWR)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_2_B
+    set: "1 (>L:MSATR_MPNL_DISP2_BRT)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_2_C
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_2_PWR_KEY
+    set: "(L:MSATR_MPNL_DISP2_PWR) ! (>L:MSATR_MPNL_DISP2_PWR)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_3_B
+    set: "1 (>L:MSATR_MPNL_DISP3_BRT)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_3_C
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_3_PWR_KEY
+    set: "(L:MSATR_MPNL_DISP3_PWR) ! (>L:MSATR_MPNL_DISP3_PWR)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_4_B
+    set: "1 (>L:MSATR_MPNL_DISP4_BRT)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_4_C
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_4_PWR_KEY
+    set: "(L:MSATR_MPNL_DISP4_PWR) ! (>L:MSATR_MPNL_DISP4_PWR)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_5_B
+    set: "1 (>L:MSATR_MPNL_DISP5_BRT)"
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_5_C
+  - get: B:INSTRUMENT_PUSH_MAINPANEL_SCREEN_5_PWR_KEY
+    set: "(L:MSATR_MPNL_DISP5_PWR) ! (>L:MSATR_MPNL_DISP5_PWR)"
+
+  # ── MFD Control Units — Captain (_1) / F/O (_2) ─────────────────────────────
+  - get: L:MSATR_EFIS_FORMAT_1                # MFD zoom/cursor knob (capt)
+  - get: L:MSATR_EFIS_FORMAT_2               # MFD zoom/cursor knob (F/O)
+  - get: L:MSATR_EFIS_BRG1_1
+  - get: L:MSATR_EFIS_BRG1_2
+  - get: L:MSATR_EFIS_BRG2_1
+  - get: L:MSATR_EFIS_BRG2_2
+  - get: L:MSATR_EFIS_MAP_1
+  - get: L:MSATR_EFIS_MAP_2
+  - get: L:MSATR_EFIS_MISC_1
+  - get: L:MSATR_EFIS_MISC_2
+  - get: L:MSATR_EFIS_ND_1                  # ND 1 push
+  - get: L:MSATR_EFIS_ND_2                 # ND 2 push
+  - get: L:MSATR_MCDU1_NEXT
+  - get: L:MSATR_MCDU2_NEXT
+  - get: L:MSATR_EFIS_PERF_1
+  - get: L:MSATR_EFIS_PERF_2
+  - get: L:MSATR_EFIS_SYS_1
+  - get: L:MSATR_EFIS_SYS_2
+  - get: L:MSATR_EFIS_VID_1
+  - get: L:MSATR_EFIS_VID_2
+  - get: L:MSATR_EFIS_RNG_INC_1
+  - get: L:MSATR_EFIS_RNG_INC_2
+  - get: L:MSATR_EFIS_RNG_DEC_1
+  - get: L:MSATR_EFIS_RNG_DEC_2
+  - get: L:MSATR_EFIS_FORMAT_1
+  - get: L:MSATR_EFIS_FORMAT_2
+  - get: L:MSATR_EFIS_PROC_UP_1
+  - get: L:MSATR_EFIS_PROC_UP_2
+  - get: L:MSATR_EFIS_PROC_DN_1
+  - get: L:MSATR_EFIS_PROC_DN_2
+  - get: L:MSATR_EFIS_PROC_VAL_1
+  - get: L:MSATR_EFIS_PROC_VAL_2
+  - get: L:MSATR_EFIS_PROC_MENU
+  - get: L:MSATR_EFIS_MAN_DEL
+  - get: L:MSATR_EFIS_RCL
+  - get: L:MSATR_EFIS_CLR
+
+
+
+  # ── NAVCOM Radio Panel — Captain (_1) / F/O (_2) ────────────────────────────
+  - get: L:MSATR_MCP1_COM
+  - get: L:MSATR_MCP2_COM
+  - get: L:MSATR_MCP1_NAV
+  - get: L:MSATR_MCP2_NAV
+  - get: L:MSATR_MCP1_SURV
+  - get: L:MSATR_MCP2_SURV
+  - get: L:MSATR_MCP1_UP
+  - get: L:MSATR_MCP2_UP
+  - get: L:MSATR_MCP1_DOWN
+  - get: L:MSATR_MCP2_DOWN
+  - get: L:MSATR_MCP1_LEFT
+  - get: L:MSATR_MCP2_LEFT
+  - get: L:MSATR_MCP1_RIGHT
+  - get: L:MSATR_MCP2_RIGHT
+  - get: L:MSATR_MCP1_ENTER
+  - get: L:MSATR_MCP2_ENTER
+  - get: L:MSATR_MCP1_ESC
+  - get: L:MSATR_MCP2_ESC
+  - get: L:MSATR_MCP1_0
+  - get: L:MSATR_MCP1_1
+  - get: L:MSATR_MCP1_2
+  - get: L:MSATR_MCP1_3
+  - get: L:MSATR_MCP1_4
+  - get: L:MSATR_MCP1_5
+  - get: L:MSATR_MCP1_6
+  - get: L:MSATR_MCP1_7
+  - get: L:MSATR_MCP1_8
+  - get: L:MSATR_MCP1_9
+  - get: L:MSATR_MCP2_0
+  - get: L:MSATR_MCP2_1
+  - get: L:MSATR_MCP2_2
+  - get: L:MSATR_MCP2_3
+  - get: L:MSATR_MCP2_4
+  - get: L:MSATR_MCP2_5
+  - get: L:MSATR_MCP2_6
+  - get: L:MSATR_MCP2_7
+  - get: L:MSATR_MCP2_8
+  - get: L:MSATR_MCP2_9
+  - get: L:MSATR_MCP1_PERIOD
+  - get: L:MSATR_MCP2_PERIOD
+
+  # ── Audio Panels — Captain (_1) / F/O (_2) ───────────────────────────────────
+  - get: B:INSTRUMENT_AUDIOPANEL_ADF1_1
+    set: "(L:MSATR_APNL_ADF1_1) ! (>L:MSATR_APNL_ADF1_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_ADF1_2
+    set: "(L:MSATR_APNL_ADF1_2) ! (>L:MSATR_APNL_ADF1_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_ADF2_1
+    set: "(L:MSATR_APNL_ADF2_1) ! (>L:MSATR_APNL_ADF2_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_ADF2_2
+    set: "(L:MSATR_APNL_ADF2_2) ! (>L:MSATR_APNL_ADF2_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_DME1_1
+    set: "(L:MSATR_APNL_DME1_1) ! (>L:MSATR_APNL_DME1_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_DME1_2
+    set: "(L:MSATR_APNL_DME1_2) ! (>L:MSATR_APNL_DME1_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_DME2_1
+    set: "(L:MSATR_APNL_DME2_1) ! (>L:MSATR_APNL_DME2_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_DME2_2
+    set: "(L:MSATR_APNL_DME2_2) ! (>L:MSATR_APNL_DME2_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_MKR_1
+    set: "(L:MSATR_APNL_MKR_1) ! (>L:MSATR_APNL_MKR_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_MKR_2
+    set: "(L:MSATR_APNL_MKR_2) ! (>L:MSATR_APNL_MKR_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_MLS_1
+    set: "(L:MSATR_APNL_MLS_1) ! (>L:MSATR_APNL_MLS_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_MLS_2
+    set: "(L:MSATR_APNL_MLS_2) ! (>L:MSATR_APNL_MLS_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_HF1_1
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_HF1_VOL_1)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_HF1_2
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_HF1_VOL_2)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_HF2_1
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_HF2_VOL_1)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_HF2_2
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_HF2_VOL_2)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_INT_1
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_INT_VOL_1)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_INT_2
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_INT_VOL_2)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_PA_1
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_PA_VOL_1)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_PA_2
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_PA_VOL_2)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_VHF1_1
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_VHF1_VOL_1)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_VHF1_2
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_VHF1_VOL_2)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_VHF2_1
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_VHF2_VOL_1)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_KNOB_VHF2_2
+    set: "`${value} 10.23 / 0 max 100 min (>L:MSATR_APNL_VHF2_VOL_2)`"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_HF1_1
+    set: "(L:MSATR_APNL_HF1_1) ! (>L:MSATR_APNL_HF1_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_HF1_2
+    set: "(L:MSATR_APNL_HF1_2) ! (>L:MSATR_APNL_HF1_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_HF2_1
+    set: "(L:MSATR_APNL_HF2_1) ! (>L:MSATR_APNL_HF2_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_HF2_2
+    set: "(L:MSATR_APNL_HF2_2) ! (>L:MSATR_APNL_HF2_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_INT_1
+    set: "(L:MSATR_APNL_INT_1) ! (>L:MSATR_APNL_INT_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_INT_2
+    set: "(L:MSATR_APNL_INT_2) ! (>L:MSATR_APNL_INT_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_PA_1
+    set: "(L:MSATR_APNL_PA_1) ! (>L:MSATR_APNL_PA_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_PA_2
+    set: "(L:MSATR_APNL_PA_2) ! (>L:MSATR_APNL_PA_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_VHF1_1
+    set: "(L:MSATR_APNL_VHF1_1) ! (>L:MSATR_APNL_VHF1_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_VHF1_2
+    set: "(L:MSATR_APNL_VHF1_2) ! (>L:MSATR_APNL_VHF1_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_VHF2_1
+    set: "(L:MSATR_APNL_VHF2_1) ! (>L:MSATR_APNL_VHF2_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_VHF2_2
+    set: "(L:MSATR_APNL_VHF2_2) ! (>L:MSATR_APNL_VHF2_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_VOICE_1
+    set: "(L:MSATR_APNL_VOICE_ONLY_1) ! (>L:MSATR_APNL_VOICE_ONLY_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_PUSH_VOICE_2
+    set: "(L:MSATR_APNL_VOICE_ONLY_2) ! (>L:MSATR_APNL_VOICE_ONLY_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_SWITCH_MODE_1
+  - get: B:INSTRUMENT_AUDIOPANEL_SWITCH_MODE_2
+  - get: B:INSTRUMENT_AUDIOPANEL_VOR1_1
+    set: "(L:MSATR_APNL_VOR1_1) ! (>L:MSATR_APNL_VOR1_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_VOR1_2
+    set: "(L:MSATR_APNL_VOR1_2) ! (>L:MSATR_APNL_VOR1_2)"
+  - get: B:INSTRUMENT_AUDIOPANEL_VOR2_1
+    set: "(L:MSATR_APNL_VOR2_1) ! (>L:MSATR_APNL_VOR2_1)"
+  - get: B:INSTRUMENT_AUDIOPANEL_VOR2_2
+    set: "(L:MSATR_APNL_VOR2_2) ! (>L:MSATR_APNL_VOR2_2)"
+
+  # ── Weather Radar ────────────────────────────────────────────────────────────
+  - get: B:INSTRUMENT_WEATHER_RADAR_KNOB_GAIN       # Gain knob
+  - get: B:INSTRUMENT_WEATHER_RADAR_KNOB_GAIN_PULL  # Gain pull
+  - get: B:INSTRUMENT_WEATHER_RADAR_KNOB_MODE       # Mode knob (WX/MAP/TEST)
+  - get: B:INSTRUMENT_WEATHER_RADAR_KNOB_TILT       # Tilt knob
+  - get: B:INSTRUMENT_WEATHER_RADAR_PUSH_RCT_KEY    # RCT
+    set: "1 (>L:MSATR_WXR_RCT)"
+  - get: B:INSTRUMENT_WEATHER_RADAR_PUSH_SECT_KEY   # SECT
+    set: "1 (>L:MSATR_WXR_SECT)"
+  - get: B:INSTRUMENT_WEATHER_RADAR_PUSH_STAB_KEY   # STAB
+    set: "1 (>L:MSATR_WXR_STAB)"
+  - get: B:INSTRUMENT_WEATHER_RADAR_PUSH_TGT_KEY    # TGT
+    set: "1 (>L:MSATR_WXR_TGT)"
+
+  # ── MCDU 1 — Line Select Keys ────────────────────────────────────────────────
+  - get: L:MSATR_MCDU1_L1
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_L1) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_L2
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_L2) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_L3
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_L3) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_L4
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_L4) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_L5
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_L5) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_L6
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_L6) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_R1
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_R1) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_R2
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_R2) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_R3
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_R3) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_R4
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_R4) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_R5
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_R5) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_R6
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_R6) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+
+  # ── MCDU 2 — Line Select Keys ────────────────────────────────────────────────
+  - get: L:MSATR_MCDU2_L1
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_L1) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_L2
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_L2) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_L3
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_L3) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_L4
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_L4) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_L5
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_L5) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_L6
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_L6) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_R1
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_R1) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_R2
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_R2) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_R3
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_R3) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_R4
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_R4) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_R5
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_R5) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_R6
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_R6) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+
+  # ── MCDU 1 — Function Keys ───────────────────────────────────────────────────
+  - get: L:MSATR_MCDU1_MENU
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_MENU) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_PREV
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_PREV) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_NEXT
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_NEXT) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_RMS
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_RMS) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_FPLN
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_FPLN) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_DTO
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_DTO) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_PERF
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_PERF) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_MSG
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_MSG) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_EXEC
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_EXEC) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_BLANK
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_BLANK) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_PROG
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_PROG) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_DATA
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_DATA) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_VNAV
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_VNAV) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_MRK
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_MRK) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_BRT_UP
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_BRT_UP) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_BRT_DN
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_BRT_DN) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+
+  # ── MCDU 2 — Function Keys ───────────────────────────────────────────────────
+  - get: L:MSATR_MCDU2_MENU
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_MENU) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_PREV
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_PREV) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_NEXT
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_NEXT) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_RMS
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_RMS) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_FPLN
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_FPLN) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_DTO
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_DTO) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_PERF
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_PERF) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_MSG
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_MSG) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_EXEC
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_EXEC) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_BLANK
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_BLANK) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_PROG
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_PROG) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_DATA
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_DATA) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_VNAV
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_VNAV) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_MRK
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_MRK) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_BRT_UP
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_BRT_UP) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_BRT_DN
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_BRT_DN) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+
+  # ── MCDU 1 — Alpha Keys ──────────────────────────────────────────────────────
+  - get: L:MSATR_MCDU1_A
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_A) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_B
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_B) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_C
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_C) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_D
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_D) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_E
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_E) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_F
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_F) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_G
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_G) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_H
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_H) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_I
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_I) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_J
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_J) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_K
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_K) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_L
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_L) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_M
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_M) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_N
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_N) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_O
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_O) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_P
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_P) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_Q
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_Q) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_R
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_R) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_S
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_S) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_T
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_T) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_U
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_U) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_V
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_V) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_W
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_W) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_X
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_X) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_Y
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_Y) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_Z
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_Z) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+
+  # ── MCDU 2 — Alpha Keys ──────────────────────────────────────────────────────
+  - get: L:MSATR_MCDU2_A
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_A) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_B
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_B) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_C
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_C) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_D
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_D) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_E
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_E) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_F
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_F) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_G
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_G) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_H
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_H) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_I
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_I) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_J
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_J) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_K
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_K) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_L
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_L) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_M
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_M) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_N
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_N) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_O
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_O) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_P
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_P) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_Q
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_Q) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_R
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_R) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_S
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_S) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_T
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_T) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_U
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_U) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_V
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_V) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_W
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_W) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_X
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_X) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_Y
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_Y) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_Z
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_Z) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+
+  # ── MCDU 1 — Numeric & Symbol Keys ──────────────────────────────────────────
+  - get: L:MSATR_MCDU1_0
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_0) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_1
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_1) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_2
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_2) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_3
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_3) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_4
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_4) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_5
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_5) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_6
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_6) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_7
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_7) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_8
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_8) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_9
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_9) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_PERIOD
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_PERIOD) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_PLUSMINUS
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_PLUSMINUS) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_SPACE
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_SPACE) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_SLASH
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_SLASH) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+  - get: L:MSATR_MCDU1_CLR
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU1_CLR) 1 (>L:MSATR_MCDU1_INPUT)' : ''"
+    
+  # ── MCDU 2 — Numeric & Symbol Keys ──────────────────────────────────────────
+  - get: L:MSATR_MCDU2_0
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_0) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_1
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_1) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_2
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_2) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_3
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_3) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_4
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_4) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_5
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_5) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_6
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_6) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_7
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_7) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_8
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_8) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_9
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_9) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_PERIOD
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_PERIOD) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_PLUSMINUS
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_PLUSMINUS) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_SPACE
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_SPACE) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_SLASH
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_SLASH) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+  - get: L:MSATR_MCDU2_CLR
+    set: "value >= 0.5 ? '1 (>L:MSATR_MCDU2_CLR) 1 (>L:MSATR_MCDU2_INPUT)' : ''"
+
+  # ── MCDU 1 & 2 — Annunciator Lights (read-only) ─────────────────────────────
+  - get: L:MSATR_MCDU1_FAIL_LT
+  - get: L:MSATR_MCDU1_MSG_LT
+  - get: L:MSATR_MCDU1_POS_LT
+  - get: L:MSATR_MCDU1_OFST_LT
+  - get: L:MSATR_MCDU1_SPARE1_LT
+  - get: L:MSATR_MCDU1_SPARE2_LT
+  - get: L:MSATR_MCDU1_MENU_LT
+  - get: L:MSATR_MCDU1_EXEC_LT
+  - get: L:MSATR_MCDU2_FAIL_LT
+  - get: L:MSATR_MCDU2_MSG_LT
+  - get: L:MSATR_MCDU2_POS_LT
+  - get: L:MSATR_MCDU2_OFST_LT
+  - get: L:MSATR_MCDU2_SPARE1_LT
+  - get: L:MSATR_MCDU2_SPARE2_LT
+  - get: L:MSATR_MCDU2_MENU_LT
+  - get: L:MSATR_MCDU2_EXEC_LT
+
+  # ── Safety / Emergency / Fire ────────────────────────────────────────────────
+  - get: L:MSATR_FIRE_AGENT_1_1
+  - get: L:MSATR_FIRE_AGENT_1_2
+  - get: L:MSATR_FIRE_AGENT_2_1
+  - get: L:MSATR_FIRE_AGENT_2_2
+  - get: L:MSATR_FIRE_LOOP_A_1                      # Fire loop A (eng 1)
+    set: "(L:MSATR_FIRE_LOOP_A_1) ! (>L:MSATR_FIRE_LOOP_A_1)"
+  - get: L:MSATR_FIRE_LOOP_A_2                      # Fire loop A (eng 2)
+    set: "(L:MSATR_FIRE_LOOP_A_2) ! (>L:MSATR_FIRE_LOOP_A_2)"
+  - get: L:MSATR_FIRE_LOOP_B_1                      # Fire loop B (eng 1)
+    set: "(L:MSATR_FIRE_LOOP_B_1) ! (>L:MSATR_FIRE_LOOP_B_1)"
+  - get: L:MSATR_FIRE_LOOP_B_2                      # Fire loop B (eng 2)
+    set: "(L:MSATR_FIRE_LOOP_B_2) ! (>L:MSATR_FIRE_LOOP_B_2)"
+  - get: L:MSATR_FIRE_SQUIB_TEST_1                  # Squib test 1 (long-press=1, release=0)
+    set: "value >= 0.5 ? '1 1 (>B:INSTRUMENT_PUSH_SQUIB_TEST_1_KEY_PUSH_LONG)' : '0 (>B:INSTRUMENT_PUSH_SQUIB_TEST_1_KEY_RELEASE)'"
+  - get: L:MSATR_FIRE_SQUIB_TEST_2                  # Squib test 2 (long-press=1, release=0)
+    set: "value >= 0.5 ? '1 1 (>B:INSTRUMENT_PUSH_SQUIB_TEST_2_KEY_PUSH_LONG)' : '0 (>B:INSTRUMENT_PUSH_SQUIB_TEST_2_KEY_RELEASE)'"
+  - get: L:MSATR_FIRE_HANDLE_1           # Discharge knob 1
+  - get: L:MSATR_FIRE_HANDLE_2           # Discharge knob 2
+  - get: L:MSATR_FIRE_FIRE_FAULT_1
+  - get: L:MSATR_FIRE_FIRE_FAULT_2      
+  - get: L:MSATR_FIRE_SMK_TEST            
+  - get: B:SAFETY_SAFETY_PUSH_WARNING_1_KEY         # Master warning 1
+    set: "1 (>L:MSATR_FWS_MASTER_WARN)"
+  - get: B:SAFETY_SAFETY_PUSH_WARNING_2_KEY         # Master warning 2
+    set: "1 (>L:MSATR_FWS_MASTER_WARN)"
+  - get: B:SAFETY_SAFETY_PUSH_CAUTION_1_KEY         # Master caution 1
+    set: "1 (>L:MSATR_FWS_MASTER_CAUT)"
+  - get: B:SAFETY_SAFETY_PUSH_CAUTION_2_KEY         # Master caution 2
+    set: "1 (>L:MSATR_FWS_MASTER_CAUT)"
+  - get: B:SAFETY_SAFETY_PUSH_GPWS_1_KEY            # GPWS 1
+    set: "(L:MSATR_TAWS_TERR) ! (>L:MSATR_TAWS_TERR)"
+  - get: B:SAFETY_SAFETY_PUSH_GPWS_2_KEY            # GPWS 2
+    set: "(L:MSATR_TAWS_TERR) ! (>L:MSATR_TAWS_TERR)"
+  - get: B:SAFETY_SWITCH_GPWS_1                     # GPWS switch
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:SAFETY_SWITCH_GPWS_1_0)'
+          case 1: return '(>B:SAFETY_SWITCH_GPWS_1_1)'
+          case 2: return '(>B:SAFETY_SWITCH_GPWS_1_2)'
+          default: return ''
+      }
+  - get: B:SAFETY_SWITCH_GPWS_1_COVER               # GPWS cover
+    set: "`${value} (B:SAFETY_SWITCH_GPWS_1_COVER, Number) != if{ (>B:SAFETY_SWITCH_GPWS_1_COVER_Toggle) }`"
+  - get: B:SAFETY_SWITCH_GPWS_2                     # GPWS switch
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:SAFETY_SWITCH_GPWS_2_0)'
+          case 1: return '(>B:SAFETY_SWITCH_GPWS_2_1)'
+          case 2: return '(>B:SAFETY_SWITCH_GPWS_2_2)'
+          default: return ''
+      }
+  - get: B:SAFETY_SWITCH_GPWS_2_COVER               # GPWS cover
+    set: "`${value} (B:SAFETY_SWITCH_GPWS_2_COVER, Number) != if{ (>B:SAFETY_SWITCH_GPWS_2_COVER_Toggle) }`"
+  - get: L:MSATR_ILTS_READING_CPT
+  - get: L:MSATR_ILTS_READING_FO
+  - get: L:MSATR_ILTS_CONSOLE_CPT
+  - get: L:MSATR_ILTS_CONSOLE_FO
+  - get: L:MSATR_MISC_CONSOLE_CPT
+  - get: L:MSATR_MISC_CONSOLE_FO
+  - get: B:SAFETY_SAFETY_PUSH_OXYGEN_MAIN           # Oxygen main
+    set: "(L:MSATR_OXY_MAIN) ! (>L:MSATR_OXY_MAIN)"
+  - get: B:SAFETY_SAFETY_PUSH_OXYGEN_PAX            # Oxygen pax
+    set: "(L:MSATR_OXY_PAX) ! (>L:MSATR_OXY_PAX)"
+  - get: L:MSATR_AICE_WIPER_CPT                 # Wiper knob (safety panel)
+  - get: L:MSATR_YOKE_PUSHER_SHAKER          # Stick pusher/shaker
+  - get: B:SAFETY_PUSH_STICK_PUSHER_SHAKER_COVER    # Stick pusher cover
+    set: "`${value} (B:SAFETY_PUSH_STICK_PUSHER_SHAKER_COVER, Number) != if{ (>B:SAFETY_PUSH_STICK_PUSHER_SHAKER_COVER_Toggle) }`"
+  - get: L:MSATR_CABS_EMER_EXIT_LTS
+  - get: B:SAFETY_SWITCH_SEAT_BELTS                 # Seat belts sign
+    set: "`${value} (L:MSATR_CABS_SEAT_BELTS, Number) 1 != if{ 1 } els{ 0 }  (>L:MSATR_CABS_SEAT_BELTS, Number)`"
+  - get: B:SAFETY_SWITCH_WEIGHT_WHEELS              # Weight on wheels
+  - get: B:SAFETY_SWITCH_WEIGHT_WHEELS_COVER        # WoW cover
+  - get: L:MSATR_ELT_MODE
+  - get: B:SAFETY_SWITCH_AUTO_TEST_COVER            # Auto test cover
+  - get: B:SAFETY_SWITCH_NO_DEVICE                  # No smoking sign
+    set: "`${value} (L:MSATR_CABS_NO_DEVICE, Number) 1 != if{ 1 } els{ 0 }  (>L:MSATR_CABS_NO_DEVICE, Number)`"
+  - get: B:SAFETY_PUSH_AFT_COMPT_LAV               # Aft compartment/lav
+    set: "(L:MSATR_FIRE_DET_SEL) ! (>L:MSATR_FIRE_DET_SEL)"
+  - get: L:MSATR_CALL_ATTND                        # Cabin attendant call
+    set: "1 (>L:MSATR_CALL_ATTND)"
+  - get: L:MSATR_CALL_MECH                         # Mechanic call
+    set: "1 (>L:MSATR_CALL_MECH)"
+  - get: L:MSATR_CALL_RESET                        # Calls reset
+    set: "1 (>L:MSATR_CALL_RESET)"
+  - get: B:SAFETY_PUSH_DISPLAY_1_KEY               # Display 1
+  - get: B:SAFETY_PUSH_DISPLAY_2_KEY               # Display 2
+  - get: B:SAFETY_PUSH_XMIT_ALERT                  # Transmit alert
+  - get: B:SAFETY_PUSH_XMIT_ALERT_RST_KEY          # Transmit alert reset
+  - get: B:SAFETY_AIRFRAME_DOOR_CARGO              # Cargo door
+  - get: B:SAFETY_AIRFRAME_DOOR_REAR_LEFT          # Rear left door
+  - get: B:SAFETY_AIRFRAME_DOOR_REAR_RIGHT         # Rear right door
+  - get: B:SAFETY_SWITCH_COCKPITDOOR               # Cockpit door lock
+    set: "(L:MSATR_CKPT_DOOR) ! (>L:MSATR_CKPT_DOOR)"
+  - get: L:MSATR_DOOR_SW_TEST                      # Door microswitch test
+    set: "(L:MSATR_DOOR_SW_TEST) ! (>L:MSATR_DOOR_SW_TEST)"
+  - get: L:MSATR_CVR_TEST                           # CVR voice test (long-press=1, release=0)
+    set: "value >= 0.5 ? '1 1 (>B:SAFETY_PUSH_VOICE_TEST_KEY_PUSH_LONG)' : '0 (>B:SAFETY_PUSH_VOICE_TEST_KEY_RELEASE)'"
+  - get: L:MSATR_CVR_ERASE                          # CVR voice erase (long-press=1, release=0)
+    set: "value >= 0.5 ? '1 1 (>B:SAFETY_PUSH_VOICE_ERASE_KEY_PUSH_LONG)' : '0 (>B:SAFETY_PUSH_VOICE_ERASE_KEY_RELEASE)'"
+  - get: L:MSATR_PAPER_ADV                 # PDR advisory
+  - get: L:MSATR_PRINTER_SELF_TEST         # Printer self-test
+
+  # ── L: variable outputs — annunciators and indicator states ────────────────
+  # Read-only L: variables for LED/annunciator states not exposed via B: events
+  # These can be used as output (feedback) channels in your controller software
+
+  # ── Air conditioning / pressurization annunciators ──
+  - get: L:MSATR_ABLD_ENG1_BLEED_FAULT_LT  # MSATR ABLD ENG 1 BLEED FAULT ANNUNCIATOR
+  - get: L:MSATR_ABLD_ENG1_BLEED_LEAK_LT  # MSATR ABLD ENG 1 BLEED LEAK ANNUNCIATOR
+  - get: L:MSATR_ABLD_ENG1_BLEED_OFF_LT  # MSATR ABLD ENG 1 BLEED OFF ANNUNCIATOR
+  - get: L:MSATR_ABLD_ENG1_BLEED_OVHT_LT  # MSATR ABLD ENG 1 BLEED OVHT ANNUNCIATOR
+  - get: L:MSATR_ABLD_ENG2_BLEED_FAULT_LT  # MSATR ABLD ENG 2 BLEED FAULT ANNUNCIATOR
+  - get: L:MSATR_ABLD_ENG2_BLEED_LEAK_LT  # MSATR ABLD ENG 2 BLEED LEAK ANNUNCIATOR
+  - get: L:MSATR_ABLD_ENG2_BLEED_OFF_LT  # MSATR ABLD ENG 2 BLEED OFF ANNUNCIATOR
+  - get: L:MSATR_ABLD_ENG2_BLEED_OVHT_LT  # MSATR ABLD ENG 2 BLEED OVHT ANNUNCIATOR
+  - get: L:MSATR_ABLD_PACK1_FAULT_LT  # MSATR ABLD PACK 1 VALVE FAULT ANNUNCIATOR
+  - get: L:MSATR_ABLD_PACK1_OFF_LT  # MSATR ABLD PACK 1 VALVE OFF ANNUNCIATOR
+  - get: L:MSATR_ABLD_PACK2_FAULT_LT  # MSATR ABLD PACK 2 VALVE FAULT ANNUNCIATOR
+  - get: L:MSATR_ABLD_PACK2_OFF_LT  # MSATR ABLD PACK 2 VALVE OFF ANNUNCIATOR
+  - get: L:MSATR_ABLD_RAM_AIR_FAULT_LT  # MSATR ABLD RAM AIR FAULT ANNUNCIATOR
+  - get: L:MSATR_ABLD_RAM_AIR_ON_LT  # MSATR ABLD RAM AIR ON ANNUNCIATOR
+  - get: L:MSATR_ABLD_XVALVE_OPEN_LT  # MSATR ABLD XVALVE OPEN ANNUNCIATOR
+  - get: L:MSATR_AIRC_CABIN_TEMP_MODE_MAN_LT  # MSATR AIRCOND CABIN TEMP SEL MAN ANNUNCIATOR
+  - get: L:MSATR_AIRC_CABIN_TEMP_MODE_OVHT_LT  # MSATR AIRCOND CABIN TEMP SEL OVHT ANNUNCIATOR
+  - get: L:MSATR_AIRC_COMPT_TEMP_MODE_MAN_LT  # MSATR AIRCOND COMPT TEMP SEL MAN ANNUNCIATOR
+  - get: L:MSATR_AIRC_COMPT_TEMP_MODE_OVHT_LT  # MSATR AIRCOND COMPT TEMP SEL OVHT ANNUNCIATOR
+  - get: L:MSATR_AIRC_FLOW_HIGH_LT  # MSATR AIRCOND FLOW HIGH ANNUNCIATOR
+  - get: L:MSATR_AIRC_RECIRC1_FAULT_LT  # MSATR AIRCOND RECIRC FAN 1 FAULT ANNUNCIATOR
+  - get: L:MSATR_AIRC_RECIRC1_OFF_LT  # MSATR AIRCOND RECIRC FAN 1 OFF ANNUNCIATOR
+  - get: L:MSATR_AIRC_RECIRC2_FAULT_LT  # MSATR AIRCOND RECIRC FAN 2 FAULT ANNUNCIATOR
+  - get: L:MSATR_AIRC_RECIRC2_OFF_LT  # MSATR AIRCOND RECIRC FAN 2 OFF ANNUNCIATOR
+  - get: L:MSATR_OVBD_VALVE_FAULT  # MSATR AVIONICS VENT FAULT ANNUNCIATOR
+  - get: L:MSATR_CPRS_DITCH_ON_LT  # MSATR CABIN PRESSURE DITCH ON ANNUNCIATOR
+  - get: L:MSATR_CPRS_DUMP_ON_LT  # MSATR CABIN PRESSURE DUMP ON ANNUNCIATOR
+  - get: L:MSATR_CPRS_LDG_ALT, number  # MSATR CABIN PRESSURE LANDING ELEV DISPLAY
+  - get: L:MSATR_CPRS_MODE_FAULT_LT  # MSATR CABIN PRESSURE MODE FAULT ANNUNCIATOR
+  - get: L:MSATR_CPRS_MODE_MAN_LT  # MSATR CABIN PRESSURE MODE MAN ANNUNCIATOR
+  - get: L:MSATR_CPRS_OUTFLOW_BKUP_LT  # MSATR CABIN PRESSURE OURFLOW BKUP ANNUNCIATOR
+  - get: L:MSATR_CPRS_OUTFLOW_NORM_LT  # MSATR CABIN PRESSURE OURFLOW NORM ANNUNCIATOR
+  - get: L:MSATR_CPRS_SRCSEL_MAN_LT  # MSATR CABIN PRESSURE SOURCE SELECT MANUAL ANNUNCIATOR
+  - get: L:MSATR_OXY_MAIN_LOPR_LT  # MSATR OXYGEN MAIN SUPPLY LOPR ANNUNCIATOR
+  - get: L:MSATR_OXY_MAIN_OFF_LT  # MSATR OXYGEN MAIN SUPPLY OFF ANNUNCIATOR
+  - get: L:MSATR_OXY_PAX_ON_LT  # MSATR OXYGEN PAX SUPPLY ON ANNUNCIATOR
+  - get: L:MSATR_OXY_PRESSURE  # MSATR OXYGEN PRESSURE GAUGE NEEDLE
+  - get: L:MSATR_VENT_EXHAUST_MODE_FAULT_LT  # MSATR VENT EXHAUST MODE FAULT ANNUNCIATOR
+  - get: L:MSATR_VENT_EXHAUST_MODE_OVRD_LT  # MSATR VENT EXHAUST MODE OVRD ANNUNCIATOR
+
+  # ── De-ice / Anti-ice indicators ──
+  - get: L:MSATR_AICE_CPT_ALPHA_LT  # MSATR AICE CPT ALPHA ANNUNCIATOR
+  - get: L:MSATR_AICE_FO_ALPHA_LT  # MSATR AICE FO ALPHA ANNUNCIATOR
+  - get: L:MSATR_AICE_AIL_AICE_FAULT_LT  # MSATR ANTI ICING AIL & R ELEV FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_AIL_AICE_OFF_LT  # MSATR ANTI ICING AIL & R ELEV ON ANNUNCIATOR
+  - get: L:MSATR_AICE_MODE_AUTO_FAULT_LT  # MSATR ANTI ICING MODE SEL AUTO FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_MODE_AUTO_MAN_LT  # MSATR ANTI ICING MODE SEL AUTO MAN ANNUNCIATOR
+  - get: L:MSATR_AICE_PROP1_AICE_FAULT_LT  # MSATR ANTI ICING PROP 1 FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_PROP1_AICE_OFF_LT  # MSATR ANTI ICING PROP 1 ON ANNUNCIATOR
+  - get: L:MSATR_AICE_PROP2_AICE_FAULT_LT  # MSATR ANTI ICING PROP 2 FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_PROP2_AICE_OFF_LT  # MSATR ANTI ICING PROP 2 ON ANNUNCIATOR
+  - get: L:MSATR_AICE_PROP_AICE_MODE_ON_LT  # MSATR ANTI ICING PROP MODE ON ANNUNCIATOR
+  - get: L:MSATR_AICE_RUD_AICE_FAULT_LT  # MSATR ANTI ICING RUD & L ELEV FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_RUD_AICE_OFF_LT  # MSATR ANTI ICING RUD & L ELEV ON ANNUNCIATOR
+  - get: L:MSATR_AICE_SIDE_WND_FAULT_LT  # MSATR ANTI ICING SIDE WINDOWS FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_SIDE_WND_ON_LT  # MSATR ANTI ICING SIDE WINDOWS ON ANNUNCIATOR
+  - get: L:MSATR_AICE_FRAME_BLEED_FAULT_LT  # MSATR DE ICING AFR AIR BLEED FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_FRAME_BLEED_OFF_LT  # MSATR DE ICING AFR AIR BLEED OFF ANNUNCIATOR
+  - get: L:MSATR_AICE_FRAME_DEICE_FAULT_LT  # MSATR DE ICING AIRFRAME FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_FRAME_DEICE_ON_LT  # MSATR DE ICING AIRFRAME ON ANNUNCIATOR
+  - get: L:MSATR_AICE_ENG1_DEICE_FAULT_LT  # MSATR DE ICING ENG 1 FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_ENG1_DEICE_ON_LT  # MSATR DE ICING ENG 1 ON ANNUNCIATOR
+  - get: L:MSATR_AICE_ENG2_DEICE_FAULT_LT  # MSATR DE ICING ENG 2 FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_ENG2_DEICE_ON_LT  # MSATR DE ICING ENG 2 ON ANNUNCIATOR
+  - get: L:MSATR_AICE_DEICE_OVRD_OVRDLT  # MSATR DE ICING MODE SEL OVRD ANNUNCIATOR
+  - get: L:MSATR_AICE_DEICE_OVRD_FAULT_LT  # MSATR DE ICING MODE SEL OVRD FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_DEICE_MODE  # MSATR DE ICING SAT 20 ON ANNUNCIATOR
+  - get: L:MSATR_AICE_ICE_AOA_LT  # MSATR ICE BUTTON AOA ANNUNCIATOR
+  - get: L:MSATR_AICE_ICE_ICING_LT  # MSATR ICE BUTTON ICING ANNUNCIATOR
+  - get: L:MSATR_AICE_PROBES_CPT_OFF_LT  # MSATR PROBES HTG CAPT OFF ANNUNCIATOR
+  - get: L:MSATR_AICE_CPT_PITOT_LT  # MSATR PROBES HTG CAPT PITOT ANNUNCIATOR
+  - get: L:MSATR_AICE_CPT_TAT_LT  # MSATR PROBES HTG CAPT TAT ANNUNCIATOR
+  - get: L:MSATR_AICE_PROBES_FO_OFF_LT  # MSATR PROBES HTG FO OFF ANNUNCIATOR
+  - get: L:MSATR_AICE_FO_PITOT_LT  # MSATR PROBES HTG FO PITOT ANNUNCIATOR
+  - get: L:MSATR_AICE_FO_TAT_LT  # MSATR PROBES HTG FO TAT ANNUNCIATOR
+  - get: L:MSATR_AICE_PROBES_STBY_OFF_LT  # MSATR PROBES HTG STBY OFF ANNUNCIATOR
+  - get: L:MSATR_AICE_STBY_PITOT_LT  # MSATR PROBES HTG STBY PITOT ANNUNCIATOR
+  - get: L:MSATR_AICE_WSHLD_LEFT_FAULT_LT  # MSATR WINDSHIELD HTG LEFT FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_WSHLD_LEFT_OFF_LT  # MSATR WINDSHIELD HTG LEFT OFF ANNUNCIATOR
+  - get: L:MSATR_AICE_WSHLD_RIGHT_FAULT_LT  # MSATR WINDSHIELD HTG RIGHT FAULT ANNUNCIATOR
+  - get: L:MSATR_AICE_WSHLD_RIGHT_OFF_LT  # MSATR WINDSHIELD HTG RIGHT OFF ANNUNCIATOR
+
+  # ── Audio panel outputs ──
+  - get: L:MSATR_COMM_AUDIO_SEL1_ALTN_LT  # MSATR COMM AUDIO 1 SEL ALTN ANNUNCIATOR
+  - get: L:MSATR_COMM_AUDIO_SEL1_FAULT_LT  # MSATR COMM AUDIO 1 SEL FAULT ANNUNCIATOR
+  - get: L:MSATR_COMM_AUDIO_SEL2_ALTN_LT  # MSATR COMM AUDIO 2 SEL ALTN ANNUNCIATOR
+  - get: L:MSATR_COMM_AUDIO_SEL2_FAULT_LT  # MSATR COMM AUDIO 2 SEL FAULT ANNUNCIATOR
+
+  # ── Autopilot / FGCP annunciators ──
+  - get: L:MSATR_FGCP_STAT_ALT  # MSATR Autopilot ALT Status
+  - get: L:MSATR_FGCP_STAT_AP  # MSATR Autopilot AP Status
+  - get: L:MSATR_FGCP_STAT_BC  # MSATR Autopilot BC Status
+  - get: L:MSATR_FGCP_STAT_CPL  # MSATR Autopilot CPL Status
+  - get: L:MSATR_FGCP_STAT_HDG_HLD  # MSATR Autopilot Heading Hold On
+  - get: L:MSATR_FGCP_STAT_MAN_SPD  # MSATR Autopilot MAN SPD Status
+  - get: L:MSATR_FGCP_STAT_VNAV_ALT  # MSATR Autopilot VNAV ALT Status
+  - get: L:MSATR_FGCP_STAT_VS  # MSATR Autopilot VS Status
+  - get: L:MSATR_FGCP_STAT_YD  # MSATR Autopilot YD Status
+  - get: L:MSATR_FGCP_AP_ON_CPT_LT  # MSATR FGCP AP ON CPT ANNUNCIATOR
+  - get: L:MSATR_FGCP_AP_ON_FO_LT  # MSATR FGCP AP ON FO ANNUNCIATOR
+  - get: L:MSATR_FGCP_CPL_CPT_LT  # MSATR FGCP CPL CPT ANNUNCIATOR
+  - get: L:MSATR_FGCP_CPL_FO_LT  # MSATR FGCP CPL FO ANNUNCIATOR
+  - get: L:MSATR_FGCP_STAT_FD1, bool  # MSATR FGCP FD1 ON
+  - get: L:MSATR_FGCP_STAT_FD2, bool  # MSATR FGCP FD2 ON
+  - get: L:MSATR_FGCP_STAT_NAV, bool  # MSATR FGCP NAV MODE ON
+  - get: L:MSATR_FGCP_STEEP_APP_ON_LT  # MSATR FGCP STEEP APP ON ANNUNCIATOR
+  - get: L:MSATR_FGCP_ALTSEL                               # Altitude selector
+    set: "`${Math.round(value)} (>L:MSATR_FGCP_ALTSEL)`"
+
+  - get: L:MSATR_FGCP_ALTSEL_DELTA                         # Altitude selector delta
+    set: "`${Math.round(value)} (>L:MSATR_FGCP_ALTSEL_DELTA)`"
+  - get: A:AUTOPILOT HEADING LOCK, Bool                     # HDG mode
+    set: "value >= 0.5 ? '1 (>L:MSATR_FGCP_HDG)' : ''"
+  - get: L:MSATR_FGCP_WHEEL_VALUE  # MSATR FGCP Selected Vertical Speed
+  - get: L:MSATR_FGCP_STAT_VNAV, bool  # MSATR FGCP VNAV ON
+  - get: L:MSATR_FGCP_YD_ON_CPT_LT  # MSATR FGCP YD ON CPT LIGHT
+  - get: L:MSATR_FGCP_YD_ON_FO_LT  # MSATR FGCP YD ON FO LIGHT
+
+  # ── Avionics outputs ──
+  - get: L:MSATR_AHRS_ADC1_FO1_LT  # MSATR CAPT SWITCHING ADC FO1 ANNUNCIATOR
+  - get: L:MSATR_AHRS_ADC1_SYS2_LT  # MSATR CAPT SWITCHING ADC SYS2 ANNUNCIATOR
+  - get: L:MSATR_AHRS_ADC2_SYS2_LT  # MSATR CAPT SWITCHING ADC SYS2 ANNUNCIATOR
+  - get: L:MSATR_AHRS_ATTHDG1_FO1_LT  # MSATR CAPT SWITCHING ATT HDG FO1 ANNUNCIATOR
+  - get: L:MSATR_AHRS_ATTHDG1_SYS2_LT  # MSATR CAPT SWITCHING ATT HDG SYS2 ANNUNCIATOR
+  - get: L:MSATR_FCTL_MFC1A_FAULT_LT  # MSATR FLTCTL MFC 1A FAULT ANNUNCIATOR
+  - get: L:MSATR_FCTL_MFC1A_OFF_LT  # MSATR FLTCTL MFC 1A OFF ANNUNCIATOR
+  - get: L:MSATR_FCTL_MFC1B_FAULT_LT  # MSATR FLTCTL MFC 1B FAULT ANNUNCIATOR
+  - get: L:MSATR_FCTL_MFC1B_OFF_LT  # MSATR FLTCTL MFC 1B OFF ANNUNCIATOR
+  - get: L:MSATR_FCTL_MFC2A_FAULT_LT  # MSATR FLTCTL MFC 2A FAULT ANNUNCIATOR
+  - get: L:MSATR_FCTL_MFC2A_OFF_LT  # MSATR FLTCTL MFC 2A OFF ANNUNCIATOR
+  - get: L:MSATR_FCTL_MFC2B_FAULT_LT  # MSATR FLTCTL MFC 2B FAULT ANNUNCIATOR
+  - get: L:MSATR_FCTL_MFC2B_OFF_LT  # MSATR FLTCTL MFC 2B OFF ANNUNCIATOR
+  - get: L:MSATR_FCTL_SPLR1_LT  # MSATR FLTCTL SPLR 1 ANNUNCIATOR
+  - get: L:MSATR_FCTL_SPLR2_LT  # MSATR FLTCTL SPLR 2 ANNUNCIATOR
+  - get: L:MSATR_FCTL_TLU_FAULT_LT  # MSATR FLTCTL TLU FAULT ANNUNCIATOR
+  - get: L:MSATR_AHRS_ADC2_FO1_LT  # MSATR FO SWITCHING ADC FO1 ANNUNCIATOR
+
+  # ── Electrical annunciators ──
+  - get: L:MSATR_ELEC_ACWF_EXTPWR_AVAIL_LT  # MSATR  ELEC ACWF EXTERNAL POWER AVAIL ANNUNCIATOR
+  - get: L:MSATR_ACWF_ACW1_BUS_OFF_LT  # MSATR ACW1 BUS OFF ANNUNCIATOR
+  - get: L:MSATR_ACWF_BTC_GREEN_LINE_LT  # MSATR ACW2 BTC GREEN LINE ANNUNCIATOR
+  - get: L:MSATR_ACWF_BTC_ISOL_LT  # MSATR ACW2 BTC ISOL ANNUNCIATOR
+  - get: L:MSATR_ACWF_ACW2_BUS_OFF_LT  # MSATR ACW2 BUS OFF ANNUNCIATOR
+  - get: L:MSATR_ACWF_GEN1_FAULT_LT  # MSATR ACWF GEN1 FAULT ANNUNCIATOR
+  - get: L:MSATR_ACWF_GEN1_OFF_LT  # MSATR ACWF GEN1 OFF ANNUNCIATOR
+  - get: L:MSATR_ACWF_GEN2_FAULT_LT  # MSATR ACWF GEN2 FAULT ANNUNCIATOR
+  - get: L:MSATR_ACWF_GEN2_OFF_LT  # MSATR ACWF GEN2 OFF ANNUNCIATOR
+  - get: L:MSATR_ELEC_DCBUS1_BUS_OFF_LT  # MSATR DCBUS1 BUS OFF ANNUNCIATOR
+  - get: L:MSATR_ELEC_DCBUS2_BUS_OFF_LT  # MSATR DCBUS2 BUS OFF ANNUNCIATOR
+  - get: L:MSATR_ELEC_DCGEN1_FAULT_LT  # MSATR DCGEN1 FAULT ANNUNCIATOR
+  - get: L:MSATR_ELEC_DCGEN1_OFF_LT  # MSATR DCGEN1 OFF ANNUNCIATOR
+  - get: L:MSATR_ELEC_DCGEN2_FAULT_LT  # MSATR DCGEN2 FAULT ANNUNCIATOR
+  - get: L:MSATR_ELEC_DCGEN2_OFF_LT  # MSATR DCGEN2 OFF ANNUNCIATOR
+  - get: L:MSATR_ELEC_DCSVCE_OFF_LT  # MSATR DCSVCE OFF ANNUNCIATOR
+  - get: L:MSATR_ELEC_DCSVCE_SHED_LT  # MSATR DCSVCE SHED ANNUNCIATOR
+  - get: L:MSATR_ACBUS1_BUS_OFF_LT  # MSATR ELEC ACBUS1 BUS OFF ANNUNCIATOR
+  - get: L:MSATR_ACBUS1_INV_FAULT_LT  # MSATR ELEC ACBUS1 INV FAULT ANNUNCIATOR
+  - get: L:MSATR_ACBUS2_BUS_OFF_LT  # MSATR ELEC ACBUS2 BUS OFF ANNUNCIATOR
+  - get: L:MSATR_ACBUS2_INV_FAULT_LT  # MSATR ELEC ACBUS2 INV FAULT ANNUNCIATOR
+  - get: L:MSATR_ELEC_ACWF_EXTPWR_ON_LT  # MSATR ELEC ACWF EXTERNAL POWER ON ANNUNCIATOR
+  - get: L:MSATR_ELEC_BTC_GREEN_LINE_LT  # MSATR ELEC BTC GREEN LINE ANNUNCIATOR
+  - get: L:MSATR_ELEC_BTC_ISOL_LT  # MSATR ELEC BTC ISOL ANNUNCIATOR
+  - get: L:MSATR_ELEC_DC_LOAD  # MSATR ELEC DC LOAD ANNUNCIATOR
+  - get: L:MSATR_ELEC_EMER_BAT_CHG_FAULT_LT  # MSATR ELEC EMER BAT CHG FAULT ANNUNCIATOR
+  - get: L:MSATR_ELEC_EMER_BAT_CHG_OFF_LT  # MSATR ELEC EMER BAT CHG OFF ANNUNCIATOR
+  - get: L:MSATR_ELEC_EMER_SUPPLY_LT  # MSATR ELEC EMER SUPPLY ANNUNCIATOR
+  - get: L:MSATR_ELEC_ESS_SUPPLY_LT  # MSATR ELEC ESS SUPPLY ANNUNCIATOR
+  - get: L:MSATR_ELEC_MAIN_BAT_CHG_FAULT_LT  # MSATR ELEC MAIN BAT CHG FAULT ANNUNCIATOR
+  - get: L:MSATR_ELEC_MAIN_BAT_CHG_OFF_LT  # MSATR ELEC MAIN BAT CHG OFF ANNUNCIATOR
+  - get: L:MSATR_ELEC_STBY_OVRD_LT  # MSATR ELEC STBY OVRD ANNUNCIATOR
+  - get: L:MSATR_ELEC_STBY_UNDV_LT  # MSATR ELEC STBY UNDV ANNUNCIATOR
+  - get: L:MSATR_ELEC_TRU_ARROW_LT  # MSATR ELEC TRU ARROW ANNUNCIATOR
+  - get: L:MSATR_ELEC_TRU_ON_LT  # MSATR ELEC TRU ON ANNUNCIATOR
+
+  # ── Engine annunciators ──
+  - get: L:MSATR_ENG_GUSTLOCK  # Gustlock status
+  - get: L:MSATR_ENG_APM_FAULT_LT  # MSATR APM FAULT ANNUNCIATOR
+  - get: L:MSATR_ENG_APM_OFF_LT  # MSATR APM OFF ANNUNCIATOR
+  - get: L:MSATR_ENG_BOOST_FAULT_LT  # MSATR BOOST FAULT ANNUNCIATOR
+  - get: L:MSATR_ENG_BOOST_ON_LT  # MSATR BOOST ON ANNUNCIATOR
+  - get: L:MSATR_ATPCS_ARM_LT  # MSATR ENG ATPCS ARM ANNUNCIATOR
+  - get: L:MSATR_ATPCS_OFF_LT  # MSATR ENG ATPCS OFF ANNUNCIATOR
+  - get: L:MSATR_ENG_EEC1_FAULT_LT  # MSATR ENG EEC1 FAULT ANNUNCIATOR
+  - get: L:MSATR_ENG_EEC1_OFF_LT  # MSATR ENG EEC1 OFF ANNUNCIATOR
+  - get: L:MSATR_ENG_EEC2_FAULT_LT  # MSATR ENG EEC2 FAULT ANNUNCIATOR
+  - get: L:MSATR_ENG_EEC2_OFF_LT  # MSATR ENG EEC2 OFF ANNUNCIATOR
+  - get: L:MSATR_ENGS_IGN_ON_LT  # MSATR ENG MAN IGN ON ANNUNCIATOR
+  - get: L:MSATR_ENG_PEC1_FAULT_LT  # MSATR ENG PEC1 FAULT ANNUNCIATOR
+  - get: L:MSATR_ENG_PEC1_OFF_LT  # MSATR ENG PEC1 OFF ANNUNCIATOR
+  - get: L:MSATR_ENG_PEC2_FAULT_LT  # MSATR ENG PEC2 FAULT ANNUNCIATOR
+  - get: L:MSATR_ENG_PEC2_OFF_LT  # MSATR ENG PEC2 OFF ANNUNCIATOR
+  - get: L:MSATR_ENGS_PROP_BRK_READY_LT  # MSATR ENG PROP BRAKE READY ANNUNCIATOR
+  - get: L:MSATR_ENGS_PROP_BRK_UNLK_LT  # MSATR ENG PROP BRAKE UNLOCK ANNUNCIATOR
+  - get: L:MSATR_ENGS_START1_FAULT_LT  # MSATR ENG START 1 FAULT ANNUNCIATOR
+  - get: L:MSATR_ENGS_START1_ON_LT  # MSATR ENG START 1 ON ANNUNCIATOR
+  - get: L:MSATR_ENGS_START2_FAULT_LT  # MSATR ENG START 2 FAULT ANNUNCIATOR
+  - get: L:MSATR_ENGS_START2_ON_LT  # MSATR ENG START 2 ON ANNUNCIATOR
+  - get: L:MSATR_ENG_PWRMGT_2  # MSATR ENGINE POWER MANAGEMENT KNOB POSITION
+  - get: "(L:MSATR_THR_LEVER1_POS) 132 < if{ 400 } els{ 0 }"  # Revers ENG status
+
+  # ── Flight instrument outputs ──
+  - get: L:MSATR_CLOCK1_STAT_MODE  # MSATR CLOCK1 STAT MODE
+
+  # ── Fuel annunciators ──
+  - get: L:MSATR_FUEL_VALVE1_OFF_LT  # MSATR ENG 1 LP VALVE OFF LT
+  - get: L:MSATR_FUEL_VALVE1_ON_LT  # MSATR ENG 1 LP VALVE ON LT
+  - get: L:MSATR_FUEL_VALVE2_OFF_LT  # MSATR ENG 2 LP VALVE OFF LT
+  - get: L:MSATR_FUEL_VALVE2_ON_LT  # MSATR ENG 2 LP VALVE ON LT
+  - get: L:MSATR_FUEL_FEED_LP1_LT  # MSATR FUEL FEED LOPR 1 ANNUNCIATOR
+  - get: L:MSATR_FUEL_FEED_LP2_LT  # MSATR FUEL FEED LOPR 2 ANNUNCIATOR
+  - get: L:MSATR_FUEL_PUMP1_OFF_LT  # MSATR FUEL PUMP 1 OFF ANNUNCIATOR
+  - get: L:MSATR_FUEL_PUMP1_RUN_LT  # MSATR FUEL PUMP 1 RUN ANNUNCIATOR
+  - get: L:MSATR_FUEL_PUMP2_OFF_LT  # MSATR FUEL PUMP 2 OFF ANNUNCIATOR
+  - get: L:MSATR_FUEL_PUMP2_RUN_LT  # MSATR FUEL PUMP 2 RUN ANNUNCIATOR
+  - get: L:MSATR_FUEL_XFEED_OFF_LT  # MSATR FUEL XFEED OFF LT
+  - get: L:MSATR_FUEL_XFEED_ON_LT  # MSATR FUEL XFEED ON LT
+
+  # ── Gear / brake annunciators ──
+  - get: L:MSATR_GEAR_ASKID_OFF_LT  # MSATR GEAR ANTISKID OFF ANNUNCIATOR
+  - get: L:MSATR_GEAR_LEFT_DOWN_LT  # MSATR LEFT GEAR DOWN ANNUNCIATOR
+  - get: L:MSATR_GEAR_LEFT_UNLK_LT  # MSATR LEFT GEAR UNLK ANNUNCIATOR
+  - get: L:MSATR_GEAR_NOSE_DOWN_LT  # MSATR NOSE GEAR DOWN ANNUNCIATOR
+  - get: L:MSATR_GEAR_NOSE_UNLK_LT  # MSATR NOSE GEAR UNLK ANNUNCIATOR
+  - get: L:MSATR_GEAR_RIGHT_DOWN_LT  # MSATR RIGHT GEAR DOWN ANNUNCIATOR
+  - get: L:MSATR_GEAR_RIGHT_UNLK_LT  # MSATR RIGHT GEAR UNLK ANNUNCIATOR
+
+  # ── Hydraulic annunciators ──
+  - get: L:MSATR_HYDR_AUX_LOPR_LT  # MSATR HYDR AUX PUMP LOPR ANNUNCIATOR
+  - get: L:MSATR_HYDR_AUX_OFF_LT  # MSATR HYDR AUX PUMP OFF ANNUNCIATOR
+  - get: L:MSATR_HYDR_AUX_OVHT_LT  # MSATR HYDR AUX PUMP OVHT ANNUNCIATOR
+  - get: L:MSATR_HYDR_BLUE_LOLVL_LT  # MSATR HYDR BLUE PUMP LOLVL ANNUNCIATOR
+  - get: L:MSATR_HYDR_BLUE_LOPR_LT  # MSATR HYDR BLUE PUMP LOPR ANNUNCIATOR
+  - get: L:MSATR_HYDR_BLUE_OFF_LT  # MSATR HYDR BLUE PUMP OFF ANNUNCIATOR
+  - get: L:MSATR_HYDR_BLUE_OVHT_LT  # MSATR HYDR BLUE PUMP OVHT ANNUNCIATOR
+  - get: L:MSATR_HYDR_GREEN_LOLVL_LT  # MSATR HYDR GREEN PUMP LOLVL ANNUNCIATOR
+  - get: L:MSATR_HYDR_GREEN_LOPR_LT  # MSATR HYDR GREEN PUMP LOPR ANNUNCIATOR
+  - get: L:MSATR_HYDR_GREEN_OFF_LT  # MSATR HYDR GREEN PUMP OFF ANNUNCIATOR
+  - get: L:MSATR_HYDR_GREEN_OVHT_LT  # MSATR HYDR GREEN PUMP OVHT ANNUNCIATOR
+  - get: L:MSATR_HYDR_XFEED_ON_LT  # MSATR HYDR XFEED PUMP ON ANNUNCIATOR
+
+  # ── Exterior light annunciators ──
+  # - get: L:MSATR_ITLS_ANNLT  # MSATR ANNLT Switch Status
+  - get: B:LIGHTING_SWITCH_ANNLT                    # Annunciator lights (0=Low, 1=Med, 2=Hi)
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:LIGHTING_SWITCH_ANNLT_LOW)'
+          case 1: return '(>B:LIGHTING_SWITCH_ANNLT_MED)'
+          case 2: return '(>B:LIGHTING_SWITCH_ANNLT_HI)'
+          default: return ''
+      }
+    skp: B:LIGHTING_SWITCH_ANNLT
+
+  - get: L:MSATR_ILTS_MIP_PED_KNOB  # MSATR MIP/PED Lighting Knob Position
+
+  # ── MCDU outputs ──
+  - get: L:MSATR_MCDU1_EXEC_LT  # MSATR MCDU1 EXEC LT
+  - get: L:MSATR_MCDU1_FAIL_LT  # MSATR MCDU1 FAIL LT
+  - get: L:MSATR_MCDU1_MENU_LT  # MSATR MCDU1 MENU LT
+  - get: L:MSATR_MCDU1_MSG_LT  # MSATR MCDU1 MSG LT
+  - get: L:MSATR_MCDU1_OFST_LT  # MSATR MCDU1 OFST LT
+  - get: L:MSATR_MCDU1_POS_LT  # MSATR MCDU1 POS LT
+  - get: L:MSATR_MCDU1_SPARE1_LT  # MSATR MCDU1 SPARE1 LT
+  - get: L:MSATR_MCDU1_SPARE2_LT  # MSATR MCDU1 SPARE2 LT
+  - get: L:MSATR_MCDU2_EXEC_LT  # MSATR MCDU2 EXEC LT
+  - get: L:MSATR_MCDU2_FAIL_LT  # MSATR MCDU2 FAIL LT
+  - get: L:MSATR_MCDU2_MENU_LT  # MSATR MCDU2 MENU LT
+  - get: L:MSATR_MCDU2_MSG_LT  # MSATR MCDU2 MSG LT
+  - get: L:MSATR_MCDU2_OFST_LT  # MSATR MCDU2 OFST LT
+  - get: L:MSATR_MCDU2_POS_LT  # MSATR MCDU2 POS LT
+  - get: L:MSATR_MCDU2_SPARE1_LT  # MSATR MCDU2 SPARE1 LT
+  - get: L:MSATR_MCDU2_SPARE2_LT  # MSATR MCDU2 SPARE2 LT
+
+  # ── Warning / fire annunciators ──
+  - get: L:MSATR_FIRE_DET_SEL_ALTN_LT  # MSATR AFT COMPT LAV DET FANS ALTN ANNUNCIATOR
+  - get: L:MSATR_FIRE_DET_SEL_FAULT_LT  # MSATR AFT COMPT LAV DET FANS FAULT ANNUNCIATOR
+  - get: L:MSATR_CKPT_DOOR_FAULT_LT  # MSATR COCKPIT DOOR FAULT ANNUNCIATOR
+  - get: L:MSATR_CKPT_DOOR_OPEN_LT  # MSATR COCKPIT DOOR OPEN ANNUNCIATOR
+  - get: L:MSATR_DOOR_CABIN_UNLK_LT  # MSATR DOOR CABIN UNLK LT
+  - get: L:MSATR_DOOR_CARGO_UNLK_LT  # MSATR DOOR CARGO UNLK LT
+  - get: L:MSATR_DOOR_EMER_UNLK_LT  # MSATR DOOR EMER UNLK ANNUNCIATOR
+  - get: L:MSATR_DOOR_CKPT1_UNLK_LT  # MSATR DOOR FWD COMPT L UNLK ANNUNCIATOR
+  - get: L:MSATR_DOOR_CKPT2_UNLK_LT  # MSATR DOOR FWD COMPT R UNLK ANNUNCIATOR
+  - get: L:MSATR_DOOR_SVCE_UNLK_LT  # MSATR DOOR SVCE UNLK ANNUNCIATOR
+  - get: L:MSATR_DOOR_CAB_OK_LT  # MSATR DOORS CAB OK ANNUNCIATOR
+  - get: L:MSATR_DOOR_SVCE_OK_LT  # MSATR DOORS SVCE OK ANNUNCIATOR
+  - get: L:MSATR_CABS_EMER_EXIT_LTS_DISARM_LT  # MSATR EMER EXIT LT DISARM ANNUNCIATOR
+  - get: L:MSATR_FIRE_AGENT_1_1_DISCH_LT  # MSATR FIRE 1 AGENT 1 DISCH ANNUNCIATOR
+  - get: L:MSATR_FIRE_AGENT_1_1_SQUIB_LT  # MSATR FIRE 1 AGENT 1 SQUIB ANNUNCIATOR
+  - get: L:MSATR_FIRE_AGENT_2_1_DISCH_LT  # MSATR FIRE 1 AGENT 2 DISCH ANNUNCIATOR
+  - get: L:MSATR_FIRE_AGENT_2_1_SQUIB_LT  # MSATR FIRE 1 AGENT 2 SQUIB ANNUNCIATOR
+  - get: L:MSATR_FIRE_LOOP_A_1_FAULT_LT  # MSATR FIRE 1 LOOP A FAULT ANNUNCIATOR
+  - get: L:MSATR_FIRE_LOOP_A_1_OFF_LT  # MSATR FIRE 1 LOOP A OFF ANNUNCIATOR
+  - get: L:MSATR_FIRE_LOOP_B_1_FAULT_LT  # MSATR FIRE 1 LOOP B FAULT ANNUNCIATOR
+  - get: L:MSATR_FIRE_LOOP_B_1_OFF_LT  # MSATR FIRE 1 LOOP B OFF ANNUNCIATOR
+  - get: L:MSATR_FIRE_AGENT_1_2_DISCH_LT  # MSATR FIRE 2 AGENT 1 DISCH ANNUNCIATOR
+  - get: L:MSATR_FIRE_AGENT_1_2_SQUIB_LT  # MSATR FIRE 2 AGENT 1 SQUIB ANNUNCIATOR
+  - get: L:MSATR_FIRE_AGENT_2_2_DISCH_LT  # MSATR FIRE 2 AGENT 2 DISCH ANNUNCIATOR
+  - get: L:MSATR_FIRE_AGENT_2_2_SQUIB_LT  # MSATR FIRE 2 AGENT 2 SQUIB ANNUNCIATOR
+  - get: L:MSATR_FIRE_LOOP_A_2_FAULT_LT  # MSATR FIRE 2 LOOP A FAULT ANNUNCIATOR
+  - get: L:MSATR_FIRE_LOOP_A_2_OFF_LT  # MSATR FIRE 2 LOOP A OFF ANNUNCIATOR
+  - get: L:MSATR_FIRE_LOOP_B_2_FAULT_LT  # MSATR FIRE 2 LOOP B FAULT ANNUNCIATOR
+  - get: L:MSATR_FIRE_LOOP_B_2_OFF_LT  # MSATR FIRE 2 LOOP B OFF ANNUNCIATOR
+  - get: L:MSATR_YOKE_PUSHER_SHAKER_FAULT_LT  # MSATR STICK PUSHER SHAKER FAULT ANNUNCIATOR
+  - get: L:MSATR_YOKE_PUSHER_SHAKER_OFF_LT  # MSATR STICK PUSHER SHAKER OFF ANNUNCIATOR
+
+  # ── FWS / GPWS warning outputs ──
+  - get: L:MSATR_TAWS_GPWS_GPWS  # MSATR GPWS WARNING LAMP
+  - get: L:MSATR_FWS_MASTER_CAUT_LT  # MSATR MASTER CAUTION YELLOW LAMP
+  - get: L:MSATR_FWS_MASTER_WARN_LT  # MSATR MASTER WARNING RED LAMP
+  - get: L:MSATR_TAWS_GPWS_PULLUP  # MSATR PULLUP WARNING LAMP
+  - get: L:MSATR_TAWS_GPWS_FAULT_LT  # MSATR TAWS GPWS FAULT ANNUNCIATOR
+  - get: L:MSATR_TAWS_GPWS_OFF_LT  # MSATR TAWS GPWS OFF ANNUNCIATOR
+  - get: L:MSATR_TAWS_TERR_FAULT_LT  # MSATR TAWS TERR FAULT ANNUNCIATOR
+  - get: L:MSATR_TAWS_TERR_OFF_LT  # MSATR TAWS TERR OFF ANNUNCIATOR
+
+  - get: L:MSATR_ENG_TO_CONFIG  # MSATR ENGINE TO CONFIG
+
+  # Captain side panel
+  - get: L:MSATR_MAINT_TEST_SEL
+  - get: L:MSATR_MAINT_TEST_PB
+  - get: B:ELECTRICAL_SWITCH_ELEC_BTC_LOCK
+    set: "`${value} (B:ELECTRICAL_SWITCH_ELEC_BTC_LOCK, Number) != if{ (>B:ELECTRICAL_SWITCH_ELEC_BTC_LOCK_Toggle) }`"
+  - get: B:ELECTRICAL_SWITCH_ELEC_BTC
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:ELECTRICAL_SWITCH_ELEC_BTC_0)'
+          case 1: return '(>B:ELECTRICAL_SWITCH_ELEC_BTC_1)'
+          case 2: return '(>B:ELECTRICAL_SWITCH_ELEC_BTC_2)'
+          default: return ''
+      }
+  - get: L:MSATR_MAINT_ELEC_IND
+
+  # FO side panel
+  - get: B:INSTRUMENT_EXTRACTAIRFLOW_COVER
+    set: "`${value} (B:INSTRUMENT_EXTRACTAIRFLOW_COVER, Number) != if{ (>B:INSTRUMENT_EXTRACTAIRFLOW_COVER_Toggle) }`"
+  - get: L:MSATR_EXTRACTAIRFLOW_SWITCH
+  - get: B:INSTRUMENT_PUSH_PROP_A_ICING_COVER
+    set: "`${value} (B:INSTRUMENT_PUSH_PROP_A_ICING_COVER, Number) != if{ (>B:INSTRUMENT_PUSH_PROP_A_ICING_COVER_Toggle) }`"
+  - get: B:ELECTRICAL_SWITCH_DATABUS_LOCK
+    set: "`${value} (B:ELECTRICAL_SWITCH_DATABUS_LOCK, Number) != if{ (>B:ELECTRICAL_SWITCH_DATABUS_LOCK_Toggle) }`"
+  - get: B:ELECTRICAL_SWITCH_DATABUS
+    set: |
+      switch (Math.round(value)) {
+          case 0: return '(>B:ELECTRICAL_SWITCH_DATABUS_0)'
+          case 1: return '(>B:ELECTRICAL_SWITCH_DATABUS_1)'
+          case 2: return '(>B:ELECTRICAL_SWITCH_DATABUS_2)'
+          default: return ''
+      }
+  - get: L:MSATR_MAINT_BRK_TEMP_TEST
+  - get: L:MSATR_DOOR_DOCUMENT_COVER
+  - get: L:MSATR_DOOR_DOCUMENT
+  - get: L:MSATR_DOOR_COCKPIT_1
+  - get: L:MSATR_DOOR_COCKPIT_2
+  - get: L:MSATR_DOOR_CABIN
+  - get: L:MSATR_DOOR_CARGO
+  - get: L:MSATR_DOOR_SERVICE
+  - get: L:MSATR_DOOR_PAX
+  - get: L:MSATR_CKPT_DOOR
+  - get: B:INSTRUMENT_WEATHER_RADAR_Push_RCT_KEY
+    set: "value >= 0.5 ? '1 (>B:INSTRUMENT_WEATHER_RADAR_Push_RCT_KEY_PUSH)' : '0 (>B:INSTRUMENT_WEATHER_RADAR_Push_RCT_KEY_RELEASE)'"
+  - get: L:MSATR_WXR_TGT
+  - get: L:MSATR_WXR_STAB
+  - get: L:MSATR_WXR_GAIN
+  - get: L:MSATR_WXR_MODE
+  - get: L:MSATR_WXR_TILT
+  - get: L:MSATR_WXR_SECT

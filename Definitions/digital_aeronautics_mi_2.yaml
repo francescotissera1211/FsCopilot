@@ -1,0 +1,353 @@
+# Original author: https://discord.com/channels/1454265644416765974/1504062953010368672/1504063063488331880
+# Updated: 2026-05-13 21:30:10
+
+include:
+  - modules/payload.yaml
+  - modules/fuel.yaml
+shared:
+#CEILING
+# - get: L:da_AnimSpring_FuelCutoff_L_Position
+ - get: L:da_ManipSpring_FuelCutoff_L_Wheel
+ - get: L:da_ManipSpring_FuelCutoff_L_Move
+# - get: L:da_AnimSpring_FuelCutoff_R_Position
+ - get: L:da_ManipSpring_FuelCutoff_R_Wheel
+ - get: L:da_ManipSpring_FuelCutoff_R_Move
+# - get: L:da_AnimSwitch_Signal_Rocket_Position
+ - get: L:da_ManipSwitch_Signal_Rocket_Wheel
+ - get: L:da_ManipSwitch_Signal_Rocket_Move
+ - get: L:da_ManipButton_Rocket_1_Callback
+ - get: L:da_ManipButton_Rocket_2_Callback
+ - get: L:da_ManipButton_Rocket_3_Callback
+ - get: L:da_ManipButton_Rocket_4_Callback
+ - get: L:da_ManipKnob_SPU_Vol_Obs_Wheel
+ - get: L:da_ManipKnob_SPU_Vol_Obs_Move
+ - get: L:da_ManipKnob_SPU_Vol_Wheel
+ - get: L:da_ManipKnob_SPU_Vol_Move
+ - get: L:da_ManipGalet_SPU_Mode_Wheel
+ - get: L:da_ManipSwitch_SPU_Source_Move
+ - get: L:da_ManipSwitch_SPU_Source_Wheel
+ - get: L:da_ManipButton_SPU_CC_Callback
+ - get: L:da_ManipSwitch_SPU_Output_Move
+ - get: L:da_ManipSwitch_SPU_Output_Wheel
+#LEFT OVERHEAD
+ - get: L:da_ManipSwitch_AZS_ENG_Hoist_Motor1_Move
+ - get: L:da_ManipSwitch_AZS_ENG_Hoist_Motor1_Wheel
+ - get: L:da_ManipSwitch_AZS_ENG_Hoist_Motor2_Move
+ - get: L:da_ManipSwitch_AZS_ENG_Hoist_Motor2_Wheel
+ - get: L:da_ManipSwitch_AZS_DP3_Move
+ - get: L:da_ManipSwitch_AZS_DP3_Wheel
+ - get: L:da_ManipSwitch_AZS_GIK1_Move
+ - get: L:da_ManipSwitch_AZS_GIK1_Wheel
+ - get: L:da_ManipSwitch_AZS_RV3_Move
+ - get: L:da_ManipSwitch_AZS_RV3_Wheel
+ - get: L:da_ManipSwitch_AZS_SPU_Move
+ - get: L:da_ManipSwitch_AZS_SPU_Wheel
+ - get: L:da_ManipSwitch_AZS_ARK9_Move
+ - get: L:da_ManipSwitch_AZS_ARK9_Wheel
+ - get: L:da_ManipSwitch_AZS_KV_Move
+ - get: L:da_ManipSwitch_AZS_KV_Wheel
+ - get: L:da_ManipSwitch_AZS_UKV_Move
+ - get: L:da_ManipSwitch_AZS_UKV_Wheel
+ - get: L:da_ManipSwitch_AZS_Signal_Rocket_Move
+ - get: L:da_ManipSwitch_AZS_Signal_Rocket_Wheel
+ - get: L:da_ManipSwitch_AZS_Cabin_Lighting_Move
+ - get: L:da_ManipSwitch_AZS_Cabin_Lighting_Wheel
+ - get: L:da_ManipSwitch_AZS_Cleaner_Outlets_Move
+ - get: L:da_ManipSwitch_AZS_Cleaner_Outlets_Wheel
+ - get: L:da_ManipSwitch_AZS_ANO_Move
+ - get: L:da_ManipSwitch_AZS_ANO_Wheel
+ - get: L:da_ManipSwitch_AZS_Beacon_Move
+ - get: L:da_ManipSwitch_AZS_Beacon_Wheel
+ - get: L:da_ManipSwitch_AZS_LandingLight_Control_Move
+ - get: L:da_ManipSwitch_AZS_LandingLight_Control_Wheel
+ - get: L:da_ManipSwitch_AZS_LandingLight_Move
+ - get: L:da_ManipSwitch_AZS_LandingLight_Wheel
+ - get: L:da_ManipSwitch_AZS_CargoLight_Move
+ - get: L:da_ManipSwitch_AZS_CargoLight_Wheel
+ - get: L:da_ManipSwitch_AZS_ExtStore_Tactical_Move
+ - get: L:da_ManipSwitch_AZS_ExtStore_Tactical_Wheel
+ - get: L:da_ManipSwitch_AZS_ExtStore_Emer_Move
+ - get: L:da_ManipSwitch_AZS_ExtStore_Emer_Wheel
+ - get: L:da_ManipSwitch_ARK9_TL_TG_Move
+ - get: L:da_ManipSwitch_ARK9_TL_TG_Wheel
+ - get: L:da_ManipKnob_ARK9_Corr_Near_Move
+ - get: L:da_ManipKnob_ARK9_Corr_Near_Wheel
+ - get: L:da_ManipButton_ARK9_Control_Callback
+ - get: L:da_ManipGalet_ARK9_Khz_100_Near_Wheel
+ - get: L:da_ManipGalet_ARK9_Khz_10_Near_Wheel
+ - get: L:da_ManipKnob_ARK9_Corr_Far_Move
+ - get: L:da_ManipKnob_ARK9_Corr_Far_Wheel
+ - get: L:da_ManipGalet_ARK9_Khz_100_Far_Wheel
+ - get: L:da_ManipGalet_ARK9_Khz_10_Far_Wheel
+ - get: L:da_ManipGalet_ARK9_Mode_Wheel
+ - get: L:da_ManipKnob_ARK9_Vol_Move
+ - get: L:da_ManipKnob_ARK9_Vol_Wheel
+ - get: L:da_ManipDblSwitch_ARK9_Frame_LR_Move
+ - get: L:da_ManipDblSwitch_ARK9_Frame_LR_Wheel
+ - get: L:da_ManipSwitch_Near_Far_Move
+ - get: L:da_ManipSwitch_Near_Far_Wheel
+ - get: L:da_ManipButton_Pitot_Heat_Ctrl_Callback
+ - get: L:da_ManipButton_RIO3_Heat_Ctrl_Callback
+#L OVERHEAD TRIANGLE
+ - get: L:da_ManipSwitch_FireSys_Main_Move
+ - get: L:da_ManipSwitch_FireSys_Main_Wheel
+ - get: L:da_ManipButton_FireSys_Battle_2_Callback
+ - get: L:da_ManipButton_FireSys_Battle_3_Callback
+ - get: L:da_ManipButton_FireSys_Battle_Eng_L_Callback
+ - get: L:da_ManipButton_FireSys_Battle_GearBox_Callback
+ - get: L:da_ManipButton_FireSys_Battle_Eng_R_Callback
+#OVERHEAD
+ - get: L:da_ManipSwitch_DC_Left_Generator_Move
+ - get: L:da_ManipSwitch_DC_Left_Generator_Wheel
+ - get: L:da_ManipSwitch_DC_Amp_LGen_Batt_Move
+ - get: L:da_ManipSwitch_DC_Amp_LGen_Batt_Wheel
+ - get: L:da_ManipSwitch_DC_Battery_On_Bus_Move
+ - get: L:da_ManipSwitch_DC_Battery_On_Bus_Wheel
+ - get: L:da_ManipDblSwitch_DC_Battery_External_Move
+ - get: L:da_ManipDblSwitch_DC_Battery_External_Wheel
+ - get: L:da_ManipButton_Battery_Voltage_L_Callback
+ - get: L:da_ManipButton_Battery_Voltage_R_Callback
+ - get: L:da_ManipSwitch_DC_Right_Generator_Move
+ - get: L:da_ManipSwitch_DC_Right_Generator_Wheel
+ - get: L:da_ManipKnob_Volt_Adj_Gen_L_Move
+ - get: L:da_ManipKnob_Volt_Adj_Gen_L_Wheel
+ - get: L:da_ManipKnob_Volt_Adj_Gen_R_Move
+ - get: L:da_ManipKnob_Volt_Adj_Gen_R_Wheel
+ - get: L:da_ManipSwitch_DC_CtrlSource_Battery_Move
+ - get: L:da_ManipSwitch_DC_CtrlSource_Battery_Wheel
+ - get: L:da_ManipSwitch_DC_CtrlSource_GenL_Move
+ - get: L:da_ManipSwitch_DC_CtrlSource_GenL_Wheel
+ - get: L:da_ManipSwitch_DC_CtrlSource_GenR_Move
+ - get: L:da_ManipSwitch_DC_CtrlSource_GenR_Wheel
+ - get: L:da_ManipKnob_Volt_Adj_Gen_AC_Move
+ - get: L:da_ManipKnob_Volt_Adj_Gen_AC_Wheel
+ - get: L:da_ManipDblSwitch_AC_115V_Gen_Converter_Move
+ - get: L:da_ManipDblSwitch_AC_115V_Gen_Converter_Wheel
+ - get: L:da_ManipDblSwitch_AC_36V_Gen_Converter_Move
+ - get: L:da_ManipDblSwitch_AC_36V_Gen_Converter_Wheel
+ - get: L:da_ManipGalet_DeIce_Section_Wheel
+ - get: L:da_ManipSwitch_HydroSys_Main_Move
+ - get: L:da_ManipSwitch_HydroSys_Main_Wheel
+ - get: L:da_ManipDblSwitch_DeIce_Main_Move
+ - get: L:da_ManipDblSwitch_DeIce_Main_Wheel
+ - get: L:da_ManipSwitch_DeiceSys_Windshield_Heating_Move
+ - get: L:da_ManipSwitch_DeiceSys_Windshield_Heating_Wheel
+ - get: L:da_ManipSwitch_Engine_Start_Rotate_Move
+ - get: L:da_ManipSwitch_Engine_Start_Rotate_Wheel
+ - get: L:da_ManipSwitch_Cabine_Lighting_Pilot_Move
+ - get: L:da_ManipSwitch_Cabine_Lighting_Pilot_Wheel
+ - get: L:da_ManipDblSwitch_Cabine_Lighting_Pax_Move
+ - get: L:da_ManipDblSwitch_Cabine_Lighting_Pax_Wheel
+ - get: L:da_ManipButton_Engine_Start_L_Callback
+ - get: L:da_ManipDblSwitch_Engine_Start_Selector_Move
+ - get: L:da_ManipDblSwitch_Engine_Start_Selector_Wheel
+ - get: L:da_ManipButton_Engine_Start_R_Callback
+ - get: L:da_ManipButton_Engine_Start_Interrupt_Callback
+ - get: L:da_ManipSwitch_Signal_Lamps_Bright_Move
+ - get: L:da_ManipSwitch_Signal_Lamps_Bright_Wheel
+ - get: L:da_ManipButton_Fuel_Pump_1_Callback
+ - get: L:da_ManipSwitch_Engine_Heating_Move
+ - get: L:da_ManipSwitch_Engine_Heating_Wheel
+ - get: L:da_ManipDblSwitch_Engine_Pump2_Auto_Move
+ - get: L:da_ManipDblSwitch_Engine_Pump2_Auto_Wheel
+ - get: L:da_ManipSwitch_Signal_Lamps_Test_Move
+ - get: L:da_ManipSwitch_Signal_Lamps_Test_Wheel
+#R OVERHEAD TRIANGLE
+ - get: L:da_ManipKnob_RedLights_MainPanel_Brt_Move
+ - get: L:da_ManipKnob_RedLights_MainPanel_Brt_Wheel
+ - get: L:da_ManipKnob_RedLights_AddPanel_Brt_Move
+ - get: L:da_ManipKnob_RedLights_AddPanel_Brt_Wheel
+ - get: L:da_ManipKnob_RedLights_MainBoard_Brt_Move
+ - get: L:da_ManipKnob_RedLights_MainBoard_Brt_Wheel
+ - get: L:da_ManipKnob_RedLights_AddBoard_Brt_Move
+ - get: L:da_ManipKnob_RedLights_AddBoard_Brt_Wheel
+#R OVERHEAD
+ - get: L:da_ManipSwitch_AZS_Contol_Launch_Engine_Move
+ - get: L:da_ManipSwitch_AZS_Contol_Launch_Engine_Wheel
+ - get: L:da_ManipSwitch_AZS_Engine_Oil_Temp_Left_Move
+ - get: L:da_ManipSwitch_AZS_Engine_Oil_Temp_Left_Wheel
+ - get: L:da_ManipSwitch_AZS_Engine_Oil_Temp_Right_Move
+ - get: L:da_ManipSwitch_AZS_Engine_Oil_Temp_Right_Wheel
+ - get: L:da_ManipSwitch_AZS_Gearbox_Oil_Temp_Move
+ - get: L:da_ManipSwitch_AZS_Gearbox_Oil_Temp_Wheel
+ - get: L:da_ManipSwitch_AZS_Fuel_Meter_Move
+ - get: L:da_ManipSwitch_AZS_Fuel_Meter_Wheel
+ - get: L:da_ManipSwitch_AZS_Step_Rotor_Indicator_Move
+ - get: L:da_ManipSwitch_AZS_Step_Rotor_Indicator_Wheel
+ - get: L:da_ManipSwitch_AZS_Hydro_Sys_Move
+ - get: L:da_ManipSwitch_AZS_Hydro_Sys_Wheel
+ - get: L:da_ManipSwitch_AZS_Trim_Control_Move
+ - get: L:da_ManipSwitch_AZS_Trim_Control_Wheel
+ - get: L:da_ManipSwitch_AZS_Trim_Long_Move
+ - get: L:da_ManipSwitch_AZS_Trim_Long_Wheel
+ - get: L:da_ManipSwitch_AZS_Trim_Lat_Move
+ - get: L:da_ManipSwitch_AZS_Trim_Lat_Wheel
+ - get: L:da_ManipSwitch_AZS_Fuel_Pump1_Move
+ - get: L:da_ManipSwitch_AZS_Fuel_Pump1_Wheel
+ - get: L:da_ManipSwitch_AZS_Fuel_Pump2_Move
+ - get: L:da_ManipSwitch_AZS_Fuel_Pump2_Wheel
+ - get: L:da_ManipSwitch_AZS_Fire_Sys1_Move
+ - get: L:da_ManipSwitch_AZS_Fire_Sys1_Wheel
+ - get: L:da_ManipSwitch_AZS_Fire_Sys2_Move
+ - get: L:da_ManipSwitch_AZS_Fire_Sys2_Wheel
+ - get: L:da_ManipSwitch_AZS_Lamps_Test_Move
+ - get: L:da_ManipSwitch_AZS_Lamps_Test_Wheel
+ - get: L:da_ManipSwitch_AZS_Blinking_System_Move
+ - get: L:da_ManipSwitch_AZS_Blinking_System_Wheel
+ - get: L:da_ManipSwitch_AZS_DV3_Fan_Move
+ - get: L:da_ManipSwitch_AZS_DV3_Fan_Wheel
+ - get: L:da_ManipSwitch_AZS_Heat_And_Vent_Move
+ - get: L:da_ManipSwitch_AZS_Heat_And_Vent_Wheel
+ - get: L:da_ManipSwitch_AZS_Wipers_Move
+ - get: L:da_ManipSwitch_AZS_Wipers_Wheel
+ - get: L:da_ManipSwitch_AZS_Clock_Heats_Move
+ - get: L:da_ManipSwitch_AZS_Clock_Heats_Wheel
+ - get: L:da_ManipSwitch_AZS_Pitot_Heats_Move
+ - get: L:da_ManipSwitch_AZS_Pitot_Heats_Wheel
+ - get: L:da_ManipSwitch_AZS_Battery_Heats_Move
+ - get: L:da_ManipSwitch_AZS_Battery_Heats_Wheel
+ - get: L:da_ManipSwitch_AZS_DeIce_Main_Move
+ - get: L:da_ManipSwitch_AZS_DeIce_Main_Wheel
+ - get: L:da_ManipSwitch_AZS_DeIce_Signal_Move
+ - get: L:da_ManipSwitch_AZS_DeIce_Signal_Wheel
+ - get: L:da_ManipSwitch_AZS_AC_Generator_Control_Move
+ - get: L:da_ManipSwitch_AZS_AC_Generator_Control_Wheel
+ - get: L:da_ManipSwitch_AZS_AC_Generator_Excit_Move
+ - get: L:da_ManipSwitch_AZS_AC_Generator_Excit_Wheel
+ - get: L:da_ManipSwitch_AZS_AC_AutoChange_Source_Move
+ - get: L:da_ManipSwitch_AZS_AC_AutoChange_Source_Wheel
+ - get: L:da_ManipSwitch_AZS_PO500_Move
+ - get: L:da_ManipSwitch_AZS_PO500_Wheel
+ - get: L:da_ManipSwitch_AZS_PT125_Move
+ - get: L:da_ManipSwitch_AZS_PT125_Wheel
+ - get: L:da_ManipSwitch_AZS_RedLights_Main_Move
+ - get: L:da_ManipSwitch_AZS_RedLights_Main_Wheel
+ - get: L:da_ManipSwitch_AZS_RedLights_Add_Board_Move
+ - get: L:da_ManipSwitch_AZS_RedLights_Add_Board_Wheel
+ - get: L:da_ManipSwitch_AZS_RedLights_Add_Panels_Move
+ - get: L:da_ManipSwitch_AZS_RedLights_Add_Panels_Wheel
+ - get: L:da_ManipSwitch_AZS_Signal_Brightness_Move
+ - get: L:da_ManipSwitch_AZS_Signal_Brightness_Wheel
+ - get: L:da_ManipFeetLock_FeetLock_A_Move
+ - get: L:da_ManipFeetLock_FeetLock_A_Wheel
+ - get: L:da_ManipFeetLock_FeetLock_B_Move
+ - get: L:da_ManipFeetLock_FeetLock_B_Wheel
+ - get: L:da_ManipFeetLock_FeetLock_D_Move
+ - get: L:da_ManipFeetLock_FeetLock_D_Wheel
+#MAIN PANEL
+ - get: L:da_ManipKnob_RV3_WarnAlt_Move
+ - get: L:da_ManipKnob_RV3_WarnAlt_Wheel
+ - get: L:da_AnimKnob_RV3_WarnAlt_Position
+ - get: L:da_ManipKnob_VD10_Baro_Move
+ - get: L:da_ManipKnob_VD10_Baro_Wheel
+ - get: L:da_ManipKnob_UGR4U_Course_Move
+ - get: L:da_ManipKnob_UGR4U_Course_Wheel
+ - get: L:da_AnimKnob_UGR4U_Course_Position
+ - get: L:da_ManipButton_Nav_Align_Course_Callback
+ - get: L:da_ManipKnob_AGK47_Left_Move
+ - get: L:da_ManipKnob_AGK47_Left_Wheel
+ - get: L:da_ManipSwitch_AGK47_Right_Move
+ - get: L:da_ManipSwitch_AGK47_Right_Wheel
+ - get: L:da_ManipKnob_AGK47_Left_FO_Move
+ - get: L:da_ManipKnob_AGK47_Left_FO_Wheel
+ - get: L:da_ManipSwitch_AGK47_Right_FO_Move
+ - get: L:da_ManipSwitch_AGK47_Right_FO_Wheel
+ - get: L:da_ManipSwitch_DIMM_Trans_Main_Reserve_Move
+ - get: L:da_ManipSwitch_DIMM_Trans_Main_Reserve_Wheel
+ - get: L:da_ManipDblSwitch_LandingLight_Big_Small_Move
+ - get: L:da_ManipDblSwitch_LandingLight_Big_Small_Wheel
+ - get: L:da_ManipDblSwitch_LandingLight_Bright_Move
+ - get: L:da_ManipDblSwitch_LandingLight_Bright_Wheel
+ - get: L:da_ManipButton_Nav_Light_Callback
+ - get: L:da_ManipSwitch_RV3_Main_Move
+ - get: L:da_ManipSwitch_RV3_Main_Wheel
+ - get: L:da_ManipButton_Wiper_Reset_Callback
+ - get: L:da_ManipSwitch_Wiper_Start_Move
+ - get: L:da_ManipSwitch_Wiper_Start_Wheel
+ - get: L:da_ManipSwitch_Wiper_Speed1_Move
+ - get: L:da_ManipSwitch_Wiper_Speed1_Wheel
+ - get: L:da_ManipSwitch_Wiper_Speed2_Move
+ - get: L:da_ManipSwitch_Wiper_Speed2_Wheel
+ - get: A:COM ACTIVE FREQUENCY:1, Hz # COM1 ACTIVE
+   set: (>K:COM_RADIO_SET_HZ)
+ - get: L:da_ManipKnob_Baklan20_Vol_Move
+ - get: L:da_ManipKnob_Baklan20_Vol_Wheel
+ - get: L:da_ManipSwitch_Baklan_Noise_Move
+ - get: L:da_ManipSwitch_Baklan_Noise_Wheel
+ - get: L:da_ManipButton_ACHS1_Left_Push_Callback
+ - get: L:da_ManipKnob_ACHS1_Left_Big_Wheel
+ - get: L:da_ManipSwitch_ACHS1_Left_Pull_Move
+ - get: L:da_AnimSwitch_ACHS1_Left_Pull_Position
+ - get: L:da_ManipKnob_ACHS1_Left_Small_Wheel
+ - get: L:da_ManipButton_ACHS1_Right_Push_Callback
+ - get: L:da_ManipSwitch_ACHS1_Right_Rotate_Wheel
+ - get: L:da_ManipGalet_R852_Channel_Wheel
+ - get: L:da_ManipKnob_R852_Ctrl_Move
+ - get: L:da_ManipKnob_R852_Ctrl_Wheel
+ - get: L:da_ManipSwitch_R852_Modulation_Move
+ - get: L:da_ManipSwitch_R852_Modulation_Wheel
+ - get: L:da_ManipGalet_R852_Mode_Wheel
+ - get: L:da_ManipKnob_R852_Vol_Move
+ - get: L:da_ManipKnob_R852_Vol_Wheel
+#FLOOR AND FOOTWELL
+ - get: L:da_ManipRudWB_Rud_L_Move
+ - get: L:da_ManipRudWB_Rud_L_Wheel
+ - get: L:da_ManipRudWB_Rud_R_Move
+ - get: L:da_ManipRudWB_Rud_R_Wheel
+ - get: L:da_CollectiveButton_Up_Callback
+ - get: L:da_CollectiveButton_Down_Callback
+ - get: L:da_ManipHandle_FootHeater_Move
+ - get: L:da_ManipHandle_FootHeater_Wheel
+ - get: L:da_ManipHandleWB_RotorBrake_Move
+ - get: L:da_ManipHandleWB_RotorBrake_Wheel
+ - get: L:da_ManipHandle_AirIntake_Move
+ - get: L:da_ManipHandle_AirIntake_Wheel
+ - get: L:da_ManipSpring_FireValve_L_Move
+ - get: L:da_ManipSpring_FireValve_L_Wheel
+ - get: L:da_ManipSpring_FireValve_R_Move
+ - get: L:da_ManipSpring_FireValve_R_Wheel
+#CABIN AND COSMETICS
+ - get: L:da_Manip_DoorHandle_Move_FL
+ - get: L:da_Manip_DoorHandle_Wheel_FL
+ - get: L:da_ManipKnob_SPU_Cabin_Vol_Obs_Wheel
+ - get: L:da_ManipKnob_SPU_Cabin_Vol_Obs_Move
+ - get: L:da_ManipKnob_SPU_Cabin_Vol_Wheel
+ - get: L:da_ManipKnob_SPU_Cabin_Vol_Move
+ - get: L:da_ManipGalet_SPU_Cabin_Mode_Wheel
+ - get: L:da_ManipSwitch_SPU_Cabin_Source_Move
+ - get: L:da_ManipSwitch_SPU_Cabin_Source_Wheel
+ - get: L:da_ManipButton_SPU_Cabin_CC_Callback
+ - get: L:da_ManipSwitch_SPU_Cabin_Output_Move
+ - get: L:da_ManipSwitch_SPU_Cabin_Output_Wheel
+ - get: L:da_ManipHandle_WisorL_Move
+ - get: L:da_ManipHandle_WisorL_Wheel
+ - get: L:da_ManipHandle_WisorR_Move
+ - get: L:da_ManipHandle_WisorR_Wheel
+ - get: L:da_ManipKnob_DV3_LR_Move
+ - get: L:da_ManipKnob_DV3_LR_Wheel
+#CONTROLS
+#   set: (>K:AXIS_HELICOPTER_THROTTLE_SET)
+# - get: A:TAIL ROTOR PEDAL POSITION
+#   set: (>K:AXIS_TAIL_ROTOR_SET)
+master:
+ - get: A:COLLECTIVE POSITION
+   set: "`${value * 16384} (>K:AXIS_COLLECTIVE_SET)"
+ - get: A:YOKE X POSITION
+#   set: (>K:AXIS_CYCLIC_LATERAL_SET)
+ - get: A:YOKE Y POSITION
+#   set: (>K:AXIS_CYCLIC_LONGITUDINAL_SET)
+ - get: L:da_ManipRudWB_Rud_L_Move
+ - get: L:da_ManipRudWB_Rud_L_Wheel
+ - get: L:da_ManipRudWB_Rud_R_Move
+ - get: L:da_ManipRudWB_Rud_R_Wheel
+ - get: L:da_ManipHandle_MasterThrot_Move
+ - get: L:da_ManipHandle_MasterThrot_Wheel
+ - get: A:HELICOPTER MASTER THROTTLE POSITION
+#   set: (>L:da_ManipHandle_MasterThrot_Wheel)
+ - get: A:BRAKE PARKING POSITION, Bool # PARKING BRAKE
+   set: (>K:PARKING_BRAKES)
+ - get: A:BRAKE LEFT POSITION EX1, Position 32k
+   set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+ - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+   set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+ - get: L:da_Manip_Brakes_Callback

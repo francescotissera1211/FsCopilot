@@ -1,0 +1,440 @@
+# Original author: https://discord.com/channels/1454265644416765974/1544858439828639774/1545468844292702219
+# Updated: 2026-09-04 16:22:14
+
+# LivToAir Cessna CJ3+ variant - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: Dkgolfnut
+# Special Thanks: 
+# Date: 9/4/2026 
+
+# Known Issues:
+# - Initial release all functions working with exception of those noted below.  
+  # - 9/4/2026
+   # - DO NOT USE DISCO MODE LIGHTING, it seems to always operate opposite way. If you do and the color changes drive you crazy, disconnect PNF from FSC set both Disco settings to Off and reconnect FSC. 
+   # - You Must Disconnect FSC prior to entering in ICAO for Navigraph Charts with onboard EFB, then reconnect FSC. For some reason the Keyboard operation toggles and it will work for one and not the other.  Synchronization of Simbrief and Navigraph work great with that one exception. 
+   # - AS_G3000 module all functions work, except the "USE RAT" option in Initialization >> TakeOff Data >> Weather Tab and Initialization >> TakeOff Data >> Accept TakeOff Speeds option. BOTH PILOTS MUST SELECT THESE OPTIONS MANUALLY. There are Odd behaviors from touchscreens that I have no control over. **** Hitting the HOME BTN **** will get the both Pilots back to the correct page sync so communicate with each other about what you are seeing. 
+   # - This profile requires the AS_G3000 module to be installed. I have created it and it should download automatically when FSC sees this aircraft.
+
+# FIXED:
+  # - 9/4/2026
+   # - Original release today 9/4/2026
+
+include:
+  - modules/AS_G3000.yaml
+  - modules/fuel.yaml
+  - modules/payload.yaml
+  - modules/transponder.yaml
+master: 
+  - get: L:XMLVAR_AileronsTrim_Switch_1  
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+  - get: A:ELEVATOR TRIM PCT, Position 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: L:XMLVAR_ElevatorTrim_Switch_1  
+  - get: B:HANDLING_ELEVATORTRIM_YOKE
+  - get: L:XMLVAR_RudderTrim_Switch_1  
+  - get: A:RUDDER TRIM PCT, Position 16k
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+    set: (>K:THROTTLE1_SET)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, position 16k # Throttle 1 LEVER
+    set: (>K:THROTTLE2_SET)
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:2, position 16k # Throttle 1 LEVER  
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  - get: A:FLAPS HANDLE INDEX, Number
+
+shared:
+#############  MAIN PANELS - Front Lower #############
+## ELECTRICAL POWER PANEL ##
+  - get: B:ELECTRICAL_Alternator_1
+    set: |
+      switch (value) {
+        case 0: return '(>B:ELECTRICAL_Alternator_1_On)'
+        case 1: return '(>B:ELECTRICAL_Alternator_1_Off)'
+        case 2: return '(>B:ELECTRICAL_Alternator_1_Reset)'
+        default: return ''        
+      }
+  - get: B:ELECTRICAL_Alternator_2
+    set: |
+      switch (value) {
+        case 0: return '(>B:ELECTRICAL_Alternator_2_On)'
+        case 1: return '(>B:ELECTRICAL_Alternator_2_Off)'
+        case 2: return '(>B:ELECTRICAL_Alternator_2_Reset)'
+        default: return ''        
+      }
+  - get: B:ELECTRICAL_Battery_1
+    set: |
+      switch (value) {
+        case 0: return '(>B:ELECTRICAL_Battery_1_On)'
+        case 1: return '(>B:ELECTRICAL_Battery_1_Off)'
+        case 2: return '(>B:ELECTRICAL_Battery_1_Emergency)'
+        default: return ''        
+      }
+  - get: L:ELECTRICAL_Switch_emerLights
+  - get: L:STBY_FLY_DISPLAY_Switch
+  - get: L:Dispatch_Switch
+## ICE PROTECTION SWITCHES ##
+  - get: L:Switch_Xflow
+  - get: L:Switch_L_Deice
+  - get: L:Switch_R_Deice
+  - get: L:Switch_Tail_Deice
+
+## ICE PROTECTION WINDOWS SWITCHES ##
+  - get: L:Switch_Bleed_Windshield
+  - get: L:Windshield_Deice_Power
+  - get: L:Knob_Bleed_Windshield_Left
+  - get: L:Knob_Bleed_Windshield_Right
+  - get: L:Switch_Alcohol_Windshield
+  - get: L:Windshield_Alcohol_Power, Bool
+
+## PRESSURIZATTION SWITCHES ##
+  - get: L:Pressurization_AirSource_Knob
+  - get: L:Pressurization_Switch, Bool
+  - get: L:Pressurization_Dump_Cover
+  - get: L:Pressurization_Dump_Switch
+## FUEL BOOST and TRANSFER PANEL SWITCHES ##
+  - get: B:FUEL_Pump_1
+    set: (>B:FUEL_Pump_1_Set)
+  - get: B:FUEL_Pump_2
+    set: (>B:FUEL_Pump_2_Set)
+  - get: B:FUEL_Crossfeed_1
+    set: | 
+      switch (value) {
+        case 0: return '(>B:FUEL_Crossfeed_1_Right_To_Left)'
+        case 1: return '(>B:FUEL_Crossfeed_1_Off)'
+        case 2: return '(>B:FUEL_Crossfeed_1_Left_To_Right)'
+        default: return ''        
+      }  
+  - get: L:ParkingBrake_Position
+  - get: B:LANDING_GEAR_Parkingbrake
+    set: (>B:LANDING_GEAR_Parkingbrake_Set)
+  - get: B:LANDING_GEAR_Gear
+    set: (>B:LANDING_GEAR_Gear_Set)
+## TEMPURATURE SELECT PANEL SWITCHES ##
+  - get: L:Temperature_Select_HotCold
+  - get: L:Cabin_Temperature_Target
+  - get: L:Temperture_Select_Mode
+  - get: L:C525B_AIR_COND
+# OTHER VARIABLES FOR TEMP CONTROL
+#  - get: L:C525B_CURRENT_TEMP
+  - get: L:C525B_FWD_FANB
+  - get: L:C525B_IS_TEMP_CELCIUS
+  - get: L:C525B_SELECTED_TEMP
+#############  PILOT PANELS LOWER RIGHT #############
+## MISCELLANEOUS LIGHT SWITCHES ##
+  - get: L:WingInp_Light_Switch, Bool
+  - get: L:SeatBelt_Light_Switch, Bool
+  - get: L:SeatBelt_Ding, Bool
+  - get: L:AntiColl_Light_Switch
+  - get: L:LandingTaxi_Light_Switch
+  - get: L:Switch_Pitot_1
+  - get: L:Switch_Pitot_2
+  - get: A:ELT ACTIVATED, Bool
+    set: "value > 0 ? '(>K:ELT_ON)' : '(>K:ELT_OFF)'"
+#############  Pedestal PANELS #############
+## ENG START BUTTONS ##
+  - get: B:ENGINE_Starter_1
+    set: (>B:ENGINE_Starter_1_Toggle)
+  - get: B:ENGINE_Starter_2
+    set: (>B:ENGINE_Starter_2_Toggle)
+  - get: B:ENGINE_Starter_Disengage
+    set: (>B:ENGINE_Starter_Disengage_Set)
+  - get: L:ENG1_Shutdown
+  - get: L:ENG1_Shutdown_Anim
+  - get: L:vENG1_Throttle_Active
+  - get: L:ENG1_Shutdown_Temp
+  - get: L:ENG2_Shutdown
+  - get: L:ENG2_Shutdown_Anim
+  - get: L:vENG2_Throttle_Active
+  - get: L:ENG2_Shutdown_Temp    
+  - get: B:ENGINE_TOGA_1
+    set: (>B:ENGINE_TOGA_1_Set)
+
+#############  HANDLING PANELS #############
+  - get: L:SPOILERS_HANDLE_POSITION
+  - get: A:SPOILERS HANDLE POSITION, Percent over 100
+#############  GLARESHIELD PANELS #############
+## Warning & Caution Acknowledgement ##
+  - get: L:MasterWarning_L
+  - get: L:MasterWarning_R
+  - get: L:MasterWarning_L
+  - get: L:MasterWarning_R
+
+## Alternate FLT Display ##
+  - get: L:STBYDIS_BARO_Rrduce
+    set: 3 (>K:KOHLSMAN_DEC)
+  - get: L:STBYDIS_BARO_Add
+    set: 3 (>K:KOHLSMAN_INC)
+  - get: L:STBYDIS_Brightness_Reduce
+  - get: L:STBYDIS_Brightness_Add
+
+## Light Dimming Panel ##
+  - get: A:LIGHT POTENTIOMETER:3, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_3_SET)`"
+  - get: A:LIGHT POTENTIOMETER:4, Percent
+    set: "value > current ? '4 (>K:LIGHT_POTENTIOMETER_INC)' : '4 (>K:LIGHT_POTENTIOMETER_DEC)'"
+  - get: L:Light_Panels_Knob
+  - get: L:Displays_Brightness
+  - get: L:GTC_Brightness
+
+#############  MISCELLENEOUS ITEMS #############
+  - get: L:Pen_Anim, Bool
+## Yoke Functions ##
+  - get: L:HANDLING_Yoke_1_Hide
+  - get: L:HANDLING_Yoke_2_Hide
+  - get: B:AUTOPILOT_AP_Disconnect_1
+    set: (>B:AUTOPILOT_AP_Disconnect_1_Set)
+# Elevator Trim Switch
+  - get: L:XMLVAR_ElevatorTrim_Switch_1
+  - get: L:EFB_Button 
+#  - get: L:GPU 
+#############  Passenger CABIN/CARGO AREA#############
+## SunVisors ##
+# Pilot
+  - get: L:SunBlock_L
+  - get: L:SunBlock_L_X
+  - get: L:SunBlock_L_Y
+  - get: L:SunBlock_R
+  - get: L:SunBlock_R_X
+  - get: L:SunBlock_R_Y
+
+## Cockpit Seats ##
+  - get: L:Cockpit_SeatArm_L
+  - get: L:Cockpit_SeatArm_R
+
+## EXTERIOR DOORS ##
+# Main Cabin Door
+#  - get: L:C510_DOOR_Pilot
+#  - get: L:Main_Stairs
+#  - get: L:Main_Stairs_Locked
+#  - get: L:Main Stairs_Anim
+# - get: L:Door_State
+# Rear Baggage Door
+#  - get: L:Door_Back
+#  - get: L:Door_Back_Lock_Up
+#  - get: L:Door_Back_Lock_Down
+# Front Left Baggage Door
+#  - get: L:Door_FL
+#  - get: L:Door_FL_Lock_L
+#  - get: L:Door_FL_Lock_R
+# Front Right Baggage Door
+#  - get: L:Door_FR
+#  - get: L:Door_FR_Lock_L
+#  - get: L:Door_FR_Lock_R
+
+## MAIN CABIN Doors, Drawers, and Food items in Drawers##
+  - get: L:Cabin_Door_1
+  - get: L:Darth_Vader
+  - get: L:Cabin_Book_Closed
+  - get: L:Cabin_Door_2
+  - get: L:Cabin_Door_3
+  - get: L:Cabin_Door_4
+  - get: L:Cabin_Door_5
+  - get: L:Cabin_Door_6
+  - get: L:Cabin_Door_7
+  - get: L:Cabin_Door_7_Burger1
+  - get: L:Cabin_Door_7_Burger2
+  - get: L:Cabin_Door_7_Burger3
+  - get: L:Cabin_Door_7_Burger4
+  - get: L:Cabin_Door_7_Burger5
+  - get: L:Cabin_Door_7_Burger6
+  - get: L:Cabin_Door_7_Noodles1
+  - get: L:Cabin_Door_7_Noodles2
+  - get: L:Cabin_Door_7_Noodles3
+  - get: L:Cabin_Door_7_Noodles4
+  - get: L:Cabin_Door_7_Noodles5
+  - get: L:Cabin_Door_7_Noodles6
+  - get: L:Cabin_Door_8
+  - get: L:Cabin_Door_9
+
+## CABIN TABLES ##
+# Table 1
+  - get: L:Table1_1_occupied
+  - get: L:Table1_2_occupied
+  - get: L:Table1_3_occupied
+  - get: L:Table_Right
+# Table 2
+  - get: L:Table2_1_occupied
+  - get: L:Table2_2_occupied
+  - get: L:Table2_3_occupied
+  - get: L:Table_Left
+# Table 3
+  - get: L:Table3_1_occupied
+  - get: L:Table_Right_2
+# Table 4
+  - get: L:Table4_1_occupied
+  - get: L:Table_Left_2
+## Table 1 Snacks ##
+  - get: L:Table1_1_Snack1
+  - get: L:Table1_1_Snack2
+  - get: L:Table1_1_Snack3
+  - get: L:Table1_1_Snack4
+  - get: L:Table1_1_Snacks
+  - get: L:Table1_2_Snack1
+  - get: L:Table1_2_Snack2
+  - get: L:Table1_2_Snack3
+  - get: L:Table1_2_Snacks
+  - get: L:Table1_3_Snack1
+  - get: L:Table1_3_Snack1
+  - get: L:Table1_3_Snack2
+  - get: L:Table1_3_Snack3
+  - get: L:Table1_3_Snacks
+## Table 2 Snacks ##
+  - get: L:Table2_1_Snack1
+  - get: L:Table2_1_Snack2
+  - get: L:Table2_1_Snack3
+  - get: L:Table2_1_Snacks
+  - get: L:Table2_2_Snack1
+  - get: L:Table2_2_Snack2
+  - get: L:Table2_2_Snack3
+  - get: L:Table2_2_Snacks
+  - get: L:Table2_3_Snack1
+  - get: L:Table2_3_Snack2
+  - get: L:Table2_3_Snack3
+  - get: L:Table2_3_Snacks
+## Table 3 Snacks ##
+  - get: L:Table3_Snack1
+  - get: L:Table3_Snack2
+  - get: L:Table3_Snack3
+  - get: L:Table3_Snack4
+  - get: L:Table3_Snacks
+## Table 4 Snacks ##
+  - get: L:Table4_Snack1
+  - get: L:Table4_Snack2
+  - get: L:Table4_Snack3
+  - get: L:Table4_Snacks
+
+## Table 1 Burgers ##
+  - get: L:Table1_1_Burger
+  - get: L:Table1_1_Burger_Lvl
+  - get: L:Table1_3_Burger
+  - get: L:Table1_3_Burger_Lvl
+## Table 2 Burgers ##
+  - get: L:Table2_1_Burger
+  - get: L:Table2_1_Burger_Lvl
+  - get: L:Table2_3_Burger
+  - get: L:Table2_3_Burger_Lvl
+## Table 3 Burgers ##
+  - get: L:Table3_1_Burger
+  - get: L:Table3_1_Burger_Lvl
+## Table 4 Burgers ##
+  - get: L:Table4_1_Burger
+  - get: L:Table4_1_Burger_Lvl
+## Table 1,2,3,4 Noodles ##
+  - get: L:Table1_1_Noodles
+  - get: L:Table1_3_Noodles
+  - get: L:Table2_1_Noodles
+  - get: L:Table2_2_Noodles
+  - get: L:Table3_1_Noodles
+  - get: L:Table3_2_Noodles
+  - get: L:Table4_1_Noodles
+  - get: L:Table4_2_Noodles
+
+## Table 1,2,3,4 Books ##
+  - get: L:Table1_1_Book
+  - get: L:Table1_2_Book
+  - get: L:Table2_1_Book
+  - get: L:Table2_2_Book
+  - get: L:Table3_Book
+  - get: L:Table4_Book
+
+## Toilet Area ##
+  - get: L:Toilet_Seat_Cover
+  - get: L:Toilet_FlushBtn
+  - get: L:Door_Toilet_Anim
+  - get: L:Toilet_Cabinet_1
+  - get: L:Toilet_Cabinet_2
+
+## Cabin Seat Arm Rests ##
+  - get: L:Seat_F_L_Armrest
+  - get: L:Seat_F_R_Armrest
+  - get: L:Seat_M_L_Armrest
+  - get: L:Seat_M_L_Move
+  - get: L:Seat_M_L_Rotate
+  - get: L:Seat_M_R_Armrest
+  - get: L:Seat_M_R_Move
+  - get: L:Seat_M_R_Rotate
+  - get: L:Seat_B_L_Armrest
+  - get: L:Seat_B_R_Armrest
+
+## Cabin Window Shades/Curtains ##    
+  - get: L:Curtain_1_Anim
+  - get: L:Curtain_2_Anim
+  - get: L:Curtain_3_Anim
+  - get: L:Curtain_4_Anim
+  - get: L:Curtain_5_Anim
+  - get: L:Curtain_6_Anim
+  - get: L:Curtain_7_Anim
+  - get: L:Curtain_8_Anim
+  - get: L:Curtain_9_Anim
+  - get: L:Curtain_10_Anim
+  - get: L:Curtain_11_Anim
+  - get: L:Curtain_12_Anim
+  - get: L:Curtain_13_Anim
+
+## Cabin Coffee Cabinet ##  
+  - get: L:Coffee_Door_Anim
+  - get: L:Coffee_Machine_Btn
+  - get: L:Coffee_Cup_Filling
+  - get: L:Coffee_Cup_Progress
+
+## Cabin Overhead Reading LIGHTS ##
+  - get: A:LIGHT POTENTIOMETER:5, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_5_SET)`"
+  - get: A:LIGHT POTENTIOMETER:6, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_6_SET)`"
+  - get: A:LIGHT POTENTIOMETER:7, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_7_SET)`"
+  - get: A:LIGHT POTENTIOMETER:8, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_8_SET)`"
+  - get: A:LIGHT POTENTIOMETER:9, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_9_SET)`"
+  - get: A:LIGHT POTENTIOMETER:10, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_10_SET)`"
+  - get: A:LIGHT POTENTIOMETER:11, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_11_SET)`"
+  - get: A:LIGHT POTENTIOMETER:12, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_12_SET)`"
+  - get: A:LIGHT POTENTIOMETER:13, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_13_SET)`"
+  - get: A:LIGHT POTENTIOMETER:14, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_14_SET)`"
+  - get: A:LIGHT POTENTIOMETER:15, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_15_SET)`"
+  - get: A:LIGHT POTENTIOMETER:16, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_16_SET)`"
+  - get: A:LIGHT POTENTIOMETER:17, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_17_SET)`"
+## Cabin Lights ##
+  - get: L:LightCabin1_On
+  - get: L:LightCabin1_Off
+  - get: L:LightCabin2_On
+  - get: L:LightCabin2_Off
+  - get: L:LightCabin3_On
+  - get: L:LightCabin3_Off
+  - get: L:LightCabin4_On
+  - get: L:LightCabin4_Off
+  - get: L:LightCabin5_On
+  - get: L:LightCabin5_Off
+  - get: L:LightCabin6_On
+  - get: L:LightCabin6_Off
+  - get: L:LightCabin7_On
+  - get: L:LightCabin7_Off
+  - get: L:LightCabin8_On
+  - get: L:LightCabin8_Off
+  - get: L:LightCabin9_On
+  - get: L:LightCabin9_Off
+  - get: L:LightCabin10_On
+  - get: L:LightCabin10_Off
+  - get: L:LightCabin11_On
+  - get: L:LightCabin11_Off
+  - get: L:LightCabin12_On
+  - get: L:LightCabin12_Off
+  - get: L:LightCabin13_On
+  - get: L:LightCabin13_Off
+  - get: L:LightCabin14_On
+  - get: L:LightCabin14_Off
+
+

@@ -1,0 +1,739 @@
+# Original author: https://discord.com/channels/1454265644416765974/1481797650071425146/1492900910366593054
+# Updated: 2026-04-12 14:55:17
+
+# FlightFX P180 FsCopilot YAML Configuration
+# Version: 0.0.2
+# Date: 4-12-2026
+# Created by: Dkgolfnut
+# Special Thanks to:
+
+# KNOWN ISSUES:
+  # - Hand Pump is not animated.  
+
+# Fixes:
+   # - 4/12/2026 
+     # - Yury Updated Syntax for :1 showing before argument and K:2: logic 
+     # - Chasnged Header info to reflect FlightFX P180
+ # - MARCH 19, 2026
+
+include:
+  - modules/AS_G1000_NXi_ALT_MOD.yaml
+
+  
+master:
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, Position 16K
+    set: (>K:THROTTLE1_SET)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, Position 16K
+    set: (>K:THROTTLE2_SET)
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, Position 16K
+    set: (>K:PROP_PITCH1_SET)
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:2, Position 16K
+    set: (>K:PROP_PITCH2_SET)
+  - get: A:BRAKE LEFT POSITION, Position
+    set: (>K:AXIS_LEFT_BRAKE_SET)
+  - get: A:BRAKE RIGHT POSITION, Position
+    set: (>K:AXIS_RIGHT_BRAKE_SET)
+  - get: A:FLAPS HANDLE PERCENT, Position 16K
+    set: (>K:FLAPS_SET)
+
+##  - ## TRIMS PITCH PRIMARY & SECONDARY, RUDDER ##
+#  - # PITCH TRIM PRI/SEC SW
+  - get: L:pitch_trim_mode
+#  - # PITCH TRIM UP/DN SW
+  - get: L:pitch_trim_1
+  - get: L:P180_sec_pitch_trim
+  - get: L:P180_sec_pitch_trim_on
+##  - # RUDDER TRIM SWITCH - 
+  - get: L:rudder_trim
+
+shared:
+##############  GLARESHIELD  #############
+  - get: B:AUTOPILOT_FD_1_MODE, Bool
+  - get: B:AUTOPILOT_FD_2_MODE, Bool
+  - get: A:NAV OBS:1, Degrees
+  - get: A:NAV OBS:2, Degrees
+  - get: A:AUTOPILOT VERTICAL HOLD, Bool
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet # 
+    set: "current == 0 ? `1 ${value} (>K:2:AP_ALT_VAR_SET_ENGLISH)` : `${value} (>A:AUTOPILOT ALTITUDE LOCK VAR:1)`"  
+  - get: L:XMLVAR_VNAVButtonValue
+    set: (>B:AUTOPILOT_VNAV_MODE_Set)
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees
+  - get: A:AUTOPILOT HEADING LOCK DIR:2, Degrees
+  - get: A:AUTOPILOT MASTER, Bool
+    set: (>K:AP_MASTER)
+  - get: A:AUTOPILOT YAW DAMPER, Bool
+    set: (>K:YAW_DAMPER_TOGGLE)
+  - get: A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool 
+    set: (>K:AP_SPD_VAR_SET)
+############## COLLIINS FMC CONTROLS #############
+  - get: H:CJ4_FMC_1_BTN_L1
+  - get: H:CJ4_FMC_1_BTN_R1
+  - get: H:CJ4_FMC_1_BTN_L2
+  - get: H:CJ4_FMC_1_BTN_R2
+  - get: H:CJ4_FMC_1_BTN_L3
+  - get: H:CJ4_FMC_1_BTN_R3
+  - get: H:CJ4_FMC_1_BTN_L4
+  - get: H:CJ4_FMC_1_BTN_R4
+  - get: H:CJ4_FMC_1_BTN_L5
+  - get: H:CJ4_FMC_1_BTN_R5
+  - get: H:CJ4_FMC_1_BTN_L6
+  - get: H:CJ4_FMC_1_BTN_R6
+  - get: H:CJ4_FMC_1_BTN_MSG
+  - get: H:CJ4_FMC_1_BTN_DIR
+  - get: H:CJ4_FMC_1_BTN_IDX
+  - get: H:CJ4_FMC_1_BTN_TUN
+  - get: H:CJ4_FMC_1_BTN_FPLN
+  - get: H:CJ4_FMC_1_BTN_LEGS
+  - get: H:CJ4_FMC_1_BTN_DEPARR
+  - get: H:CJ4_FMC_1_BTN_PERF
+  - get: H:CJ4_FMC_1_BTN_DSPL_MENU
+  - get: H:CJ4_FMC_1_BTN_MFD_DATA
+  - get: H:CJ4_FMC_1_BTN_MFD_ADV  
+  - get: H:CJ4_FMC_1_BTN_PREVPAGE
+  - get: H:CJ4_FMC_1_BTN_NEXTPAGE
+  - get: H:CJ4_FMC_1_BTN_EXEC
+  - get: H:CJ4_FMC_1_BTN_CLR
+  - get: H:CJ4_FMC_1_BTN_CLR_Long
+############ COLLIINS FMC #'s and Letters' ##########
+  - get: H:CJ4_FMC_1_BTN_1
+  - get: H:CJ4_FMC_1_BTN_2
+  - get: H:CJ4_FMC_1_BTN_3
+  - get: H:CJ4_FMC_1_BTN_4
+  - get: H:CJ4_FMC_1_BTN_5
+  - get: H:CJ4_FMC_1_BTN_6
+  - get: H:CJ4_FMC_1_BTN_7
+  - get: H:CJ4_FMC_1_BTN_8
+  - get: H:CJ4_FMC_1_BTN_9
+  - get: H:CJ4_FMC_1_BTN_0
+  - get: H:CJ4_FMC_1_BTN_DOT
+  - get: H:CJ4_FMC_1_BTN_PLUSMINUS
+  - get: H:CJ4_FMC_1_BTN_A
+  - get: H:CJ4_FMC_1_BTN_B
+  - get: H:CJ4_FMC_1_BTN_C
+  - get: H:CJ4_FMC_1_BTN_D
+  - get: H:CJ4_FMC_1_BTN_E
+  - get: H:CJ4_FMC_1_BTN_F
+  - get: H:CJ4_FMC_1_BTN_G
+  - get: H:CJ4_FMC_1_BTN_H
+  - get: H:CJ4_FMC_1_BTN_I
+  - get: H:CJ4_FMC_1_BTN_J
+  - get: H:CJ4_FMC_1_BTN_K
+  - get: H:CJ4_FMC_1_BTN_L
+  - get: H:CJ4_FMC_1_BTN_M
+  - get: H:CJ4_FMC_1_BTN_N
+  - get: H:CJ4_FMC_1_BTN_O
+  - get: H:CJ4_FMC_1_BTN_P
+  - get: H:CJ4_FMC_1_BTN_Q
+  - get: H:CJ4_FMC_1_BTN_R
+  - get: H:CJ4_FMC_1_BTN_S
+  - get: H:CJ4_FMC_1_BTN_T
+  - get: H:CJ4_FMC_1_BTN_U
+  - get: H:CJ4_FMC_1_BTN_V
+  - get: H:CJ4_FMC_1_BTN_W
+  - get: H:CJ4_FMC_1_BTN_X
+  - get: H:CJ4_FMC_1_BTN_Y
+  - get: H:CJ4_FMC_1_BTN_Z  
+  - get: H:CJ4_FMC_1_BTN_SP   
+  - get: H:CJ4_FMC_1_BTN_DIV
+############ COLLIINS FMC LOWER CONTROLS ##########
+  - get: H:Generic_Lwr_1_Push_LWR_MENU
+  - get: H:Generic_Upr_1_Push_ESC  
+  - get: H:Generic_Lwr_1_Push_SYS
+  - get: H:Generic_Lwr_1_Push_MEM1
+  - get: H:Generic_Lwr_1_Push_MEM2
+  - get: H:Generic_Lwr_1_Push_MEM3
+  - get: H:CCP_push_chart
+  - get: H:Generic_Lwr_1_Push_ZOOM_INC
+  - get: H:Generic_Lwr_1_Push_ZOOM_DEC
+  - get: H:Generic_Lwr_1_JOYSTICK_UP
+  - get: H:Generic_Lwr_1_JOYSTICK_DOWN
+  - get: H:Generic_Lwr_1_JOYSTICK_LEFT
+  - get: H:Generic_Lwr_1_JOYSTICK_RIGHT
+
+################  PFD 1  ################
+  - get: H:Generic_Display_PFD1_Push_1L
+  - get: H:Generic_Display_PFD1_Push_1R
+  - get: H:Generic_Display_PFD1_Push_2L
+  - get: H:Generic_Display_PFD1_Push_2R
+  - get: H:Generic_Display_PFD1_Push_3L
+  - get: H:Generic_Display_PFD1_Push_3R
+  - get: H:Generic_Display_PFD1_Push_4L
+  - get: H:Generic_Display_PFD1_Push_4R
+############## REF panel 1 ################
+  - get: A:KOHLSMAN SETTING MB:1, Millibar
+    set: "`1 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: L:XMLVAR_BARO1_ForcedToSTD, Bool
+    set: '1 (>K:BAROMETRIC_STD_PRESSURE)'  
+  - get: H:Generic_Upr_1_Push_REFS_MENU
+    set: '0 (>B:AS3000_Upper_1_REFS_MENU_Set)'
+  - get: H:Generic_Upr_1_MENU_ADV_INC
+  - get: H:Generic_Upr_1_MENU_ADV_DEC
+  - get: H:Generic_Upr_1_MENU_DATA_INC
+  - get: H:Generic_Upr_1_MENU_DATA_DEC
+  - get: H:Generic_Upr_1_MENU_DATA_BUTTON_PUSH
+  - get: H:Generic_Upr_1_Push_NAV
+    set: '0 (>B:AS3000_Upper_1_NAV_Set)'
+  - get: H:Generic_Upr_1_Push_TERR_WX
+    set: '0 (>B:AS3000_Upper_1_TERR_WX_Set)'
+  - get: H:Generic_Upr_1_TILT_INC
+  - get: H:Generic_Upr_1_TILT_DEC
+  - get: H:Generic_Upr_1_TILT_PUSH  
+  - get: H:Generic_Upr_1_RANGE_INC
+  - get: H:Generic_Upr_1_RANGE_DEC
+################  MFD 1  ################
+  - get: H:Generic_Display_MFD1_Push_1L
+  - get: H:Generic_Display_MFD1_Push_1R
+  - get: H:Generic_Display_MFD1_Push_2L
+  - get: H:Generic_Display_MFD1_Push_2R
+  - get: H:Generic_Display_MFD1_Push_3L
+  - get: H:Generic_Display_MFD1_Push_3R
+  - get: H:Generic_Display_MFD1_Push_4L
+  - get: H:Generic_Display_MFD1_Push_4R
+#############  COM, NAV, ADF 1 Panel #############
+  - get: L:coms_softkey_1 
+  - get: L:coms_softkey_2
+  - get: L:coms_softkey_3
+  - get: L:coms_softkey_4
+  - get: L:coms_softkey_5
+  - get: L:coms_softkey_6
+  - get: L:coms_softkey_7
+  - get: L:coms_ident
+  - get: L:coms_dme
+  - get: L:coms_half
+  - get: L:coms_knob
+  - get: L:coms_knob_small
+################  PFD 2  ################
+  - get: H:Generic_Display_PFD2_Push_1L
+  - get: H:Generic_Display_PFD2_Push_1R
+  - get: H:Generic_Display_PFD2_Push_2L
+  - get: H:Generic_Display_PFD2_Push_2R
+  - get: H:Generic_Display_PFD2_Push_3L
+  - get: H:Generic_Display_PFD2_Push_3R
+  - get: H:Generic_Display_PFD2_Push_4L
+  - get: H:Generic_Display_PFD2_Push_4R
+############## REF panel 2 ################
+  - get: A:KOHLSMAN SETTING MB:2, Millibar
+    set: "`2 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: L:XMLVAR_BARO1_ForcedToSTD, Bool
+    set: '1 (>K:BAROMETRIC_STD_PRESSURE)'  
+  - get: H:Generic_Upr_2_Push_REFS_MENU
+    set: '0 (>B:AS3000_Upper_2_REFS_MENU_Set)'
+  - get: H:Generic_Upr_2_MENU_ADV_INC
+  - get: H:Generic_Upr_2_MENU_ADV_DEC
+  - get: H:Generic_Upr_2_MENU_DATA_INC
+  - get: H:Generic_Upr_2_MENU_DATA_DEC
+  - get: H:Generic_Upr_2_MENU_DATA_BUTTON_PUSH
+  - get: H:Generic_Upr_2_Push_NAV
+    set: '0 (>B:AS3000_Upper_2_NAV_Set)'
+  - get: H:Generic_Upr_2_Push_TERR_WX
+    set: '0 (>B:AS3000_Upper_2_TERR_WX_Set)'
+  - get: H:Generic_Upr_2_TILT_INC
+  - get: H:Generic_Upr_2_TILT_DEC
+  - get: H:Generic_Upr_2_TILT_PUSH  
+  - get: H:Generic_Upr_2_RANGE_INC
+  - get: H:Generic_Upr_2_RANGE_DEC
+
+##  - #############  CAUTION MESSAGES #############
+  - get: L:P180_autofeather_caut
+  - get: L:P180_av_fan_fail_caut
+  - get: L:P180_batt_temp_caut
+  - get: L:P180_bus_not_intercon_caut
+  - get: L:P180_cabin_door_fail_caut
+  - get: L:P180_cas_caut_ack
+  - get: L:P180_cas-caut-ack-press
+  - get: L:P180_cas_caut_ack_press  
+  - get: L:P180_epu_drain_caut
+  - get: L:P180_flap_sync_fail_caut
+  - get: L:P180_fuel_filter_caut_i
+  - get: L:P180_fuel_filter_caut_r
+  - get: L:P180_fuel_press_caut_l
+  - get: L:P180_fuel_press_caut_r
+  - get: L:P180_fuel_pump_inop_caut_l
+  - get: L:P180_fuel_pump_inop_caut_r
+  - get: L:P180_fuel_valve_transit_caut_l
+  - get: L:P180_fuel_valve_transit_caut_r  
+  - get: L:P180_fuel_xfeed_caut
+  - get: L:P180_fuel_xfeed_intran_caut
+  - get: L:P180_hyd_press_caut
+  - get: L:P180_ice_fail_caut
+  - get: L:P180_low_fuel_caut_l
+  - get: L:P180_low_fuel_caut_r
+  - get: L:P180_oil_cool_caut
+  - get: L:P180_prop_pitch_caut_i
+  - get: L:P180_prop_pitch_caut_r
+  - get: L:P180_stall_fail_caut  
+  - get: L:P180_stall_fail_caut_cas
+  - get: L:P180_stall_fail_caut_test
+
+##  - #############  CoPILOT PANELS - Right ARM #############
+##  - ## RIGHT ARM Items ##
+#  - # Reading Light
+  - get: A:LIGHT POTENTIOMETER:11
+    set: 11 (>K:LIGHT_POTENTIOMETER_11_SET)
+  - get: L:MOUSE_lighting_reading_r
+  - get: L:light_reading_r
+
+##  - #############  CoPILOT PANELS - Upper Front #############
+##  - ## Chronometer ##
+  - get: L:gauge_chronometer_button_sel_r
+  - get: L:gauge_chronometer_button_ctl_r
+##  - ## Warning, Caution, ICE push lights ##
+  - get: L:P180_cas-warn-ack-press
+  - get: L:P180_cas-caut-ack-press   
+  - get: L:P180_sys_test_ice
+#  - get: L:P180_Light_Lamp_Multiplier
+
+##  - ## PILOT YOKE CONTROLS ##
+#  - # HIDE PILOT YOKE
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+#  - # MODE STEER & CONTROL WHEEL MASTER SW
+  - get: L:P180_steering_mode
+#  - # AUTOPILOT DISENGAGE 
+  - get: A:AUTOPILOT DISENGAGED
+    set: (>K:AUTOPILOT_DISENGAGE_SET)
+  - get: A:AUTOPILOT MASTER, Bool
+    set: (>K:AP_MASTER)
+  - get: A:AUTOPILOT YAW DAMPER, Bool
+    set: (>K:YAW_DAMPER_TOGGGLE)  
+#  - # EFIS ET BTN
+  - get: L:Generic_Display_PDF1_Push_4L
+##  - #############  CoPILOT PANELS - LOWER Front #############
+##  - ## CABIN PRESSURE PANEL ##
+#  - # DUMP COVER
+  - get: L:switch_dump_cover
+  - get: L:switch_dump
+  - get: L:pressure_adjust_knob
+#  - get: L:pressure_adjust_knob_LF
+  - get: L:P180_PRESSURE_MANUAL_KNOB_R
+  - get: L:pressure_inc
+#  - get: L:pressure_inc_LF
+  - get: L:pressure_cab_iau
+#  - get: L:pressure_cab_iau_LF
+  - get: L:pressure_cab_sel
+#  - get: L:pressure_cab_sel_LF
+  - get: L:gauge_landing_knob_a
+#  - get: L:gauge_landing_knob_a_LF
+  - get: L:P180_LFE
+  - get: L:gauge_landing_knob_r
+#  - get: L:gauge_landing_knob_r_LF
+  - get: L:gauge_landing_knob_b
+#  - get: L:gauge_landing_knob_b_LF
+  - get: L:P180_PRESSURE_KNOB_B
+
+
+##  - #############  MISCELLENEOUS ITEMS #############
+##  - ## Pressurization  ##
+  - get: A:BLEED AIR ENGINE:1, Bool
+    set: 1 (>K:ENGINE_BLEED_AIR_SOURCE_SET)
+  - get: A:BLEED AIR ENGINE:2, Bool
+    set: 2 (>K:ENGINE_BLEED_AIR_SOURCE_SET)
+  - get: A:BLEED AIR SOURCE CONTROL, Number 
+    set: (>K:BLEED_AIR_SOURCE_CONTROL_SET)
+  - get: A:BLEED AIR APU, Bool
+    set: (>K:APU_BLEED_AIR_SOURCE_SET)
+  - get: A:BLEED AIR CARGO, Bool
+    set: (>K:BLEED_AIR_CARGO_SET)
+  - get: A:BLEED AIR ENGINE:1, Bool
+    set: 1 (>K:ENGINE_BLEED_AIR_SOURCE_SET)
+  - get: A:BLEED AIR ENGINE:2, Bool
+    set: 2 (>K:ENGINE_BLEED_AIR_SOURCE_SET)
+
+  - get: A:PRESSURIZATION DUMP SWITCH, Bool
+    set: (>K:PRESSURIZATION_PRESSURE_DUMP_SWITCH)
+  - get: L:P180_PRESSURIZATION_ALT_GOAL, Number
+  - get: L:guage_landing_knob_a, Number
+  - get: L:guage_landing_knob_b, Number
+  - get: L:P180_PRESSURE_KNOB_R, Number
+#  - # Sunshades 
+  - get: L:P180_sunshade_l
+  - get: L:P180_sunshade_r
+##  - ## TABLET FUNCTIONS  ##
+  - get: L:FFX_COLD_AND_DARK
+  - get: L:FFX_TAXI_STATE
+  - get: L:FFX_TAKEOFF_STATE
+#  - # Covers
+  - get: L:FFX_CHOCKS_COVERS
+  - get: L:FFX_PITOT_STATIC_COVERS
+  - get: L:FFX_ENGINE_COVERS
+  - get: A:COVER ON:0, Bool
+    set: "`${value} (>K:COVER_0_SET)'" 
+  - get: A:COVER ON:1, Bool
+    set: "`${value} (>K:COVER_1_SET)'" 
+  - get: A:COVER ON:1, Bool
+    set: "`${value} (>K:COVER_1_SET)'" 
+  - get: A:COVER ON:2, Bool
+    set: "`${value} (>K:COVER_2_SET)'" 
+  - get: A:COVER ON:3, Bool
+    set: "`${value} (>K:COVER_3_SET)'" 
+  - get: A:COVER ON:6, Bool
+    set: "`${value} (>K:COVER_6_SET)'" 
+#  - # DOORS - MAIN
+  - get: L:P180_Upper_front_door
+  - get: L:P180_front_door_timer 
+#  - # DOORS - Luggage
+  - get: L:FFX_LUGGAGE_DOOR
+#  - # CONFIG ITEMS
+  - get: L:FFX_EXEC_CONFIG
+  - get: L:FFX_CLUTTER_CONFIG
+  - get: L:FFX_BOX_LUNCH_CONFIG
+  - get: L:FFX_PIZZA_CONFIG
+  - get: L:FFX_PLATED_DINNER_CONFIG
+#  - # Luggage Types
+  - get: L:FFX_TYPE_SKI
+  - get: L:FFX_TYPE_LUGGAGE
+  - get: L:FFX_TYPE_GOLF
+#  - # NOISE reduction
+  - get: L:FFX_ANR_NOISE
+#  - # STEERING MODE
+  - get: L:FFX_AUTO_STEER_MODE
+#  - # Engine Damage
+  - get: L:FFX_ENABLE_DMG_REALISM
+#  - # Repair Engines
+  - get: L:FFX_REPAIR_ENGINES_STATE
+#  - # Brightness, Location and HOME butttons
+  - get: L:tablet_brightness
+  - get: L:tablet_stow
+#  - get: L:tablet_stow_LF
+  - get: L:P180_TABLET_STATE
+  - get: L:push_tablet_home
+#  - get: L:push_tablet_home_LF
+#  - # SUNVISORS
+  - get: L:p180_sunvisor_1
+  - get: L:p180_sunvisor_2
+##  - #############  Passenger CABIN/CARGO AREA#############
+##  - ## LIGHTING SWITCHES ##
+#  - # Entry Lights at Main Door opening
+  - get: A:LIGHT POTENTIOMETER:8, Percent
+    set: 8 (>LIGHT_POTENTIOMETER_8_SET)
+
+#  - # Cabin Lights switch at Main Door
+  - get: L:lighting_cabin
+  - get: L:cabin_softkey_stair_cabin_light 
+#  - # Crew Lights switch at Main Door
+  - get: L:lighting_cockpit
+  - get: L:cabin_softkey_stair_crew_light 
+#  - # Cabinet Drawers
+  - get: L:p180_furniture_drawer_01
+  - get: L:p180_furniture_drawer_02
+  - get: L:p180_furniture_drawer_03
+  - get: L:p180_furniture_drawer_04
+  - get: L:p180_furniture_drawer_05
+  - get: L:p180_furniture_drawer_06
+  - get: L:p180_furniture_drawer_07
+  - get: L:p180_furniture_drawer_08   
+  - get: L:p180_furniture_drawer_09
+  - get: L:p180_furniture_drawer_10
+  - get: L:p180_furniture_drawer_11
+  - get: L:p180_furniture_drawer_12
+  - get: L:p180_furniture_DRAWER_13
+  - get: L:p180_furniture_DRAWER_14
+  - get: L:p180_furniture_DRAWER_15
+  - get: L:p180_furniture_DRAWER_16
+  - get: L:p180_furniture_DRAWER_17
+  - get: L:p180_furniture_DRAWER_18
+  - get: L:p180_furniture_DRAWER_19
+  - get: L:p180_furniture_DRAWER_20
+#  - # Cabin Shades
+  - get: L:cabin_shade_l_01
+  - get: L:cabin_shade_l_02
+  - get: L:cabin_shade_l_03
+  - get: L:cabin_shade_l_04
+  - get: L:cabin_shade_l_05
+  - get: L:cabin_shade_l_06
+  - get: L:cabin_shade_r_01
+  - get: L:cabin_shade_r_02
+  - get: L:cabin_shade_r_03
+  - get: L:cabin_shade_r_04
+  - get: L:cabin_shade_r_06
+  - get: L:cabin_shade_r_06
+#  - # Furniture Doors
+  - get: L:p180_furniture_door_01
+  - get: L:p180_furniture_door_02
+  - get: L:p180_furniture_door_03
+  - get: L:p180_furniture_door_04
+  - get: L:p180_furniture_door_trash
+#  - # Toilet Sliding Door
+  - get: L:P180_toilet_door
+  - get: L:P180_toilet_wardrobe
+  - get: L:P180_softkey_vanity_light 
+  - get: L:P180_softkey_indirect_light  
+#  - # Main Exit
+  - get: L:P180_front_door_active
+  - get: L:P180_upper_front_door
+  - get: L:P180_front_door_timer
+   
+#  - # Seats -  Headrests, levers and PUSH
+  - get: L:furniture_seat_head_01
+  - get: L:furniture_seat_head_02
+  - get: L:furniture_seat_head_03
+  - get: L:furniture_seat_head_04
+  - get: L:furniture_seat_ctrl_lever_01
+  - get: L:furniture_seat_ctrl_lever_02
+  - get: L:furniture_seat_ctrl_lever_03
+  - get: L:furniture_seat_ctrl_lever_04
+  - get: L:furniture_seat_ctrl_push_01
+  - get: L:furniture_seat_ctrl_push_02
+  - get: L:furniture_seat_ctrl_push_03
+  - get: L:furniture_seat_ctrl_push_04
+#  - # Toilet Seat
+  - get: L:P180_toilet_seat
+#  - # Tables
+  - get: L:p180_furniture_table_l
+  - get: L:p180_furniture_table_r
+#  - # TV's
+  - get: L:p180_TV_L
+  - get: L:p180_TV_R
+
+
+##  - #############  PEDISTAL - UPPER #############
+##  - ## MASTER SWITCH PANEL ##
+#  - # BATTERY
+  - get: L:electrical_switch_bat
+#  - # LEFT GEN
+  - get: L:electrical_switch_generator_l
+#  - #RIGHT GEN
+  - get: L:electrical_switch_generator_r
+#  - # EPU
+  - get: L:electrical_switch_epu
+  - get: L:p180_epu_drain_caut
+##  - # BUS DISCONNECT SW
+  - get: L:electrical_switch_emer_bus_disc
+  - get: L:p180_bus_not_inercon_cau
+##  - # Avionics SW
+  - get: L:electrical_switch_avionics
+##  - ## FUEL SWITCH PANEL ##
+#  - # LF/W VALVE OPEN
+  - get: L:fuel_switch_fw_valve_l
+  - get: L:P180_fuel_firewall_l_reset
+#  - # L PUMP MAIN
+  - get: L:fuel_switch_pump_l
+  - get: L:P180_fuel_pump_l
+  - get: L:P180_fuel_press_caut_l
+#  - # CROSSFEED KNOB
+  - get: L:fuel_crossfeed_knob
+  - get: L:P180_fuel_Xfeed_intran_caut
+#  - # R PUMP MAIN
+  - get: L:fuel_switch_pump_r
+  - get: L:P180_fuel_pump_r
+  - get: L:P180_fuel_press_caut_r
+#  - # R VALVE OPEN
+  - get: L:fuel_switch_fw_valve_r
+  - get: L:P180_fuel_firewall_r_reset
+##  - ## ENGINE/PROPELLER SWITCH PANEL ##
+#  - # LEFT START SW
+  - get: L:engine_switch_start_l
+#  - # LEFT IGNITION SW
+  - get: L:engine_switch_ign_l
+  - get: L:P180_engine_ignition_l
+#  - # LEFT OIL COOLING SW
+  - get: L:engine_switch_oil_cool_l
+  - get: L:P180_engine_oil_cool_l
+#  - # RIGHT OIL COOLING SW
+  - get: L:engine_switch_oil_cool_r
+  - get: L:P180_engine_oil_cool_r
+#  - # RIGHT IGNITION SW
+  - get: L:engine_switch_ign_r
+  - get: L:P180_engine_ignition_r
+#  - # RIGHT START SW
+  - get: L:engine_switch_start_r
+#  - # OVERSPEED TEST SW
+  - get: L:engine_switch_ovsp_test
+#  - # AUTOFEATHER SW
+  - get: L:engine_switch_autofeather
+  - get: L:P180_engine_autofeather_test
+#  - # SYNCHPH SW
+  - get: L:engine_switch_syncph
+  - get: L:engine_switch_syncph_L # May remove ?
+  - get: L:P180_engine_syncph
+##  - #############  PEDISTAL - Quadrant #############
+##  - ## LIGHT SWITCH PANEL ##
+#  - # POSITION LIGHTS
+  - get: L:lights_pos
+#  - # ANTICOLLISION 
+  - get: L:lights_anticoln
+#  - # RECOGNITION 
+  - get: L:lights_recog
+#  - # Fasten SEATBELTS
+  - get: L:lights_seatbelt
+#  - # WING ICE LIGHTS
+  - get: L:lights_wing
+#  - # MANUAL EMEGRENCY GEAR HAND PUMP
+  - get: L:handling_manual_lg, number
+    set: '0 (>K:GEAR_PUMP)'
+  - get: L:handling_manual_lg_LF
+    set: '0 (>K:GEAR_PUMP)'
+  - get: L:emergency_landing_gear_lever, Bool
+  - get: A:BRAKE PARKING POSITION, Bool
+    set: (>K:PARKING_BRAKE_SET)
+  - get: L:ParkingBrake_Position, Number
+##  - #############  PILOT PANELS - LEFT ARM #############
+##  - ## LIGHTING PANEL SWITCHES ##
+  - get: L:lighting_lamp
+  - get: L:lighting_cabin
+  - get: L:lighting_cockpit
+#  - #
+  - get: L:lighting_flood
+  - get: L:lighting_panels
+  - get: L:lighting_displays
+#  - # Reading Light
+  - get: A:LIGHT POTENTIOMETER:10, Percent
+    set: 10 (>K:LIGHT_POTENTIOMETER_10_SET)
+  - get: L:lighting_reading_l
+  - get: L:MOUSE_lighting_reading_l
+
+##  - #############  PILOT PANELS - FRONT UPPER #############
+##  - ## CHRONOMETER SWITCHES ##
+  - get: L:gauge_chronometer_button_sel_l
+  - get: L:gauge_chronometer_button_ctl_l
+#  - # ELT MODE SW
+  - get: L:switch_elt
+#  - # MISC TEST SWITCHES
+  - get: L:major_test_3
+  - get: L:major_test_4
+  - get: L:major_test_5
+#  - # WARNING BUTTON ACKNOWLEDGE
+  - get: L:P180_cas_warn_ack_press
+#  - # CAUTION BUTTON ACKNOWLEDGE
+  - get: L:P180_cas_caut_ack_press
+#  - # ICE BUTTON ACKNOWLEDGE
+  - get: L:P180_sys_test_ice
+  - get: L:P180_ice_fail_caut
+#  - get: L:P180_Light_Lamp_Multiplier
+
+##  - #############  PILOT PANELS - FRONT LOWER #############
+##  - ## AUDIO PANEL SWITCHES ##
+  - get: A:SPEAKER ACTIVE, Bool
+    set: (>B:NAVCOM_AUDIO_Speaker_Toggle)
+  - get: A:AUDIO PANEL VOLUME, Percent
+  - get: A:NAV VOLUME:1, Percent
+    set: (>B:NAVCOM_NAV1_Volume_Set)
+  - get: A:NAV VOLUME:2, Percent
+    set: (>B:NAVCOM_NAV2_Volume_Set)
+  - get: A:ADF VOLUME:1, Percent
+    set: (>B:NAVCOM_ADF1_Volume_Set) 
+  - get: A:COM VOLUME:1, Percent
+    set: (>B:NAVCOM_COM1_Volume_Set)
+  - get: A:COM VOLUME:2, Percent
+    set: (>B:NAVCOM_COM2_Volume_Set)
+  - get: A:COM VOLUME:3, Percent
+    set: (>B:NAVCOM_COM3_Volume_Set)
+  - get: A:COM VOLUME:4, Percent
+    set: (>B:NAVCOM_COM4_Volume_Set)
+  - get: B:NAVCOM_AUDIO_NAV1_RECEIVE, Bool      
+  - get: L:audio_nav1_audio_l, Bool
+  - get: L:audio_nav2_audio_l, Bool
+  - get: A:ADF SOUND:1, Bool
+    set: 1 (>B:NAVCOM_AUDIO_ADF1_Sound_Toggle)
+  - get: L:audio_com1_audio_l, Bool
+  - get: L:audio_com2_audio_l, Bool
+  - get: L:audio_mic1_audio_l, Bool
+  - get: L:audio_mic2_audio_l, Bool
+  - get: A:MARKER SOUND:1, Percent
+    set: 1 (>B:NAVCOM_AUDIO_MARKER1_Sound_Toggle)
+  - get: A:DME SOUND:1, Percent
+    set: 1 (>B:NAVCOM_AUDIO_DME1_Sound_Toggle)
+   
+##  - ## COOLING PANEL SWITCHES ##
+  - get: L:cooling_cool
+  - get: L:cooling_fan_ckpt
+  - get: L:cooling_fan_cabin
+##  - ## HEATING PANEL SWITCHES ##
+  - get: L:heating_ckpt_blower
+  - get: L:heating_cockpit_knob_big
+  - get: L:heating_cockpit_knob_small
+  - get: L:heating_cabin_knob_big
+  - get: L:heating_cabin_knob_small
+  - get: L:heating_cabin_manual_knob_big
+  - get: L:heating_cabin_manual_knob_small
+  - get: L:bleed_emer
+  - get: L:bleed_l
+  - get: L:bleed_r
+##  - ## HYDRAULIC PANEL SWITCHES ##
+  - get: L:hyd
+#  - get: L:hyd_LF
+  - get: L:P180_hydraulics
+##  - ## LANDING GEAR PANEL SWITCHES ##
+  - get: L:LANDING_GEAR_gear, Bool
+    set: (>B:LANDING_GEAR_gear_Set)
+  - get: L:landing_gear_lights
+  - get: L:P180_gears_lights_state
+#  - # Front Animated gear light door
+  - get: L:P180_front_light_door_anim
+##  - ## ANTI_ICE PANEL SWITCHES ##
+#  - # PITOT LEFT & STALL SW
+  - get: L:anti_ice_static_l
+#  - # PITOT RIGHT & TAT SW
+  - get: L:anti_ice_static_r
+#  - # FWD WING LEFT
+  - get: L:anti_ice_fwd_wing_l
+#  - #  FWD WING RIGHT
+  - get: L:anti_ice_fwd_wing_r
+#  - # ENG ICE VANE LEFT
+  - get: L:anti_ice_eng_l
+#  - # ENG ICE VANE RIGHT
+  - get: L:anti_ice_eng_r
+  - get: A:ENG ANTI ICE:1, Bool
+    set: 1 (>ANTI_ICE_SSET_ENG1)
+  - get: A:ENG ANTI ICE:2, Bool
+    set: 2 (>ANTI_ICE_SSET_ENG2)
+#  - # Windeshield Heater Primary
+  - get: L:anti_ice_windshield_pri
+#  - # Windeshield Heater Primary
+  - get: L:anti_ice_windshield_sec
+#  - # MAIN WING LEFT
+  - get: L:anti_ice_wing_l
+  - get: L:anti_ice_wing_l_auto
+#  - # MAIN WING RIGHT
+  - get: L:anti_ice_wing_r
+  - get: L:anti_ice_wing_r_auto
+#  - # Oil Cooler INTK Left
+  - get: L:anti_ice_oil_cool_l
+#  - # Oil Cooler INTK Right
+  - get: L:anti_ice_oil_cool_r
+#  - # BOOTS DEICE - Developer spells this incorrectly
+  - get: L:anti_ice_boost_l
+  - get: L:anti_ice_boost_deice
+##  - ## SYSTEM TEST PANEL SWITCH ##
+#  - # ANN
+  - get: L:P180_sys_test_ann
+#  - # AVCS TEST
+  - get: L:P180_sys_test_avcs
+  - get: L:P180_sys_test_avcs_timer
+#  - # ENGINE EXCEED
+  - get: L:P180_sys_eng_excd
+#  - # FIRE
+  - get: L:P180_sys_test_fire
+#  - # FLAPS
+  - get: L:P180_sys_test_flaps
+#  - # FUEL
+  - get: L:P180_sys_test_fuel
+#  - # FWD WING ICE
+  - get: L:P180_sys_test_fwd_wing_ice
+#  - # HYD
+  - get: L:P180_sys_test_hyd
+#  - # ICE
+  - get: L:P180_sys_test_ice
+  - get: L:P180_sys_test_ice_timer
+#  - # KNOB POSIION
+  - get: L:P180_sys_test_knob_pos
+  - get: L:P180_sys_test_knob_pos_anim
+#  - # LAMP
+  - get: L:P180_sys_test_lamp
+#  - # Landing gear
+  - get: L:P180_sys_test_ldngr
+#  - # Main Wing ICE
+  - get: L:P180_sys_test_mn_wing_ice
+  - get: L:P180_sys_test_mn_wing_ice_on
+  - get: L:P180_sys_test_mn_wing_ice_start_test
+  - get: L:P180_sys_test_mn_wing_ice_timer
+#  - # OVERSPEED
+  - get: L:P180_sys_test_ovsp_warn
+#  - # RADIO ALTIMETER
+  - get: L:P180_sys_test_rad_alt
+#  - # STALL TEST
+  - get: L:P180_sys_test_stall
+  - get: L:P180_sys_test_stall_timer
+#  - # STEER
+  - get: L:P180_sys_test_steer
+

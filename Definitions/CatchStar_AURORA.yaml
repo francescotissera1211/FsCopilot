@@ -1,0 +1,126 @@
+# Original author: https://discord.com/channels/1454265644416765974/1534224950485848134/1534937590619312239
+# Updated: 2026-08-07 07:01:07
+
+#已知问题：音量旋钮动画有问题但功能正常
+#Known Issue: the animation of Volume knob rotation is not working but funtioning normally
+
+#Special thanks to: ijustwantologin, without whom this could never have been done.
+
+include:
+
+master:
+  - get: A:FUELSYSTEM TANK WEIGHT:1, kg
+  - get: A:FUELSYSTEM TANK WEIGHT:2, kg
+  - get: A:PAYLOAD STATION WEIGHT:1, kg
+  - get: A:PAYLOAD STATION WEIGHT:2, kg
+  - get: A:PAYLOAD STATION WEIGHT:3, kg
+  - get: A:ELECTRICAL BATTERY VOLTAGE, volts
+
+
+
+shared:
+  - get: H:AS5_1_Knob_Inc                                                     #Eletrcal Altimeter Calibration 电子高度表修压多功能旋钮控制
+    set: (>B:AS5_1_Knob_Inc)
+  - get: H:AS5_1_Knob_Dec
+    set: (>B:AS5_1_Knob_Dec)
+  - get: H:AS5_1_Knob_Button_Push
+  - get: H:AS5_1_Knob_Long_Push
+
+
+
+  - get: A:CIRCUIT SWITCH ON:10, Bool 		                                    #G5 Swith G5电子姿态仪开关控制
+
+  - get: A:KOHLSMAN SETTING MB EX1:2, Millibars		                            #Machanical Altimeter Calibration 机械高度表修压控制
+    set: "`2 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+
+  - get: A:GENERAL ENG MASTER ALTERNATOR, Bool	                              #Generator Curcuit Breaker 发电机断路器
+    set: "`1 ${value} (>K:ALTERNATOR_SET)`"
+
+  - get: A:ELECTRICAL MASTER BATTERY:1, Bool			                            #Battery Curcuit Breaker 蓄电池断路器
+
+  - get: A:GENERAL ENG STARTER:1, numbers		                                  #Start up Swith启动开关
+    set: (>K:SET_STARTER1_HELD)
+
+  - get: A:RECIP ENG LEFT MAGNETO:1, numbers		                              #Ignition Magneto L 点火开关左
+  - get: A:RECIP ENG RIGHT MAGNETO:1, numbers		                              #Ignition Magneto R 点火开关右
+
+  - get: L:MAINKEY_SWITCH				                                              #Main Key Swith主控锁钥匙
+
+  - get: A:FUELSYSTEM PUMP SWITCH:1, numbers		                              #Fuel Pump油泵
+    set: (>B:FUEL_Pump_1_Set)
+
+  - get: L:TRIM_SWITCH_STATE				                                          #Trip 配平系统
+
+  - get: A:LIGHT NAV:1, Boolean			                                          #NAV Light 导航灯
+
+  - get: A:LIGHT STROBE:1, Boolean			                                      #Strobe Light 频闪灯
+
+  - get: A:LIGHT LANDING:1, Boolean			                                      #Landing Light着陆灯
+
+  - get: A:BREAKER FLAP, Bool				                                          #Flap System襟翼
+    set: "value != current ? `(>K:BREAKER_FLAP_TOGGLE)` : ``"
+
+  - get: A:CIRCUIT BREAKER PULLED:10, Bool					                          #Flight Instrument Curcuit Breaker飞行仪表
+#    set: 10 2 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+
+  - get: A:CIRCUIT BREAKER PULLED:6, Bool	                                    #GPS Curcuit Breaker
+#    set: 6 2 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+
+  - get: A:CIRCUIT BREAKER PULLED:5, Bool	                                    #Squark Curcuit Breaker 应答机
+#    set: 5 2 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+
+  - get: A:CIRCUIT BREAKER PULLED:9, Bool	                                    #Radio Curcuit Breaker 电台
+#    set: 9 2 (>K:2:ELECTRICAL_CIRCUIT_BREAKER_TOGGLE)
+
+  - get: A:FLAPS HANDLE PERCENT, percent		                                  #Flap Position 襟翼挡位
+    set: "`${value * 163.84} (>K:FLAPS_SET)`"
+
+  - get: A:COM VOLUME:1, percent 			                                        #Radio Volume Curcuit Breaker 无线电音量
+    set: (>K:COM1_VOLUME_SET)
+
+  - get: A:COM STANDBY FREQUENCY:1, Hz		                                    #COM1 STBY Freq 电台频率MHz
+    set: "`${value} (>K:COM_STBY_RADIO_SET_HZ)`"
+
+  - get: A:COM ACTIVE FREQUENCY:1, Hz		                                      #COM1 ACTI Freq 电台频率MHz
+    set: "`${value} (>K:COM_RADIO_SET_HZ)`"
+
+  - get: A:TRANSPONDER STATE:1, Enum	 		                                    #Transponder Mode 应答机模式切换
+
+  # - get: A:TRANSPONDER CODE:1, Bco16			                                  #Transponder Numbers 应答机数字切换
+  #   set: (>K:XPNDR_SET)
+  - get: H:Transponder_Code_INC
+  - get: H:Transponder_Code_DEC
+
+  - get: H:Transponder_VFR	 			                                            #Transponder VFR 应答机VFR
+
+  - get: H:Transponder_ENTER 				                                          #Transponder ENT 应答机ENT
+
+  - get: H:Transponder_FUNC				                                            #Transponder FUNC 应答机功能
+
+  - get: K:XPNDR_IDENT_ON			                                                #Transponder IDT 应答机识别   
+
+  - get: A:BRAKE PARKING POSITION, Boolean		                                #PARKING BRAKE 停机刹车
+    set: (>B:LANDING_GEAR_ParkingBrake_Set)
+
+  - get: L:CARB_HEAT_SWITCH, Bool 			                                      #化油器升温 如果不行  - get: A:CARB HEAT AVAILABLE, Boolean
+
+  - get: B:PASSENGER_Cabin_Heat_1_Set, percent		                            #Cabin Heat 座舱暖风
+    set: (>B:PASSENGER_Cabin_Heat_1_Set) 
+
+  - get: A:FUELSYSTEM JUNCTION SETTING:1, numbers	                            #Fuel Select 燃油选择开关
+    set: "`${value} 1 (>K:2:FUELSYSTEM_JUNCTION_SET)`"
+
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, percent	                    #ENGINE CHOKE 加浓器开关
+
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, percent                     #Throttle 油门
+
+  - get: A:AILERON TRIM, degrees                                              #Roll Trim 滚转配平
+  - get: A:ELEVATOR TRIM POSITION, degree                                     #Pitch Trim 俯仰配平
+
+  - get: B:AIRCRAFT_Door_1, Bool                                              #Hatch Lock 舱门锁
+    set: (>B:AIRCRAFT_Door_1_Set)
+
+  - get: L:SA60L_RUDDER_CTRL_MODE, Bool 		                                  #Rudder Contrl Mode 方向舵控制模式
+
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR, Feet                                  #Alttitude Bud 高度游标
+  - get: A:AUTOPILOT HEADING LOCK DIR, Degrees                                #Heading Bud 航向游标

@@ -1,0 +1,600 @@
+# Original author: https://discord.com/channels/1454265644416765974/1483497882098339880/1492674847841587230
+# Updated: 2026-04-11 23:57:00
+
+# Microsoft Grumman Albatross - FsCopilot YAML Configuration
+# Version: 0.0.4 
+# Created By: DKgolnut
+# Special Thanks: to Millerino for his help testing and giving feedback on the profile!
+# Date: March 31, 2026
+
+
+# KNOWN ISSUES:
+  # - When starting engines, they may start on PF, but not on PM due to the engines being finicky to start.   If the second pilot's engines do not start, he should hit the start buttons (Left and Right) until the engines fire up. If they dont sart up withthis method, the PM should disconnect/leave the session, start the engines and rejoin the FSC session.
+  # - Everything else works very well. Enjoy flying it
+
+# FIXES:
+   # - 3/19/2026
+     # - Changed Throttles to Bvars and B Events only which work with SIM Throttle 1 and Throtttle 2 mapping. This removed Jitter
+     # - Added Hydraulic lever animation for Brakes, Flaps, Gear manual operation.
+     # - Added all rotating knobs for interior lighting
+     # - Added Cabin Air and Heat knohb animations 
+     # - Added External strut removal and Pitot cover sync
+     # - Added ADF btn and knob controls on Non-Modern radio stack
+   # - 3/18/2026
+     # - Transponder, Start and Prime switches, lower pilot pad, Windows,and non-modern equipment
+
+include:
+  - modules/AS_GNS530.yaml
+  - modules/fuel.yaml
+  - modules/payload.yaml
+master:
+  - get: B:ENGINE_Throttle_1, Number
+    set: (>B:ENGINE_Throttle_1_Set) 
+  - get: B:ENGINE_Throttle_2, Number
+    set: (>B:ENGINE_Throttle_2_Set)  
+  - get: B:ENGINE_Propeller_1, Number
+    set: (>B:ENGINE_Propeller_1_Set)
+  - get: B:ENGINE_Propeller_2, Number
+    set: (>B:ENGINE_Propeller_2_Set)
+  - get: B:FUEL_MIXTURE_1, Number
+    set: (>B:FUEL_MIXTURE_1_Set)
+  - get: B:FUEL_MIXTURE_2
+    set: (>B:FUEL_MIXTURE_2_Set)
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  - get: A:ELEVATOR TRIM PCT, percent # TRIM
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: L:XMLVAR_ElevatorTrim_Switch_1, Number # TRIM
+    set: (>B:XMLVAR_ElevatorTrim_Switch_1_Set)
+  - get: L:XMLVAR_ElevatorTrim_Switch_1_SwitchStateTimer, Number # TRIM
+  - get: A:AILERON TRIM PCT, percent scaler 16k # TRIM
+    set: (>K:AILERON_TRIM_SET_EX1)
+  - get: A:RUDDER TRIM PCT, percent scaler 16k # TRIM
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: L:XMLVAR_RudderTrim_Switch_1, Number # TRIM
+  - get: L:ADI_GA_BUTTON, Bool # ADI GA BUTTON
+    set: (>K:AUTO_THROTTLE_TO_GA)
+  - get: A:FLAPS HANDLE INDEX, Number # FLAPS
+    set: |
+      switch (value) {
+          case  0: return '0 (>K:FLAPS_CONTINUOUS_SET)'
+          case  1: return '5461 (>K:FLAPS_CONTINUOUS_SET)'
+          case  2: return '10922 (>K:FLAPS_CONTINUOUS_SET)'
+          case  3: return '16383 (>K:FLAPS_CONTINUOUS_SET)'
+          default: return ''
+      }
+      
+shared:
+##############  RADIO ADDS - Non Modern ###############
+  - get: A:COM ACTIVE FREQUENCY:2, Hz # COM2 ACTIVE
+    set: (>K:COM2_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:2, Hz # COM2 STANDBY
+    set: (>K:COM2_STBY_RADIO_SET_HZ)
+  - get: H:adf_AntAdf # KNS87 ADF Button
+  - get: H:adf_bfo # KNS87 ADF BFO Button
+  - get: H:adf_frqTransfert # KNS87 ADF Transfer Button
+  - get: H:adf_FltEt # KNS87 ADF FLT ET Button
+  - get: H:adf_SetRst # KNS87 ADF SET REST Button
+  - get: A:ADF VOLUME:1, percent 
+    set: "value > current ? '0 (>K:ADF_VOLUME_INC)' : '0 (>K:ADF_VOLUME_DEC)'"
+  - get: A:ADF ACTIVE FREQUENCY:1, Frequency ADF BCD32 # ADF ACTIVE
+    set: (>K:ADF_ACTIVE_SET)
+  - get: A:ADF STANDBY FREQUENCY:1, Frequency ADF BCD32 # ADF STANDBY
+    set: (>K:ADF_STBY_SET)
+
+  - get: L:var_adfKnobPulled, bool # KNS87 ADF inner knob pulled
+  - get: H:ADF_100_DEC
+    set: (>K:ADF_100_DEC)
+  - get: H:ADF_100_INC
+  - get: H:ADF_10_DEC
+  - get: H:ADF_10_INC
+  - get: H:ADF_1_DEC
+  - get: H:ADF_1_INC
+
+
+##############  OVHD - Quadrant area  ###############
+  - get: L:XMLVAR_Throttle_Gust_Lock_Engaged, Number
+  - get: L:XMLVAR_Throttle_Gust_Lock_Pulled, Number
+  - get: L:XMLVAR_SuperCharger_Handle, Number
+  - get: A:RECIP ENG LEFT MAGNETO:1, Bool
+  - get: A:RECIP ENG RIGHT MAGNETO:2, Bool
+  - get: A:MASTER IGNITION SWITCH, Bool
+    set: (>K:TOGGLE_MASTER_IGNITION_SWITCH)
+  - get: L:XMLVAR_Prop_Switch_Mode_1, Number
+  - get: L:XMLVAR_Prop_Switch_Mode_2, Number
+  - get: B:FUEL_Selector_1, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:FUEL_Selector_1_Off)'
+          case  1: return '(>B:FUEL_Selector_1_Right)'
+          case  2: return '(>B:FUEL_Selector_1_LeftMain)'
+          case  3: return '(>B:FUEL_Selector_1_LeftAux)'
+          default: return ''
+      }
+  - get: B:FUEL_Selector_2, Number  
+    set: |
+      switch (value) {
+          case  0: return '(>B:FUEL_Selector_2_Off)'
+          case  1: return '(>B:FUEL_Selector_2_Left)'
+          case  2: return '(>B:FUEL_Selector_2_RightMain)'
+          case  3: return '(>B:FUEL_Selector_2_RightAux)'
+          default: return ''
+      }
+  - get: B:FUEL_Pump_1, Number
+    set: (>B:FUEL_Pump_1_Toggle)
+  - get: B:FUEL_Pump_2, Number
+    set: (>B:FUEL_Pump_2_Toggle)
+  - get: L:ENGINE_Switch_Prop_Feather_1, Number
+  - get: L:ENGINE_Switch_Prop_Feather_2, Number
+  - get: L:XMLVAR_Crash_Bar_1, Number
+  - get: L:XMLVAR_Crash_Bar_2, Number
+  - get: L:XMLVAR_SWITCH_Fuel_Valve_1, Number
+  - get: L:XMLVAR_SWITCH_Fuel_Valve_2, Number
+  - get: L:XMLVAR_SWITCH_Hyd_Breaker_1, Number
+  - get: L:XMLVAR_SWITCH_Hyd_Breaker_2, Number
+  - get: L:XMLVAR_SWITCH_Gen_Breaker_1, Number
+  - get: L:XMLVAR_SWITCH_Gen_Breaker_2, Number
+  - get: L:XMLVAR_SWITCH_Fire_Ext_1, Number
+  - get: L:XMLVAR_SWITCH_Fire_Ext_2, Number
+
+
+##############  OVHD - BREAKER PANEL AREA ###############
+
+  - get: B:FUEL_Crossfeed_1, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:FUEL_Crossfeed_1_Right_To_Left)'
+          case  1: return '(>B:FUEL_Crossfeed_1_Off)'
+          case  2: return '(>B:FUEL_Crossfeed_1_Left_To_Right)'
+          default: return ''
+      }    
+  - get: B:FUEL_Crossfeed_2, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:FUEL_Crossfeed_2_Right_To_Left)'
+          case  1: return '(>B:FUEL_Crossfeed_2_Off)'
+          case  2: return '(>B:FUEL_Crossfeed_2_Left_To_Right)'
+          default: return ''
+      } 
+
+#  - # BREAKERS
+  - get: B:ELECTRICAL_Avionics_Master, Bool
+    set: (>B:ELECTRICAL_Avionics_Master_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_COM_1, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_COM_1_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_NAV_1, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_NAV_1_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_COM_2, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_COM_2_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_NAV_2, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_NAV_2_Toggle
+  - get: B:INSTRUMENT_IE_HU16_CB_AUDIO, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_AUDIO_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_XPNDR, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_XPNDR_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_GYRO, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_GYRO_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_GEAR_WARN, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_GEAR_WARN_Toggle)
+#  - # OVHD LIGHTS
+  - get: A:LIGHTING_POTENTIOMETER_3_Power_Setting, Number
+  - get: A:LIGHT POTENTIOMETER:3, percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_3_SET)`"  
+  - get: B:LIGHTING_POTENTIOMETER_4_Power_Setting, Number
+  - get: A:LIGHT POTENTIOMETER:4, percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_4_SET)`"    
+  - get: B:LIGHTING_POTENTIOMETER_5_Power_Setting, Number
+  - get: A:LIGHT POTENTIOMETER:5, percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_5_SET)`"    
+  - get: B:LIGHTING_POTENTIOMETER_6_Power_Setting, Number
+  - get: A:LIGHT POTENTIOMETER:6, percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_6_SET)`"    
+  - get: B:LIGHTING_POTENTIOMETER_7_Power_Setting, Number
+  - get: A:LIGHT POTENTIOMETER:7, percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_7_SET)`"    
+  - get: A:LIGHT POTENTIOMETER:13, percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_13_SET)`"
+
+  - get: L:LIGHTING_CABIN_3
+    set: (>B:LIGHTING_CABIN_3_Toggle)
+#  - # Boost Rudder, AP Trim Disconnect, & APU Switches
+  - get: L:XMLVAR_Rudder_Boost, Number
+#  - get: H:Generic_Autopilot_Disc, Number
+#    set: (>B:HANDLING_Trim_Disconnect_Set)
+  - get: A:AILERON TRIM DISABLED, Bool
+    set: (>K:AILERON_TRIM_DISABLED_SET)
+  - get: A:RUDDER TRIM DISABLED, Bool
+    set: (>K:RUDDER_TRIM_DISABLED_SET)
+  - get: L:XMLVAR_APU_Switch, Number
+
+##############  PEDISTAL AREA  ###############
+# KT76C - TRANSPONDER
+  - get: A:TRANSPONDER STATE:1, Enum # XPDR OFF/SBY/TST/ON/ALT
+    set: |
+      switch (value) {
+          case 0: return '(>B:NAVCOM_Transponder_Mode_Off)'
+          case 1: return '(>B:NAVCOM_Transponder_Mode_Standby)'
+          case 2: return '(>B:NAVCOM_Transponder_Mode_Test)'
+          case 3: return '(>B:NAVCOM_Transponder_Mode_ON)'
+          case 4: return '(>B:NAVCOM_Transponder_Mode_ALT)'
+          default: return ''
+      }
+  - get: A:TRANSPONDER CODE:1, BCO16 # XPDR Code
+    set: (>K:XPNDR_SET)
+  - get: A:TRANSPONDER IDENT:1, Bool # Ident
+    set: "value ? '1 (>K:XPNDR_IDENT_ON)' : '1 (>K:XPNDR_IDENT_OFF)'"
+  - get: H:TransponderCLR
+# KMA28 - AUDIO PANEL
+  - get: A:AUDIO PANEL VOLUME, Percent # VOL
+    set: (>K:AUDIO_PANEL_VOLUME_SET)
+  - get: A:MARKER BEACON SENSITIVITY HIGH, Bool # HI
+    set: (>K:MARKER_BEACON_SENSITIVITY_HIGH)
+  - get: A:MARKER BEACON TEST MUTE, Bool # T/M
+    set: (>K:MARKER_BEACON_TEST_MUTE)
+  - get: A:INTERCOM MODE, Enum # ISO/ALL/CREW
+    set: (>K:INTERCOM_MODE_SET)
+  - get: A:COM RECEIVE EX1:1, Bool # COM1
+    set: (>K:COM1_RECEIVE_SELECT)
+  - get: A:COM RECEIVE EX1:2, Bool # COM2
+    set: (>K:COM2_RECEIVE_SELECT)
+  - get: A:NAV SOUND:1, Bool # NAV1
+    set: (>K:RADIO_VOR1_IDENT_TOGGLE)
+  - get: A:NAV SOUND:2, Bool # NAV2
+    set: (>K:RADIO_VOR2_IDENT_TOGGLE)
+  - get: A:MARKER SOUND, Bool # MKR
+    set: (>K:MARKER_SOUND_TOGGLE)
+  - get: A:INTERCOM SYSTEM ACTIVE, Bool # ICS
+    set: (>K:TOGGLE_ICS)
+  - get: A:ADF SOUND:1, Bool # ADF
+    set: (>K:RADIO_ADF_IDENT_SET) # AUX
+  - get: L:XMLVAR_AudioPanel_1
+  - get: A:DME SOUND:1, Bool # DME
+    set: (>K:RADIO_DME1_IDENT_SET)
+  - get: A:SPEAKER ACTIVE, Bool # SPR
+    set: (>K:TOGGLE_SPEAKER)
+  - get: B:NAVCOM_AUDIO_TRANSMIT, Number # TRANSMITTER    
+
+############ MAIN UPPER Panel  #########
+  - get: A:LIGHT POTENTIOMETER:16, Percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_16_SET)`"
+  - get: B:LIGHTING_POTENTIOMETER_16, Number
+
+
+  - get: A:ATTITUDE BARS POSITION, Percent # ATTITUDE CALIBRATION - MAY HAVE TO ADD B:Event B:INSTRUMENT_Attitude_Indicator_Bars_Position_Set
+    set: "`${value} 0 (>K:2:ATTITUDE_BARS_POSITION_SET)`"
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # ALTIMETER CALIBRATION
+    set: "`2 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees # HEADING BUG
+    set: "`1 ${value} (>K:2:HEADING_BUG_SET)`"
+  - get: L:INSTRUMENT_Course_1, Number
+    set: (>B:INSTRUMENT_Course_1_Set)
+  - get: A:NAV OBS:1, Degrees # VOR 1 BEARING
+    set: (>K:VOR1_SET)
+  - get: L:INSTRUMENT_Course_2, Number
+    set: (>B:INSTRUMENT_Course_2_Set)
+  - get: A:NAV OBS:2, Degrees # VOR 2 BEARING
+    set: (>K:VOR2_SET)
+# KAP140
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet # ALT
+  - get: H:KAP140_Push_AP
+  - get: H:KAP140_Push_NAV
+  - get: H:KAP140_Push_HDG
+  - get: H:KAP140_Push_APR  
+  - get: H:KAP140_Push_REV
+  - get: H:KAP140_Push_ALT
+  - get: H:KAP140_Push_BARO
+  - get: H:KAP140_Push_VS
+  - get: H:KAP140_Push_UP
+  - get: H:KAP140_Push_DOWN
+  - get: H:KAP140_KNOB_OUTER_INC
+  - get: H:KAP140_KNOB_OUTER_DEC
+  - get: H:KAP140_KNOB_INNER_INC
+  - get: H:KAP140_KNOB_INNER_DEC
+
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, Feet per minute # UP/DN
+  - get: B:INSTRUMENT_IE_HU16_CB_AUTOPILOT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_AUTOPILOT_Set) 
+  - get: A:AUTOPILOT DISENGAGED, Bool
+  - get: B:NAVCOM_GPS_Navigation, Number # GPS
+    set: (>B:NAVCOM_GPS_Navigation_Toggle)
+  - get: L:XMLVAR_DECISION_HEIGHT, Number # DECISION HEIGHT
+  - get: A:KOHLSMAN SETTING MB:0, Millibars # BARO
+    set: "`0 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # BARO
+    set: "`0 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+#  - # GARMIN Alt Horizon 
+  - get: A:CIRCUIT SWITCH ON:26, Bool
+    set: 26 (>K:ELECTRICAL_CIRCUIT_TOGGLE)
+  - get: H:ASS_1_Knob_Push
+  - get: H:ASS_1_Knob_Long_Push
+  - get: H:ASS_1_Knob_Inc
+  - get: H:ASS_1_Knob_Dec
+#  - # CHRONO & Analog Clock
+  - get: H:oclock_oat
+  - get: H:oclock_select 
+  - get: H:oclock_control  
+  - get: L:XMLVAR_Hours_Delta
+  - get: L:XMLVAR_Minutes_Delta
+  - get: B:INSTRUMENT_Clock_Adjustment_Target
+  - get: B:INSTRUMENT_Clock_Time
+#  - # Copilot HEADING AND ALtimeter
+#  - get: A:HEADING INDICATOR:2, Degrees # HEADING
+  - get: L:Gyro_2_Drift, degrees    
+  - get: L:INSTRUMENT_Altimeter_2, Number # ALTIMETER
+############  Pilot Lower Panel  #########
+#  - # ICING PANELS  
+  - get: A:STRUCTURAL DEICE SWITCH, Bool
+    set: (>B:DEICE_Airframe_1_Toggle)
+  - get: B:DEICE_Propeller_1, Number
+    set: (>B:DEICE_Propeller_1_Toggle)
+  - get: B:DEICE_Pitot_1, Number
+    set: (>B:DEICE_Pitot_1_Toggle)
+  - get: B:PASSENGER_Cabin_Heat_1, Number
+    set: (>B:PASSENGER_Cabin_Heat_1_Toggle)  
+  - get: B:PASSENGER_Cabin_Air_1, Number   
+    set: (>B:PASSENGER_Cabin_Air_1_Toggle) 
+  - get: L:XMLVAR_DeiceWindshield_1
+    set: (>B:DEICE_Windshield_1_Set)
+  - get: A:ALTERNATE STATIC SOURCE OPEN, Percent
+    set: (>K:TOGGLE_ALTERNATE_STATIC) 
+  - get: L:XMLVAR_HU16_Hand_Pump_Selector, Number  
+#    set: (>B:LIGHTING_HU16_Hand_Pump_Selector_Set)
+  - get: B:INSTRUMENT_HAND_PUMP_5STATE, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:INSTRUMENT_HAND_PUMP_5STATE_EMERGENCY_BRAKE)'
+          case  1: return '(>B:INSTRUMENT_HAND_PUMP_5STATE_FLAPS)'
+          case  2: return '(>B:INSTRUMENT_HAND_PUMP_5STATE_LANDING_GEAR_DOWN)'
+          case  3: return '(>B:INSTRUMENT_HAND_PUMP_5STATE_ENGINE_PUMP)'
+          case  4: return '(>B:INSTRUMENT_HAND_PUMP_5STATE_LANDING_GEAR_UP)'
+          default: return ''
+      }
+#  - # LANDING GEAR
+  - get: L:LANDING_GEAR_Gear, Number
+    set: (>K:GEAR_SET)
+  - get: L:LIGHTING_LANDING_1, Number
+    set: (>B:LIGHTING_LANDING_1_Set)
+  - get: B:ENGINE_Landing_Light_Actuator_1, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_Landing_Light_Actuator_1_Retract)'
+          case  1: return '(>B:ENGINE_Landing_Light_Actuator_1_Standby)'
+          case  2: return '(>B:ENGINE_Landing_Light_Actuator_1_Deploy)'
+          default: return ''
+      }  
+  - get: B:ENGINE_Landing_Light_Actuator_2, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_Landing_Light_Actuator_2_Retract)'
+          case  1: return '(>B:ENGINE_Landing_Light_Actuator_2_Standby)'
+          case  2: return '(>B:ENGINE_Landing_Light_Actuator_2_Deploy)'
+          default: return ''
+      }  
+
+#  - # INVERTERS
+  - get: B:INSTRUMENT_Switch_Inverter, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:INSTRUMENT_Switch_Inverter_0)'
+          case  1: return '(>B:INSTRUMENT_Switch_Inverter_1)'
+          case  2: return '(>B:INSTRUMENT_Switch_Inverter_2)'
+          default: return ''
+      }
+  - get: L:XMLVAR_Switch_Gyro_Slave, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:INSTRUMENT_Switch_Gyro_Slave_0)'
+          case  1: return '(>B:INSTRUMENT_Switch_Gyro_Slave_1)'
+          case  2: return '(>B:INSTRUMENT_Switch_Gyro_Slave_2)'
+          default: return ''
+      } 
+#  - # HULL LIGHTS
+  - get: B:LIGHTING_NAV_1, Number
+    set: (>B:LIGHTING_NAV_1_Toggle)
+  - get: B:LIGHTING_BEACON_1, Number
+    set: (>B:LIGHTING_BEACON_1_Toggle)
+  - get: B:LIGHTING_STROBE_1, Number
+    set: (>B:LIGHTING_STROBE_1_Toggle)
+  - get: B:LIGHTING_RECOGNITION_1, Number
+    set: (>B:LIGHTING_RECOGNITION_1_Toggle)
+#  - # ENGINES Switches (Cowl, Oil, etc.)
+  - get: B:ENGINE_Primer_1_SWITCH, Number
+    set: "value == 1 ? '(>B:ENGINE_Primer_1_SWITCH_On)' : '(>B:ENGINE_Primer_1_SWITCH_Off)'"
+  - get: B:ENGINE_Primer_2_SWITCH, Number 
+    set: "value == 1 ? '(>B:ENGINE_Primer_2_SWITCH_On)' : '(>B:ENGINE_Primer_2_SWITCH_Off)'"  
+  - get: A:GENERAL ENG STARTER:1, Bool
+    set: (>K:SET_STARTER1_HELD)
+  - get: A:GENERAL ENG STARTER:2, Bool
+    set: (>K:SET_STARTER2_HELD)
+  - get: L:ELECTRICAL_Starter_1, Number
+  - get: L:ELECTRICAL_Starter_2, Number
+  - get: B:ELECTRICAL_Starter_1, Number
+  - get: B:ELECTRICAL_Starter_2, Number
+  - get: B:ENGINE_Oil_Flaps_1, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_Oil_Flaps_1_Deploy)'
+          case  1: return '(>B:ENGINE_Oil_Flaps_1_Standby)'
+          case  2: return '(>B:ENGINE_Oil_Flaps_1_Retract)'
+          default: return ''
+      }
+  - get: B:ENGINE_Oil_Flaps_2, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_Oil_Flaps_2_Deploy)'
+          case  1: return '(>B:ENGINE_Oil_Flaps_2_Standby)'
+          case  2: return '(>B:ENGINE_Oil_Flaps_2_Retract)'
+          default: return ''
+      }
+
+  - get: B:ENGINE_COWL_Flaps_1, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_COWL_Flaps_1_Deploy)'
+          case  1: return '(>B:ENGINE_COWL_Flaps_1_Standby)'
+          case  2: return '(>B:ENGINE_COWL_Flaps_1_Retract)'
+          default: return ''
+      }
+  - get: B:ENGINE_COWL_Flaps_2, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_COWL_Flaps_2_Deploy)'
+          case  1: return '(>B:ENGINE_COWL_Flaps_2_Standby)'
+          case  2: return '(>B:ENGINE_COWL_Flaps_2_Retract)'
+          default: return ''
+      }
+  - get: A:RECIP ENG ALTERNATE AIR POSITION:1, position 16k
+  - get: A:RECIP ENG ALTERNATE AIR POSITION:2, position 16k
+  - get: B:ENGINE_Alternate_Air_1, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_Alternate_Air_1_Deploy)'
+          case  1: return '(>B:ENGINE_Alternate_Air_1_Standby)'
+          case  2: return '(>B:ENGINE_Alternate_Air_1_Retract)'
+          default: return ''
+      }  
+  - get: B:ENGINE_Alternate_Air_2, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_Alternate_Air_2_Deploy)'
+          case  1: return '(>B:ENGINE_Alternate_Air_2_Standby)'
+          case  2: return '(>B:ENGINE_Alternate_Air_2_Retract)'
+          default: return ''
+      }
+
+#  - # ELECTRICAL Switches
+  - get: B:ELECTRICAL_Battery_1, Number
+    set: (>B:ELECTRICAL_Battery_1_Toggle)
+  - get: B:ELECTRICAL_Alternator_1, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ELECTRICAL_Alternator_1_On)'
+          case  1: return '(>B:ELECTRICAL_Alternator_1_Off)'
+          case  2: return '(>B:ELECTRICAL_Alternator_1_Reset)'
+          default: return ''
+      }  
+  - get: B:ELECTRICAL_Alternator_2, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:ELECTRICAL_Alternator_2_On)'
+          case  1: return '(>B:ELECTRICAL_Alternator_2_Off)'
+          case  2: return '(>B:ELECTRICAL_Alternator_2_Reset)'
+          default: return ''
+      }  
+  - get: A:EXTERNAL POWER ON, Bool
+    set: (>K:TOGGLE_EXTERNAL_POWER)
+
+############  CoPilot Lower Panel  ############
+  - get: B:INSTRUMENT_Voltage_Knob, Number
+    set: |
+      switch (value) {
+          case  0: return '(>B:INSTRUMENT_Voltage_Knob_OFF)'
+          case  1: return '(>B:INSTRUMENT_Voltage_Knob_LEFT_GENERATOR)'
+          case  2: return '(>B:INSTRUMENT_Voltage_Knob_BATTERY)'
+          case  3: return '(>B:INSTRUMENT_Voltage_Knob_MAIN_BUS)'
+          case  4: return '(>B:INSTRUMENT_Voltage_Knob_APU)'
+          case  5: return '(>B:INSTRUMENT_Voltage_Knob_RIGHT_GENERATOR)'
+          default: return ''
+      }  
+#  - # BREAKER PANELS
+  - get: B:INSTRUMENT_IE_HU16_CB_BEACON_LT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_BEACON_LT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_STROBE_LT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_STROBE_LT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_LANDING_LT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_LANDING_LT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_COCKPIT_LT, Bool  
+    set: (>B:INSTRUMENT_IE_HU16_CB_COCKPIT_LT_Toggle)  
+  - get: B:INSTRUMENT_IE_HU16_CB_ANCHOR_LT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_ANCHOR_LT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_CABIN_LT, Bool 
+    set: (>B:INSTRUMENT_IE_HU16_CB_CABIN_LT_Toggle)   
+  - get: B:INSTRUMENT_IE_HU16_CB_NAV_LT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_NAV_LT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_ELEV_TRIM_LEFT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_ELEV_TRIM_LEFT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_ELEV_TRIM_RIGHT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_ELEV_TRIM_RIGHT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_AILERON_TRIM, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_AILERON_TRIM_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_RUDDER_TRIM, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_RUDDER_TRIM_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_CARBAIR_LEFT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_CARBAIR_LEFT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_CARBAIR_RIGHT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_CARBAIR_RIGHT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_OIL_COOLER_LEFT, Bool        
+    set: (>B:INSTRUMENT_IE_HU16_CB_OIL_COOLER_LEFT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_OIL_COOLER_RIGHT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_OIL_COOLER_RIGHT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_COWL_FLAP_LEFT, Bool    
+    set: (>B:INSTRUMENT_IE_HU16_CB_COWL_FLAP_LEFT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_COWL_FLAP_RIGHT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_COWL_FLAP_RIGHT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_TURN_COORD, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_TURN_COORD_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_RUDDER_TRIM, Bool        
+  - get: B:INSTRUMENT_IE_HU16_CB_RADIO_ALT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_RADIO_ALT_Toggle)  
+  - get: B:INSTRUMENT_IE_HU16_CB_AUTOPILOT_2, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_AUTOPILOT_2_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_PITOT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_PITOT_Toggle)  
+ 
+  - get: B:INSTRUMENT_IE_HU16_CB_WINDSHIELD_DEICE, Bool    
+    set: (>B:INSTRUMENT_IE_HU16_CB_WINDSHIELD_DEICE_Toggle
+  - get: B:INSTRUMENT_IE_HU16_CB_STARTER_LEFT, Bool  
+    set: (>B:INSTRUMENT_IE_HU16_CB_STARTER_LEFT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_STARTER_RIGHT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_STARTER_RIGHT_Toggle)  
+#  - # Breakers CoPilot Arm rest 
+  - get: B:INSTRUMENT_IE_HU16_CB_TRAANSFER_PUMP_LEFT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_TRAANSFER_PUMP_LEFT_Toggle)
+  - get: B:INSTRUMENT_IE_HU16_CB_TRAANSFER_PUMP_RIGHT, Bool
+    set: (>B:INSTRUMENT_IE_HU16_CB_TRAANSFER_PUMP_RIGHT_Toggle)  
+#  - # SAFETY LIGHTS
+  - get: B:AIRLINER_No_Smoking, Bool
+    set: (>B:AIRLINER_No_Smoking_Toggle)
+  - get: B:AIRLINER_Seatbelts, Bool
+    set: (>B:AIRLINER_Seatbelts_Toggle)  
+
+############ Miscelaneous ############
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+  - get: L:XMLVAR_Hand_Pump_Handle
+  - get: A:INTERACTIVE POINT GOAL:0, percent over 100  # Pilot OVHD Hatch
+  - get: A:INTERACTIVE POINT GOAL:1, percent over 100  # CoPilot OVHD Hatch
+  - get: A:INTERACTIVE POINT GOAL:2, Percent # NOSE HATCH
+  - get: A:INTERACTIVE POINT GOAL:3, Percent # Lower passenger Door
+  - get: A:INTERACTIVE POINT GOAL:4, Percent # Upper passenger Door
+  - get: L:XMLVAR_Main_Door_Opened # Upper passenger Door
+
+  - get: A:INTERACTIVE POINT GOAL:5, Percent # Lower passenger Door
+#  - get: A:INTERACTIVE POINT GOAL:6, position 16k # Pilot Window
+  - get: B:LOTUS_CANOPY_Window_Left, Number
+    set: (>B:LOTUS_CANOPY_Window_Left_Set)
+  - get: B:LOTUS_CANOPY_Window_Right, Number
+    set: (>B:LOTUS_CANOPY_Window_Right_Set)
+#  - get: A:INTERACTIVE POINT GOAL:7, position 16k # CoPilot Window
+  - get: L:XMLVAR_Nose_Door
+  - get: L:XMLVAR_Ladder_Vis
+  - get: L:XMLVAR_Squat_Strut_On
+  - get: L:XMLVAR_Chocks_Vis 
+  - get: A:COVER ON:2, Bool
+    set: 2 (>K:COVER_SET) 
+  - get: L:XMLVAR_Anchor_Available  
+  - get: L:XMLVAR_Efb_Hide 
+  - get: L:XMLVAR_Regular_Dirt_Prevent
+  - get: L:XMLVAR_HU16_Use_Modern_Avionics
+  - get: L:XMLVAR_Windshield_Refraction  
+  - get: L:XMLVAR_Cabin_TABLE_1_LEAF
+  - get: L:XMLVAR_Cabin_TABLE_2_LEAF
+  - get: B:LIGHTING_CABIN_1, Number
+#  - get: A:LIGHTING_CABIN_1, Number
+    set: (>B:LIGHTING_CABIN_1_Toggle)
+  - get: B:PASSENGER_Cabin_Air_2, percent
+    set: (>B:PASSENGER_Cabin_Air_2_Set)
+  - get: B:PASSENGER_Cabin_Heat_2, percent
+    set: (>B:PASSENGER_Cabin_Heat_2_Set)

@@ -1,0 +1,549 @@
+# Original author: https://discord.com/channels/1454265644416765974/1543420817667395775/1554965691709526026
+# Updated: 2026-10-01 13:53:58
+
+# IRIS Pilatus PC-21 - FsCopilot YAML Configuration
+# Version: 0.0.4
+# Created By: DKgolfnut
+# Special Thanks: 
+# Date: 9/30/2026 
+
+# Known Issues:
+  # - 
+
+# FIXED:
+  # - 9/30/2026 
+     # - Fixed Spoilers Toggle event
+  # - 9/5/2026 
+     # - LIGHT switches for NAV and RECOG added
+     # - SPOILERS TOGGLE added (no clickable button) and Flaps Handle INDEX corrected with increments for each position
+include:
+#  - modules/PMS50_GTN_650-750.yaml
+#  - modules/AS_GNS430.yaml
+#  - modules/AS_GNS530.yaml
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+master: 
+  - get: A:AILERON TRIM PCT, Percent over 100 # AILERON TRIM
+
+  - get: A:ELEVATOR TRIM PCT, Percent over 100 # ELEVATOR TRIM
+    set: "value > current ? '(>K:ELEV_TRIM_UP)' : '(>K:ELEV_TRIM_DN)'"
+  - get: A:ELEVATOR TRIM INDICATOR, radians
+
+  - get: A:RUDDER TRIM PCT, Percent # RUDDER TRIM BTN
+    set: (>K:RUDDER_TRIM_SET) 
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # PROPELLER 1 LEVER
+    set: (>K:PROP_PITCH1_SET)
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, position 16k # - MIXTURE 1 LEVER 
+  - get: L:BKSQ_MixtureLeverPosition_1, Percent 
+  - get: L:BKSQ_TurboCharged, Bool
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+ # - # FLAP Levers
+  - get: A:FLAPS HANDLE PERCENT, Percent
+  - get: A:FLAPS HANDLE INDEX, Number
+    set: |
+      switch (value) {
+        case 0: return '(>K:FLAPS_UP)'
+        case 1: return '(>K:FLAPS_1)'
+        case 2: return '(>K:FLAPS_2)'
+        default: return ''  
+      }
+  
+# - # Condition Lever
+  - get: L:Condition_Lever_CutOff_1
+  - get: B:FUEL_1_Condition_Lever, Number 
+    set: |  
+      switch (value) {
+          case 0: return '(>B:FUEL_1_Condition_Lever_High_Idle)' 
+          case 1: return '(>B:FUEL_1_Condition_Lever_Low_Idle)'  
+          case 2: return '(>B:FUEL_1_Condition_Lever_Cut_Off)' 
+          default: return ''
+      }     
+  - get: A:GENERAL ENG FUEL VALVE:1, Bool
+    set: (>K:SET_FUEL_VALVE_ENG1)
+    
+shared:
+#  - ## SPOILER HIDDEN KEY ##
+  - get: A:SPOILERS HANDLE POSITION
+    set: 0 (>K:SPOILERS_TOGGLE)
+#  - ## AUTOPILOT PANEL ##
+  - get: A:AUTOPILOT MASTER
+    set: |
+      switch (value) {
+        case 1: return '(>K:AUTOPILOT_ON)'
+        case 0: return '(>K:AUTOPILOT_OFF)'
+        default: return ''
+      }
+  - get: A:AUTOPILOT FLIGHT DIRECTOR ACTIVE, Bool
+    set: (>K:TOGGLE_FLIGHT_DIRECTOR)
+
+  - get: A:AUTOPILOT HEADING LOCK,Bool
+    set: (>K:AP_PANEL_HEADING_HOLD)
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees
+    set: (>K:2:HEADING_BUG_SET)
+  - get: A:AUTOPILOT NAV1 LOCK, Bool
+    set: |
+      switch (value) {
+        case 0: return '(>K:AP_NAV1_HOLD_OFF)'
+        case 1: return '(>K:AP_NAV1_HOLD_ON)'
+        default: return ''
+      }    
+  - get: A:AUTOPILOT PITCH HOLD, Bool
+  - get: A:AUTOPILOT APPROACH HOLD
+    set: |
+      switch (value) {
+        case 0: return '(>K:AP_APR_HOLD_OFF)'
+        case 1: return '(>K:AP_APR_HOLD_ON)'
+        default: return ''
+      }
+
+  - get: A:AUTOPILOT VERTICAL HOLD
+    set: |
+      switch (value) {
+        case 0: return '(>K:AP_PANEL_VS_OFF)'
+        case 1: return '(>K:AP_PANEL_VS_ON)'
+        default: return ''
+      }
+
+  - get: A:AUTOPILOT ALTITUDE LOCK, Bool
+    set: (>K:AP_ALT_VAR_SET_ENGLISH)
+
+  - get: A:AUTOPILOT ALTITUDE LOCK, Bool
+    set: |
+      switch (value) {
+        case 0: return '(>K:AP_ALT_HOLD_OFF)'
+        case 1: return '(>K:AP_ALT_HOLD_ON)'
+        default: return ''
+      }
+
+  - get: A:AUTOPILOT AIRSPEED HOLD, Bool
+    set: (>K:AP_SPD_VAR_SET)
+
+  - get:  A:AUTOPILOT THROTTLE ARM, Bool
+    set: (>K:AUTO_THROTTLE_ARM)
+
+  - get: A:GPS DRIVES NAV1
+    set: (>K:TOGGLE_GPS_DRIVES_NAV1)
+
+#  - ## Not sure if this is needed
+  - get: L:AUX_AUTOPILOT_MASTER_ON5SEC
+  - get: L:XMLVAR_Autopilot_1_Status   
+
+
+#####  General FUEL  and Starter ########
+  - get: A:GENERAL ENG FUEL VALVE:1, Bool
+    set: 1 (>K:TOGGLE_FUEL_VALVE_ALL)
+#  - # ASOBO_FUEL_Switch_Pump_Template (Also works for GENERAL ENG FUEL PUMP SWITCH)
+  - get: A:GENERAL ENG FUEL PUMP SWITCH:1, Number
+    set: 1 (>K:TOGGLE_ELECT_FUEL_PUMP)
+  - get: A:TURB ENG IGNITION SWITCH:1
+    set: 1 (>K:TURBINE_IGNITION_SWITCH_SET)
+  - get: A:TURB ENG MASTER STARTER SWITCH:1, Number
+    set: 1 (>K:TOGGLE_MASTER_STARTER_SWITCH)
+
+  - get: A:BRAKE PARKING POSITION, bool
+    set: (>K:PARKING_BRAKES)
+#  - #############  FRONT COCKPIT - FAILURE LIGHTS #############
+  - get: L:LT_FS_AOA_LO
+  - get: L:LT_FS_AOA_HI
+  - get: L:LT_FS_AOA_OK
+  - get: L:LT_FS_AUD_R_PMS
+  - get: L:LT_FS_AUD_R_SEAT
+  - get: L:LT_FS_DWP_A_CHIP
+  - get: L:LT_FS_DWP_A_CNPY
+  - get: L:LT_FS_DWP_A_FUEL
+  - get: L:LT_FS_DWP_A_GEN1
+  - get: L:LT_FS_DWP_A_GEN2
+  - get: L:LT_FS_DWP_A_HYD
+  - get: L:LT_FS_DWP_A_ICE
+  - get: L:LT_FS_DWP_A_OXY
+  - get: L:LT_FS_DWP_A_SKID
+  - get: L:LT_FS_DWP_G_F-PMP
+  - get: L:LT_FS_DWP_G_I-BYP
+  - get: L:LT_FS_DWP_G_IGN
+  - get: L:LT_FS_DWP_G_M-OXY
+  - get: L:LT_FS_DWP_G_PROBE
+  - get: L:LT_FS_DWP_G_PROP
+  - get: L:LT_FS_DWP_G_SPARE
+  - get: L:LT_FS_DWP_G_START
+  - get: L:LT_FS_DWP_R_FIRE
+  - get: L:LT_FS_DWP_R_FPR
+  - get: L:LT_FS_DWP_R_GENS
+  - get: L:LT_FS_DWP_R_HYDS
+  - get: L:LT_FS_DWP_R_OIL
+  - get: L:LT_FS_DWP_R_OVPR
+  - get: L:LT_FS_DWP_R_OXY
+  - get: L:LT_FS_FMS
+  - get: L:LT_FS_GEAR_WARN
+  - get: L:LT_FS_INTAKE_ICE
+  - get: L:LT_FS_LGEAR_GREEN
+  - get: L:LT_FS_LGEAR_RED
+  - get: L:LT_FS_NGEAR_GREEN
+  - get: L:LT_FS_NGEAR_RED
+  - get: L:LT_FS_RGEAR_GREEN
+  - get: L:LT_FS_RGEAR_RED
+  - get: L:LT_FS_PROP_ICE
+  - get: L:LT_FS_VCS
+
+#  - #############  FRONT COCKPIT - LEFT ARM panel #############
+#  - ## FUEL PANEL ##
+  - get: L:PC21_SW3_FS_LC_EXTL
+  - get: L:PC21_SW3_FS_LC_EXTR
+  - get: L:PC21_SW3_FS_LC_PUMPL
+  - get: L:PC21_SW3_FS_LC_PUMPR
+#  - ## TRIM PANEL ##
+  - get: L:PC21_BTN_FS_LC_TAD
+  - get: L:PC21_SW2_FS_LC_TRIM_PWR
+#  - ## ENGINE START PANEL ##  
+  - get: L:PC21_SW2_FS_LC_COVER_AUTOSTART
+  - get: L:PC21_BTN_FS_LC_AUTOSTART_EXEC
+  - get: L:PC21_SW3_FS_LC_STARTER
+  - get: L:PC21_SW3_FS_LC_IGN
+  - get: L:PC21_SW3_FS_LC_FIRE_TEST
+  - get: L:PC21_BTN_FS_LC_LAMP_TEST
+  - get: L:PC21_SW2_FS_LC_COVER_PMS
+  - get: L:PC21_BTN_FS_LC_PMS
+#  - # ANTISKID BTN
+  - get: L:PC21_SW2_FS_LC_ANTISKID
+#  - # THROTTLE SHUTWDOWN LEVER
+  - get: L:PC21_SW2_FS_LC_FUEL_CUTOFF
+  - get: L:PC21_VIS_THROT, Bool
+#  - # OXYGEN PANEL
+  - get: L:PC21_SW2_FS_LC_OXY_MIX
+  - get: L:PC21_SW2_FS_LC_OXY_PWR
+  - get: L:PC21_SW2_RS_LC_OXY_MIX
+  - get: L:PC21_SW2_RS_LC_OXY_PWR
+#  - ## INTERIOR LIGHTING PANEL ##  
+  - get: A:LIGHT POTENTIOMETER:3, percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_3_SET)`"  
+  - get: A:LIGHT POTENTIOMETER:4, percent
+    set: "`${value} (>K:LIGHT_POTENTIOMETER_4_SET)`"  
+  - get: L:PC21_KNOB_FS_LC_LIGHT_PANELS
+  - get: L:PC21_KNOB_FS_LC_LIGHT_DISPLAY
+# - # FUEL HYD CUTOFF
+  - get: L:PC21_LEVER_FS_LC_FUEL_HYD_CUTOFF
+#  - #############  FRONT COCKPIT - FRONT LEFT ROW #############
+#  - # WARNING BTN LEFT
+  - get: L:LT_FS_ATTN
+#  - ## FORMATION LIGHTING SWITCHES ##
+  - get: L:PC21_KNOB_FS_FORMATION
+  - get: L:PC21_SW3_FS_STORES_ARM
+  - get: L:PC21_KNOB_FS_NAV_BRT
+
+#  - ## SFD PANEL ##
+  - get: L:PC21_BTN_FS_IP_SFD_NAV_EXEC
+  - get: L:PC21_BTN_FS_IP_SFD_NAV  
+  - get: L:PC21_BTN_FS_IP_SFD_ALN_EXEC
+  - get: L:PC21_BTN_FS_IP_SFD_ALN
+#  - # May need for KOHLSMAN operation
+  - get: A:KOHLSMAN SETTING HG:1, inHg # ALTIMETER CALIBRATION
+    set: "value > current ?  '0 (>K:KOHLSMAN_INC)' : '0 (>K:KOHLSMAN_DEC)'"
+  - get: A:KOHLSMAN SETTING STD  
+    set: (">K:KOHLSMAN_SET_STD")
+#  - ## LEFT MFD MAJOR FUNCTIONS ##
+  - get: L:FS-LMFD-MAP-AUT
+  - get: L:FS-LMFD-MAP-DLINK
+  - get: L:FS-LMFD-MAP-GRD
+  - get: L:FS-LMFD-MAP-INFO
+  - get: L:FS-LMFD-MAP-LIST
+  - get: L:FS-LMFD-MAP-MSN
+  - get: L:FS-LMFD-MAP-NUP
+  - get: L:FS-LMFD-MAP-OVRLY
+  - get: L:FS-LMFD-MAP-RNG
+  - get: L:FS-LMFD-MAP-RTE
+  - get: L:FS-LMFD-MAP-STR
+  - get: L:FS-LMFD-MAP-TAWS
+  - get: L:FS-LMFD-MAP-TER
+  - get: L:FS-LMFD-MCTL
+  - get: L:FS-LMFD-MMODE
+  - get: L:RS-LMFD-MMODE
+  - get: L:FS-LMFD-OCTL
+  - get: L:FS-LMFD-PG
+  - get: L:RS-LMFD-PG
+  - get: L:PC21_BTN_FS_LMFD_9
+  - get: L:PC21_BTN_FS_LMFD_9_EXEC
+  - get: L:PC21_BTN_FS_LMFD_10
+  - get: L:PC21_BTN_FS_LMFD_10_EXEC
+  - get: L:PC21_BTN_FS_LMFD_24
+  - get: L:PC21_BTN_FS_LMFD_24_EXEC
+  - get: L:PC21_BTN_FS_LMFD_25
+  - get: L:PC21_BTN_FS_LMFD_25_EXEC  
+#  - ## LANDING GEAR ##
+  - get: L:PC21_BTN_FS_DN_TONE
+  - get: L:LANDING_GEAR_Gear, Number
+    set: (>K:GEAR_SET)
+  - get: L:PC21_LEVER_FS_LC_EMER_GEAR
+
+#  - #############  FRONT COCKPIT - FRONT MIDDLE ROW #############
+#  - ## UFCP GUNSIGHT PANEL MAJOR ##
+  - get: L:FS-UFCP-ADF1-INPUT
+  - get: L:FS-UFCP-AP-ALT-INPUT
+  - get: L:FS-UFCP-AP-APR-INPUT  
+  - get: L:FS-UFCP-AP-HDG-INPUT
+  - get: L:FS-UFCP-AP-IAS-INPUT
+  - get: L:FS-UFCP-AP-NAV-INPUT
+  - get: L:FS-UFCP-AP-VS-INIT-INPUT
+  - get: L:FS-UFCP-AP-VS-INPUT
+  - get: L:FS-UFCP-COM1-INPUT 
+  - get: L:FS-UFCP-COM2-INPUT
+  - get: L:FS-UFCP-IFF-M3-INPUT  
+  - get: L:FS-UFCP-NAV1-INPUT
+  - get: L:FS-UFCP-NAV2-INPUT
+  - get: L:FS-UFCP-PG
+  - get: L:FS-UFCP-SP-01
+  - get: L:FS-UFCP-SP-02
+  - get: L:FS-UFCP-SP-03
+  - get: L:FS-UFCP-SP-04
+  - get: L:FS-UFCP-SP-05
+  - get: L:FS-UFCP-SP-06
+  - get: L:FS-UFCP-SP-07
+  - get: L:FS-UFCP-SP-08
+  - get: L:FS-UFCP-SP-09
+  - get: L:FS-UFCP-SP-10 
+  - get: L:FS-UFCP-SP-CC 
+  - get: L:FS-UFCP-SP-INIT
+  - get: L:FS-UFCP-SP-INPUT
+  - get: L:FS-UFCP-SP-KB
+  - get: L:FS-UFCP-SP-LIMIT
+  - get: L:FS-UFCP-SP-LKB
+  - get: L:FS-UFCP-SP-SC
+  - get: L:FS-UFCP-STUD1-INPUT
+  - get: L:FS-UFCP-STUD2-INPUT
+
+
+
+#  - ## UFCP GUNSIGHT PANEL NORMAL ##
+  - get: L:PC21_KNOB_FS_UFCP_BRT
+  - get: L:PC21_KNOB_FS_UFCP_C1_VOL
+  - get: L:PC21_BTN_FS_UFCP_0
+  - get: L:PC21_BTN_FS_UFCP_1
+  - get: L:PC21_BTN_FS_UFCP_2
+  - get: L:PC21_BTN_FS_UFCP_3
+  - get: L:PC21_BTN_FS_UFCP_ENT
+  - get: L:PC21_BTN_FS_UFCP_4
+  - get: L:PC21_BTN_FS_UFCP_5
+  - get: L:PC21_BTN_FS_UFCP_6
+  - get: L:PC21_BTN_FS_UFCP_CLR
+  - get: L:PC21_BTN_FS_UFCP_7
+  - get: L:PC21_BTN_FS_UFCP_8
+  - get: L:PC21_BTN_FS_UFCP_9
+  - get: L:PC21_BTN_FS_UFCP_0
+  - get: L:PC21_BTN_FS_UFCP_COMM
+  - get: L:PC21_BTN_FS_UFCP_ILS
+  - get: L:PC21_BTN_FS_UFCP_TCN
+  - get: L:PC21_BTN_FS_UFCP_TPDR
+  - get: L:PC21_BTN_FS_UFCP_MODE
+  - get: L:PC21_BTN_FS_UFCP_FUEL
+  - get: L:PC21_BTN_FS_UFCP_MSN
+  - get: L:PC21_BTN_FS_UFCP_MRK
+  - get: L:PC21_BTN_FS_UFCP_BACK
+  - get: L:PC21_BTN_FS_UFCP_NAV
+  - get: L:PC21_BTN_FS_UFCP_A-A
+  - get: L:PC21_BTN_FS_UFCP_A-G
+  - get: L:PC21_BTN_FS_UFCP_L_L1
+  - get: L:PC21_BTN_FS_UFCP_L_L2
+  - get: L:PC21_BTN_FS_UFCP_L_L3
+  - get: L:PC21_BTN_FS_UFCP_R_L1
+  - get: L:PC21_BTN_FS_UFCP_R_L2
+  - get: L:PC21_BTN_FS_UFCP_R_L3
+  - get: L:PC21_KNOB_FS_UFCP_IC_VOL
+  - get: L:PC21_KNOB_FS_UFCP_C2_VOL
+
+#  - ## UFCP GUNSIGHT PANEL WITH EXEC ##
+  - get: L:PC21_BTN_FS_UFCP_1_EXEC
+  - get: L:PC21_BTN_FS_UFCP_2_EXEC
+  - get: L:PC21_BTN_FS_UFCP_3_EXEC
+  - get: L:PC21_BTN_FS_UFCP_ENT_EXEC
+  - get: L:PC21_BTN_FS_UFCP_4_EXEC
+  - get: L:PC21_BTN_FS_UFCP_5_EXEC
+  - get: L:PC21_BTN_FS_UFCP_6_EXEC
+  - get: L:PC21_BTN_FS_UFCP_CLR_EXEC
+  - get: L:PC21_BTN_FS_UFCP_7_EXEC
+  - get: L:PC21_BTN_FS_UFCP_8_EXEC
+  - get: L:PC21_BTN_FS_UFCP_9_EXEC
+  - get: L:PC21_BTN_FS_UFCP_0_EXEC
+  - get: L:PC21_BTN_FS_UFCP_COMM_EXEC
+  - get: L:PC21_BTN_FS_UFCP_ILS_EXEC
+  - get: L:PC21_BTN_FS_UFCP_TCN_EXEC
+  - get: L:PC21_BTN_FS_UFCP_TPDR_EXEC
+  - get: L:PC21_BTN_FS_UFCP_MODE_EXEC
+  - get: L:PC21_BTN_FS_UFCP_FUEL_EXEC
+  - get: L:PC21_BTN_FS_UFCP_MSN_EXEC
+  - get: L:PC21_BTN_FS_UFCP_MRK_EXEC
+  - get: L:PC21_BTN_FS_UFCP_BACK_EXEC
+  - get: L:PC21_BTN_FS_UFCP_NAV_EXEC
+  - get: L:PC21_BTN_FS_UFCP_A-A_EXEC
+  - get: L:PC21_BTN_FS_UFCP_A-G_EXEC
+  - get: L:PC21_BTN_FS_UFCP_L_L1_EXEC
+  - get: L:PC21_BTN_FS_UFCP_L_L2_EXEC
+  - get: L:PC21_BTN_FS_UFCP_L_L3_EXEC
+  - get: L:PC21_BTN_FS_UFCP_R_L1_EXEC
+  - get: L:PC21_BTN_FS_UFCP_R_L2_EXEC
+  - get: L:PC21_BTN_FS_UFCP_R_L3_EXEC
+
+#  - ## PRIMARY FLIGHT DISPLAY (PFD) PANEL NORMAL ##
+  - get: L:FS-PFD-MULTIFUNCTION
+  - get: L:FS-PFD-ALT
+  - get: L:FS-PFD-BARO
+  - get: L:FS-PFD-PFD
+  - get: L:PFD_CDI_SOURCE
+  - get: L:PFD_NAV_POINTER_2
+  - get: L:PFD_NAV_SOURCE
+  - get: L:PFD-RNG
+  - get: L:PFD_RNG
+  - get: L:PFD_TAS
+  - get: L:PC21_KNOB_MULTIFUNCTION
+  - get: L:PC21_BTN_FS_PFD_1
+  - get: L:PC21_BTN_FS_PFD_1_EXEC
+  - get: L:PC21_BTN_FS_PFD_2
+  - get: L:PC21_BTN_FS_PFD_2_EXEC
+  - get: L:PC21_BTN_FS_PFD_3
+  - get: L:PC21_BTN_FS_PFD_3_EXEC
+  - get: L:PC21_BTN_FS_PFD_4
+  - get: L:PC21_BTN_FS_PFD_4_EXEC
+  - get: L:PC21_BTN_FS_PFD_5
+  - get: L:PC21_BTN_FS_PFD_5_EXEC 
+#  - get: L:PC21_BTN_FS_PFD_10
+#  - get: L:PC21_BTN_FS_PFD_10_EXEC  
+#  - get: L:PC21_BTN_FS_PFD_11
+#  - get: L:PC21_BTN_FS_PFD_11_EXEC
+  - get: L:PC21_BTN_FS_PFD_12
+  - get: L:PC21_BTN_FS_PFD_12_EXEC
+  - get: L:PC21_BTN_FS_PFD_13
+  - get: L:PC21_BTN_FS_PFD_13_EXEC
+  - get: L:PC21_BTN_FS_PFD_14
+  - get: L:PC21_BTN_FS_PFD_14_EXEC
+  - get: L:PC21_BTN_FS_PFD_15
+  - get: L:PC21_BTN_FS_PFD_15_EXEC
+  - get: L:PC21_BTN_FS_PFD_16
+  - get: L:PC21_BTN_FS_PFD_16_EXEC
+  - get: L:PC21_BTN_FS_PFD_17
+  - get: L:PC21_BTN_FS_PFD_17_EXEC
+  - get: L:PC21_BTN_FS_PFD_18
+  - get: L:PC21_BTN_FS_PFD_18_EXEC
+  - get: L:PC21_BTN_FS_PFD_19
+  - get: L:PC21_BTN_FS_PFD_19_EXEC
+  - get: L:PC21_BTN_FS_PFD_20
+  - get: L:PC21_BTN_FS_PFD_20_EXEC
+  - get: L:PC21_BTN_FS_PFD_21
+  - get: L:PC21_BTN_FS_PFD_21_EXEC
+  - get: L:PC21_BTN_FS_PFD_22
+  - get: L:PC21_BTN_FS_PFD_22_EXEC
+
+#  - #############  FRONT COCKPIT - FRONT RIGHT ROW #############
+#  - ## LEFT MFD MAJOR FUNCTIONS ##
+  - get: L:FS-RMFD-MAP-AUT
+  - get: L:FS-RMFD-MAP-DLINK
+  - get: L:FS-RMFD-MAP-GRD
+  - get: L:FS-RMFD-MAP-INFO
+  - get: L:FS-RMFD-MAP-LIST
+  - get: L:FS-RMFD-MAP-MSN
+  - get: L:FS-RMFD-MAP-NUP
+  - get: L:FS-RMFD-MAP-OVRLY
+  - get: L:FS-RMFD-MAP-RNG
+  - get: L:FS-RMFD-MAP-RTE
+  - get: L:FS-RMFD-MAP-STR
+  - get: L:FS-RMFD-MAP-TAWS
+  - get: L:FS-RMFD-MAP-TER
+  - get: L:FS-RMFD-MCTL
+  - get: L:FS-RMFD-MMODE
+  - get: L:RS-RMFD-MMODE
+  - get: L:FS-RMFD-OCTL
+  - get: L:FS-RMFD-PG
+  - get: L:RS-RMFD-PG
+
+
+#  - #############  FRONT COCKPIT - RIGHT ARM #############
+#  - ## ELECTRICAL PANEL ##
+  - get: A:ELECTRICAL MASTER BATTERY:1, enum
+    set: (>K:BATTERY1_SET)
+  - get: A:ELECTRICAL MASTER BATTERY:2, enum
+    set: (>K:BATTERY2_SET)
+  - get: L:PC21_SW2_FS_RC_GEN1
+  - get: L:PC21_SW2_FS_RC_GEN2
+  - get: L:PC21_SW3_FS_RC_MC
+  - get: L:PC21_BTN_FS_RC_FMS
+  - get: L:PC21_SW2_FS_RC_BTC
+
+#  - ## DEICEING PANEL ##
+  - get: L:PC21_BTN_FS_RC_INTAKE
+  - get: L:PC21_BTN_FS_RC_PROP
+  - get: L:PC21_SW2_FS_RC_PROBE_DEICE
+  - get: A:LIGHT NAV, Number
+    set: (>K:TOGGLE_NAV_LIGHTS)
+#  - ## EXTERNAL LIGHTING PANEL ##
+  - get: L:PC21_SW2_FS_RC_LIGHT_LAND
+  - get: A:LIGHT RECOGNITION, Number
+    set: (>K:TOGGLE_RECOGNITION_LIGHTS)
+  - get: L:PC21_SW2_FS_RC_LIGHT_ANTICOL
+  - get: L:PC21_SW2_FS_RC_LIGHT_ANTICOL_RED
+
+#  - ## EFLIGHT MANAGEMENT SYSTEM PANEL ##
+#  - # This should all be H EVENTS
+#    type: var
+#    var_name: L:
+
+#  - ## EXTERNAL LIGHTING PANEL ##
+  - get: L:PC21_SW3_FS_RC_COMM_PTT
+  - get: L:PC21_KNOB_FS_RC_COMM_MODE
+
+#  - ## ENNVIRONMENTAL CONTROL (ESC) PANEL ##
+  - get: L:PC21_KNOB_FS_RC_ENV_TEMP
+  - get: L:PC21_KNOB_FS_RC_ENV_FAN
+  - get: L:PC21_SW2_FS_LC_COVER_VCS
+  - get: L:PC21_BTN_FS_RC_VCS
+  - get: L:PC21_KNOB_FS_RC_ENV_PRESS
+#  - # SMOKE ARMING
+  - get: L:PC21_SW2_FS_RC_SMOKE
+#  - # ELT RESET/ARM
+  - get: L:PC21_SW3_FS_RC_ELT
+
+#  - #############  MISCELLENEOUS ITEMS #############
+#  - ## CANOPY ##
+  - get: L:PC21_VIS_HELMET
+  - get: L:PC21_LEVER_CANOPY_LOCK_FRONT
+  - get: L:CANOPY_HANDLE
+  - get: L:CANOPY_LATCH
+  - get: L:PC21_ANIM_CANOPY
+  - get: L:WsCanopy
+  - get: L:PC21_LEVER_CANOPY_LATCH_FRONT
+  - get: L:hasCanopyErla
+#  - # CANOPY FRACTURE HANDLE
+  - get: L:PC21_LEVER_CFS_PIN    
+
+#  - ## MISCELLENEOUS SOUNDS ##
+  - get: L:ROTARY_CLICK
+  - get: L:SWITCH_CLICK_OFF
+  - get: L:SWITCH_CLICK_ON
+  - get: L:BTN_CLICK
+#  - ## EJECTION SEAT ARMED HANDLE ##
+  - get: L:PC21_LEVER_EJECTION_PIN_FRONT
+#  - # HIDE CONTROL FLIGHT STICK 
+  - get: L:PC21_BTN_FS_STICK
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

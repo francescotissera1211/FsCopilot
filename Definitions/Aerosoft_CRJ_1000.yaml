@@ -1,0 +1,1205 @@
+# Original author: https://discord.com/channels/1454265644416765974/1469731705303597146/1492909627321614517
+# Updated: 2026-04-12 15:29:55
+
+# AEROSOFT CRJ-1000 - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Date: 4/12/2026
+# KNOWN ISSUES:
+# - ENGINE START SWITCHES - Make sure you HOLD each btn for 2-3 seconds as they need long clicks to initiate the correct start sequence. 
+
+#  - KNOB DESYNC WHEN KNOBS are rotated quickly. (SPD,HDG,ALT,DH, MDA, VSPDS, ETC) Please turn slowly. 
+     # - On Heading, you can use the PF to turn the heading knob and once on that heading , hit the sync BTN and the PM's heading will sync. 
+     # - Similar on IAS Speeds PF sets speed and once up to that speed, hit IAS BTN once to set MACH, then again to sync to IAS SPEED to current flight speed. a little quirky but this works
+    # - ALT Is being removed due to Sync issues
+#  - NO SYNC on EFB due to no exposed VARS. Both Pilots must set up import from Simbrief using the EFB IMPORT OFP BTN using same Pilot ID (Set up in OPTIONS) and use the Send to FMS for FLTPLAN and Set Payload & Fuel on both pilots EFB's. Manual entry of all options inthe MCDU/FMS sync well.  
+
+#  - Many button clicks work and are animated where others have no animation logic so they will not move. Example is the Engine Start switches. They sync but long click isnt see on the PM but illuminated messages do sync. 
+
+# - I did not test GSX, but pushback works fine from what I can see.
+
+# Fixed:
+   # - 4/12/2026 
+     # - Yury Updated Syntax for :1 showing before argument and K:2: logic 
+     # Published copying 900 profile
+   # - 3-27-2026
+     # - Removed Altitude knob sync due to issues with Desyncing.
+
+include:
+
+master:
+  - get: L:ASCRJ_AIL_UPR # AILERON UP on Pedestal
+  - get: L:ASCRJ_AIL_LWR # AILERON DOWN on Pedestal 
+  - get: L:ASCRJ_TRIM_RUD # RUDDER TRIM on Pedestal  
+  - get: L:ASCRJ_ELEVTRIM # ELEVATOR TRIM on Pedestal
+  - get: L:ASCRJ_TRIM_IND # TRIM INDICATOR on Pedestal
+#  - get: A:ELEVATOR TRIM PCT, Percent scaler 16k # #TRIM ####   $$$$$ REMOVED do to pitch issues on taking over control in APP $$$$$ #######
+#    set: (>K:ELEVATOR_TRIM_SET)
+  - get: A:BRAKE LEFT POSITION, Position # PEDC BRAKE L
+    set: (>K:AXIS_LEFT_BRAKE_SET)   
+  - get: A:BRAKE RIGHT POSITION, Position # PEDC BRAKE R
+    set: (>K:AXIS_RIGHT_BRAKE_SET)
+  - get: L:ASCRJ_YOKEC_TRIM # YOKEC TRIM
+  - get: L:ASCRJ_YOKEF_TRIM # YOKEF TRIM
+  - get: L:ASCRJ_TQ_TOGA_1, Bool # TQ TOGA 1
+  - get: L:ASCRJ_TQ_TOGA_2, Bool # TQ TOGA 2
+  - get: L:ASCRJ_TQ_THROTTLE_1_POS, Number # TQ THROTTLE 1 POS
+  - get: L:ASCRJ_TQ_THROTTLE_2_POS, Number # TQ THROTTLE 2 POS
+  - get: L:ASCRJ_TQ_REVERSE_1_ANIM # TQ REVERSE 1 ANIM
+  - get: L:ASCRJ_TQ_REVERSE_2_ANIM # TQ REVERSE 2 ANIM
+  - get: L:ASCRJ_TQ_REVERSE_1_POS # TQ REVERSE 1 POS
+  - get: L:ASCRJ_TQ_REVERSE_2_POS # TQ REVERSE 2 POS
+  - get: L:ASCRJ_TQ_REVERSE_1_START # TQ REVERSE 1 START
+  - get: L:ASCRJ_TQ_REVERSE_2_START # TQ REVERSE 2 START
+  - get: L:ASCRJ_TQ_REVERSER_L_POS # TQ REVERSER L POS
+  - get: L:ASCRJ_TQ_REVERSER_R_POS # TQ REVERSER R POS 
+shared: 
+#########################        GLARESHIELD        #########################
+        ###########  LEFT ANNUNCIATOR PANEL - PILOT  ########### 
+  - get: L:ASCRJ_GSC_ENG_FIRE_ON 
+  - get: L:ASCRJ_GSC_ENG_BOTTLE_ON 
+  - get: L:ASCRJ_GSC_ROLL_SPLR # GSC ROLL SPLR
+  - get: L:ASCRJ_GSC_MASTER_WARN_ON
+  - get: L:ASCRJ_GSF_MASTER_WARN_ON
+  - get: L:ASCRJ_MASTER_WARN_ON # MASTER WARN ON
+  - get: L:ASCRJ_MASTER_WARN # MASTER WARN
+    set: "value == 1 ? '0 (>B:SAFETY_ASCRJ_GSC_MASTER_WARN_BTN_KEY_Push) ' : '0 (>B:SAFETY_ASCRJ_GSC_MASTER_WARN_BTN_KEY_Release)'" 
+  - get: L:ASCRJ_MASTER_WARN # MASTER WARN
+    set: "value == 1 ? '0 (>B:SAFETY_ASCRJ_GSF_MASTER_WARN_BTN_KEY_Push) ' : '0 (>B:SAFETY_ASCRJ_GSF_MASTER_WARN_BTN_KEY_Release)'" 
+  - get: L:ASCRJ_GSC_MASTER_CAUT_ON
+  - get: L:ASCRJ_GSF_MASTER_CAUT_ON
+  - get: L:ASCRJ_MASTER_CAUT_ON # MASTER CAUT ON
+  - get: L:ASCRJ_MASTER_CAUT # MASTER CAUT
+    set: "value == 1 ? '0 (>B:SAFETY_ASCRJ_GSC_MASTER_CAUT_BTN_KEY_Push) ' : '0 (>B:SAFETY_ASCRJ_GSC_MASTER_CAUT_BTN_KEY_Release)'"
+  - get: L:ASCRJ_MASTER_CAUT # MASTER CAUT    
+    set: "value == 1 ? '0 (>B:SAFETY_ASCRJ_GSF_MASTER_CAUT_BTN_KEY_Push) ' : '0 (>B:SAFETY_ASCRJ_GSF_MASTER_CAUT_BTN_KEY_Release)'"
+  - get: L:ASCRJ_GSC_STALL # GSC STALL
+  - get: L:ASCRJ_GSC_STALL_GUARD # GSC STALL GUARD
+  - get: L:ASCRJ_GSC_STALL_GUARD_CNT # GSC STALL GUARD CNT
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:SAFETY_ASCRJ_GSC_STALL_GUARD_Off)'
+          case  5: return '1 (>B:SAFETY_ASCRJ_GSC_STALL_GUARD_On)'
+          default: return ''
+         }
+  - get: L:ASCRJ_GPWS # GPWS
+  - get: L:ASCRJ_GSC_ENG_FIRE # GSC ENG FIRE
+  - get: L:ASCRJ_GSC_ENG_FIRE_GUARD # GSC ENG FIRE GUARD
+  - get: L:ASCRJ_GSC_ENG_FIRE_GUARD_CNT # GSC ENG FIRE GUARD CNT
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:SAFETY_ASCRJ_GSC_ENG_FIRE_GUARD_Toggle)'
+          case  5: return '1 (>B:SAFETY_ASCRJ_GSC_ENG_FIRE_GUARD_Toggle)'
+          default: return ''
+         }
+  - get: L:ASCRJ_GSC_ENG_BOTTLE # GSC L ENG FIRE BOTTLE
+    set: "(value == 0) ? '(>B:SAFETY_ASCRJ_GSC_ENG_BOTTLE_Inc)' : ''"
+        ###########  Autopilot FCP PANEL - PILOT  ########### 
+  - get: L:ASCRJ_FCP_CRS1 # FCP CRS1 KNOB
+  - get: L:ASCRJ_FCP_CRS1_CHANGE # FCP CRS1 CHANGE
+  - get: A:NAV OBS:1, Degrees # FCP CRS1 CHANGE
+    set: (>K:VOR1_SET)
+  - get: L:ASCRJ_FCP_FD1 # FCP FD1
+  - get: L:ASCRJ_FCP_FD1_LONG # FCP FD1 LONG
+  - get: L:ASCRJ_FCP_AP_ENG # FCP AP ENG
+  - get: L:ASCRJ_FCP_AP_ENG_LONG # FCP AP ENG LONG
+  - get: L:ASCRJ_FCP_AP_DISC # FCP AP DISC
+  - get: A:AUTOPILOT MASTER, Bool #AP
+    set: "value ? '(>K:AUTOPILOT_ON)' : '(>K:AUTOPILOT_OFF)'"
+  - get: L:ASCRJ_FCP_XFR # FCP AP XFR
+  - get: L:ASCRJ_FCP_XFR_LONG # FCP AP XFR LONG
+  - get: L:ASCRJ_FCP_XFR_LED # FCP AP XFR LED
+    set: "value == 1 ? '2 (>K:AP_NAV_SELECT_SET)' : '1 (>K:AP_NAV_SELECT_SET)'" 
+  - get: L:ASCRJ_FCP_TURB # FCP AP TURB
+  - get: L:ASCRJ_FCP_TURB_LONG # FCP AP TURB LONG
+  - get: L:ASCRJ_FCP_SPEED # FCP AP SPEED
+  - get: L:ASCRJ_FCP_SPEED_INFO # FCP AP SPEED INFO
+  - get: L:ASCRJ_FCP_SPEED_CHANGE # FCP AP SPEED CHANGE
+  - get: L:ASCRJ_FCP_SPEED_SEL # FCP AP SPEED SEL  
+  - get: L:ASCRJ_VAR_AP_SELIAS, Number # VAR AP SELIAS
+  - get: L:ASCRJ_FCP_SPEED_LONG # FCP AP SPEED LONG
+  - get: L:ASCRJ_FCP_SPEED_LED # FCP AP HDG LED
+    set: "value == 1 ? '0 (>K:FLIGHT_LEVEL_CHANGE_ON)' : '0 (>K:FLIGHT_LEVEL_CHANGE_OFF)'"
+
+  - get: A:AUTOPILOT AIRSPEED HOLD VAR, Knots # Absolute selected speed (IAS mode)
+    set: (>K:AP_SPD_VAR_SET)
+
+  - get: A:AUTOPILOT MACH HOLD VAR, Number # Absolute selected Mach (if in Mach mode)
+    set: (>K:AP_MACH_VAR_SET)
+
+  - get: L:ASCRJ_FCP_IAS_MACH # FCP AP IAS MACH
+  - get: L:ASCRJ_FCP_IAS_MACH_CHANGE # FCP AP IAS MACH CHANGE
+  - get: L:ASCRJ_FCP_APPR # FCP AP APPR
+  - get: L:ASCRJ_FCP_APPR_LONG # FCP AP APPR LONG
+  - get: L:ASCRJ_FCP_APPR_LED # FCP AP HDG LED
+    set: "value == 1 ? '0 (>K:AP_APPR_HOLD_ON)' : '0 (>K:AP_APPR_HOLD_OFF)'"
+  - get: L:ASCRJ_FCP_BC # FCP AP BC
+  - get: L:ASCRJ_FCP_BC_LONG # FCP AP BC LONG
+  - get: A:AUTOPILOT HEADING LOCK DIR, degrees # Absolute selected heading
+    set: (>K:HEADING_BUG_SET)
+  - get: L:ASCRJ_VAR_AP_SELHDG, Number # VAR AP SELHDG 
+  - get: L:ASCRJ_FCP_HDG # FCP AP HDG
+  - get: L:ASCRJ_FCP_HDG_CHANGE # FCP AP HDG CHANGE
+  - get: L:ASCRJ_FCP_HDG_SEL # FCP AP HDG SEL
+  - get: L:ASCRJ_FCP_HDG_LED # FCP AP HDG LED
+    set: "value == 1 ? '0 (>K:AP_HDG_HOLD_ON)' : '0 (>K:AP_HDG_HOLD_OFF)'"
+  - get: L:ASCRJ_FCP_HDG_LONG # FCP AP HDG LONG
+  - get: L:ASCRJ_FCP_HDG_SYNC # FCP AP HDG SYNC
+  - get: L:ASCRJ_FCP_HDG_SYNC_LONG # FCP AP HDG SYNC LONG
+  - get: L:ASCRJ_FCP_NAV # FCP AP NAV
+  - get: L:ASCRJ_FCP_NAV_LONG # FCP AP NAV LONG
+  - get: L:ASCRJ_FCP_NAV_LED # FCP AP NAV LED
+    set: "value == 1 ? '0 (>K:AP_NAV_HOLD_ON)' : '0 (>K:AP_NAV_HOLD_OFF)'"  
+  - get: L:ASCRJ_FCP_12BANK # FCP AP 12BANK    
+    set: "value == 1 ? '0 (>B:AUTOPILOT_ASCRJ_FCP_12BANK_BTN_KEY_Push)' : '0 (>B:AUTOPILOT_ASCRJ_FCP_12BANK_BTN_KEY_Release)'"  
+  - get: L:ASCRJ_FCP_12BANK_LONG # FCP AP 12BANK LONG
+  - get: L:ASCRJ_FCP_12BANK_LED # FCP AP NAV LED
+
+#  - get: A:AUTOPILOT ALTITUDE LOCK VAR, Feet  # Standard MSFS selected altitude (often slot 1 or default) ### REMOVED due to ALT Sync issue with Knob
+#    set: (>K:AP_ALT_VAR_SET)
+
+  - get: L:ASCRJ_FCP_ALT # FCP AP ALT
+  - get: L:ASCRJ_FCP_ALT_LONG # FCP AP ALT LONG
+#  - get: L:ASCRJ_FCP_ALT_CHANGE # FCP AP ALT CHANGE ### REMOVED due to ALT Sync issue with Knob
+#  - get: L:ASCRJ_FCP_ALT_INFO, Number # FCP AP ALT INFO ### REMOVED due to ALT Sync issue with Knob
+#  - get: L:ASCRJ_FCP_ALT_SEL, Number # FCP AP ALT SEL ### REMOVED due to ALT Sync issue with Knob
+#  - get: L:ASCRJ_VAR_AP_SELALT, Number # FCP AP ALT SEL ### REMOVED due to ALT Sync issue with Knob
+  - get: L:ASCRJ_FCP_ALT_LED # FCP AP HDG LED
+    set: "value == 1 ? '0 (>K:AP_ALT_HOLD_ON)' : '0 (>K:AP_ALT_HOLD_OFF)'" 
+  - get: L:ASCRJ_FCP_ALT_CANCEL # FCP AP ALT CANCEL
+  - get: L:ASCRJ_FCP_ALT_CANCEL_LONG # FCP AP ALT CANCEL LONG
+  - get: L:ASCRJ_FCP_VS # FCP AP VS
+  - get: L:ASCRJ_FCP_VS_LONG # FCP AP VS LONG
+  - get: L:ASCRJ_FCP_VS_LED # FCP AP VS LED
+    set: "value == 1 ? '0 (>K:AP_VS_ON)' : '0 (>K:AP_VS_OFF)'" 
+  - get: L:ASCRJ_FCP_WHEEL_INFO # FCP AP WHEEL INFO
+  - get: L:ASCRJ_FCP_WHEEL_CHANGE # FCP AP WHEEL CHANGE
+  - get: L:ASCRJ_FCP_CRS2 # FCP CRS2 KNOB
+  - get: L:ASCRJ_FCP_CRS2_CHANGE # FCP CRS2 CHANGE
+  - get: A:NAV OBS:2, Degrees # FCP CRS1 CHANGE
+    set: (>K:VOR2_SET)
+  - get: L:ASCRJ_FCP_FD2 # FCP FD2
+  - get: L:ASCRJ_FCP_FD2_LONG # FCP FD2 LONG
+        ###########  RIGHT ANNUNCIATOR PANEL - PILOT  ########### 
+  - get: L:ASCRJ_GSF_ENG_FIRE_ON 
+  - get: L:ASCRJ_GSF_APU_FIRE_ON
+  - get: L:ASCRJ_GSF_ENG_BOTTLE_ON 
+  - get: L:ASCRJ_GSF_APU_BOTTLE_ON  
+  - get: L:ASCRJ_GSF_ROLL_SPLR # GSF ROLL SPLR
+  - get: L:ASCRJ_GSF_STALL # GSF STALL
+  - get: L:ASCRJ_GSF_STALL_GUARD # GSF STALL GUARD
+  - get: L:ASCRJ_GSF_STALL_GUARD_CNT # GSF STALL GUARD CNT
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:SAFETY_ASCRJ_GSF_STALL_GUARD_Off)'
+          case  5: return '1 (>B:SAFETY_ASCRJ_GSF_STALL_GUARD_On)'
+          default: return ''
+         }
+  - get: L:ASCRJ_GPWS # GPWS
+  - get: L:ASCRJ_GSF_ENG_FIRE # GSF ENG FIRE
+  - get: L:ASCRJ_GSF_ENG_FIRE_GUARD # GSF ENG FIRE GUARD
+  - get: L:ASCRJ_GSF_ENG_FIRE_GUARD_CNT # GSF ENG FIRE GUARD CNT
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:SAFETY_ASCRJ_GSF_ENG_FIRE_GUARD_Toggle)'
+          case  5: return '1 (>B:SAFETY_ASCRJ_GSF_ENG_FIRE_GUARD_Toggle)'
+          default: return ''
+         }
+  - get: L:ASCRJ_GSF_ENG_BOTTLE # GSF L ENG FIRE BOTTLE
+    set: "(value == 0) ? '(>B:SAFETY_ASCRJ_GSF_ENG_BOTTLE_Inc)' : ''"
+#########################        MISC ITEMS        #########################
+  - get: L:P180_steering_mode, Number
+  - get: L:ASCRJ_YOKE_VISIBLE # YOKE VISIBLE
+  - get: L:ASCRJ_YOKEC_SHOW_HIDE # YOKEC SHOW/HIDE
+    set: (>B:INSTRUMENT_ASCRJ_YOKEC_SHOW_HIDE)
+  - get: L:ASCRJ_YOKEF_SHOW_HIDE # YOKEF SHOW/HIDE
+    set: (>B:INSTRUMENT_ASCRJ_YOKEF_SHOW_HIDE)
+  - get: L:ASCRJ_YOKEC_RTIC # YOKEC RTIC
+  - get: L:ASCRJ_YOKEF_RTIC # YOKEF RTIC
+  - get: L:ASCRJ_YOKEC_APDISC # YOKEC APDISC
+    set: '0 (>B:LIGHTING_ASCRJ_YOKEC_APDISC_BTN_KEY_PUSH)' 
+  - get: L:ASCRJ_YOKEF_APDISC # YOKEF APDISC
+    set: '0 (>B:LIGHTING_ASCRJ_YOKEF_APDISC_BTN_KEY_PUSH)' 
+  - get: L:ASCRJ_CPT_ARMREST # CPT ARMREST
+  - get: L:ASCRJ_FO_ARMREST # FO ARMREST
+  - get: L:ASCRJ_COCKPIT_DOOR # COCKPIT DOOR
+  - get: L:DOOR_SERVICE_TRIGGER, Number # SERVICE DOOR TRIGGER
+    set: (>B:INSTRUMENT_ASCRJ_CATERDOOR_CLICK_Toggle) 
+  - get: L:DOOR_SERVICE_CLOSING # SERVICE DOOR CLOSING
+  - get: L:DOOR_SERVICE_OPENING # SERVICE DOOR OPENING  
+  - get: L:DOOR_MAIN_TRIGGER # SERVICE DOOR TRIGGER
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_MAIN_DOOR_RAIL_CLICK_Toggle)' : ''"  
+  - get: L:DOOR_SERVICE_CLOSING_9 # SERVICE DOOR CLOSING
+  - get: L:DOOR_SERVICE_OPENING_9 # SERVICE DOOR OPENING 
+  - get: L:DOOR_CTR_CARGO_OPENING
+  - get: L:DOOR_CTR_CARGO_CLOSING 
+  - get: L:DOOR_CTR_CARGO_OPENING
+  - get: L:DOOR_FWD_CARGO_CLOSING 
+  - get: L:DOOR_FWD_CARGO_OPENING
+  - get: L:DOOR_AFT_CARGO_CLOSING 
+  - get: L:DOOR_AFT_CARGO_OPENING
+  - get: L:ASCRJ_ELEC_GPU_AVAIL # ELEC GPU AVAIL
+  - get: L:ASCRJ_MAPLT_L # MAPLT L
+  - get: L:ASCRJ_MAPLT_R # MAPLT R
+#########################  PEDESTAL QUADRANT AREA #########################
+  - get: L:ASCRJ_TQ_PITCH_DISC, Number  # TQ PITCH DISC
+  - get: L:ASCRJ_TQ_ROLL_DISC, Number  # TQ ROLL DISC
+  - get: L:ASCRJ_TQ_SPLR_MODE, Number
+  - get: L:ASCRJ_TQ_REV1_MODE, Bool # TQ REV1 MODE
+  - get: L:ASCRJ_TQ_REV2_MODE, Bool # TQ REV2 MODE
+  - get: L:ASCRJ_SPOILER_SET, Percent # TQ SPLR SET
+  - get: L:ASCRJ_TQ_CUTOFF_1, Number # TQ CUTOFF 1
+  - get: L:ASCRJ_TQ_CUTOFF_2, Number # TQ CUTOFF 2 
+  - get: L:ASCRJ_TQ_TOGA_1, Bool # TQ TOGA 1
+    set: "value ? '0 (>B:INSTRUMENT_ASCRJ_TQ_TOGA_1_KEY_Push)' : ' 0 (>B:INSTRUMENT_ASCRJ_TQ_TOGA_1_KEY_Push)' " 
+  - get: L:ASCRJ_TQ_TOGA_2, Bool # TQ TOGA 2
+    set: "value == 1 ? '(>B:INSTRUMENT_ASCRJ_TQ_TOGA_2_KEY_Push)' : '(>B:INSTRUMENT_ASCRJ_TQ_TOGA_2_KEY_Release)'"  
+  - get: L:ASCRJ_FLAPS_SET, Number # FLAPS SET
+    set: (>B:HANDLING_ASCRJ_TQ_FLAP_LEVER_SET)
+
+
+#########################  PEDESTAL LOWER COLUMN 1 #########################
+        ###########  RTU1 PANEL - PILOT  ########### 
+  - get: L:ASCRJ_RTU1_LSK1L # RTU1 LSK1L
+  - get: L:ASCRJ_RTU1_LSK1R # RTU1 LSK1R
+  - get: L:ASCRJ_RTU1_LSK2L # RTU1 LSK2L
+  - get: L:ASCRJ_RTU1_LSK2R # RTU1 LSK2R
+  - get: L:ASCRJ_RTU1_LSK3L # RTU1 LSK3L
+  - get: L:ASCRJ_RTU1_LSK3R # RTU1 LSK3R
+  - get: L:ASCRJ_RTU1_LSK4L # RTU1 LSK4L
+  - get: L:ASCRJ_RTU1_LSK4R # RTU1 LSK4R
+  - get: L:ASCRJ_RTU1_IDENT # RTU1 IDENT
+  - get: L:ASCRJ_RTU1_IDENT_LONG # RTU1 IDENT LONG
+  - get: L:ASCRJ_RTU1_IDENT_INPUT # RTU1 IDENT INPUT
+  - get: L:ASCRJ_RTU1_DMEH # RTU1 DMEH
+  - get: L:ASCRJ_RTU1_1_2 # RTU1 1/2
+  - get: L:ASCRJ_RTU1_1_2_INPUT
+  - get: L:ASCRJ_RTU1_KNOB_OUTER # RTU1 KNOB OUTER
+  - get: L:ASCRJ_RTU1_KNOB_OUTER_CHANGE
+  - get: L:ASCRJ_RTU1_KNOB_OUTER_INPUT
+  - get: L:ASCRJ_RTU1_KNOB_INNER # RTU1 KNOB INNER
+  - get: L:ASCRJ_RTU1_KNOB_INNER_CHANGE 
+  - get: L:ASCRJ_RTU1_KNOB_INNER_INPUT
+        ###########  AUDIO 1 PANEL - PILOT  ########### 
+  - get: L:ASCRJ_AUDIO1_VHF1_VOL # AUDIO1 VHF1 VOL
+  - get: L:ASCRJ_AUDIO1_VHF1_VOL_PUSH # AUDIO1 VHF1 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_VHF2_VOL # AUDIO1 VHF2 VOL
+  - get: L:ASCRJ_AUDIO1_VHF2_VOL_PUSH # AUDIO1 VHF2 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_INTSVC_VOL # AUDIO1 INTSVS VOL
+  - get: L:ASCRJ_AUDIO1_INTSVC_VOL_PUSH # AUDIO1 INTSVS VOL PUSH
+  - get: L:ASCRJ_AUDIO1_PA_SEL # AUDIO1 PA SEL
+  - get: L:ASCRJ_AUDIO1_DME1_VOL # AUDIO1 DME1 VOL
+  - get: L:ASCRJ_AUDIO1_DME1_VOL_PUSH # AUDIO1 DME1 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_DME2_VOL # AUDIO1 DME2 VOL
+  - get: L:ASCRJ_AUDIO1_DME2_VOL_PUSH # AUDIO1 DME2 VOL PUSH  
+  - get: L:ASCRJ_AUDIO1_NAV1_VOL # AUDIO1 NAV1 VOL
+  - get: L:ASCRJ_AUDIO1_NAV1_VOL_PUSH # AUDIO1 NAV1 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_NAV2_VOL # AUDIO1 NAV2 VOL
+  - get: L:ASCRJ_AUDIO1_NAV2_VOL_PUSH # AUDIO1 NAV2 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_ADF1_VOL # AUDIO1 ADF1 VOL
+  - get: L:ASCRJ_AUDIO1_ADF1_VOL_PUSH # AUDIO1 ADF1 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_ADF2_VOL # AUDIO1 ADF2 VOL
+  - get: L:ASCRJ_AUDIO1_ADF2_VOL_PUSH # AUDIO1 ADF2 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_MKR1_VOL # AUDIO1 MKR1 VOL
+  - get: L:ASCRJ_AUDIO1_MKR1_VOL_PUSH # AUDIO1 MKR1 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_MKR2_VOL # AUDIO1 MKR2 VOL
+  - get: L:ASCRJ_AUDIO1_MKR2_VOL_PUSH # AUDIO1 MKR2 VOL PUSH
+  - get: L:ASCRJ_AUDIO1_SPKR_VOL # AUDIO1 SPKR VOL
+  - get: L:ASCRJ_AUDIO1_SPKR_VOL_PUSH # AUDIO1 SPKR VOL PUSH
+  - get: L:ASCRJ_AUDIO1_RTIC # AUDIO1 RTIC
+  - get: L:ASCRJ_AUDIO1_VOICEBOTH # AUDIO1 VOICEBOTH
+  - get: L:ASCRJ_AUDIO1_MASKBOOM # AUDIO1 MASKBOOM
+  - get: L:ASCRJ_AUDIO1_EMERNORM # AUDIO1 EMERNORM
+        ###########  WEATHER 1 PANEL - PILOT  ########### 
+  - get: L:ASCRJ_WXR1_GAIN # WXR1 GAIN
+  - get: L:ASCRJ_WXR1_GCS # WXR1 GCS
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_WXR1_GCS_BTN_KEY_Push)' : ''"
+  - get: L:ASCRJ_WXR1_GEC # WXR1 GEC
+  - get: L:ASCRJ_WXR1_XFR # WXR1 XFR
+  - get: L:ASCRJ_WXR1_STAB # WXR1 STAB
+  - get: L:ASCRJ_WXR1_MODE # WXR1 MODE
+  - get: L:ASCRJ_WXR1_TILT # WXR1 TILT
+  - get: L:ASCRJ_WXR1_AUTO # WXR1 AUTO
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_WXR1_AUTO_BTN_KEY_Push)' : ''"
+        ###########  RTU inhibit and COM3 PANEL - PILOT  ########### 
+  - get: L:ASCRJ_RTU1_INH_TRIGGER  # RTU1 INH TRIGGER
+  - get: L:ASCRJ_RTU1_INH # RTU1 INH  
+    set: (>B:INSTRUMENT_ASCRJ_RTU1_INH_BTN_Toggle)    
+  - get: L:ASCRJ_RTU2_INH_TRIGGER # RTU2 INH TRIGGER
+  - get: L:ASCRJ_RTU2_INH # RTU2 INH 
+    set: (>B:INSTRUMENT_ASCRJ_RTU2_INH_BTN_Toggle)  
+  - get: L:ASCRJ_XPDR_FMSINHIBIT # XPDR FMSINHIBIT
+  - get: L:ASCRJ_XPDR_ATC_SEL # XPDR ATC SEL
+  - get: L:ASCRJ_XPDR_MODE # XPDR MODE
+    set: (>B:INSTRUMENT_ASCRJ_XPDR_MODE_Set)
+  - get: L:ASCRJ_XPDR_COMNAV # XPDR COMNAV
+  - get: L:ASCRJ_XPDR_KNOB_OUTER # XPDR KNOB OUTER
+  - get: L:ASCRJ_XPDR_KNOB_OUTER_CHANGE # XPDR KNOB OUTER CHANGE
+  - get: L:ASCRJ_XPDR_KNOB_INNER # XPDR KNOB INNER
+  - get: L:ASCRJ_XPDR_KNOB_INNER_CHANGE # XPDR KNOB INNER CHANGE
+          ########### STAB TRIM & MACH TRIM PANEL  ########### 
+  - get: L:ASCRJ_STAB_TRIM_CH1_TRIGGER # STAB TRIM CM1 TRIGGER
+  - get: L:ASCRJ_STAB_TRIM_CH1 # STAB TRIM CM1
+    set: (>B:INSTRUMENT_ASCRJ_STAB_TRIM_CH1_BTN_Toggle)
+  - get: L:ASCRJ_STAB_TRIM_CH2_TRIGGER # STAB TRIM CM2 TRIGGER
+  - get: L:ASCRJ_STAB_TRIM_CH2 # STAB TRIM CM2
+    set: (>B:INSTRUMENT_ASCRJ_STAB_TRIM_CH2_BTN_Toggle)
+  - get: L:ASCRJ_MACH_TRIM_TRIGGER # MACH TRIM TRIGGER
+  - get: L:ASCRJ_MACH_TRIM # MACH TRIM
+  - get: B:INSTRUMENT_ASCRJ_MACH_TRIM_BTN # MACH TRIM
+        ###########  DISPLAY & AVIONICS FAN PANEL  ########### 
+  - get: L:ASCRJ_DSPL_FAN # DSPL FAN
+    set: (>B:INSTRUMENT_ASCRJ_DSPL_FAN_Set) 
+  - get: L:ASCRJ_AVIONICS_FAN # AVIONICS FAN
+    set: (>B:INSTRUMENT_ASCRJ_AVIONICS_FAN_Set)
+        ###########  IRS PANEL  ########### 
+  - get: L:ASCRJ_IRS1_KNOB # IRS
+    set: (>B:INSTRUMENT_ASCRJ_IRS1_KNOB_Set)
+  - get: L:ASCRJ_IRS2_KNOB # IRS
+    set: (>B:INSTRUMENT_ASCRJ_IRS2_KNOB_Set)
+  - get: L:ASCRJ_PARK_BRAKE # PARK BRAKE
+
+#########################  PEDESTAL LOWER COLUMN 2 #########################
+        ###########  FLIGHT DECK DOOR PANEL  ###########
+  - get: L:ASCRJ_FDD_MODE # FDD MODE
+    set: (>B:SAFETY_ASCRJ_FDD_MODE_Set)
+        ###########  ECAM PANEL  ###########
+  - get: L:ASCRJ_ECAM_PRI # ECAM PRI
+  - get: L:ASCRJ_ECAM_STAT # ECAM STAT
+  - get: L:ASCRJ_ECAM_ECS # ECAM ECS
+  - get: L:ASCRJ_ECAM_HYD # ECAM HYD
+  - get: L:ASCRJ_ECAM_ELEC # ECAM ELEC
+  - get: L:ASCRJ_ECAM_FUEL # ECAM FUEL
+  - get: L:ASCRJ_ECAM_FCTL # ECAM F/CTL
+  - get: L:ASCRJ_ECAM_AICE # ECAM A/ICE
+  - get: L:ASCRJ_ECAM_DOORS
+  - get: L:ASCRJ_ECAM_SEL # ECAM SEL
+    set: "(value == 0) ? '(>B:INSTRUMENT_ASCRJ_ECAM_SEL_BTN_Push)' : ''"
+  - get: L:ASCRJ_ECAM_CAS # ECAM CAS
+  - get: L:ASCRJ_ECAM_BLANK # ECAM BLANK
+  - get: L:ASCRJ_ECAM_MENU # ECAM MENU
+  - get: L:ASCRJ_ECAM_UP # ECAM UP
+  - get: L:ASCRJ_ECAM_DOWN # ECAM DOWN
+  - get: L:ASCRJ_ECAM_STEP # ECAM STEP
+
+        ###########  INTERNAL LIGHTING PANEL  ###########
+  - get: L:ASCRJ_INTL_DISPL_BRT # INTL DSPL 
+  - get: L:ASCRJ_INTL_INTEG_BRT # INTL INTEG
+  - get: L:ASCRJ_INTL_FLOOD_BRT # INTL FLOOD
+  - get: L:ASCRJ_INTL_CB_BRT # INTL CB
+        ###########  YAW DAMPER PANEL  ###########
+  - get: L:ASCRJ_YD_DISC # YAW DAMPER DISC
+    set: "value ? '(>B:INSTRUMENT_ASCRJ_YD_DISC_BTN_Push)' : '(>B:INSTRUMENT_ASCRJ_YD_DISC_BTN_Release)'"
+  - get: L:ASCRJ_YD1 # YAW DAMPER 1
+    set: "value ? '(>B:INSTRUMENT_ASCRJ_YD1_BTN_Push)' : '(>B:INSTRUMENT_ASCRJ_YD1_BTN_Release)'"
+  - get: L:ASCRJ_YD2 # YAW DAMPER 2
+    set: "value ? '(>B:INSTRUMENT_ASCRJ_YD2_BTN_Push)' : '(>B:INSTRUMENT_ASCRJ_YD2_BTN_Release)'"
+        ###########  CALLS NOTIFICATION PANEL  ###########
+  - get: L:ASCRJ_CALLS_PA, Number # CALLS PA
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:INSTRUMENT_ASCRJ_CALLS_PA_Release)'
+          case  1: return '1 (>B:INSTRUMENT_ASCRJ_CALLS_PA_Push)'
+          default: return ''
+         }
+  - get: L:ASCRJ_CALLS_CHIME, Number # CALLS CHIME
+  - get: L:ASCRJ_CALLS_CALL, Number # CALLS CALL
+  - get: L:ASCRJ_CALLS_EMER, Number # CALLS EMER
+        ###########  ATTD NOTIFICATION PANEL  ###########
+  - get: L:ASCRJ_ATTD_HDG, Number # ATTD HDG
+    set: (>B:INSTRUMENT_ASCRJ_ATTD_HDG_Set)
+  - get: L:ASCRJ_AIR_DATA, Number # AIR DATA
+    set: (>B:INSTRUMENT_ASCRJ_AIR_DATA_Set)
+  - get: L:ASCRJ_EICAS, Number # EICAS
+    set: (>B:INSTRUMENT_ASCRJ_EICAS_Set)
+  - get: L:ASCRJ_DSPL_CONT # DSPL CONT
+    set: (>B:INSTRUMENT_ASCRJ_DSPL_CONT_Set)
+        ###########  AUDIO 3 PANEL - PILOT  ########### 
+  - get: L:ASCRJ_AUDIO3_VHF1_VOL # AUDIO3 VHF1 VOL
+  - get: L:ASCRJ_AUDIO3_VHF1_VOL_PUSH # AUDIO3 VHF1 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_VHF2_VOL # AUDIO3 VHF2 VOL
+  - get: L:ASCRJ_AUDIO3_VHF2_VOL_PUSH # AUDIO3 VHF2 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_INTSVC_VOL # AUDIO3 INTSVS VOL
+  - get: L:ASCRJ_AUDIO3_INTSVC_VOL_PUSH # AUDIO3 INTSVS VOL PUSH
+  - get: L:ASCRJ_AUDIO3_PA_SEL # AUDIO3 PA SEL
+  - get: L:ASCRJ_AUDIO3_DME1_VOL # AUDIO3 DME1 VOL
+  - get: L:ASCRJ_AUDIO3_DME1_VOL_PUSH # AUDIO3 DME1 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_DME2_VOL # AUDIO3 DME2 VOL
+  - get: L:ASCRJ_AUDIO3_DME2_VOL_PUSH # AUDIO3 DME2 VOL PUSH  
+  - get: L:ASCRJ_AUDIO3_NAV1_VOL # AUDIO3 NAV1 VOL
+  - get: L:ASCRJ_AUDIO3_NAV1_VOL_PUSH # AUDIO3 NAV1 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_NAV2_VOL # AUDIO3 NAV2 VOL
+  - get: L:ASCRJ_AUDIO3_NAV2_VOL_PUSH # AUDIO3 NAV2 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_ADF1_VOL # AUDIO3 ADF1 VOL
+  - get: L:ASCRJ_AUDIO3_ADF1_VOL_PUSH # AUDIO3 ADF1 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_ADF2_VOL # AUDIO3 ADF2 VOL
+  - get: L:ASCRJ_AUDIO3_ADF2_VOL_PUSH # AUDIO3 ADF2 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_MKR1_VOL # AUDIO3 MKR1 VOL
+  - get: L:ASCRJ_AUDIO3_MKR1_VOL_PUSH # AUDIO3 MKR1 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_MKR2_VOL # AUDIO3 MKR2 VOL
+  - get: L:ASCRJ_AUDIO3_MKR2_VOL_PUSH # AUDIO3 MKR2 VOL PUSH
+  - get: L:ASCRJ_AUDIO3_SPKR_VOL # AUDIO3 SPKR VOL
+  - get: L:ASCRJ_AUDIO3_SPKR_VOL_PUSH # AUDIO3 SPKR VOL PUSH
+  - get: L:ASCRJ_AUDIO3_RTIC # AUDIO3 RTIC
+  - get: L:ASCRJ_AUDIO3_VOICEBOTH # AUDIO3 VOICEBOTH
+  - get: L:ASCRJ_AUDIO3_MASKBOOM # AUDIO3 MASKBOOM
+  - get: L:ASCRJ_AUDIO3_EMERNORM # AUDIO3 EMERNORM
+        ###########  LG MAN RELEASE AND ADG PANEL  ###########
+  - get: L:ASCRJ_GEAR_MAN_REL # GEAR MAN REL
+  - get: L:ASCRJ_ADG # ADG
+
+#########################  PEDESTAL LOWER COLUMN 3 #########################
+         ###########  RTU2 PANEL - CoPILOT  ########### 
+  - get: L:ASCRJ_RTU2_LSK1L # RTU2 LSK1L
+  - get: L:ASCRJ_RTU2_LSK1R # RTU2 LSK1R
+  - get: L:ASCRJ_RTU2_LSK2L # RTU2 LSK2L
+  - get: L:ASCRJ_RTU2_LSK2R # RTU2 LSK2R
+  - get: L:ASCRJ_RTU2_LSK3L # RTU2 LSK3L
+  - get: L:ASCRJ_RTU2_LSK3R # RTU2 LSK3R
+  - get: L:ASCRJ_RTU2_LSK4L # RTU2 LSK4L
+  - get: L:ASCRJ_RTU2_LSK4R # RTU2 LSK4R
+  - get: L:ASCRJ_RTU2_IDENT # RTU2 IDENT
+  - get: L:ASCRJ_RTU2_IDENT_LONG # RTU2 IDENT LONG
+  - get: L:ASCRJ_RTU2_IDENT_INPUT # RTU2 IDENT INPUT
+  - get: L:ASCRJ_RTU2_DMEH # RTU2 DMEH
+  - get: L:ASCRJ_RTU2_1_2 # RTU2 1/2
+  - get: L:ASCRJ_RTU2_1_2_INPUT
+  - get: L:ASCRJ_RTU2_KNOB_OUTER # RTU2 KNOB OUTER
+  - get: L:ASCRJ_RTU2_KNOB_OUTER_CHANGE
+  - get: L:ASCRJ_RTU2_KNOB_OUTER_INPUT
+  - get: L:ASCRJ_RTU2_KNOB_INNER # RTU2 KNOB INNER
+  - get: L:ASCRJ_RTU2_KNOB_INNER_CHANGE 
+  - get: L:ASCRJ_RTU2_KNOB_INNER_INPUT
+        ###########  AUDIO 2 PANEL - CoPILOT  ########### 
+  - get: L:ASCRJ_AUDIO2_VHF1_VOL # AUDIO2 VHF1 VOL
+  - get: L:ASCRJ_AUDIO2_VHF1_VOL_PUSH # AUDIO2 VHF1 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_VHF2_VOL # AUDIO2 VHF2 VOL
+  - get: L:ASCRJ_AUDIO2_VHF2_VOL_PUSH # AUDIO2 VHF2 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_INTSVC_VOL # AUDIO2 INTSVS VOL
+  - get: L:ASCRJ_AUDIO2_INTSVC_VOL_PUSH # AUDIO2 INTSVS VOL PUSH
+  - get: L:ASCRJ_AUDIO2_PA_SEL # AUDIO2 PA SEL
+  - get: L:ASCRJ_AUDIO2_DME1_VOL # AUDIO2 DME1 VOL
+  - get: L:ASCRJ_AUDIO2_DME1_VOL_PUSH # AUDIO2 DME1 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_DME2_VOL # AUDIO2 DME2 VOL
+  - get: L:ASCRJ_AUDIO2_DME2_VOL_PUSH # AUDIO2 DME2 VOL PUSH  
+  - get: L:ASCRJ_AUDIO2_NAV1_VOL # AUDIO2 NAV1 VOL
+  - get: L:ASCRJ_AUDIO2_NAV1_VOL_PUSH # AUDIO2 NAV1 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_NAV2_VOL # AUDIO2 NAV2 VOL
+  - get: L:ASCRJ_AUDIO2_NAV2_VOL_PUSH # AUDIO2 NAV2 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_ADF1_VOL # AUDIO2 ADF1 VOL
+  - get: L:ASCRJ_AUDIO2_ADF1_VOL_PUSH # AUDIO2 ADF1 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_ADF2_VOL # AUDIO2 ADF2 VOL
+  - get: L:ASCRJ_AUDIO2_ADF2_VOL_PUSH # AUDIO2 ADF2 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_MKR1_VOL # AUDIO2 MKR1 VOL
+  - get: L:ASCRJ_AUDIO2_MKR1_VOL_PUSH # AUDIO2 MKR1 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_MKR2_VOL # AUDIO2 MKR2 VOL
+  - get: L:ASCRJ_AUDIO2_MKR2_VOL_PUSH # AUDIO2 MKR2 VOL PUSH
+  - get: L:ASCRJ_AUDIO2_SPKR_VOL # AUDIO2 SPKR VOL
+  - get: L:ASCRJ_AUDIO2_SPKR_VOL_PUSH # AUDIO2 SPKR VOL PUSH
+  - get: L:ASCRJ_AUDIO2_RTIC # AUDIO2 RTIC
+  - get: L:ASCRJ_AUDIO2_VOICEBOTH # AUDIO2 VOICEBOTH
+  - get: L:ASCRJ_AUDIO2_MASKBOOM # AUDIO2 MASKBOOM
+  - get: L:ASCRJ_AUDIO2_EMERNORM # AUDIO2 EMERNORM
+        ###########  WEATHER 2 PANEL - CoPILOT  ########### 
+  - get: L:ASCRJ_WXR2_GAIN # WXR1 GAIN
+  - get: L:ASCRJ_WXR2_GCS # WXR1 GCS
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_WXR2_GCS_BTN_KEY_Push)' : ''"
+  - get: L:ASCRJ_WXR2_GEC # WXR1 GEC
+  - get: L:ASCRJ_WXR2_XFR # WXR1 XFR
+  - get: L:ASCRJ_WXR2_STAB # WXR1 STAB
+  - get: L:ASCRJ_WXR2_MODE # WXR1 MODE
+  - get: L:ASCRJ_WXR2_TILT # WXR1 TILT
+  - get: L:ASCRJ_WXR2_AUTO # WXR1 AUTO
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_WXR2_AUTO_BTN_KEY_Push)' : ''"
+        ###########  HGS PANEL - PILOT  ########### 
+  - get: L:ASCRJ_HUD_ACT # HGS ACT
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_HUD_ACT_BTN_KEY_Push)' : ''"
+  - get: L:ASCRJ_HUD_STBY # HGS STBY
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_HUD_STBY_BTN_KEY_Push)' : ''"
+  - get: L:ASCRJ_HUD_RWY # HGS RWY
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_HUD_RWY_BTN_KEY_Push)' : ''"
+  - get: L:ASCRJ_HUD_GS # HGS GS
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_HUD_GS_BTN_KEY_Push)' : ''"
+  - get: L:ASCRJ_HUD_CLR # HGS CLR
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_HUD_CLR_BTN_Push)' : ''"
+  - get: L:ASCRJ_HUD_BRT # HGS BRT
+    set: "value == 0 ? ' (>B:INSTRUMENT_ASCRJ_HUD_BRT_BTN_Push)' : ''"
+  - get: L:ASCRJ_HUD_DIM # HGS DIM
+  - get: L:ASCRJ_HUD_KEY_1 # HGS KEY 1
+  - get: L:ASCRJ_HUD_KEY_2 # HGS KEY 2
+  - get: L:ASCRJ_HUD_KEY_3 # HGS KEY 3
+  - get: L:ASCRJ_HUD_KEY_4 # HGS KEY 4
+  - get: L:ASCRJ_HUD_KEY_5 # HGS KEY 5
+  - get: L:ASCRJ_HUD_KEY_6 # HGS KEY 6
+  - get: L:ASCRJ_HUD_KEY_7 # HGS KEY 7
+  - get: L:ASCRJ_HUD_KEY_8 # HGS KEY 8
+  - get: L:ASCRJ_HUD_KEY_9 # HGS KEY 9
+  - get: L:ASCRJ_HUD_KEY_0 # HGS KEY 0
+  - get: L:ASCRJ_HUD_KEY_ENTER # HGS KEY ENTER
+        ###########  CARGO FIREX PANEL - CoPILOT  ###########
+  - get: L:ASCRJ_CARGO_FWD # CARGO FWD
+  - get: L:ASCRJ_CARGO_FWD_GUARD # CARGO FWD GUARD
+  - get: L:ASCRJ_CARGO_FWD_GUARD_CNT # CARGO FWD GUARD CNT OPEN
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:SAFETY_ASCRJ_CARGO_FWD_GUARD_Off)'
+          case  5: return '1 (>B:SAFETY_ASCRJ_CARGO_FWD_GUARD_On)'
+          default: return ''
+         }
+  - get: L:ASCRJ_CARGO_AFT # CARGO AFT
+  - get: L:ASCRJ_CARGO_AFT_GUARD # CARGO AFT GUARD
+  - get: L:ASCRJ_CARGO_AFT_GUARD_CNT # CARGO AFT GUARD CNT OPEN
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:SAFETY_ASCRJ_CARGO_AFT_GUARD_Off)'
+          case  5: return '1 (>B:SAFETY_ASCRJ_CARGO_AFT_GUARD_On)'
+          default: return ''
+         }
+  - get: L:ASCRJ_CARGO_ARM # CARGO ARM
+    set: "(value == 0) ? '(>B:SAFETY_ASCRJ_CARGO_ARM_Push)' : ''"
+
+        ###########  ADG CNTL & EMER FLAP PANEL - CoPILOT  ###########
+  - get: L:ASCRJ_ADG_TEST # CARGO FIREX TEST
+  - get: L:ASCRJ_ADG_OVRD_BTN # CARGO FIREX OVRD
+    set: "value == 0 ? ' (>B:LANDING_GEAR_ASCRJ_ADG_OVRD_BTN_KEY_Push)' : ''"
+  - get: L:ASCRJ_EMER_FLAP # EMER FLAP SWITCH 
+
+#########################  PEDESTAL UPPER COLUMN 1 #########################
+        ###########  MCDU1 PANEL - PILOT  ###########  
+  - get: L:ASCRJ_MCDU1_POS # MCDU1 POS KNOB 
+  - get: L:ASCRJ_MCDU1_POS_CHANGE # MCDU1 POS CHANGE
+  - get: L:ASCRJ_MCDU1_BRT # MCDU1 POS KNOB 
+  - get: L:ASCRJ_MCDU1_BRT_CHANGE # MCDU1 POS CHANGE
+  - get: L:ASCRJ_MCDU1_INPUT # MCDU1 INPUT
+  - get: L:ASCRJ_MCDU1_LSK1L # MCDU1 LSK1L
+  - get: L:ASCRJ_MCDU1_LSK1R # MCDU1 LSK1R
+  - get: L:ASCRJ_MCDU1_LSK2L # MCDU1 LSK2L
+  - get: L:ASCRJ_MCDU1_LSK2R # MCDU1 LSK2R
+  - get: L:ASCRJ_MCDU1_LSK3L # MCDU1 LSK3L
+  - get: L:ASCRJ_MCDU1_LSK3R # MCDU1 LSK3R
+  - get: L:ASCRJ_MCDU1_LSK4L # MCDU1 LSK4L
+  - get: L:ASCRJ_MCDU1_LSK4R # MCDU1 LSK4R
+  - get: L:ASCRJ_MCDU1_LSK5L # MCDU1 LSK5L
+  - get: L:ASCRJ_MCDU1_LSK5R # MCDU1 LSK5R
+  - get: L:ASCRJ_MCDU1_LSK6L # MCDU1 LSK6L
+  - get: L:ASCRJ_MCDU1_LSK6R # MCDU1 LSK6R
+  - get: L:ASCRJ_MCDU1_MSG # MCDU1 MSG
+  - get: L:ASCRJ_MCDU1_DIR_INTC # MCDU1 DIR INTC
+  - get: L:ASCRJ_MCDU1_FPLN # MCDU1 FPLN
+  - get: L:ASCRJ_MCDU1_DEP_ARR # MCDU1 DEP/ARR
+  - get: L:ASCRJ_MCDU1_HOLD # MCDU1 HOLD
+  - get: L:ASCRJ_MCDU1_UP # MCDU1 UP
+  - get: L:ASCRJ_MCDU1_DOWN # MCDU1 DOWN
+  - get: L:ASCRJ_MCDU1_PREV_PAGE # MCDU1 PREV PAGE
+  - get: L:ASCRJ_MCDU1_NEXT_PAGE # MCDU1 NEXT PAGE
+  - get: L:ASCRJ_MCDU1_INDEX # MCDU1 INDEX
+  - get: L:ASCRJ_MCDU1_FIX # MCDU1 FIX
+  - get: L:ASCRJ_MCDU1_LEGS # MCDU1 LEGS  
+  - get: L:ASCRJ_MCDU1_SEC_FPLN # MCDU1 SEC FPLN
+  - get: L:ASCRJ_MCDU1_VNAV # MCDU1 VNAV
+  - get: L:ASCRJ_MCDU1_MCDU_MENU # MCDU1 MCDU MENU
+  - get: L:ASCRJ_MCDU1_EXEC # MCDU1 EXEC
+  - get: L:ASCRJ_MCDU1_RADIO # MCDU1 RADIO
+  - get: L:ASCRJ_MCDU1_PROG # MCDU1 PROG
+  - get: L:ASCRJ_MCDU1_PERF # MCDU1 PERF
+  - get: L:ASCRJ_MCDU1_MFD_DATA # MCDU1 MFD DATA
+  - get: L:ASCRJ_MCDU1_MFD_MENU # MCDU1 MFD MENU
+  - get: L:ASCRJ_MCDU1_MFD_ADV # MCDU1 MFD ADV
+  - get: L:ASCRJ_MCDU1_1
+  - get: L:ASCRJ_MCDU1_2
+  - get: L:ASCRJ_MCDU1_3
+  - get: L:ASCRJ_MCDU1_4
+  - get: L:ASCRJ_MCDU1_5
+  - get: L:ASCRJ_MCDU1_6
+  - get: L:ASCRJ_MCDU1_7
+  - get: L:ASCRJ_MCDU1_8
+  - get: L:ASCRJ_MCDU1_9
+  - get: L:ASCRJ_MCDU1_0
+  - get: L:ASCRJ_MCDU1_PERIOD
+  - get: L:ASCRJ_MCDU1_PLUS
+  - get: L:ASCRJ_MCDU1_A
+  - get: L:ASCRJ_MCDU1_B   
+  - get: L:ASCRJ_MCDU1_C
+  - get: L:ASCRJ_MCDU1_D
+  - get: L:ASCRJ_MCDU1_E
+  - get: L:ASCRJ_MCDU1_F
+  - get: L:ASCRJ_MCDU1_G
+  - get: L:ASCRJ_MCDU1_H
+  - get: L:ASCRJ_MCDU1_I
+  - get: L:ASCRJ_MCDU1_J
+  - get: L:ASCRJ_MCDU1_K
+  - get: L:ASCRJ_MCDU1_L
+  - get: L:ASCRJ_MCDU1_M
+  - get: L:ASCRJ_MCDU1_N
+  - get: L:ASCRJ_MCDU1_O
+  - get: L:ASCRJ_MCDU1_P
+  - get: L:ASCRJ_MCDU1_Q
+  - get: L:ASCRJ_MCDU1_R
+  - get: L:ASCRJ_MCDU1_S
+  - get: L:ASCRJ_MCDU1_T
+  - get: L:ASCRJ_MCDU1_U
+  - get: L:ASCRJ_MCDU1_V
+  - get: L:ASCRJ_MCDU1_W
+  - get: L:ASCRJ_MCDU1_X
+  - get: L:ASCRJ_MCDU1_Y
+  - get: L:ASCRJ_MCDU1_Z  
+  - get: L:ASCRJ_MCDU1_SP
+  - get: L:ASCRJ_MCDU1_DEL  
+  - get: L:ASCRJ_MCDU1_SLASH
+  - get: L:ASCRJ_MCDU1_CLR
+#########################  PEDESTAL UPPER COLUMN 2 #########################
+        ########### LANDING GEAR PANEL ###########
+  - get: L:ASCRJ_GEAR_BTMS_RESET # BTMS RESET
+    set: "value == 1 ? '0 (>B:ELECTRICAL_ASCRJ_GEAR_BTMS_RESET_KEY_Push)' : '0 (>B:ELECTRICAL_ASCRJ_GEAR_BTMS_RESET_KEY_Release)'"
+  - get: L:ASCRJ_GEAR_BTMS_RESET_LONG  
+  - get: L:ASCRJ_GEAR_HORN_MUTE_GUARD # GEAR HORN MUTE GUARD
+  - get: L:ASCRJ_GEAR_HORN_MUTE_GUARD_CNT # GEAR HORN MUTE GUARD CNT
+    set: |
+         switch (value) { 
+          case  0: return '(>B:LANDING_GEAR_ASCRJ_GEAR_HORN_MUTE_GUARD_Toggle)'
+          case  5: return '(>B:LANDING_GEAR_ASCRJ_GEAR_HORN_MUTE_GUARD_Toggle)'
+          default: return ''
+         }
+  - get: L:ASCRJ_GEAR_ANTISKID_ARM # ANTISKID ARM
+  - get: L:ASCRJ_GEAR_MLG_TEST
+  - get: L:ASCRJ_GEAR_MLG_TEST, Bool # GEAR MLG TEST
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:LANDING_GEAR_ASCRJ_GEAR_MLG_TEST_KEY_RELEASE)'
+          case  1: return '1 (>B:LANDING_GEAR_ASCRJ_GEAR_MLG_TEST_KEY_PUSH)'
+          default: return ''
+         }
+  - get: L:ASCRJ_GEAR_TEST_FAIL_TEST
+  - get: L:ASCRJ_GEAR_TEST_FAIL_TEST, Bool # GEAR TEST FAIL TEST
+    set: "value == 1 ? '0 (>B:ELECTRICAL_ASCRJ_GEAR_TEST_FAIL_TEST_KEY)' : ''"
+    set: |
+       switch (value) { 
+        case  0: return '0(>B:ELECTRICAL_ASCRJ_GEAR_TEST_FAIL_TEST_KEY_Release)'
+        case  1: return '1 (>B:ELECTRICAL_ASCRJ_GEAR_TEST_FAIL_TEST_KEY_Push)'
+        default: return ''
+       }
+
+  - get: L:ASCRJ_GEAR_LOCK_RELEASE # GEAR LOCK RELEASE
+    set: |
+       switch (value) { 
+        case  0: return '0(>B:LANDING_GEAR_ASCRJ_GEAR_LOCK_RELEASE_KEY_Release)'
+        case  1: return '1 (>B:LANDING_GEAR_ASCRJ_GEAR_LOCK_RELEASE_KEY_Push)'
+        default: return ''
+       }  
+
+#  - get: B:LANDING_GEAR_ASCRJ_GEAR_LOCK_RELEASE
+#    set: (>B:LANDING_GEAR_ASCRJ_GEAR_LOCK_RELEASE_KEY)
+
+
+  - get: L:LANDING_GEAR_Gear # LANDING GEAR
+    set: (>K:GEAR_SET)
+        ########### ENGINES PANEL ###########
+  - get: L:ASCRJ_ENG_SYNC # ENGINES SYNC KNOB
+  - get: L:ASCRJ_ENG_FDR_EVENT
+    set: (>B:LANDING_GEAR_ASCRJ_ENG_FDR_EVENT_BTN_KEY_SET)
+  - get: L:ASCRJ_ENG_HPSCHED_GUARD # ENGINES HPSCHED GUARD
+  - get: L:ASCRJ_ENG_HPSCHED_GUARD_CNT
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:LANDING_GEAR_ASCRJ_ENG_HPSCHED_GUARD_Off)'
+          case  5: return '0 (>B:LANDING_GEAR_ASCRJ_ENG_HPSCHED_GUARD_On)'
+          default: return ''
+         }
+  - get: L:ASCRJ_ENG_HPSCHED # ENGINES HPSCHED BTN  
+  - get: L:ASCRJ_ENG_LAMPTEST # ENGINES LAMTEST    
+  - get: L:ASCRJ_ENG_INDLTS # ENGINES INDLTS
+        ########### ENGINES PANEL ###########
+  - get: L:ASCRJ_GPWS_TERR_GUARD # GPWS TERR GUARD
+  - get: L:ASCRJ_GPWS_TERR_GUARD_CNT
+    set: "value == 5 ? '1 (>B:LANDING_GEAR_ASCRJ_GPWS_TERR_GUARD_ON)' : ''"
+  - get: L:ASCRJ_GPWS_TERR_GUARD_CNT
+    set: "value == 0 ? '0 (>B:LANDING_GEAR_ASCRJ_GPWS_TERR_GUARD_OFF)' : ''"
+  - get: L:ASCRJ_GPWS_TERR # GPWS TERR     
+  - get: L:ASCRJ_GPWS_FLAP_GUARD # GPWS FLAP GUARD
+  - get: L:ASCRJ_GPWS_FLAP_GUARD_CNT
+    set: "value == 5 ? '1 (>B:LANDING_GEAR_ASCRJ_GPWS_FLAP_GUARD_ON)' : ''"
+  - get: L:ASCRJ_GPWS_FLAP_GUARD_CNT
+    set: "value == 0 ? '0 (>B:LANDING_GEAR_ASCRJ_GPWS_FLAP_GUARD_OFF)' : ''"
+  - get: L:ASCRJ_GPWS_FLAP # GPWS FLAP
+  - get: L:ASCRJ_GPWS_MECH # GPWS MECH
+#    set: "value ? '0 (>B:SAFETY_ASCRJ_MECH_BTN_KEY)' : ''"
+    set: |
+         switch (value) { 
+          case  0: return '(>B:SAFETY_ASCRJ_MECH_BTN_KEY_Release)'
+          case  1: return '(>B:SAFETY_ASCRJ_MECH_BTN_KEY_Push)'
+          default: return ''
+         }
+  - get: L:ASCRJ_GPWS_MECH_CALL # GPWS MECH
+#########################  PEDESTAL UPPER COLUMN 3 #########################
+        ###########  MCDU2 PANEL - CoPILOT  ########### 
+  - get: L:ASCRJ_MCDU2_POS # MCDU2 POS KNOB 
+  - get: L:ASCRJ_MCDU2_POS_CHANGE # MCDU2 POS CHANGE
+  - get: L:ASCRJ_MCDU2_BRT # MCDU2 POS KNOB 
+  - get: L:ASCRJ_MCDU2_BRT_CHANGE # MCDU2 POS CHANGE
+  - get: L:ASCRJ_MCDU2_INPUT # MCDU2 INPUT
+  - get: L:ASCRJ_MCDU2_LSK1L # MCDU2 LSK1L
+  - get: L:ASCRJ_MCDU2_LSK1R # MCDU2 LSK1R
+  - get: L:ASCRJ_MCDU2_LSK2L # MCDU2 LSK2L
+  - get: L:ASCRJ_MCDU2_LSK2R # MCDU2 LSK2R
+  - get: L:ASCRJ_MCDU2_LSK3L # MCDU2 LSK3L
+  - get: L:ASCRJ_MCDU2_LSK3R # MCDU2 LSK3R
+  - get: L:ASCRJ_MCDU2_LSK4L # MCDU2 LSK4L
+  - get: L:ASCRJ_MCDU2_LSK4R # MCDU2 LSK4R
+  - get: L:ASCRJ_MCDU2_LSK5L # MCDU2 LSK5L
+  - get: L:ASCRJ_MCDU2_LSK5R # MCDU2 LSK5R
+  - get: L:ASCRJ_MCDU2_LSK6L # MCDU2 LSK6L
+  - get: L:ASCRJ_MCDU2_LSK6R # MCDU2 LSK6R
+  - get: L:ASCRJ_MCDU2_MSG # MCDU2 MSG
+  - get: L:ASCRJ_MCDU2_DIR_INTC # MCDU2 DIR INTC
+  - get: L:ASCRJ_MCDU2_FPLN # MCDU2 FPLN
+  - get: L:ASCRJ_MCDU2_DEP_ARR # MCDU2 DEP/ARR
+  - get: L:ASCRJ_MCDU2_HOLD # MCDU2 HOLD
+  - get: L:ASCRJ_MCDU2_UP # MCDU2 UP
+  - get: L:ASCRJ_MCDU2_DOWN # MCDU2 DOWN
+  - get: L:ASCRJ_MCDU2_PREV_PAGE # MCDU2 PREV PAGE
+  - get: L:ASCRJ_MCDU2_NEXT_PAGE # MCDU2 NEXT PAGE
+  - get: L:ASCRJ_MCDU2_INDEX # MCDU2 INDEX
+  - get: L:ASCRJ_MCDU2_FIX # MCDU2 FIX
+  - get: L:ASCRJ_MCDU2_LEGS # MCDU2 LEGS  
+  - get: L:ASCRJ_MCDU2_SEC_FPLN # MCDU2 SEC FPLN
+  - get: L:ASCRJ_MCDU2_VNAV # MCDU2 VNAV
+  - get: L:ASCRJ_MCDU2_MCDU_MENU # MCDU2 MCDU MENU
+  - get: L:ASCRJ_MCDU2_EXEC # MCDU2 EXEC
+  - get: L:ASCRJ_MCDU2_RADIO # MCDU2 RADIO
+  - get: L:ASCRJ_MCDU2_PROG # MCDU2 PROG
+  - get: L:ASCRJ_MCDU2_PERF # MCDU2 PERF
+  - get: L:ASCRJ_MCDU2_MFD_DATA # MCDU2 MFD DATA
+  - get: L:ASCRJ_MCDU2_MFD_MENU # MCDU2 MFD MENU
+  - get: L:ASCRJ_MCDU2_MFD_ADV # MCDU2 MFD ADV
+  - get: L:ASCRJ_MCDU2_1
+  - get: L:ASCRJ_MCDU2_2
+  - get: L:ASCRJ_MCDU2_3
+  - get: L:ASCRJ_MCDU2_4
+  - get: L:ASCRJ_MCDU2_5
+  - get: L:ASCRJ_MCDU2_6
+  - get: L:ASCRJ_MCDU2_7
+  - get: L:ASCRJ_MCDU2_8
+  - get: L:ASCRJ_MCDU2_9
+  - get: L:ASCRJ_MCDU2_0
+  - get: L:ASCRJ_MCDU2_PERIOD
+  - get: L:ASCRJ_MCDU2_PLUS
+  - get: L:ASCRJ_MCDU2_A
+  - get: L:ASCRJ_MCDU2_B   
+  - get: L:ASCRJ_MCDU2_C
+  - get: L:ASCRJ_MCDU2_D
+  - get: L:ASCRJ_MCDU2_E
+  - get: L:ASCRJ_MCDU2_F
+  - get: L:ASCRJ_MCDU2_G
+  - get: L:ASCRJ_MCDU2_H
+  - get: L:ASCRJ_MCDU2_I
+  - get: L:ASCRJ_MCDU2_J
+  - get: L:ASCRJ_MCDU2_K
+  - get: L:ASCRJ_MCDU2_L
+  - get: L:ASCRJ_MCDU2_M
+  - get: L:ASCRJ_MCDU2_N
+  - get: L:ASCRJ_MCDU2_O
+  - get: L:ASCRJ_MCDU2_P
+  - get: L:ASCRJ_MCDU2_Q
+  - get: L:ASCRJ_MCDU2_R
+  - get: L:ASCRJ_MCDU2_S
+  - get: L:ASCRJ_MCDU2_T
+  - get: L:ASCRJ_MCDU2_U
+  - get: L:ASCRJ_MCDU2_V
+  - get: L:ASCRJ_MCDU2_W
+  - get: L:ASCRJ_MCDU2_X
+  - get: L:ASCRJ_MCDU2_Y
+  - get: L:ASCRJ_MCDU2_Z  
+  - get: L:ASCRJ_MCDU2_SP
+  - get: L:ASCRJ_MCDU2_DEL  
+  - get: L:ASCRJ_MCDU2_SLASH
+  - get: L:ASCRJ_MCDU2_CLR
+#########################        FRONT PANEL       #########################
+  - get: L:ASCRJ_CVR_TEST, Bool # CVR TEST
+    set: "value ? ' (>B:LIGHTING_ASCRJ_CVR_TEST_BTN_KEY_Push) ' : ' (>B:LIGHTING_ASCRJ_CVR_TEST_BTN_KEY_Release) '"
+  - get: L:ASCRJ_CVR_TEST_LED
+  - get: L:ASCRJ_CVR_ERASE  
+  - get: L:ASCRJ_ISI_STD # ISI STD
+  - get: L:ASCRJ_ISI_PLUS # ISI PLUS
+  - get: L:ASCRJ_ISI_MINUS # ISI MINUS
+  - get: L:ASCRJ_ISI_CAGE # ISI CAGE
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # ALTIMETER CALIBRATION
+    set: "`${value * 16} 3 (>K:KOHLSMAN_SET)`"
+#########################  OVERHEAD COLUMN 1 #########################
+  - get: L:ASCRJ64_DM_LT_CPT # DM_LT_CPT
+        ###########  ELECTRICAL POWER PANEL  ###########  
+  - get: L:ASCRJ_ELEC_DCSERVICE, Bool # DCSERVICE 
+    set: "value  ? '1 (>B:ELECTRICAL_ASCRJ_ELEC_DCSERVICE) ' : '0 (>B:ELECTRICAL_ASCRJ_ELEC_DCSERVICE) '"
+  - get: A:ELECTRICAL MASTER BATTERY, Bool # BATTMASTER 
+    set: (>B:ELECTRICAL_ASCRJ_ELEC_BATTMASTER) 
+  - get: L:ASCRJ_ELEC_BATTMASTER
+  - get: L:ASCRJ_ELEC_GPU
+  - get: L:ASCRJ_ELEC_IDG1_GUARD_CNT
+    set: |
+         switch (value) { 
+          case  0: return '0 (>B:ELECTRICAL_ASCRJ_ELEC_IDG1_GUARD_Off)'
+          case  5: return '1 (>B:ELECTRICAL_ASCRJ_ELEC_IDG1_GUARD_On)'
+          default: return ''
+         } 
+  - get: L:ASCRJ_ELEC_IDG1, Bool
+  - get: L:ASCRJ_ELEC_IDG2_GUARD_CNT, Number
+    set: |
+         switch (value) { 
+          case  0: return '0(>B:ELECTRICAL_ASCRJ_ELEC_IDG2_GUARD_Off)'
+          case  5: return '1 (>B:ELECTRICAL_ASCRJ_ELEC_IDG2_GUARD_On)'
+          default: return ''
+         } 
+  - get: L:ASCRJ_ELEC_IDG2 
+  - get: L:ASCRJ_ELEC_ACESSXFER # ACESSXFER
+  - get: L:ASCRJ_ELEC_GEN1 # GEN1
+  - get: L:ASCRJ_ELEC_APUGEN # APUGEN  
+  - get: L:ASCRJ_ELEC_GEN2 # GEN2
+  - get: L:ASCRJ_ELEC_AUTOXFER1 # AUTOXFER1
+  - get: L:ASCRJ_ELEC_AUTOXFER2 # AUTOXFER2
+  - get: L:ASCRJ_FIRE_TEST # FIRE_TEST
+    set: "value == 1 ? '0 (>B:SAFETY_ASCRJ_FIRE_TEST_KEY_Push)' : '0 (>B:(>B:SAFETY_ASCRJ_FIRE_TEST_KEY_Release)'" 
+  - get: L:ASCRJ_FIRE_TEST_LONG # FIRE_TEST_LONG     
+        ###########  HYDRAULIC PANEL  ###########
+  - get: L:ASCRJ_HYDR_SOV1
+  - get: L:ASCRJ_HYDR_SOV1_GUARD_CNT, Number
+    set: |
+         switch (value) { 
+          case  0: return '(>B:INSTRUMENT_ASCRJ_HYDR_SOV1_GUARD_OFF)'
+          case  5: return '(>B:INSTRUMENT_ASCRJ_HYDR_SOV1_GUARD_ON)'
+          default: return ''
+         }
+  - get: L:ASCRJ_HYDR_SOV2
+  - get: L:ASCRJ_HYDR_SOV2_GUARD_CNT
+    set: |
+         switch (value) { 
+          case  0: return '(>B:INSTRUMENT_ASCRJ_HYDR_SOV2_GUARD_OFF)'
+          case  5: return '(>B:INSTRUMENT_ASCRJ_HYDR_SOV2_GUARD_ON)'
+          default: return ''
+         }
+     ############### OVHD EXTERNAL LIGHTS ###############
+  - get: L:ASCRJ_EXTL_NAV, Bool # OVHD NAV LIGHTS 
+    set: (>B:LIGHTING_ASCRJ_EXTL_NAV_Toggle) 
+  - get: L:ASCRJ_EXTL_BEACON, Bool # OVHD BEACON
+    set: (>B:LIGHTING_ASCRJ_EXTL_BEACON_Toggle) 
+  - get: L:ASCRJ_EXTL_STROBE, Bool # OVHD STROBE
+    set: (>B:LIGHTING_ASCRJ_EXTL_STROBE_Toggle) 
+  - get: L:ASCRJ_EXTL_LOGO, Bool # OVHD LOGO
+    set: (>B:LIGHTING_ASCRJ_EXTL_LOGO_Toggle) 
+  - get: L:ASCRJ_EXTL_WING, Bool # OVHD WING
+    set: (>B:LIGHTING_ASCRJ_EXTL_WING_Toggle) 
+     ############### OVHD LANDING & TAXI LIGHTS ###############
+  - get: L:ASCRJ_OVHD_LDG_LEFT, Bool # OVHD LDG_LEFT
+    set: (>B:LIGHTING_ASCRJ_OVHD_LDG_LEFT_Toggle) 
+  - get: L:ASCRJ_OVHD_LDG_NOSE, Bool # OVHD LDG_NOSE
+    set: (>B:LIGHTING_ASCRJ_OVHD_LDG_NOSE_Toggle) 
+  - get: L:ASCRJ_OVHD_LDG_RIGHT, Bool # OVHD LDG_RIGHT
+    set: (>B:LIGHTING_ASCRJ_OVHD_LDG_RIGHT_Toggle) 
+  - get: L:ASCRJ_OVHD_TAXI, Bool # OVHD TAXI LT SWITCH  
+    set: (>B:LIGHTING_ASCRJ_OVHD_TAXI_Toggle)
+#########################  OVERHEAD COLUMN 2 #########################
+        ###########  OVHD FUEL PANEL  ########### 
+  - get: L:ASCRJ_FUEL_PUMP_L # FUEL_PUMP_L
+  - get: L:ASCRJ_FUEL_PUMP_R # FUEL_PUMP_R  
+  - get: L:ASCRJ_FUEL_GRAVITY_FLOW # FUEL_GRAVITY_FLOW
+  - get: L:ASCRJ_FUEL_XFLOW_L # FUEL_XFLOW_L
+  - get: L:ASCRJ_FUEL_XFLOW_R # FUEL_XFLOW_R
+  - get: L:ASCRJ_FUEL_XFLOW_OVRD # FUEL_XFLOW_OVRD  
+        ###########  OVHD BLEED PANEL  ########### 
+  - get: L:ASCRJ_AIR_CROSS_BLEED # AIR_CROSS_BLEED
+  - get: L:ASCRJ_AIR_BLEED_VALVES # AIR_BLEED_VALVES
+  - get: L:ASCRJ_AIR_BLEED_SOURCE_ISOL # AIR_BLEED_SOURCE_ISOL
+  - get: L:ASCRJ_AIR_BLEED_SOURCE # AIR_BLEED_SOURCE
+        ###########  OVHD APU PANEL  ########### 
+  - get: L:ASCRJ_APU_PWRFUEL # APU_PWRFUEL
+  - get: L:ASCRJ_APU_PWRFUEL_LONG # APU_PWRFUEL_LONG  
+  - get: L:ASCRJ_APU_STARTSTOP # APU_STARTSTOP
+        ###########  OVHD IGNITION PANEL  ########### 
+  - get: L:ASCRJ_ENGS_START_L # ENGS_START_L
+  - get: L:ASCRJ_ENGS_START_L_ON # ENGS_START_L ON
+  - get: L:ASCRJ_ENGS_START_L_LONG # ENGS_START_L LONG
+  - get: L:ASCRJ_ENGS_START_R # ENGS_START_R  
+  - get: L:ASCRJ_ENGS_START_R_ON # ENGS_START_R ON  
+  - get: L:ASCRJ_ENGS_START_R_LONG # ENGS_START_R LONG
+  - get: L:ASCRJ_ENGS_STOP_L # ENGS_STOP_L
+  - get: L:ASCRJ_ENGS_STOP_L_LONG # ENGS_STOP_L LONG
+  - get: L:ASCRJ_ENGS_STOP_R # ENGS_STOP_R  
+  - get: L:ASCRJ_ENGS_STOP_R_LONG # ENGS_STOP_R LONG
+  - get: L:ASCRJ_ENGS_CONT_IGN # ENGS_CONT_IGN
+        ###########  OVHD HYDRAULIC PANEL  ########### 
+  - get: L:ASCRJ_HYDR_PUMP_1 # HYDR_PUMP_1
+  - get: L:ASCRJ_HYDR_PUMP_2 # HYDR_PUMP_2
+  - get: L:ASCRJ_HYDR_PUMP_3A # HYDR_PUMP_3A
+  - get: L:ASCRJ_HYDR_PUMP_3B # HYDR_PUMP_3B
+        ###########  OVHD ELT & OXYGEN PANEL  ########### 
+  - get: L:ASCRJ_OVHD_ELT # OVHD_ELT
+#    set: (>B:LIGHTING_ASCRJ_OVHD_ELT_Toggle)
+  - get: L:ASCRJ_OVHD_OXY # OVHD_OXY
+  - get: L:ASCRJ_OVHD_OXY_GUARD_CNT, Number # OVHD_OXY_GUARD OPEN   
+    set: |
+         switch (value) { 
+          case  0: return '(>B:SAFETY_ASCRJ_OVHD_OXY_GUARD_OFF)'
+          case  5: return '(>B:SAFETY_ASCRJ_OVHD_OXY_GUARD_ON)'
+          default: return ''
+         }
+#########################  OVERHEAD COLUMN 3 #########################
+  - get: L:ASCRJ64_DM_LT_FO # DM_LT_FO
+        ###########  OVHD CABIN PRESSURE PANEL  ########### 
+  - get: L:ASCRJ_PRESS_LDG_ELEV # PRESS_LDG_ELEV
+  - get: L:ASCRJ_PRESS_MAN_ALT # PRESS_MAN_ALT
+  - get: L:ASCRJ_PRESS_MAN_VS_RATE # PRESS_MAN_VS_RATE
+  - get: L:ASCRJ_PRESS_PRESS_CONT # PRESS_PRESS_CONT
+  - get: L:ASCRJ_PRESS_EMER_DEPRESS_GUARD_CNT # EMER_DEPRESS_GUARD OPEN
+    set: |
+         switch (value) { 
+          case  0: return '(>B:PRESSURIZATION_ASCRJ_PRESS_EMER_DEPRESS_GUARD_OFF)'
+          case  5: return '(>B:PRESSURIZATION_ASCRJ_PRESS_EMER_DEPRESS_GUARD_ON)'
+          default: return ''
+         }
+  - get: L:ASCRJ_PRESS_EMER_DEPRESS # EMER_DEPRESS BTN
+
+        ###########  OVHD AIR CONDITIONING PANEL  ###########
+  - get: L:ASCRJ_AIRC_PACK_L # AIRC_PACK_L
+  - get: L:ASCRJ_AIRC_PACK_R # AIRC_PACK_R
+  - get: L:ASCRJ_AIRC_RECIRC_FAN # AIRC_RECIRC_FAN
+  - get: L:ASCRJ_AIRC_RAM_AIR_GUARD_CNT # AIRC_RAM_GUARD
+    set: |
+         switch (value) { 
+          case  0: return '(>B:INSTRUMENT_ASCRJ_AIRC_RAM_AIR_GUARD_OFF)'
+          case  5: return '(>B:INSTRUMENT_ASCRJ_AIRC_RAM_AIR_GUARD_ON)'
+          default: return ''
+         }
+  - get: L:ASCRJ_AIRC_RAM # AIRC_RAM BTN
+  - get: L:ASCRJ_AIRC_HOTCOLD_CKPT # AIRC_HOTCOLD_CKPT SWITCH
+  - get: L:ASCRJ_AIRC_MANCTRL_CKPT # AIRC_MANCTRL_CKPT BTN
+  - get: L:ASCRJ_AIRC_HOTCOLD_CABIN # AIRC_HOTCOLD_CABIN SWITCH 
+  - get: L:ASCRJ_AIRC_MANCTRL_CABIN # AIRC_MANCTRL_CABIN BTN  
+  - get: L:ASCRJ_AIRC_TEMPCTRL_CKPT # AIRC_TEMPCTRL_CKPT KNOB
+  - get: L:ASCRJ_AIRC_TEMPCTRL_CABIN # AIRC_TEMPCTRL_CABIN KNOB
+  - get: L:ASCRJ_AIRC_AFT_CARGO # AIRC_AFT_CARGO SWITCH
+        ###########  OVHD ANTI-ICE PANEL  ###########
+  - get: L:ASCRJ_AICE_WING # AICE_WING
+  - get: L:ASCRJ_AICE_COWL_L # AICE_COWL_L
+  - get: L:ASCRJ_AICE_COWL_R # AICE_COWL_R 
+  - get: L:ASCRJ_AICE_DETECT # AICE_DETECT
+  - get: L:ASCRJ_AICE_DETECT_LONG # AICE_DETECT LOMG  
+  - get: L:ASCRJ_AICE_WSHLD_L # AICE_WSHLD_L 
+  - get: L:ASCRJ_AICE_WSHLD_R # AICE_WSHLD_R
+  - get: L:ASCRJ_AICE_WSHLD_TEST # AICE_WSHLD_TEST
+  - get: L:ASCRJ_AICE_WSHLD_TEST_LONG # AICE_WSHLD_TEST LONG
+  - get: L:ASCRJ_AICE_PHEAT_L # AICE_PHEAT_L
+  - get: L:ASCRJ_AICE_PHEAT_R # AICE_PHEAT_R
+        ###########  OVHD MISC LIGHTS PANEL  ###########
+  - get: L:ASCRJ_INTL_DOME # INTL_DOME
+  - get: L:ASCRJ_INTL_COMP # INTL_COMP  
+  - get: L:ASCRJ_INTL_OVHD # INTL_OVHD
+        ###########  OVHD PASSENGER SIGNS & EMERGENCY LTs PANEL  ###########
+  - get: L:ASCRJ_OVHD_NO_SMOKING # OVHD_NO_SMOKING
+  - get: L:ASCRJ_OVHD_SEAT_BELTS # OVHD_SEAT_BELTS  
+  - get: L:ASCRJ_OVHD_EMER_LTS # OVHD_EMER_LTS
+
+#########################  COPILOT RIGHT SIDE #########################
+        ###########  CLOCK PANEL - CoPILOT  ########### 
+  - get: L:ASCRJ_RSP_CLCK_ET  # CLOCK ET
+  - get: L:ASCRJ_RSP_CLCK_RST # CLOCK RST
+  - get: L:ASCRJ_RSP_CLCK_MODE # CLOCK MODE
+  - get: L:ASCRJ_RSP_CLCK_CHR # CLOCK CHR
+
+        ###########  RSP PANEL - CoPILOT  ########### 
+  - get: L:ASCRJ_RSP_BRG1, Bool # BRG1
+  - get: L:ASCRJ_RSP_BRG2, Bool # BRG2
+  - get: L:ASCRJ_RSP_RDR # LSP RDR
+  - get: L:ASCRJ_RSP_RDR_INFO # LSP RDR INFO
+    set: (>B:INSTRUMENT_ASCRJ_RSP_RDR_BTN_KEY_PUSH)
+  - get: L:ASCRJ_RSP_TERR # TERR RDR
+  - get: L:ASCRJ_RSP_TERR_INFO # TERR RDR INFO
+    set: (>B:INSTRUMENT_ASCRJ_RSP_TERR_BTN_KEY_PUSH)
+  - get: L:ASCRJ_RSP_FORMAT # LSP FORMAT
+  - get: L:ASCRJ_RSP_FORMAT_CHANGE # LSP FORMAT CHANGE
+  - get: L:ASCRJ_RSP_RANGE # LSP RANGE
+  - get: L:ASCRJ_RSP_RANGE_CHANGE # LSP RANGE CHANGE
+  - get: L:ASCRJ_RSP_NAVSRC_XSIDE_INFO # LSP RDR INFO
+    set: (>B:INSTRUMENT_ASCRJ_RSP_NAVSRC_XSIDE_BTN_KEY_PUSH)
+  - get: L:ASCRJ_RSP_NAV_SOURCE # LSP NAV SOURCE
+  - get: L:ASCRJ_RSP_NAV_SOURCE_CHANGE # LSP NAV SOURCE CHANGE
+  - get: L:ASCRJ_RSP_SEL # LSP SEL
+  - get: L:ASCRJ_RSP_SEL_CHANGE # LSP SEL CHANGE
+    set: (>B:INSTRUMENT_ASCRJ_RSP_SEL_BTN_KEY_PUSH)  
+  - get: L:ASCRJ_RSP_SPEED_SET # LSP SPEED SET
+  - get: L:ASCRJ_RSP_SPEED_SPEED # LSP SPEED
+    set: "value > current ? ' (>B:INSTRUMENT_ASCRJ_RSP_VSPEED_SELECT_INC)' : ' (>B:INSTRUMENT_ASCRJ_RSP_VSPEED_SELECT_DEC)'"
+  - get: L:ASCRJ_RSP_REFSPD_INFO_SPEED # LSP SPEED
+    set: "value > current ? ' (>B:INSTRUMENT_ASCRJ_RSP_VSPEED_SELECT_INC)' : ' (>B:INSTRUMENT_ASCRJ_RSP_VSPEED_SELECT_DEC)'"
+  - get: L:ASCRJ_RSP_SPEED_VSPD # LSP VSPD
+  - get: L:ASCRJ_RSP_SPEED_SEL_CHANGE # LSP SPEED SELECT CHANGE
+  - get: L:ASCRJ_RSP_SPEED_MODE # LSP SPEED MODE
+  - get: L:ASCRJ_RSP_HEIGHT_MODE # LSP HEIGHT MODE
+  - get: L:ASCRJ_RSP_HEIGHT_DH # LSP HEIGHT SEL
+    set: "value > current ? ' (>B:INSTRUMENT_RSP_DA_MDA_SELECT_INC)' : ' (>B:INSTRUMENT_RSP_DA_MDA_SELECT_DEC)'" 
+  - get: L:ASCRJ_RSP_HEIGHT_MDA
+  - get: L:ASCRJ_RSP_HEIGHT_MDA # LSP HEIGHT MDA
+    set: "value > current ? ' (>B:INSTRUMENT_RSP_DA_MDA_SELECT_INC)' : ' (>B:INSTRUMENT_RSP_DA_MDA_SELECT_DEC)'"  
+  - get: L:ASCRJ_RSP_HEIGHT_SEL_CHANGE # LSP HEIGHT SEL CHANGE  
+  - get: L:ASCRJ_RSP_HEIGHT_SET
+  - get: L:ASCRJ_RSP_HEIGHT_DH_EDIT # LSP HEIGHT DH EDIT
+    set: (>B:INSTRUMENT_RSP_DH_MDA_EDIT_PUSH)
+  - get: L:ASCRJ_RSP_RA_TEST_BTN # LSP RA TEST
+    set: |
+         switch (value) { 
+          case  0: return '(>B:INSTRUMENT_ASCRJ_RSP_RA_TEST_BTN_KEY_RELEASE)'
+          case  1: return '(>B:INSTRUMENT_ASCRJ_RSP_RA_TEST_BTN_KEY_PUSH)'
+          default: return ''
+         }
+  - get: L:ASCRJ_RSP_HPA_IN # LSP HPA IN
+  - get: L:ASCRJ_RSP_BARO_INFO # LSP BARO INFO
+    set: (>B:INSTRUMENT_ASCRJ_RSP_HPA_IN_BTN_KEY_PUSH)
+  - get: L:ASCRJ_RSP_BARO_SEL # LSP BARO SEL
+  - get: L:ASCRJ_RSP_BARO_CHANGE # LSP BARO SEL CHANGE
+    set: (>B:INSTRUMENT_ASCRJ_RSP_SEL_BTN_KEY_PUSH)  
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # ALTIMETER CALIBRATION
+    set: "`${value * 16} 2 (>K:KOHLSMAN_SET)`"
+  - get: L:ASCRJ_RSP_PFD_MODE # LSP PFD MODE
+        ###########  WIPER & STALL PUSHER PANEL - CoPILOT  ########### 
+  - get: L:ASCRJ_RSP_WIPER # WIPER 
+  - get: L:ASCRJ_RSP_STICK_PUSHER # STICK PUSHER
+        ###########  INTERIOR LIGHTING PANEL - Copilot  ########### 
+  - get: L:ASCRJ_RSP_DSPL # DSPL LIGHTING
+  - get: L:ASCRJ_RSP_INTEG # INTEG LIGHTING
+  - get: L:ASCRJ_RSP_FLOOD # FLOOD LTS
+  - get: L:ASCRJ_RSP_FLOOR # FLOOR LTS
+        ###########  AUDIO WARNING PANEL  ########### 
+  - get: B:INSTRUMENT_ASCRJ_WARN_DCU1_GUARD # DCU1 WARN GUARD
+    set: (>B:INSTRUMENT_ASCRJ_WARN_DCU1_GUARD_Set)
+  - get: L:ASCRJ_WARN_DCU1_GUARD_CNT # DCU1 WARN COUNT
+  - get: L:ASCRJ_WARN_DCU1_DISABLE # DCU1 WARN DISABLE
+  - get: B:INSTRUMENT_ASCRJ_WARN_DCU2_GUARD # DCU2 WARN GUARD
+    set: (>B:INSTRUMENT_ASCRJ_WARN_DCU2_GUARD_Set)
+  - get: L:ASCRJ_WARN_DCU2_GUARD_CNT # DCU2 WARN COUNT
+  - get: L:ASCRJ_WARN_DCU2_DISABLE # DCU2 WARN DISABLE  
+        ###########  SKYCAM PANEL  ###########  
+  - get: L:ASCRJ_SKYF_POWER_BTN # SKYF POWER BTN
+  - get: L:ASCRJ_SKYF_VIDEO # SKYF VIDEO
+  - get: L:ASCRJ_SKYF_DAYNIGHT_BTN # SKYF DAY/NIGHT BTN
+        ###########  OXYGEN PANEL - PILOT  ########### 
+  - get: L:ASCRJ_OXYF_TEST_BTN # OXYF TEST BTN
+  - get: L:ASCRJ_OXYF_TEST_LONG_BTN # OXYF TEST BTN LONG
+  - get: L:ASCRJ_OXYF_BLINKER # OXYF BLINKER
+  - get: B:SAFETY_ASCRJ_OXYF_TEST_LONG_BTN
+#########################  PILOT LEFT SIDE #########################
+        ###########  CLOCK PANEL - PILOT  ########### 
+  - get: L:ASCRJ_LSP_CLCK_ET  # CLOCK ET
+  - get: L:ASCRJ_LSP_CLCK_RST # CLOCK RST
+  - get: L:ASCRJ_LSP_CLCK_MODE # CLOCK MODE
+  - get: L:ASCRJ_LSP_CLCK_CHR # CLOCK CHR
+        ###########  LSP PANEL - PILOT  ########### 
+  - get: L:ASCRJ_LSP_BRG1, Bool # BRG1
+  - get: L:ASCRJ_LSP_BRG2, Bool # BRG2
+  - get: L:ASCRJ_LSP_RDR # LSP RDR
+  - get: L:ASCRJ_LSP_RDR_INFO # LSP RDR INFO
+    set: (>B:INSTRUMENT_ASCRJ_LSP_RDR_BTN_KEY_PUSH)
+  - get: L:ASCRJ_LSP_TERR # TERR RDR
+  - get: L:ASCRJ_LSP_TERR_INFO # TERR RDR INFO
+    set: (>B:INSTRUMENT_ASCRJ_LSP_TERR_BTN_KEY_PUSH)
+  - get: L:ASCRJ_LSP_FORMAT # LSP FORMAT
+  - get: L:ASCRJ_LSP_FORMAT_CHANGE # LSP FORMAT CHANGE
+  - get: L:ASCRJ_LSP_RANGE # LSP RANGE
+  - get: L:ASCRJ_LSP_RANGE_CHANGE # LSP RANGE CHANGE
+  - get: L:ASCRJ_LSP_NAVSRC_XSIDE_INFO # LSP RDR INFO
+    set: (>B:INSTRUMENT_ASCRJ_LSP_NAVSRC_XSIDE_BTN_KEY_PUSH)
+  - get: L:ASCRJ_LSP_NAV_SOURCE # LSP NAV SOURCE
+  - get: L:ASCRJ_LSP_NAV_SOURCE_CHANGE # LSP NAV SOURCE CHANGE
+  - get: L:ASCRJ_LSP_SEL # LSP SEL
+  - get: L:ASCRJ_LSP_SEL_CHANGE # LSP SEL CHANGE
+    set: (>B:INSTRUMENT_ASCRJ_LSP_SEL_BTN_KEY_PUSH)  
+  - get: L:ASCRJ_LSP_SPEED_SET # LSP SPEED SET
+  - get: L:ASCRJ_LSP_SPEED_SPEED # LSP SPEED
+    set: "value > current ? ' (>B:INSTRUMENT_ASCRJ_LSP_VSPEED_SELECT_INC)' : ' (>B:INSTRUMENT_ASCRJ_LSP_VSPEED_SELECT_DEC)'"
+  - get: L:ASCRJ_LSP_REFSPD_INFO_SPEED # LSP SPEED
+    set: "value > current ? ' (>B:INSTRUMENT_ASCRJ_LSP_VSPEED_SELECT_INC)' : ' (>B:INSTRUMENT_ASCRJ_LSP_VSPEED_SELECT_DEC)'"
+  - get: L:ASCRJ_LSP_SPEED_VSPD # LSP VSPD
+  - get: L:ASCRJ_LSP_SPEED_SEL_CHANGE # LSP SPEED SELECT CHANGE
+  - get: L:ASCRJ_LSP_SPEED_MODE # LSP SPEED MODE
+  - get: L:ASCRJ_LSP_HEIGHT_MODE # LSP HEIGHT MODE
+  - get: L:ASCRJ_LSP_HEIGHT_DH # LSP HEIGHT SEL
+    set: "value > current ? ' (>B:INSTRUMENT_LSP_DA_MDA_SELECT_INC)' : ' (>B:INSTRUMENT_LSP_DA_MDA_SELECT_DEC)'" 
+  - get: L:ASCRJ_LSP_HEIGHT_MDA
+  - get: L:ASCRJ_LSP_HEIGHT_MDA # LSP HEIGHT MDA
+    set: "value > current ? ' (>B:INSTRUMENT_LSP_DA_MDA_SELECT_INC)' : ' (>B:INSTRUMENT_LSP_DA_MDA_SELECT_DEC)'"  
+  - get: L:ASCRJ_LSP_HEIGHT_SEL_CHANGE # LSP HEIGHT SEL CHANGE  
+  - get: L:ASCRJ_LSP_HEIGHT_SET
+  - get: L:ASCRJ_LSP_HEIGHT_DH_EDIT # LSP HEIGHT DH EDIT
+    set: (>B:INSTRUMENT_LSP_DH_MDA_EDIT_PUSH)
+  - get: L:ASCRJ_LSP_RA_TEST_BTN # LSP RA TEST
+    set: |
+         switch (value) { 
+          case  0: return '(>B:INSTRUMENT_ASCRJ_LSP_RA_TEST_BTN_KEY_RELEASE)'
+          case  1: return '(>B:INSTRUMENT_ASCRJ_LSP_RA_TEST_BTN_KEY_PUSH)'
+          default: return ''
+         }
+  - get: L:ASCRJ_LSP_HPA_IN # LSP HPA IN
+  - get: L:ASCRJ_LSP_BARO_INFO # LSP BARO INFO
+    set: (>B:INSTRUMENT_ASCRJ_LSP_HPA_IN_BTN_KEY_PUSH)
+  - get: L:ASCRJ_LSP_BARO_SEL # LSP BARO SEL
+  - get: L:ASCRJ_LSP_BARO_CHANGE # LSP BARO SEL CHANGE
+    set: (>B:INSTRUMENT_ASCRJ_LSP_SEL_BTN_KEY_PUSH)  
+  - get: A:KOHLSMAN SETTING MB:1, Millibars # ALTIMETER CALIBRATION
+    set: "`${value * 16} 1 (>K:KOHLSMAN_SET)`"
+  - get: L:ASCRJ_LSP_PFD_MODE # LSP PFD MODE
+        ###########  WIPER & STALL PUSHER PANEL - PILOT  ########### 
+  - get: L:ASCRJ_LSP_WIPER # WIPER 
+  - get: L:ASCRJ_LSP_STICK_PUSHER # STICK PUSHER
+        ###########  INTERIOR LIGHTING PANEL  ########### 
+  - get: L:ASCRJ_LSP_DSPL # DSPL LIGHTING
+  - get: L:ASCRJ_LSP_INTEG # INTEG LIGHTING
+  - get: L:ASCRJ_LSP_FLOOD # FLOOD LTS
+  - get: L:ASCRJ_LSP_FLOOR # FLOOR LTS
+        ###########  N/W STRG  PANEL  ########### 
+  - get: L:ASCRJ_LSP_NW_STEER # N/W STEER
+        ###########  SKYCAM PANEL  ###########  
+  - get: L:ASCRJ_SKYC_POWER_BTN # SKYC POWER BTN
+  - get: L:ASCRJ_SKYC_VIDEO # SKYC VIDEO
+  - get: L:ASCRJ_SKYC_DAYNIGHT_BTN # SKYC DAY/NIGHT BTN
+        ###########  OXYGEN PANEL - PILOT  ########### 
+  - get: L:ASCRJ_OXYC_TEST_BTN # OXYC TEST BTN
+  - get: L:ASCRJ_OXYC_TEST_BTN_LONG # OXYC TEST BTN LONG
+  - get: L:ASCRJ_OXYC_BLINKER # OXYC BLINKER
+  - get: B:SAFETY_ASCRJ_OXYC_TEST_LONG_BTN
+#########################        REAR BULKHEAD       #########################
+        ###########  FUEL PANEL - PILOT  ########### 
+  - get: L:ASCRJ_FPNL_POWER # FPNL POWER
+  - get: L:ASCRJ_FPNL_POWER_GUARD # FPNL POWER GUARD
+    set: (>B:FUEL_ASCRJ_FPNL_POWER_GUARD_Toggle)
+  - get: L:ASCRJ_FPNL_TEST_ANIM # FPNL TEST ANIM
+  - get: L:ASCRJ_FPNL_BITE_ANIM # FPNL BITE ANIM
+  - get: L:ASCRJ_FPNL_SOV_SW_R # FPNL SOV SW R
+  - get: L:ASCRJ_FPNL_SOV_SW_L # FPNL SOV SW L
+  - get: L:ASCRJ_FPNL_SOV_SW_C # FPNL SOV SW C
+  - get: L:ASCRJ_FPNL_MODE_SEL # FPNL MODE SEL
+    set: (>B:FUEL_ASCRJ_FPNL_MODE_SEL_Set)
+  - get: L:ASCRJ_FPNL_AMOUNT_ANIM # FPNL AMOUNT ANIM
+  - get: L:ASCRJ_FPNL_ON_OFF # FPNL ON/OFF
+
+  #WEIGHTS
+  - get: A:PAYLOAD STATION WEIGHT:1, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:2, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:3, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:4, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:5, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:6, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:7, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:8, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:9, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:10, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:12, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:13, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:14, Pounds
+  - get: A:PAYLOAD STATION WEIGHT:15, Pounds
+
+
+
+
+
+
+
+
+
+
+
+
