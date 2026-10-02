@@ -19,7 +19,7 @@ Fly as a real crew. 👨‍✈️👩‍✈️
 
 ## 🔀 This fork: everything in one build
 
-FS Copilot's public forks each added something, and none of it reached upstream. This fork merges all of them on top of upstream 1.2.1, keeps every fork author's commits, fixes what didn't work together, and ships every aircraft profile it could find. The original branches of every fork are archived here under `forks/<owner>/<branch>`.
+FS Copilot's public forks each added something, and none of it reached upstream. This fork merges all of them on top of upstream 1.2.1, keeps every fork author's commits, fixes what didn't work together, and ships every aircraft profile it could find. Every fork branch with work of its own is archived here under `forks/<owner>/<branch>`, in case the original goes away.
 
 ### Download and install
 
