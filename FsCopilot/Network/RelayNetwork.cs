@@ -22,8 +22,14 @@ using Serilog;
 /// <see cref="FrameType"/> byte, so the relay tells control from data by reading it rather than
 /// by channel number - a rule that broke for Unreliable packets, which carry no channel and
 /// arrive as channel 0. Channel numbers are left to mean ordering domains, as
-/// <see cref="Transport"/> assigns them. A version 1 relay reads none of this; against one no
-/// link ever forms, which is the intended failure.
+/// <see cref="Transport"/> assigns them.
+/// <para>
+/// A version 1 relay (upstream's p2p.fscopilot.com, or one built from upstream) reads none of
+/// this, so the client falls back to version 1 framing when it meets one: control on channel 0
+/// with no frame type, data on channel 1, and Unreliable sent Sequenced so it keeps its channel.
+/// The relay gives itself away by its first control frame - version 1 starts with a control
+/// type (10, 11 or 255), version 2 with a frame type (0 or 1).
+/// </para>
 /// </summary>
 public sealed class RelayNetwork : INetwork, IDisposable
 {
@@ -68,6 +74,10 @@ public sealed class RelayNetwork : INetwork, IDisposable
     private DateTime _lastPingTime = DateTime.MinValue;
 
     private IPEndPoint? _relayEndpoint;
+    // True once the relay has shown it speaks protocol version 1. Kept across reconnects: the
+    // host does not change.
+    private volatile bool _legacy;
+    private const byte LegacyDataChannel = 1;
     private volatile NetPeer? _relayPeer;
     private int _connecting;
     private readonly BehaviorSubject<int> _connectingCount = new(0);
@@ -280,6 +290,14 @@ public sealed class RelayNetwork : INetwork, IDisposable
             var peer = _relayPeer;
             if (peer is null || peer.ConnectionState != ConnectionState.Connected) return;
 
+            if (_legacy)
+            {
+                var legacy = _codecs.Encode(packet);
+                if (legacy.Length == 0) return;
+                peer.Send(legacy, LegacyDataChannel, LegacyMethod(delivery, legacy.Length));
+                return;
+            }
+
             var data = _codecs.Encode(packet, (byte)FrameType.Data);
             if (data.Length == 0) return;
 
@@ -291,6 +309,19 @@ public sealed class RelayNetwork : INetwork, IDisposable
             Log.Error(e, "[Relay] Loop error");
         }
     }
+
+    /// <summary>
+    /// Version 1 forwards by channel and reads channel 0 as control, so every data frame must
+    /// carry channel 1. Unreliable carries no channel, so it goes Sequenced; a frame too large
+    /// for a sequenced packet at the MTU floor goes reliable instead of being thrown away.
+    /// </summary>
+    private static DeliveryMethod LegacyMethod(Delivery delivery, int length) => delivery switch
+    {
+        Delivery.Sequenced or Delivery.Unreliable when length + NetConstants.ChanneledHeaderSize <= Transport.MtuFloor
+            => DeliveryMethod.Sequenced,
+        Delivery.Sequenced or Delivery.Unreliable => DeliveryMethod.ReliableUnordered,
+        _ => DeliveryMethod.ReliableOrdered
+    };
 
     public void RegisterPacket<TPacket, TCodec>()
         where TPacket : notnull
@@ -395,11 +426,14 @@ public sealed class RelayNetwork : INetwork, IDisposable
         peer.Send(w, Transport.ControlChannel, DeliveryMethod.ReliableOrdered);
     }
 
-    /// <summary>A control frame: the frame type, then the control type. Always reliable.</summary>
-    private static NetDataWriter Control(ControlType type)
+    /// <summary>
+    /// A control frame: the frame type, then the control type. Always reliable. A version 1
+    /// relay takes the control type alone.
+    /// </summary>
+    private NetDataWriter Control(ControlType type)
     {
         var w = new NetDataWriter();
-        w.Put((byte)FrameType.Control);
+        if (!_legacy) w.Put((byte)FrameType.Control);
         w.Put((byte)type);
         return w;
     }
@@ -420,6 +454,33 @@ public sealed class RelayNetwork : INetwork, IDisposable
     {
         if (reader.AvailableBytes < 1) return;
 
+        if (!_legacy && channel == Transport.ControlChannel &&
+            reader.PeekByte() is not ((byte)FrameType.Control or (byte)FrameType.Data))
+        {
+            _legacy = true;
+            Log.Information("[Relay] {Host} speaks relay protocol v1; using v1 framing", _host);
+
+            // A version 1 relay answers a version 2 frame with PROTOCOL_ERROR. That error is
+            // about the framing, not the peer asked for, so ask again in version 1 instead of
+            // failing the join.
+            if (reader.PeekByte() == (byte)ControlType.Error)
+            {
+                foreach (var target in _connectWaiters.Keys)
+                {
+                    try { SendConnectIntent(target); }
+                    catch (Exception e) { Log.Debug(e, "[Relay] v1 resend to {Target} failed", target); }
+                }
+                return;
+            }
+        }
+
+        if (_legacy)
+        {
+            if (channel == Transport.ControlChannel) OnControl(reader);
+            else Publish(reader);
+            return;
+        }
+
         var frame = (FrameType)reader.GetByte();
         switch (frame)
         {
@@ -427,20 +488,23 @@ public sealed class RelayNetwork : INetwork, IDisposable
                 OnControl(reader);
                 break;
             case FrameType.Data:
-            {
-                var obj = _codecs.Decode(reader);
-                if (obj is null) return;
-
-                if (!_streams.TryGetValue(obj.GetType(), out var subjObj)) return;
-
-                var onNextMethod = subjObj.GetType().GetMethod("OnNext");
-                onNextMethod!.Invoke(subjObj, [obj]);
+                Publish(reader);
                 break;
-            }
             default:
                 Log.Debug("[Relay] Dropped a frame of type {Type} on channel {Channel}", (byte)frame, channel);
                 break;
         }
+    }
+
+    private void Publish(NetPacketReader reader)
+    {
+        var obj = _codecs.Decode(reader);
+        if (obj is null) return;
+
+        if (!_streams.TryGetValue(obj.GetType(), out var subjObj)) return;
+
+        var onNextMethod = subjObj.GetType().GetMethod("OnNext");
+        onNextMethod!.Invoke(subjObj, [obj]);
     }
 
     private void OnControl(NetPacketReader reader)
