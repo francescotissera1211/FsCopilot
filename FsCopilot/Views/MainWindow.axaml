@@ -79,6 +79,13 @@
                                     Classes="Link"
                                     Margin="8,0,0,0"
                                     VerticalAlignment="Center"
+                                    Content="Settings"
+                                    AutomationProperties.HelpText="Saving restarts FS Copilot"
+                                    Click="OnSettingsClick" />
+                            <Button DockPanel.Dock="Right"
+                                    Classes="Link"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
                                     Content="Copy code"
                                     AutomationProperties.Name="Copy code"
                                     Command="{Binding CopyCodeCommand}" />

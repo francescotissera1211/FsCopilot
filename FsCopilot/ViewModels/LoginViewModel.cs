@@ -65,7 +65,15 @@ public sealed class LoginViewModel : ReactiveObject
 
     public string ConfigPath => ConnectionConfig.ConfigPath;
 
+    /// <summary>"Save settings and connect" at start; "Save and restart" when opened from the main window.</summary>
+    public string SaveLabel { get; init; } = "Save settings and connect";
+
+    /// <summary>The peer ID spelled out, for the window's opening line.</summary>
+    public string PeerIdSpelled => string.Join(' ', (PeerId ?? string.Empty).ToCharArray());
+
     public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> NewIdCommand { get; }
 
     public LoginViewModel()
     {
@@ -80,6 +88,13 @@ public sealed class LoginViewModel : ReactiveObject
         // Always enabled: a disabled button gives a screen reader user no reason. The command
         // checks the fields and says what is wrong instead.
         ConnectCommand = ReactiveCommand.Create(ExecuteConnect);
+
+        // The ID is generated on first run; this makes another without typing one.
+        NewIdCommand = ReactiveCommand.Create(() =>
+        {
+            PeerId = Random.String(8);
+            Announcer.Say($"New peer ID {PeerIdSpelled}.");
+        });
     }
 
     /// <summary>The first problem with the fields, or null when they can be saved.</summary>
@@ -128,4 +143,7 @@ public sealed class LoginViewModel : ReactiveObject
         ErrorMessage = string.Empty;
         Completed?.Invoke();
     }
+
+    /// <summary>Goes on with the saved settings, as after a restart from Settings.</summary>
+    public void Continue() => Completed?.Invoke();
 }

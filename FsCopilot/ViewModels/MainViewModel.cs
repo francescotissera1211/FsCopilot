@@ -26,6 +26,7 @@ public class MainViewModel : ReactiveObject, IDisposable
     private string? _holderToAnnounce;
     private DateTime _holderSince;
     private string _lastSpokenError = string.Empty;
+    private bool _greeted;
     private DateTime _leftAt = DateTime.MinValue;
     private ViewErrors _errors = ViewErrors.None;
 
@@ -52,6 +53,8 @@ public class MainViewModel : ReactiveObject, IDisposable
     /// <summary>A new problem is spoken once; the same one is not repeated while it lasts.</summary>
     private void SpeakError()
     {
+        // Until the window has said its opening line, a problem waits to be said with it.
+        if (!_greeted) return;
         var message = ErrorMessage;
         if (message == _lastSpokenError) return;
         _lastSpokenError = message;
@@ -97,6 +100,15 @@ public class MainViewModel : ReactiveObject, IDisposable
     public string ControlStatus => _holder == _selfId ? "You have control" : $"{HolderName()} has control";
 
     public string ClientCodeDescription => $"Your code: {Spell(PeerId)}";
+
+    /// <summary>The window's first words: the app, your code, and any problem there is now.</summary>
+    public string OpeningLine()
+    {
+        _greeted = true;
+        _lastSpokenError = ErrorMessage;
+        var problem = string.IsNullOrEmpty(ErrorMessage) ? string.Empty : " " + ErrorMessage;
+        return $"FS Copilot {Version}. {ClientCodeDescription}.{problem}";
+    }
 
     /// <summary>The holder's name, or "Your co-pilot" until it is known (or for an older build).</summary>
     private string HolderName()

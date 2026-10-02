@@ -12,7 +12,7 @@ public partial class SetupWindow : Window
         {
             PrimaryButton.Focus();
             if (DataContext is ViewModels.SetupViewModel vm)
-                Accessibility.Announcer.Say($"FS Copilot setup. {vm.Subtitle.TrimEnd('.', ' ')}. {vm.PrimaryButtonText} button.");
+                Avalonia.Threading.DispatcherTimer.RunOnce(() => Accessibility.Announcer.Say($"FS Copilot setup. {vm.Subtitle.TrimEnd('.', ' ')}. {vm.PrimaryButtonText} button."), TimeSpan.FromMilliseconds(700));
         };
     }
 

@@ -25,7 +25,7 @@ FS Copilot's public forks each added something, and none of it reached upstream.
 
 1. Download `FsCopilot_v<version>.zip` from this repository's [Releases](../../releases) and unzip it anywhere, for example next to your other add-ons.
 2. Run `FsCopilot.exe`.
-3. The first window is **Connection settings**. The defaults are fine; press **Enter** or choose **Save settings and connect**. It opens on every start, so you can change any setting there. See [Settings](#settings).
+3. The first window is **Connection settings**. Everything is filled in for you, including your peer ID: 8 random letters made on first run and kept from then on. Press **Enter** or choose **Save settings and connect**. See [Settings](#settings).
 4. On first run the **Setup** window offers **Install**. It copies the `fscopilot-bridge` package into your MSFS Community folder (and removes YourControls if it finds it, because the two conflict). Then choose **Continue**.
 5. Upgrading from stock FS Copilot: close it, run this build, and choose **Install** when Setup asks. The bridge in your Community folder is replaced.
 
@@ -88,11 +88,11 @@ Everyone in the session must run **this build**. FS Copilot compares the list of
 
 ### Settings
 
-Everything is set in windows; the command line is only for one-off overrides.
+Everything is set in windows; the command line is only for one-off overrides. Connection settings opens at every start, and the **Settings** button beside your code in the main window opens it any time. Saving there restarts FS Copilot, which leaves any session, because the server, ID and connection type are fixed when the network starts. Escape closes it without saving.
 
 | Where | Setting | Saved in |
 | --- | --- | --- |
-| Connection settings (opens at every start) | Server address, username, peer ID (exactly 8 letters or digits), connection type (Automatic / Direct link only / Relay only), share ground vehicles when hosting traffic | `%LOCALAPPDATA%\FsCopilot\config.json` |
+| Connection settings (at every start, or the Settings button) | Server address, username, peer ID (generated for you; **New ID** makes another, or type exactly 8 letters or digits), connection type (Automatic / Direct only / Relay only), share ground vehicles when hosting traffic | `%LOCALAPPDATA%\FsCopilot\config.json` |
 | Main window, ATC & Traffic, while you share ATC | ATC audio source app | `settings.json` beside `FsCopilot.exe` |
 | Main window, ATC & Traffic, while you receive ATC | Mute and volume of the received ATC audio | `settings.json` beside `FsCopilot.exe` |
 
@@ -115,6 +115,7 @@ Built for screen readers and tested on 2026-10-02 with Windows UI Automation (th
   - copying your code.
 
   They use UI Automation notification events, which NVDA, JAWS and Narrator read. Avalonia, the UI toolkit, doesn't raise live-region events on Windows, so they would otherwise stay silent.
+- **Text fields speak as you edit.** Left and Right say the character at the cursor, Home and End too, Ctrl+Left/Right the word, Backspace the deleted character, Delete the new one at the cursor, Up and Down the whole field, and Shift selection what it selects. Avalonia gives text boxes no UI Automation Text pattern (still true in 12.1), so a screen reader cannot follow the cursor itself; FS Copilot speaks it instead.
 - **Keyboard.**
   - Focus starts in a useful place: the first field in Connection settings, the action button in Setup, the client code box in the main window, and Open GitHub in the update message.
   - Enter submits Connection settings and joins from the code box. Escape closes the update message.

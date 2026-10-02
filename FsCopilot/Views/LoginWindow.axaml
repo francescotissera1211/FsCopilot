@@ -153,17 +153,25 @@
             <TextBlock x:Name="PeerIdLabel"
                        Classes="label"
                        Text="Peer ID (your client code)" />
+            <DockPanel>
+            <Button DockPanel.Dock="Right"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Content="New ID"
+                    AutomationProperties.HelpText="Makes a new random peer ID"
+                    Command="{Binding NewIdCommand}" />
             <TextBox Classes="input"
                      AutomationProperties.Name="Peer ID"
                      AutomationProperties.LabeledBy="{Binding #PeerIdLabel}"
                      AutomationProperties.IsRequiredForForm="True"
-                     AutomationProperties.HelpText="8 letters or digits; your crew joins with it"
+                     AutomationProperties.HelpText="Generated for you; your crew joins with it"
                      MaxLength="8"
                      Text="{Binding PeerId}"
                      Watermark="8 letters or digits"
                      SelectionBrush="#333333"
                      SelectionForegroundBrush="#CCCCCC"
                      CaretBrush="#AAAAAA" />
+            </DockPanel>
 
             <TextBlock x:Name="ModeLabel"
                        Classes="label"
@@ -186,7 +194,7 @@
 
             <Button Classes="cta"
                     IsDefault="True"
-                    Content="Save settings and connect"
+                    Content="{Binding SaveLabel}"
                     Command="{Binding ConnectCommand}"
                     HorizontalAlignment="Center" />
 
