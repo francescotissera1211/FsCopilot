@@ -131,7 +131,10 @@ sealed class Program
                                 _ => new HybridNetwork(host, peerId, cfg.Username)
                             };
                         });
-                        services.AddSingleton<MasterSwitch>();
+                        services.AddSingleton(sp => new MasterSwitch(
+                            sp.GetRequiredService<SimClient>(),
+                            sp.GetRequiredService<INetwork>(),
+                            peerIdOverride ?? ConnectionConfig.Load().PeerId));
                         services.AddSingleton<Coordinator>();
                         // Registers the sharing packets; constructed after Coordinator so the
                         // packet table is the same on every peer.
