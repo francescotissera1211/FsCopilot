@@ -24,6 +24,9 @@ public sealed class P2PNetwork : INetwork, IDisposable
     private readonly ConcurrentDictionary<string, string> _peerNames = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, TaskCompletionSource<ConnectionResult>> _connectWaiters = new(StringComparer.Ordinal);
     
+    // Sliding-window packet loss tracking (local EMA, no wire change)
+    private readonly ConcurrentDictionary<string, PacketLossTracker> _lossTrackers = new(StringComparer.Ordinal);
+    
     private readonly string _host;
     private readonly string _peerId;
     private readonly string _selfName;
@@ -64,11 +67,19 @@ public sealed class P2PNetwork : INetwork, IDisposable
                 _net.GetPeersNonAlloc(peers, ConnectionState.Any);
                 return peers
                     .Where(p => p.Tag is string)
-                    .Select(p => new Peer(
-                        (string)p.Tag, 
-                        _peerNames.TryGetValue((string)p.Tag, out var peerName) ? peerName : string.Empty, 
-                        p.Ping,
-                        Peer.TransportKind.Direct))
+                    .Select(p =>
+                    {
+                        var peerId = (string)p.Tag;
+                        var tracker = _lossTrackers.GetOrAdd(peerId, _ => new PacketLossTracker());
+                        var loss = tracker.RecordPercent(p.Statistics.PacketLossPercent);
+                        
+                        return new Peer(
+                            peerId,
+                            _peerNames.TryGetValue(peerId, out var peerName) ? peerName : string.Empty,
+                            p.Ping,
+                            loss,
+                            Peer.TransportKind.Direct);
+                    })
                     .ToArray();
             })
             .Publish()
@@ -79,6 +90,12 @@ public sealed class P2PNetwork : INetwork, IDisposable
         Task.Run(() => Start(_cts.Token), _cts.Token);
         Task.Run(() => Loop(_cts.Token), _cts.Token);
         Task.Run(() => IntroduceLoop(_cts.Token), _cts.Token);
+    }
+
+    public void ResetPacketLoss()
+    {
+        foreach (var t in _lossTrackers.Values)
+            t.Reset();
     }
 
     public void Dispose()
@@ -240,6 +257,9 @@ public sealed class P2PNetwork : INetwork, IDisposable
 
         if (string.IsNullOrEmpty(peerId))
             return;
+
+        // Clean up loss tracker on disconnect
+        _lossTrackers.TryRemove(peerId, out _);
 
         if (info.Reason == DisconnectReason.ConnectionRejected)
         {

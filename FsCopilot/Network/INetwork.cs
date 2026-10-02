@@ -15,4 +15,6 @@ public interface INetwork
         where TCodec : IPacketCodec<TPacket>, new();
 
     IObservable<TPacket> Stream<TPacket>();
+    
+    void ResetPacketLoss();
 }

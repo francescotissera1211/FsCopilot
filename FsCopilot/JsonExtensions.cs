@@ -27,6 +27,11 @@ public static class JsonExtensions
             ? d
             : fallback;
 
+    public static double? DoubleOrNull(this JsonElement el, string prop)
+        => el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetDouble(out var d)
+            ? d
+            : null;
+
     public static void WritePrimitive(this Utf8JsonWriter w, string key, object v)
     {
         switch (v)

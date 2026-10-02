@@ -6,6 +6,7 @@
         xmlns:viewModels="clr-namespace:FsCopilot.ViewModels"
         xmlns:viewModels1="clr-namespace:FsCopilot.ViewModels"
         xmlns:fsCopilot="clr-namespace:FsCopilot"
+        xmlns:conn="using:FsCopilot.Connection"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="FsCopilot.Views.DevelopWindow"
         x:DataType="viewModels1:DevelopViewModel"
@@ -44,7 +45,7 @@
         
 
         <Grid Classes="Wrapper" 
-              RowDefinitions="Auto,*,Auto">
+              RowDefinitions="Auto,*,Auto,Auto">
             <TextBox Grid.Row="0" 
                      Classes="Search"
                      Watermark="Search"
@@ -95,7 +96,45 @@
                     </TreeView>
             </Border>
 
-            <DockPanel Grid.Row="2">
+            <Border Grid.Row="2"
+                    Classes="Card">
+                <StackPanel Spacing="6">
+
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ComboBox Width="230"
+                                  PlaceholderText="* (all screens)"
+                                  ItemsSource="{Binding ScreenNames}"
+                                  SelectedItem="{Binding SelectedScreen}"/>
+                        <TextBox Width="64" Watermark="x" Text="{Binding ScreenX}"/>
+                        <TextBox Width="64" Watermark="y" Text="{Binding ScreenY}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button Classes="Push" Content="Info" Command="{Binding ScreenInfoCommand}"/>
+                        <Button Classes="Push" Content="Probe" Command="{Binding ScreenProbeCommand}"/>
+                        <Button Classes="Push" Content="Move" Command="{Binding ScreenMoveCommand}"/>
+                        <Button Classes="Push" Content="Click" Command="{Binding ScreenClickCommand}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Classes="Line" VerticalAlignment="Center" Text="peer"/>
+                        <Button Classes="Push" Content="Peer move" Command="{Binding ScreenPeerMoveCommand}"/>
+                        <Button Classes="Push" Content="Peer click" Command="{Binding ScreenPeerClickCommand}"/>
+                    </StackPanel>
+
+                    <ListBox Height="150"
+                             ItemsSource="{Binding Screens}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="conn:ScreenEvent">
+                                <TextBlock Text="{Binding}" FontSize="11"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                </StackPanel>
+            </Border>
+
+            <DockPanel Grid.Row="3">
                 <Button DockPanel.Dock="Right"
                         Classes="Tool" 
                         Command="{Binding ReloadCommand}">

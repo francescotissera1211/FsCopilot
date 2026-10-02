@@ -1,0 +1,154 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FsCopilot.ViewModels"
+        x:Class="FsCopilot.Views.LoginWindow"
+        x:DataType="vm:LoginViewModel"
+        Width="500"
+        Height="480"
+        CanResize="False"
+        Background="Black"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        RequestedThemeVariant="Dark">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#444444" />
+        <SolidColorBrush x:Key="TextControlSelectionForegroundColor" Color="#CCCCCC" />
+        <SolidColorBrush x:Key="SystemControlHighlightAccentBrush" Color="#3D82FF" />
+        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#1A1A1A" />
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Button.cta">
+            <Setter Property="Margin" Value="0,24,0,0" />
+            <Setter Property="MinWidth" Value="220" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Padding" Value="34,0" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#3D82FF" Offset="0" />
+                    <GradientStop Color="#0D5AE8" Offset="1" />
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.cta:pointerover">
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#4B8CFF" Offset="0" />
+                    <GradientStop Color="#1A66F0" Offset="1" />
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.cta:pressed">
+            <Setter Property="Opacity" Value="0.96" />
+        </Style>
+
+        <Style Selector="Button.cta:disabled">
+            <Setter Property="Opacity" Value="0.55" />
+        </Style>
+
+        <Style Selector="TextBox.input">
+            <Setter Property="Background" Value="#1A1A1A" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#333333" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Margin" Value="0,4,0,0" />
+            <Setter Property="SelectionBrush" Value="#333333" />
+            <Setter Property="SelectionForegroundBrush" Value="#CCCCCC" />
+            <Setter Property="CaretBrush" Value="#AAAAAA" />
+        </Style>
+
+        <Style Selector="TextBox.input:focus">
+            <Setter Property="BorderBrush" Value="#3D82FF" />
+        </Style>
+
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="#AAAAAA" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Margin" Value="0,16,0,0" />
+        </Style>
+
+        <Style Selector="TextBlock.error">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="#FF5555" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,12,0,0" />
+        </Style>
+    </Window.Styles>
+
+    <Grid Background="Black">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="0"
+                    Margin="60,32">
+
+            <TextBlock Text="FS Copilot"
+                       HorizontalAlignment="Center"
+                       FontSize="42"
+                       FontWeight="SemiBold"
+                       TextAlignment="Center"
+                       Margin="0,0,0,28">
+                <TextBlock.Foreground>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="White" Offset="0" />
+                        <GradientStop Color="#B8D1FF" Offset="1" />
+                    </LinearGradientBrush>
+                </TextBlock.Foreground>
+            </TextBlock>
+
+            <TextBlock Classes="label"
+                       Text="Server Address" />
+
+            <TextBox Classes="input"
+                     Text="{Binding ServerAddress}"
+                     Watermark="p2p.fscopilot.com"
+                     SelectionBrush="#333333"
+                     SelectionForegroundBrush="#CCCCCC"
+                     CaretBrush="#AAAAAA" />
+
+            <TextBlock Classes="label"
+                       Text="Username" />
+
+            <TextBox Classes="input"
+                     Text="{Binding Username}"
+                     Watermark="By default will be your System username"
+                     SelectionBrush="#333333"
+                     SelectionForegroundBrush="#CCCCCC"
+                     CaretBrush="#AAAAAA" />
+
+            <TextBlock Classes="label"
+                       Text="Peer ID" />
+
+            <TextBox Classes="input"
+                     Text="{Binding PeerId}"
+                     Watermark="8 letter Peerid"
+                     SelectionBrush="#333333"
+                     SelectionForegroundBrush="#CCCCCC"
+                     CaretBrush="#AAAAAA" />
+
+            <TextBlock Classes="error"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Text="{Binding ErrorMessage}" />
+
+            <Button Classes="cta"
+                    Content="Save Setting and Connect"
+                    Command="{Binding ConnectCommand}"
+                    IsEnabled="{Binding CanConnect}"
+                    HorizontalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Window>

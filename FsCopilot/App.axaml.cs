@@ -45,24 +45,42 @@ public class App : Application
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
 
-            if (!skipInstall && Installer.RequiresInstallation)
-            {
-                var vm = Locator.Current.GetService<SetupViewModel>()!;
-                var setup = new SetupWindow { DataContext = vm };
+            var loginVm = Locator.Current.GetService<LoginViewModel>()!;
+            var login = new LoginWindow { DataContext = loginVm };
 
-                vm.Completed += () =>
+            loginVm.Completed += () =>
+            {
+                try
                 {
-                    CreateWindow(desktop, dev);
-                    setup.Close();
-                };
+                    if (!skipInstall && Installer.RequiresInstallation)
+                    {
+                        var vm = Locator.Current.GetService<SetupViewModel>()!;
+                        var setup = new SetupWindow { DataContext = vm };
 
-                desktop.MainWindow = setup;
-            }
-            else
-            {
-                CreateWindow(desktop, dev);
-                _ = CheckForUpdatesAsync(Locator.Current.GetService<Updater>()!, _appCts.Token);
-            }
+                        vm.Completed += () =>
+                        {
+                            CreateWindow(desktop, dev);
+                            setup.Close();
+                        };
+
+                        desktop.MainWindow = setup;
+                        setup.Show();
+                    }
+                    else
+                    {
+                        CreateWindow(desktop, dev);
+                        _ = CheckForUpdatesAsync(Locator.Current.GetService<Updater>()!, _appCts.Token);
+                    }
+
+                    login.Close();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "[App] Exception in login completion handler");
+                }
+            };
+
+            desktop.MainWindow = login;
         }
 
         base.OnFrameworkInitializationCompleted();

@@ -46,6 +46,12 @@ public sealed class RelayNetwork : INetwork, IDisposable
         .Add<Ping, Ping.Codec>()
         .Add<Pong, Pong.Codec>();
 
+    // Per-peer packet loss tracking (local, no wire format change)
+    private readonly ConcurrentDictionary<string, PacketLossTracker> _lossTrackers = new(StringComparer.Ordinal);
+    // Timestamp of last pong received per peer (for detecting missed ping cycles)
+    private readonly ConcurrentDictionary<string, DateTime> _lastPongTime = new(StringComparer.Ordinal);
+    private DateTime _lastPingTime = DateTime.MinValue;
+
     private IPEndPoint? _relayEndpoint;
     private volatile NetPeer? _relayPeer;
 
@@ -91,6 +97,14 @@ public sealed class RelayNetwork : INetwork, IDisposable
         Task.Run(() => PollLoop(_cts.Token), _cts.Token);
         Task.Run(() => ReconnectLoop(_cts.Token), _cts.Token);
         Task.Run(() => PingLoop(_cts.Token), _cts.Token);
+    }
+
+    public void ResetPacketLoss()
+    {
+        _lastPongTime.Clear();
+        _lastPingTime = DateTime.MinValue;
+        foreach (var t in _lossTrackers.Values)
+            t.Reset();
     }
 
     public void Dispose()
@@ -157,7 +171,31 @@ public sealed class RelayNetwork : INetwork, IDisposable
             try
             {
                 await Task.Delay(PingInterval, ct).ConfigureAwait(false);
-                if (!_peers.IsEmpty) SendAll(new Ping(_peerId, Stopwatch.GetTimestamp()));
+                if (_peers.IsEmpty) continue;
+
+                var now = DateTime.UtcNow;
+
+                // Check which peers didn't respond to the previous ping cycle
+                if (_lastPingTime != DateTime.MinValue)
+                {
+                    var expectedPongBy = _lastPingTime + PingInterval * 0.8;
+                    if (now > expectedPongBy)
+                    {
+                        foreach (var kv in _lastPongTime)
+                        {
+                            if (kv.Value < _lastPingTime)
+                            {
+                                // This peer didn't respond → loss
+                                var tracker = _lossTrackers.GetOrAdd(kv.Key, _ => new PacketLossTracker());
+                                tracker.Record(1, 1);
+                                UpdatePeerLoss(kv.Key, tracker.GetLoss());
+                            }
+                        }
+                    }
+                }
+
+                _lastPingTime = now;
+                SendAll(new Ping(_peerId, Stopwatch.GetTimestamp()));
             }
             catch (OperationCanceledException) { /* normal */ }
             catch (Exception e) { Log.Error(e, "[Relay] Loop error"); }
@@ -280,8 +318,9 @@ public sealed class RelayNetwork : INetwork, IDisposable
     private void OnRelayDisconnected(NetPeer peer, DisconnectInfo info)
     {
         _relayPeer = null;
-        // Links are implicitly gone when relay connection is gone
         _peers.Clear();
+        _lossTrackers.Clear();
+        _lastPongTime.Clear();
         _publish.OnNext(Unit.Default);
 
         foreach (var kv in _connectWaiters)
@@ -300,14 +339,10 @@ public sealed class RelayNetwork : INetwork, IDisposable
 
     private enum ControlType : byte
     {
-        // client -> server
         ConnectIntent = 1,
         Disconnect = 2,
-
-        // server -> client
         LinkReady = 10,
         LinkClosed = 11,
-
         Error = 255
     }
 
@@ -334,8 +369,9 @@ public sealed class RelayNetwork : INetwork, IDisposable
             peer.Send(w, ControlChannel, DeliveryMethod.ReliableOrdered);
         }
 
-        // Local reset immediately
         _peers.Clear();
+        _lossTrackers.Clear();
+        _lastPongTime.Clear();
         _publish.OnNext(Unit.Default);
     }
 
@@ -386,7 +422,9 @@ public sealed class RelayNetwork : INetwork, IDisposable
 
     private void OnLinkReady(string otherPeerId)
     {
-        _peers.TryAdd(otherPeerId, new(otherPeerId, Name: string.Empty, Ping: 0, Transport: Peer.TransportKind.Relay));
+        _peers.TryAdd(otherPeerId, new(otherPeerId, Name: string.Empty, Ping: 0, PacketLoss: 0f, Transport: Peer.TransportKind.Relay));
+        _lossTrackers.TryAdd(otherPeerId, new PacketLossTracker());
+        _lastPongTime[otherPeerId] = DateTime.UtcNow;
         _publish.OnNext(Unit.Default);
 
         if (_connectWaiters.TryGetValue(otherPeerId, out var tcs))
@@ -406,6 +444,8 @@ public sealed class RelayNetwork : INetwork, IDisposable
     private void OnLinkClosed(string otherPeerId, string code, string message)
     {
         if (_peers.TryRemove(otherPeerId, out _)) _publish.OnNext(Unit.Default);
+        _lossTrackers.TryRemove(otherPeerId, out _);
+        _lastPongTime.TryRemove(otherPeerId, out _);
 
         if (_connectWaiters.TryGetValue(otherPeerId, out var tcs))
             tcs.TrySetResult(ConnectionResult.Failed);
@@ -417,7 +457,6 @@ public sealed class RelayNetwork : INetwork, IDisposable
     {
         Log.Debug("[Relay] REJ {PeerId} {Reason} ({Message})", otherPeerId, code, message);
 
-        // Minimal protocol: no target id in error => fail all pending connects
         var result = code == "SCHEMA_MISMATCH" ? ConnectionResult.Rejected : ConnectionResult.Failed;
         if (_connectWaiters.TryGetValue(otherPeerId, out var tcs))
             tcs.TrySetResult(result);
@@ -448,16 +487,34 @@ public sealed class RelayNetwork : INetwork, IDisposable
         var nowTicks = Stopwatch.GetTimestamp();
         var rtt = (int)TimeSpan.FromTicks(nowTicks - pong.TicksUtc).TotalMilliseconds;
         if (rtt <= 0) return;
+
+        // Record successful pong response
+        _lastPongTime[pong.From] = DateTime.UtcNow;
+        var tracker = _lossTrackers.GetOrAdd(pong.From, _ => new PacketLossTracker());
+        tracker.Record(1, 0);
+        var loss = tracker.GetLoss();
     
         while (true)
         {
             if (!_peers.TryGetValue(pong.From, out var oldValue)) break;
-            if (!_peers.TryUpdate(pong.From, oldValue with { Ping = rtt / 2 }, oldValue)) continue;
+            if (!_peers.TryUpdate(pong.From, oldValue with { Ping = rtt / 2, PacketLoss = loss }, oldValue)) continue;
+            _publish.OnNext(Unit.Default);
+            break;
+        }
+    }
+
+    private void UpdatePeerLoss(string peerId, float loss)
+    {
+        while (true)
+        {
+            if (!_peers.TryGetValue(peerId, out var oldValue)) break;
+            if (!_peers.TryUpdate(peerId, oldValue with { PacketLoss = loss }, oldValue)) continue;
             _publish.OnNext(Unit.Default);
             break;
         }
     }
     
+    // Ping/Pong wire format – UNCHANGED from original for backward compatibility
     private record Ping(string From, long TicksUtc)
     {
         public sealed class Codec : IPacketCodec<Ping>
