@@ -276,3 +276,9 @@ FsCopilot.Bridge/Packages
 # the post build copy step, so it is kept in the repository with a placeholder.
 FsCopilot.Bridge/PackageSources/Modules/*
 !FsCopilot.Bridge/PackageSources/Modules/.gitkeep
+
+# Aircraft definitions stay tracked in this fork: it ships every profile in the build rather
+# than relying on the profile server alone.
+
+# Visual Studio per-user launch configuration
+/FsCopilot/Properties/launchSettings.json
