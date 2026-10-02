@@ -60,21 +60,29 @@ sealed class Program
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp([]);
 
+    /// <summary>The value after <paramref name="flag"/>, or null when it is absent or last.</summary>
+    private static string? Option(string[] args, string flag)
+    {
+        var i = Array.FindIndex(args, a => string.Equals(a, flag, StringComparison.OrdinalIgnoreCase));
+        return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
+    }
+
     public static AppBuilder BuildAvaloniaApp(string[] args)
     {
         var isDev = args.Any(a => string.Equals(a, "--dev", StringComparison.OrdinalIgnoreCase));
         // var isExperimental = args.Any(a => string.Equals(a, "--experimental", StringComparison.OrdinalIgnoreCase));
-        // Transport and server overrides (Johnsmz13): --p2p forces direct links only, --relay forces
-        // relay only, --server <host> overrides the server saved in the login window (xray447).
-        var relayNetwork = args.Any(a => string.Equals(a, "--relay", StringComparison.OrdinalIgnoreCase));
+        // Server, transport and identity overrides. --server <host> (Johnsmz13) and --relay <host>
+        // (xiprox) both override the server saved in the login window (xray447). A bare --relay with
+        // no host after it keeps Johnsmz13's meaning, relay links only; --p2p is direct links only.
+        // --peer-id lets a harness name both instances of a one-machine test before they start.
+        var relayIndex = Array.FindIndex(args, a => string.Equals(a, "--relay", StringComparison.OrdinalIgnoreCase));
+        var relayHost = relayIndex >= 0 && relayIndex + 1 < args.Length && !args[relayIndex + 1].StartsWith("--")
+            ? args[relayIndex + 1]
+            : null;
+        var relayNetwork = relayIndex >= 0 && relayHost is null;
         var p2pNetwork = args.Any(a => string.Equals(a, "--p2p", StringComparison.OrdinalIgnoreCase));
-        string? serverOverride = null;
-        var serverIndex = Array.FindIndex(args, a =>
-                string.Equals(a, "--server", StringComparison.OrdinalIgnoreCase));
-        if (serverIndex >= 0 && serverIndex + 1 < args.Length)
-        {
-            serverOverride = args[serverIndex + 1];
-        }
+        var serverOverride = relayHost ?? Option(args, "--server");
+        var peerIdOverride = Option(args, "--peer-id");
 
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
@@ -82,6 +90,8 @@ sealed class Program
                 services =>
                 {
                     services.AddSingleton(new SimClient(!isDev ? "FS Copilot" : "FS Copilot DEV"));
+                    var panelServer = new PanelServer();
+                    services.AddSingleton(panelServer);
                     services.AddSingleton<SetupViewModel>();
                     services.AddSingleton<LoginViewModel>();
                     services.AddSingleton(new Updater("http://p2p.fscopilot.com:2320"));
@@ -92,9 +102,10 @@ sealed class Program
                         {
                             var cfg = ConnectionConfig.Load();
                             var host = serverOverride ?? cfg.ServerAddress;
-                            if (p2pNetwork) return new P2PNetwork(host, cfg.PeerId, cfg.Username);
-                            if (relayNetwork) return new RelayNetwork(host, cfg.PeerId, cfg.Username);
-                            return new HybridNetwork(host, cfg.PeerId, cfg.Username);
+                            var peerId = peerIdOverride ?? cfg.PeerId;
+                            if (p2pNetwork) return new P2PNetwork(host, peerId, cfg.Username);
+                            if (relayNetwork) return new RelayNetwork(host, peerId, cfg.Username);
+                            return new HybridNetwork(host, peerId, cfg.Username);
                         });
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();
@@ -102,13 +113,14 @@ sealed class Program
                         {
                             var cfg = ConnectionConfig.Load();
                             return new MainViewModel(
-                                cfg.PeerId,
+                                peerIdOverride ?? cfg.PeerId,
                                 cfg.Username,
                                 sp.GetRequiredService<INetwork>(),
                                 sp.GetRequiredService<SimClient>(),
                                 sp.GetRequiredService<MasterSwitch>(),
                                 sp.GetRequiredService<Coordinator>(),
-                                sp.GetRequiredService<Updater>()
+                                sp.GetRequiredService<Updater>(),
+                                sp.GetRequiredService<PanelServer>()
                             );
                         });
                     }

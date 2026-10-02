@@ -5,7 +5,8 @@ public record struct Peer(
     string Name, 
     int Ping,
     float PacketLoss,
-    Peer.TransportKind Transport)
+    Peer.TransportKind Transport,
+    bool Connected)
 {
     public enum TransportKind { Direct, Relay }
 }

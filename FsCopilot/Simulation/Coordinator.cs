@@ -6,26 +6,53 @@ using Network;
 
 public class Coordinator : IDisposable
 {
+    // After this long without the peer, sync ends and held history is dropped.
+    private static readonly TimeSpan DegradedTimeout = TimeSpan.FromMinutes(5);
+
+    // 2000 events stay under a megabyte. The cap also bounds history held for an acker
+    // that never returns.
+    private const int HistoryCap = 2000;
+    private static readonly TimeSpan AckInterval = TimeSpan.FromSeconds(3);
+
     private readonly INetwork _net;
     private readonly MasterSwitch _masterSwitch;
     private readonly SimClient _sim;
+    private readonly PanelServer _panels;
     private readonly CompositeDisposable _d = new();
     private CompositeDisposable _cSubs = new();
     private readonly string _clientName;
     private readonly ScreenSync _screens;
     private HashSet<string> _ignore = [];
+    private volatile PointerFilter _pointer = PointerFilter.Empty;
 
-    public Coordinator(SimClient sim, INetwork net, MasterSwitch masterSwitch)
+    private readonly ulong _sessionId;
+    private int _pointerSeq;
+    private readonly object _stateLock = new();
+    private readonly List<PointerEvent> _history = [];        // our unacked events, Seq ascending
+    private readonly Dictionary<ulong, uint> _acks = new();   // acker session -> last Seq of ours it has
+    private readonly Dictionary<ulong, uint> _lastSeq = new(); // sender session -> last Seq applied
+    private readonly Dictionary<ulong, uint> _acked = new();   // sender session -> last Seq we acked
+    private bool _hadPeer;
+    // Set by PeerLeft, cleared by any tick with a live link, so a third peer leaving
+    // does not turn the next real outage into an end of sync.
+    private bool _peerLeft;
+    private Link _link = Link.None;
+    private volatile string _syncState = SyncState.None;
+    private IDisposable? _degradedTimer;
+
+    public Coordinator(SimClient sim, INetwork net, MasterSwitch masterSwitch, PanelServer panels)
     {
         _net = net;
         _masterSwitch = masterSwitch;
         _sim = sim;
         _clientName = ConnectionConfig.Load().Username;
+        _panels = panels;
         var sw = Stopwatch.StartNew();
 
         Span<byte> sessionBytes = stackalloc byte[8];
         RandomNumberGenerator.Fill(sessionBytes);
         var sessionId = BitConverter.ToUInt64(sessionBytes);
+        _sessionId = sessionId;
 
         net.RegisterPacket<Update, Update.Codec>();
         net.RegisterPacket<Interact, InteractCodec>();
@@ -34,6 +61,8 @@ public class Coordinator : IDisposable
         _sim.Register<Surfaces>();
         _net.RegisterPacket<Physics, Physics.Codec>();
         _net.RegisterPacket<Surfaces, Surfaces.Codec>();
+        _net.RegisterPacket<PointerEvent, PointerEvent.Codec>();
+        _net.RegisterPacket<PointerAck, PointerAck.Codec>();
 
         _d.Add(sim.Aircraft.Take(1).Subscribe(_ => AddLink((ref Physics physics) =>
         {
@@ -54,7 +83,9 @@ public class Coordinator : IDisposable
         _d.Add(_screens);
 
         _d.Add(_sim.Interactions
-            .Where(i => !_ignore.Contains(i.Instrument))
+            .Where(i => !Listed(_ignore, i.Instrument))
+            // Pointer-synced instruments are left out, or one press would actuate twice.
+            .Where(i => !Listed(_pointer.Instruments, i.Instrument))
             // Pointer moves are only shared for the configured screens and sampled to 20 fps, so a
             // moving mouse cannot flood the link. Clicks of those screens are shared only when the
             // configuration asks for it (by default the simulator generates them), other events keep
@@ -68,6 +99,7 @@ public class Coordinator : IDisposable
                     .Sample(TimeSpan.FromMilliseconds(50))))
             .Subscribe(interact => _net.SendAll(_screens.ToPeer(interact) with { From = _clientName }, unreliable: interact.Event == "mousemove")));
         _d.Add(_net.Stream<Interact>()
+            .Where(i => !Listed(_pointer.Instruments, i.Instrument))
             .Subscribe(update =>
             {
                 var local = _screens.FromPeer(update);
@@ -81,7 +113,40 @@ public class Coordinator : IDisposable
 
                 _sim.Set(local);
             }));
+
+        // Not gated on master, like Interact. Presses and drags share one stream, so
+        // they arrive in capture order. Filtered on receive too, because a panel connects
+        // before it learns its mode.
+        _d.Add(panels.Events
+            .Where(e => _pointer.Contains(e.Key))
+            .Subscribe(e => SendPointer(e with { Session = _sessionId, Seq = NextSeq() })));
+        _d.Add(_net.Stream<PointerEvent>()
+            .Where(e => Fresh(e.Session, e.Seq))
+            .Where(e => _pointer.Contains(e.Key))
+            .Subscribe(panels.Send));
+        _d.Add(_net.Stream<PointerAck>().Subscribe(OnAck));
+        _d.Add(Observable.Interval(AckInterval).Subscribe(_ => SendAcks()));
+
+        // live: a peer is connected. connecting: a join or handshake is in flight.
+        // A dropped live link becomes degraded until the peer returns or the timeout ends it.
+        _d.Add(Observable.CombineLatest(net.Peers, net.Connecting,
+                (peers, joining) => peers.Any(p => p.Connected) ? Link.Live
+                    : joining || peers.Count > 0 ? Link.Connecting
+                    : Link.None)
+            .Subscribe(OnLink));
+        _d.Add(net.PeerLeft.Subscribe(_ => { lock (_stateLock) _peerLeft = true; }));
+        _d.Add(masterSwitch.Master
+            .DistinctUntilChanged()
+            .Subscribe(_ => { lock (_stateLock) _panels.SetSync(_syncState, _masterSwitch.IsMaster); }));
     }
+
+    /// <summary>
+    /// True when <paramref name="instrument"/> is in <paramref name="set"/>. Instruments arrive either
+    /// as a bare identifier or as a screen address ("VCockpit92:WasmInstrument:RUD", xray447), and
+    /// profiles list bare identifiers, so every part of an address is checked as well.
+    /// </summary>
+    private static bool Listed(ICollection<string> set, string? instrument) =>
+        instrument is not null && (set.Contains(instrument) || instrument.Split(':').Any(set.Contains));
 
     public void Dispose()
     {
@@ -96,6 +161,186 @@ public class Coordinator : IDisposable
         _cSubs = new();
         foreach (var def in definitions) AddLink(def);
         foreach (var i in definitions.Ignore) _ignore.Add(i);
+        _pointer = new PointerFilter(definitions.Pointer);
+        _panels.Configure(definitions.Pointer);
+    }
+
+    public void EndSync()
+    {
+        lock (_stateLock)
+        {
+            _degradedTimer?.Dispose();
+            _degradedTimer = null;
+            _hadPeer = false;
+            _peerLeft = false;
+            // Forgotten too, so the departing peer's last tick is not read as a transition.
+            _link = Link.None;
+            _syncState = SyncState.None;
+            _history.Clear();
+            _acks.Clear();
+            _panels.SetSync(_syncState, _masterSwitch.IsMaster);
+        }
+    }
+
+    private enum Link { None, Connecting, Live }
+
+    private void OnLink(Link link)
+    {
+        lock (_stateLock)
+        {
+            if (link == Link.Live) _peerLeft = false;
+            if (link == _link) return;
+            _link = link;
+            switch (link)
+            {
+                case Link.Live:
+                    _degradedTimer?.Dispose();
+                    _degradedTimer = null;
+                    var recovered = _hadPeer;
+                    _hadPeer = true;
+                    _syncState = SyncState.Live;
+                    _panels.SetSync(_syncState, _masterSwitch.IsMaster);
+                    // Only on recovery. The receiver drops what it already applied.
+                    if (recovered) ResendHistory();
+                    break;
+
+                case Link.Connecting:
+                    // Mid-session this is an outage with a reconnect in flight, so the timeout runs.
+                    _syncState = SyncState.Connecting;
+                    _panels.SetSync(_syncState, _masterSwitch.IsMaster);
+                    if (_hadPeer) StartDegradedTimer();
+                    break;
+
+                case Link.None:
+                    if (!_hadPeer)
+                    {
+                        _syncState = SyncState.None;
+                        _panels.SetSync(_syncState, _masterSwitch.IsMaster);
+                        break;
+                    }
+                    if (_peerLeft)
+                    {
+                        Log.Information("[Pointer] Peer left; sync ended");
+                        EndSync();
+                        break;
+                    }
+                    _syncState = SyncState.Degraded;
+                    _panels.SetSync(_syncState, _masterSwitch.IsMaster);
+                    StartDegradedTimer();
+                    break;
+            }
+        }
+    }
+
+    private void StartDegradedTimer()
+    {
+        if (_degradedTimer != null) return;
+        _degradedTimer = Observable.Timer(DegradedTimeout).Subscribe(_ =>
+        {
+            Log.Warning("[Pointer] Peer did not return within {Timeout}; sync ended, panels may be desynced", DegradedTimeout);
+            EndSync();
+        });
+    }
+
+    private uint NextSeq() => (uint)Interlocked.Increment(ref _pointerSeq);
+
+    private void SendPointer(PointerEvent e)
+    {
+        lock (_stateLock)
+        {
+            // Not before first contact: a new peer must not receive solo input.
+            if (_hadPeer)
+            {
+                _history.Add(e);
+                if (_history.Count > HistoryCap) _history.RemoveAt(0);
+            }
+        }
+        _net.SendAll(e);
+    }
+
+    private void OnAck(PointerAck ack)
+    {
+        if (ack.Session != _sessionId) return;
+        lock (_stateLock)
+        {
+            _acks[ack.From] = _acks.TryGetValue(ack.From, out var prev) ? Math.Max(prev, ack.Seq) : ack.Seq;
+            var floor = _acks.Values.Min();
+            var n = 0;
+            while (n < _history.Count && _history[n].Seq <= floor) n++;
+            if (n > 0) _history.RemoveRange(0, n);
+        }
+    }
+
+    /// <summary>Only while live: an ack sent into a dropped link would be lost.</summary>
+    private void SendAcks()
+    {
+        if (_syncState != SyncState.Live) return;
+        List<PointerAck> due = [];
+        lock (_lastSeq)
+        {
+            foreach (var (session, seq) in _lastSeq)
+            {
+                if (_acked.TryGetValue(session, out var acked) && acked == seq) continue;
+                _acked[session] = seq;
+                due.Add(new PointerAck(session, seq, _sessionId));
+            }
+        }
+        foreach (var ack in due) _net.SendAll(ack);
+    }
+
+    private void ResendHistory()
+    {
+        PointerEvent[] entries;
+        lock (_stateLock) entries = _history.OrderBy(e => e.Seq).ToArray();
+        foreach (var e in entries) _net.SendAll(e);
+        if (entries.Length > 0) Log.Debug("[Pointer] Re-sent {Count} unacknowledged events after reconnect", entries.Length);
+    }
+
+    private bool Fresh(ulong session, uint seq)
+    {
+        lock (_lastSeq)
+        {
+            if (_lastSeq.TryGetValue(session, out var last))
+            {
+                if (seq <= last) return false; // already applied; history re-sends overlap by design
+                if (seq > last + 1)
+                    Log.Warning("[Pointer] {Lost} events from the peer never arrived - panels may be desynced", seq - last - 1);
+            }
+            _lastSeq[session] = seq;
+            return true;
+        }
+    }
+
+    /* Which panels the profile opted in. An entry without a '|' is an identifier and takes
+     * every panel carrying it: the A220 declares DisplayUnits as ?config=[config], so the key
+     * carries the livery and no profile can name it. An entry with one names a single panel,
+     * for the aircraft that reuses an identifier across four. Routing is by full key either
+     * way, so the left CTP reaches the left CTP. */
+    private sealed class PointerFilter
+    {
+        public static readonly PointerFilter Empty = new([]);
+
+        private readonly HashSet<string> _keys;
+        private readonly HashSet<string> _identifiers;
+
+        /// <summary>Interact carries the bare identifier, so the double-actuation guard
+        /// matches on that.</summary>
+        public HashSet<string> Instruments { get; }
+
+        public PointerFilter(string[] entries)
+        {
+            _keys = [..entries.Where(e => e.Contains('|'))];
+            _identifiers = [..entries.Where(e => !e.Contains('|'))];
+            Instruments = entries.Select(Identifier).ToHashSet();
+        }
+
+        public bool Contains(string key) => _identifiers.Contains(Identifier(key)) || _keys.Contains(key);
+
+        private static string Identifier(string key)
+        {
+            var i = key.IndexOf('|');
+            return i < 0 ? key : key[..i];
+        }
     }
 
     private void AddLink<TPacket>(RefAction<TPacket> modify)

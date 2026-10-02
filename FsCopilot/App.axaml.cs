@@ -4,6 +4,7 @@ using System.Reflection;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Connection;
 using Network;
 using Simulation;
 using Splat;
@@ -13,6 +14,8 @@ using Views;
 public class App : Application
 {
     private readonly CancellationTokenSource _appCts = new();
+
+    private static readonly TimeSpan DisconnectGrace = TimeSpan.FromMilliseconds(500);
     
     public static readonly string Version =
         Assembly.GetEntryAssembly()?
@@ -33,7 +36,13 @@ public class App : Application
             {
                 _appCts.Cancel();
 
-                Locator.Current.GetService<INetwork>()?.Disconnect();
+                // Before the sockets drop, so panels can tell a quit from a crash.
+                Locator.Current.GetService<PanelServer>()?.Shutdown();
+
+                var net = Locator.Current.GetService<INetwork>();
+                net?.Disconnect();
+                net?.DrainDisconnect(DisconnectGrace);
+
                 Locator.Current.GetService<MasterSwitch>()?.TakeControl();
             };
             

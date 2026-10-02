@@ -24,6 +24,7 @@ public sealed class RelayNetwork : INetwork, IDisposable
 
     private static readonly TimeSpan TickInterval = TimeSpan.FromMilliseconds(15);
     private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan RelaySettle = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan ConnectAttemptTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan PingInterval = TimeSpan.FromSeconds(3);
 
@@ -54,8 +55,15 @@ public sealed class RelayNetwork : INetwork, IDisposable
 
     private IPEndPoint? _relayEndpoint;
     private volatile NetPeer? _relayPeer;
+    private int _connecting;
+    private readonly BehaviorSubject<int> _connectingCount = new(0);
+    private readonly Subject<string> _peerLeft = new();
 
     public IObservable<ICollection<Peer>> Peers { get; }
+
+    public IObservable<bool> Connecting => _connectingCount.Select(n => n > 0).DistinctUntilChanged();
+
+    public IObservable<string> PeerLeft => _peerLeft;
 
     public RelayNetwork(string host, string peerId, string name, bool autoConnect = true)
     {
@@ -205,7 +213,8 @@ public sealed class RelayNetwork : INetwork, IDisposable
     public async Task<ConnectionResult> Connect(string target, CancellationToken ct)
     {
         if (target.Trim().Equals(_peerId, StringComparison.OrdinalIgnoreCase)) return ConnectionResult.Failed;
-        
+
+        _connectingCount.OnNext(Interlocked.Increment(ref _connecting));
         try
         {
             await EnsureRelayConnected(ct).ConfigureAwait(false);
@@ -230,10 +239,21 @@ public sealed class RelayNetwork : INetwork, IDisposable
         finally
         {
             _connectWaiters.TryRemove(target, out _);
+            _connectingCount.OnNext(Interlocked.Decrement(ref _connecting));
         }
     }
 
-    public void Disconnect() => DisconnectAllVirtual();
+    public void Disconnect()
+    {
+        DisconnectAllVirtual();
+        _net.TriggerUpdate();
+    }
+
+    public void DrainDisconnect(TimeSpan grace)
+    {
+        _net.TriggerUpdate();
+        Thread.Sleep(grace < RelaySettle ? grace : RelaySettle);
+    }
 
     public void SendAll<TPacket>(TPacket packet, bool unreliable = false) where TPacket : notnull
     {
@@ -422,7 +442,8 @@ public sealed class RelayNetwork : INetwork, IDisposable
 
     private void OnLinkReady(string otherPeerId)
     {
-        _peers.TryAdd(otherPeerId, new(otherPeerId, Name: string.Empty, Ping: 0, PacketLoss: 0f, Transport: Peer.TransportKind.Relay));
+        _peers.TryAdd(otherPeerId, new(otherPeerId, Name: string.Empty, Ping: 0, PacketLoss: 0f,
+            Transport: Peer.TransportKind.Relay, Connected: true));
         _lossTrackers.TryAdd(otherPeerId, new PacketLossTracker());
         _lastPongTime[otherPeerId] = DateTime.UtcNow;
         _publish.OnNext(Unit.Default);
@@ -443,6 +464,9 @@ public sealed class RelayNetwork : INetwork, IDisposable
 
     private void OnLinkClosed(string otherPeerId, string code, string message)
     {
+        // PEER_DISCONNECTED means the other side timed out at the relay.
+        if (code is "PEER_LEFT" or "LEFT_ALL") _peerLeft.OnNext(otherPeerId);
+
         if (_peers.TryRemove(otherPeerId, out _)) _publish.OnNext(Unit.Default);
         _lossTrackers.TryRemove(otherPeerId, out _);
         _lastPongTime.TryRemove(otherPeerId, out _);

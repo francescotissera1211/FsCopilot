@@ -10,8 +10,10 @@ using Open.Nat;
 public sealed class P2PNetwork : INetwork, IDisposable
 {
     private const int StunPort = 3480;
-    
+
     private static readonly TimeSpan IntroduceInterval = TimeSpan.FromSeconds(20);
+
+    private static readonly byte[] LeftPayload = "left"u8.ToArray();
     
     private readonly CancellationTokenSource _cts = new();
     private readonly EventBasedNatPunchListener _natListener = new();
@@ -34,8 +36,15 @@ public sealed class P2PNetwork : INetwork, IDisposable
     private readonly NetManager _net;
 
     private IPEndPoint? _stunEndpoint;
+    private int _connecting;
+    private readonly BehaviorSubject<int> _connectingCount = new(0);
+    private readonly Subject<string> _peerLeft = new();
 
     public IObservable<ICollection<Peer>> Peers { get; }
+
+    public IObservable<bool> Connecting => _connectingCount.Select(n => n > 0).DistinctUntilChanged();
+
+    public IObservable<string> PeerLeft => _peerLeft;
 
     public P2PNetwork(string host, string peerId, string name, bool autoConnect = true)
     {
@@ -64,7 +73,8 @@ public sealed class P2PNetwork : INetwork, IDisposable
             .ObserveOn(TaskPoolScheduler.Default)
             .Select(_ =>
             {
-                _net.GetPeersNonAlloc(peers, ConnectionState.Any);
+                _net.GetPeersNonAlloc(peers,
+                    ConnectionState.Connected | ConnectionState.Outgoing | ConnectionState.EndPointChange);
                 return peers
                     .Where(p => p.Tag is string)
                     .Select(p =>
@@ -78,7 +88,8 @@ public sealed class P2PNetwork : INetwork, IDisposable
                             _peerNames.TryGetValue(peerId, out var peerName) ? peerName : string.Empty,
                             p.Ping,
                             loss,
-                            Peer.TransportKind.Direct);
+                            Peer.TransportKind.Direct,
+                            Connected: p.ConnectionState != ConnectionState.Outgoing);
                     })
                     .ToArray();
             })
@@ -260,6 +271,11 @@ public sealed class P2PNetwork : INetwork, IDisposable
 
         // Clean up loss tracker on disconnect
         _lossTrackers.TryRemove(peerId, out _);
+        if (info.Reason == DisconnectReason.RemoteConnectionClose && IsLeft(info.AdditionalData))
+        {
+            Log.Debug("[Peer2Peer] LEFT {PeerId}", peerId);
+            _peerLeft.OnNext(peerId);
+        }
 
         if (info.Reason == DisconnectReason.ConnectionRejected)
         {
@@ -345,6 +361,7 @@ public sealed class P2PNetwork : INetwork, IDisposable
         if (!_connectWaiters.TryAdd(target, tcs))
             return ConnectionResult.Failed;
 
+        _connectingCount.OnNext(Interlocked.Increment(ref _connecting));
         try
         {
             await EnsureIntroduced(ct).ConfigureAwait(false);
@@ -373,10 +390,30 @@ public sealed class P2PNetwork : INetwork, IDisposable
         finally
         {
             _connectWaiters.TryRemove(target, out _);
+            _connectingCount.OnNext(Interlocked.Decrement(ref _connecting));
         }
     }
 
-    public void Disconnect() => _net.DisconnectAll();
+    private static bool IsLeft(NetPacketReader? data)
+    {
+        if (data == null || data.AvailableBytes != LeftPayload.Length) return false;
+        var bytes = new byte[LeftPayload.Length];
+        data.GetBytes(bytes, bytes.Length);
+        return bytes.AsSpan().SequenceEqual(LeftPayload);
+    }
+
+    public void Disconnect()
+    {
+        _net.DisconnectAll(LeftPayload, 0, LeftPayload.Length);
+        _net.TriggerUpdate();
+    }
+
+    public void DrainDisconnect(TimeSpan grace)
+    {
+        var waited = Stopwatch.StartNew();
+        while (_net.GetPeersCount(ConnectionState.Any) > 0 && waited.Elapsed < grace)
+            Thread.Sleep(5);
+    }
 
     public void SendAll<TPacket>(TPacket packet, bool unreliable = false) where TPacket : notnull
     {
