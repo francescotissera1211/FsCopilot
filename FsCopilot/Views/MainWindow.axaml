@@ -109,6 +109,7 @@
                                 Command="{Binding JoinCommand}"
                                 IsEnabled="{Binding IsBusy, Converter={StaticResource Inverse}}" />
                         <TextBox Classes="Connect"
+                                 AutomationProperties.Name="Client code to join"
                                  IsEnabled="{Binding IsBusy, Converter={StaticResource Inverse}}"
                                  Watermark="Client code"
                                  Text="{Binding ConnectionCode}" />
@@ -162,6 +163,7 @@
                     <DockPanel Classes="ShareRow">
                         <ToggleSwitch DockPanel.Dock="Right"
                                       Classes="Share"
+                                      AutomationProperties.Name="Share AI traffic"
                                       IsChecked="{Binding Share.TrafficOn}"
                                       IsEnabled="{Binding Share.TrafficCanHost}"
                                       IsVisible="{Binding Share.TrafficSharedBy, Converter={StaticResource Empty}}" />
@@ -187,6 +189,7 @@
                         <DockPanel Classes="ShareRow">
                             <ToggleSwitch DockPanel.Dock="Right"
                                           Classes="Share"
+                                          AutomationProperties.Name="Share ATC audio"
                                           IsChecked="{Binding Share.AtcOn}"
                                           IsEnabled="{Binding Share.AtcCanHost}"
                                           IsVisible="{Binding Share.AtcSharedBy, Converter={StaticResource Empty}}" />
@@ -204,6 +207,7 @@
 
                         <ComboBox Classes="Share"
                                   IsVisible="{Binding Share.AtcOn}"
+                                  AutomationProperties.Name="ATC audio source app"
                                   ItemsSource="{Binding Share.AtcApps}"
                                   IsDropDownOpen="{Binding Share.AtcDropDownOpen, Mode=TwoWay}"
                                   SelectedItem="{Binding Share.SelectedAtcApp}" />
@@ -212,6 +216,7 @@
                                    IsVisible="{Binding Share.AtcReceiving}">
                             <Button DockPanel.Dock="Right"
                                     Classes="Icon"
+                                    AutomationProperties.Name="Mute received ATC audio"
                                     Command="{Binding Share.ToggleMute}">
                                 <Panel>
                                     <PathIcon Data="{StaticResource speaker_2_regular}"
@@ -221,6 +226,7 @@
                                 </Panel>
                             </Button>
                             <Slider Classes="Share"
+                                    AutomationProperties.Name="Received ATC audio volume"
                                     Minimum="0"
                                     Maximum="1"
                                     Value="{Binding Share.AtcVolume}" />
