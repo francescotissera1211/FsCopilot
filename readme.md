@@ -9,7 +9,7 @@
 
 # 🛫 FS Copilot
 
-> **This is a combined fork.** It merges [upstream FS Copilot](https://github.com/yury-sch/FsCopilot) (1.2.1, 2026-04-16) with the work found on every public fork as of 2026-10-02, and ships every aircraft profile in the build. See [What this fork adds](#-what-this-fork-adds).
+> **This is a combined fork.** It merges [upstream FS Copilot](https://github.com/yury-sch/FsCopilot) 1.2.1 with the work from every public fork, and ships every aircraft profile in the build. Download it from [Releases](../../releases), and read [This fork: everything in one build](#-this-fork-everything-in-one-build) before you fly.
 
 
 **FS Copilot** is a companion app for **Microsoft Flight Simulator 2024** that lets multiple pilots control the same aircraft together — in real time.
@@ -17,30 +17,118 @@ Fly as a real crew. 👨‍✈️👩‍✈️
 
 ![FS Copilot](https://raw.githubusercontent.com/yury-sch/FsCopilot/refs/heads/main/preview.png)
 
-## 🔀 What this fork adds
+## 🔀 This fork: everything in one build
 
-Merged from the public forks of FS Copilot (each fork's own commits are kept, with their authors):
+FS Copilot's public forks each added something, and none of it reached upstream. This fork merges all of them on top of upstream 1.2.1, keeps every fork author's commits, fixes what didn't work together, and ships every aircraft profile it could find. The original branches of every fork are archived here under `forks/<owner>/<branch>`.
 
-| Source | What it brings |
+### Download and install
+
+1. Download `FsCopilot_v<version>.zip` from this repository's [Releases](../../releases) and unzip it anywhere, for example next to your other add-ons.
+2. Run `FsCopilot.exe`.
+3. The first window is **Connection settings**: server address, your name and your peer ID. The defaults are fine. Choose **Save Setting and Connect**. These are saved to `%LOCALAPPDATA%\FsCopilot\config.json`, and the window shows them again on every start so you can change them.
+4. On first run the **Setup** window offers **Install**. It copies the `fscopilot-bridge` package into your MSFS Community folder (and removes YourControls if it finds it, because the two conflict). Then choose **Continue**.
+5. Upgrading from stock FS Copilot: close it, run this build, and choose **Install** when Setup asks. The bridge in your Community folder is replaced.
+
+### Who you can fly with
+
+Everyone in the session must run **this build**. FS Copilot compares the list of network messages on both sides before it links, and refuses a peer whose list differs. Every fork added messages, so this build cannot pair with stock FS Copilot or with any single fork, and they cannot pair with it. Send your crew the same release.
+
+### Connecting: client code, direct links and the relay
+
+- Your **client code** is your peer ID (8 letters, shown at the top of the main window). To fly together, one pilot gives their code to the other, who types it into the **Client code to join** box and chooses **Join**. With three or more pilots, everyone joins the same person; once linked, the app introduces the rest to each other.
+- The code is only an address. It is not itself a direct connection. When you choose Join, the app tries a **direct** link first for about 4 seconds: both apps ask the server to introduce them, then punch through each other's router (UDP hole punching, with UPnP / NAT-PMP port mapping where the router allows it). A direct link is the fastest, and nothing passes through a server once it is up.
+- If the direct attempt fails, the app falls back to the **relay**. Both apps keep a connection to the server, and the server forwards every packet between them. A direct link fails when a router or ISP won't allow hole punching: carrier-grade NAT (common on mobile, satellite and some fibre ISPs), symmetric NAT, strict firewalls, or a server that does not introduce the two peers.
+- The relay carries everything the direct link carries: cockpit sync, pointer sync, traffic and ATC audio. It only adds latency, roughly the round trip to the server (about 100 ms from Europe to `p2p.fscopilot.com`). The connection list on the main window shows `direct` or `relay` for each peer, with its ping and packet loss.
+- **Two relay protocols, both handled automatically.** This build speaks xiprox's relay protocol v2, which keeps traffic and ATC audio apart from control messages so they survive the relay. Upstream's server `p2p.fscopilot.com` speaks v1. The app recognises a v1 relay from its first reply and switches to v1 for the session, so the default server works without changing anything. A v2 relay (for example xiprox's `fscrelay.ihsan.dev`, or one you host) can be entered in Connection settings.
+- Seen on 2026-10-02: from one test machine, upstream's server answered the direct attempt with `NOT_FOUND` for both this build and stock 1.2.1, and the relay carried the session (about 100 ms, 0% loss). If your log shows `[Peer2Peer] REJ … NOT_FOUND`, that is the server's answer, not a fault in your setup. The relay takes over on its own.
+
+### Features added by this fork
+
+**Connection settings window** (xray447): choose the server, your display name and a fixed peer ID that stays the same between sessions, so your crew can keep your code. All three fields and both windows are labelled for screen readers.
+
+**Packet loss per peer** (xray447): each peer in the onboard list shows `LOSS: n%` beside its ping. **Reset Stats** clears the counters.
+
+**Pointer sync for panels the normal sync can't reach** (xiprox, upstream PR #35): some glass displays draw with SVG or rebuild their element tree, so the usual "which button was pressed" sync can't find the button on the other side. For instruments listed under `pointer:` in the aircraft profile, the app sends *where* the pointer went instead (presses, holds and drags, as fractions of the display), and the other side replays the gesture at the same spot, one at a time and at the pilot's pace.
+- Turn it on in a profile:
+  ```yaml
+  pointer:
+    - DisplayUnits                      # every panel of this instrument
+    - DisplayUnits|config=Default       # or one panel of several, by its URL query
+  ```
+  The Synaptic A220 profile uses it for its display units.
+- While a session is starting, a display is locked under a **connecting** overlay. If the link drops mid-session it shows **degraded**, and **Take Control** gets you going again. While a peer's gesture replays it shows **replaying**. A red warning means the panel lost the app. Gestures that weren't acknowledged are resent when a peer reconnects, so the two displays can't drift apart.
+- The panels talk to the app over a local WebSocket on the first free port between 9020 and 9024. If all five are taken, the main window says "Panel channel unavailable". Connections from web pages are refused.
+
+**Shared pointer and clicks for iniBuilds A380 displays** (xray447): the A380's MFDs, NDs and SD are WASM displays, which can't be synced element by element. `Definitions/screens.yaml` lists the displays whose pointer and presses are shared. The other pilot's pointer appears as a yellow arrow with their name. Displays are matched by gauge name and order (`DU#2`), not by panel number, because the simulator renumbers panels between sessions. By default the press is shared and the simulator generates the click itself; `clicks: true` shares clicks as well.
+
+**Share AI traffic** (xiprox): one pilot (the host) shares the AI traffic in their sim, and everyone else sees the same aircraft in the same places.
+- In the **ATC & Traffic** card, turn on **Share AI traffic**. You must be in a session with the simulator running ("Waiting for the simulator" means it isn't connected yet).
+- Only one pilot hosts traffic at a time. The others see "shared by <name>", and their toggle is replaced. If two turn it on at once, the app picks one and tells the other.
+- Receivers should switch off their own AI traffic (the card warns "Detected existing AI traffic in your sim" when it finds some), and everyone should use the same traffic pack and scenery.
+- Ground vehicles aren't shared by default. Start the app with `--traffic-ground` to include them.
+
+**Share ATC audio** (xiprox): one pilot's ATC app is heard by the whole crew.
+- Supported apps are found automatically: BeyondATC, SayIntentions, Pilot2ATC, PF3, FSHud and VoxATC. **Other…** lists every program currently making sound, so you can pick any app.
+- The host turns on **Share ATC audio** and picks the app from **ATC audio source app**. Only that program's sound is captured (Windows 10 version 2004 or later), compressed with Opus and streamed. The status reads "Capturing", or "Capturing — muted in the volume mixer" if Windows has that app muted.
+- Receivers get **Mute received ATC audio** and a **Received ATC audio volume** slider. Your choices are saved in `settings.json` beside the exe.
+
+**Developer tools** (xiprox, xray447): start with `--dev` for the Develop window. It records and replays a session's physics, controls and variables (variables-only traces leave the aircraft alone), browses the profile, and lists every glass display with its group and number. "Peer move" and "Peer click" pretend to be the other pilot on one machine.
+
+**Fixes carried here:**
+- Every instrument loads on panels that hold several (VCockpit.js; xiprox).
+- A profile's `ignore:` list now also protects you from input arriving from the peer.
+- A failed join gives back your role.
+- A peer that is still handshaking is not shown as connected.
+- A peer that left is told apart from one whose link was lost.
+
+### Command-line options
+
+| Option | What it does |
 | --- | --- |
-| [xray447](https://github.com/xray447/FsCopilot) `new_master` | Server address, username and peer ID in a login window (saved to `%LOCALAPPDATA%\FsCopilot\config.json`); packet-loss readout per peer with Reset Stats; iniBuilds A380 MFD/ND pointer and click sync (`Definitions/screens.yaml`); one-script relay server setup for Debian |
-| [Johnsmz13](https://github.com/Johnsmz13/FsCopilot) `main` | Command-line network choice: `--server <host>`, `--p2p` (direct only), bare `--relay` (relay only) |
-| [xiprox](https://github.com/xiprox/FsCopilot) `pointer-forwarding` ([upstream PR #35](https://github.com/yury-sch/FsCopilot/pull/35)) | Pointer gesture sync for panels the element path cannot reach (opt in per profile with `pointer:`), sync-state overlays, acknowledged replay after a reconnect, a peer that left told apart from a peer that was lost |
-| xiprox `ahead-traffic-atc` | Share AI traffic and ATC audio with the crew (ATC & Traffic card); relay protocol v2 |
-| xiprox `dev-var-replay`, `ahead-modules`, `ahead-debug-symbols`, `ahead-devex` | Variable replay in dev mode; GTNXi, RDR1150XL and KFC 150 modules; debug symbols in Debug builds |
-| xiprox `ahead-pointer-forwarding` | VCockpit.js fix for multi-instrument panels; the profile ignore list applied to inbound input; the Synaptic A220 profile |
-| xiprox `ahead-record` | Research and build notes under `record/` |
-| [LocatedInSpace](https://github.com/LocatedInSpace/FsCopilot) `main` | PA-28-236 Dakota autopilot rework, kept in `Definitions/experimental/` (its author marked it as probably not working) |
+| `--server <host>` | Use this server (matchmaking and relay) instead of the one in Connection settings. |
+| `--relay <host>` | The same, xiprox's spelling. |
+| `--relay` (no host after it) | Relay only: never try a direct link (Johnsmz13). |
+| `--no-direct` | Relay only (xiprox's spelling, keeps both transports loaded). |
+| `--p2p` | Direct links only: never use the relay. |
+| `--peer-id <id>` | Use this peer ID for this run instead of the saved one. |
+| `--traffic-ground` | Share ground vehicles along with AI aircraft. |
+| `--traffic-offset <nm>,<deg>` / `--traffic-shadow <m>` | Test aids: place received traffic away from the originals so two copies can run against one sim. |
+| `--dev` | Open the Develop window instead of a session. |
+| `--debug` | Verbose log (`log` beside the exe). |
 
-[3617luke](https://github.com/3617luke/FsCopilot) carries two of Yury's commits that upstream already has. The other forks have no commits of their own.
+### Aircraft profiles
 
-**Profiles:** `Definitions/` holds all 81 profiles from the FS Copilot profile server (2026-10-02), the seven FSS Boeing 727 profiles the server no longer serves, and the fork profiles above.
+`Definitions/` ships 92 aircraft profiles, so nothing has to be downloaded first:
+- **81 from the FS Copilot profile server** (2026-10-02).
+- **Seven FSS Boeing 727 profiles** the server no longer serves.
+- **Synaptic A220**, with pointer sync.
+- **iniBuilds A350, iniBuilds A400M and A2A PA-24 Comanche**, from xiprox's profile collection.
 
-**Who you can fly with:** FS Copilot refuses a peer whose packet set differs from its own, and every fork above adds packets. This build only connects to other people running this build, not stock FS Copilot or a single fork.
+The app still checks the profile server and offers **Download** when your aircraft's profile has a newer version.
 
-**Relay:** the default server is upstream's `p2p.fscopilot.com`. Direct links work through it. This build speaks xiprox's relay protocol v2, which that server does not serve, so a crew that cannot link directly needs a v2 relay entered in the login window (or `--server <host>`). xiprox runs one at `fscrelay.ihsan.dev`. `FsCopilot.Discovery` in this repository builds one.
+Five served profiles include modules under misspelled names (TBM 850, A330, Beluga, Cessna 414AW, Citation CJ3+), so parts of them were skipped. Small alias files in `Definitions/modules/` point those names at the real modules. The profiles themselves are unchanged, so profile updates keep working. Three included modules (`transponder`, `radios`, `AS_G1000_NXi_ALT_MOD`) don't exist anywhere yet.
 
-**Updates:** the update check reads this repository's releases.
+`Definitions/experimental/` holds alternatives that aren't loaded: LocatedInSpace's PA-28 Dakota autopilot rework (its author marked it as probably not working) and degroat-c's YourControls conversion of the PMDG 737-800. To try one, copy it over the file of the same name in `Definitions/`.
+
+### Running your own server
+
+`FsCopilot.Discovery` is the matchmaking server (UDP 3480) and the relay (UDP 3600), and this repository's copy serves relay protocol v1 and v2 side by side. On Debian 13, `FsCopilot.Discovery/for_debian_13_run.sh` installs .NET and starts it (xray447). Point the app at it with Connection settings or `--server <host>`.
+
+### Where everything came from
+
+| Source | Brought |
+| --- | --- |
+| [xray447](https://github.com/xray447/FsCopilot) `new_master` | Connection settings window, packet loss, iniBuilds A380 display sync, Debian server script, WASM version fix |
+| [Johnsmz13](https://github.com/Johnsmz13/FsCopilot) `main` | `--server`, `--p2p`, `--relay` |
+| [xiprox](https://github.com/xiprox/FsCopilot) `pointer-forwarding` (upstream PR #35), `ahead-*`, `dev-var-replay` | Pointer sync, traffic and ATC sharing, relay protocol v2, var replay, GTNXi / RDR1150XL / KFC 150 modules, fixes, research notes in `record/` |
+| [xiprox/fsc-editor](https://github.com/xiprox/fsc-editor) corpus | A350, A400M, PA-24 profiles, newer A220 profile |
+| [LocatedInSpace](https://github.com/LocatedInSpace/FsCopilot) `main` | Experimental PA-28 Dakota rework |
+| [degroat-c/pmdg737-fscopilot](https://github.com/degroat-c/pmdg737-fscopilot) | Experimental PMDG 737-800 conversion |
+| This fork | v1 relay fallback, module aliases, screen-reader labels, bundled profiles, update check pointed at this repository |
+
+[3617luke](https://github.com/3617luke/FsCopilot) holds two of Yury's commits that upstream already has. harrycollin, art-drobanov, coisasgamer4, kpolkowski, grzegorzkibitz, demendet, lLeolau and code-dev1324's FsCopilot-V2 have no changes of their own.
+
+**Updates:** the app's update check reads this repository's releases.
 
 ## 💡 How It Works
 
