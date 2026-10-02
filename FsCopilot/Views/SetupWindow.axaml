@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FsCopilot.ViewModels"
         x:Class="FsCopilot.Views.SetupWindow"
+        Title="FS Copilot - Setup"
         x:DataType="vm:SetupViewModel"
         Width="800"
         Height="600"

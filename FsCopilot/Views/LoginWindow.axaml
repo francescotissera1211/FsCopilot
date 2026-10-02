@@ -3,6 +3,7 @@
         xmlns:vm="using:FsCopilot.ViewModels"
         x:Class="FsCopilot.Views.LoginWindow"
         x:DataType="vm:LoginViewModel"
+        Title="FS Copilot - Connection settings"
         Width="500"
         Height="480"
         CanResize="False"
@@ -114,6 +115,7 @@
                        Text="Server Address" />
 
             <TextBox Classes="input"
+                     AutomationProperties.Name="Server Address"
                      Text="{Binding ServerAddress}"
                      Watermark="p2p.fscopilot.com"
                      SelectionBrush="#333333"
@@ -124,6 +126,7 @@
                        Text="Username" />
 
             <TextBox Classes="input"
+                     AutomationProperties.Name="Username"
                      Text="{Binding Username}"
                      Watermark="By default will be your System username"
                      SelectionBrush="#333333"
@@ -134,6 +137,7 @@
                        Text="Peer ID" />
 
             <TextBox Classes="input"
+                     AutomationProperties.Name="Peer ID"
                      Text="{Binding PeerId}"
                      Watermark="8 letter Peerid"
                      SelectionBrush="#333333"
