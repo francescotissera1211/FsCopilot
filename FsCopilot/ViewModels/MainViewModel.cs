@@ -21,7 +21,10 @@ public class MainViewModel : ReactiveObject, IDisposable
     private bool _connected;
     private bool _showTakeControl;
     private bool _newProfileAvailable;
-    private bool _isMaster = true;
+    private string _selfId = string.Empty;
+    private string? _holder;
+    private string? _holderToAnnounce;
+    private DateTime _holderSince;
     private string _lastSpokenError = string.Empty;
     private DateTime _leftAt = DateTime.MinValue;
     private ViewErrors _errors = ViewErrors.None;
@@ -85,15 +88,39 @@ public class MainViewModel : ReactiveObject, IDisposable
         set
         {
             if (value && !_newProfileAvailable)
-                Announcer.Say("A newer profile for this aircraft is available. Use the Download profile button.");
+                Announcer.Say("Newer profile available.");
             this.RaiseAndSetIfChanged(ref _newProfileAvailable, value);
         }
     }
 
-    /// <summary>Who flies the aircraft, in words: the Take Control button alone does not say.</summary>
-    public string ControlStatus => _isMaster ? "You have the controls" : "Your co-pilot has the controls";
+    /// <summary>Who flies the aircraft, by name: the Take Control button alone does not say.</summary>
+    public string ControlStatus => _holder == _selfId ? "You have control" : $"{HolderName()} has control";
 
-    public string ClientCodeDescription => $"Your client code: {Spell(PeerId)}";
+    public string ClientCodeDescription => $"Your code: {Spell(PeerId)}";
+
+    /// <summary>The holder's name, or "Your co-pilot" until it is known (or for an older build).</summary>
+    private string HolderName()
+    {
+        var name = _holder is null ? null : Connections.FirstOrDefault(c => c.PeerId == _holder)?.Name;
+        return string.IsNullOrEmpty(name) || name == "Unknown" ? "Your co-pilot" : name;
+    }
+
+    /// <summary>
+    /// Says who has control once there is a session to say it in and, for another pilot, once
+    /// their name has arrived (or four seconds have passed).
+    /// </summary>
+    private void AnnounceHolder()
+    {
+        if (_holderToAnnounce is null || _holderToAnnounce != _holder) return;
+        // Leaving hands you the controls; after "Left the session" that is no news.
+        if (DateTime.UtcNow - _leftAt < TimeSpan.FromSeconds(3)) { _holderToAnnounce = null; return; }
+        // After the arrival, not before it: wait while a pilot's joining is still unannounced.
+        if (!Connected || Connections.Any(c => !c.Announced)) return;
+        var other = _holder != _selfId;
+        if (other && HolderName() == "Your co-pilot" && DateTime.UtcNow - _holderSince < TimeSpan.FromSeconds(4)) return;
+        _holderToAnnounce = null;
+        Announcer.Say(ControlStatus + ".");
+    }
 
     public string PeerId { get; init; }
     public string ClientName { get; init; }
@@ -228,15 +255,21 @@ public class MainViewModel : ReactiveObject, IDisposable
 
         masterSwitch.Master
             .Sample(TimeSpan.FromMilliseconds(250))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(isMaster => ShowTakeControl = !isMaster)
+            .DisposeWith(_d);
+
+        _selfId = masterSwitch.SelfId;
+        masterSwitch.Holder
             .DistinctUntilChanged()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(isMaster =>
+            .Subscribe(holder =>
             {
-                ShowTakeControl = !isMaster;
-                var changed = isMaster != _isMaster;
-                _isMaster = isMaster;
+                _holder = holder;
+                _holderSince = DateTime.UtcNow;
+                _holderToAnnounce = holder;
                 this.RaisePropertyChanged(nameof(ControlStatus));
-                if (changed && Connected) Announcer.Say(ControlStatus + ".");
+                AnnounceHolder();
             })
             .DisposeWith(_d);
 
@@ -246,7 +279,7 @@ public class MainViewModel : ReactiveObject, IDisposable
             var code = (ConnectionCode ?? string.Empty).Trim().ToUpperInvariant();
             if (code.Length != 8)
             {
-                Announcer.Say("Enter the 8-character client code of the pilot you want to join.");
+                Announcer.Say("Enter an 8-character code.");
                 return;
             }
             ConnectionCode = code;
@@ -286,12 +319,12 @@ public class MainViewModel : ReactiveObject, IDisposable
 
         LeaveCommand = ReactiveCommand.Create(() =>
         {
+            _leftAt = DateTime.UtcNow;
+            Announcer.Say("Left the session.");
             net.Disconnect();
             masterSwitch.TakeControl();
             // Leaving is not an outage: unlock panels instead of holding for a return.
             coordinator.EndSync();
-            _leftAt = DateTime.UtcNow;
-            Announcer.Say("You left the session.");
         });
 
         TakeControlCommand = ReactiveCommand.Create(masterSwitch.TakeControl);
@@ -299,13 +332,13 @@ public class MainViewModel : ReactiveObject, IDisposable
         ResetPacketLossCommand = ReactiveCommand.Create(() =>
         {
             net.ResetPacketLoss();
-            Announcer.Say("Packet loss statistics reset.");
+            Announcer.Say("Stats reset.");
         });
 
         CopyCodeCommand = ReactiveCommand.CreateFromTask(async () =>
         {
             if (CopyRequested is { } copy) await copy(PeerId);
-            Announcer.Say($"Client code {Spell(PeerId)} copied to the clipboard.");
+            Announcer.Say("Code copied.");
         });
 
         DownloadProfileCommand = ReactiveCommand.CreateFromTask(async ct =>
@@ -315,12 +348,12 @@ public class MainViewModel : ReactiveObject, IDisposable
             var cfg = await updater.Download(name, ct);
             if (cfg == null)
             {
-                Announcer.Say("The profile could not be downloaded. The profile server may be unreachable.");
+                Announcer.Say("Profile download failed.");
                 return;
             }
             var defs = Definitions.Save(name, cfg);
             definitions.OnNext(defs);
-            Announcer.Say($"Profile for {name} updated.");
+            Announcer.Say("Profile updated.");
         });
     }
 
@@ -353,7 +386,7 @@ public class MainViewModel : ReactiveObject, IDisposable
             Connections.Remove(gone);
             // After our own Leave, "you left" has been said; every peer going is no news.
             if (gone.Announced && DateTime.UtcNow - _leftAt > TimeSpan.FromSeconds(3))
-                Announcer.Say($"{gone.Name} left the session.");
+                Announcer.Say($"{gone.Name} left.");
         }
 
         foreach (var peer in peers)
@@ -374,12 +407,16 @@ public class MainViewModel : ReactiveObject, IDisposable
             {
                 item.Announced = true;
                 var who = name != "Unknown" ? name : $"Pilot {Spell(peer.PeerId)}";
-                Announcer.Say($"{who} joined the session, {(isDirect ? "direct link" : "through the relay")}.");
+                Announcer.Say($"{who} joined, {(isDirect ? "direct" : "relay")}.");
             }
         }
 
         for (var i = 0; i < Connections.Count; i++) Connections[i].HasSeparatorAfter = i < Connections.Count - 1;
         Connected = Connections.Any();
+
+        // Names arrive after links: the status line and a pending "has control" catch up here.
+        this.RaisePropertyChanged(nameof(ControlStatus));
+        AnnounceHolder();
     }
 
     /// <summary>A code spelled out, so a screen reader reads "Q F Q Y" rather than a word.</summary>

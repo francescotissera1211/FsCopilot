@@ -48,10 +48,10 @@ public sealed class ConnectionItem(string peerId) : ReactiveObject
     /// quarter second, and a changing name is re-read while the row has focus.
     /// </summary>
     public string Description =>
-        $"{Name}, code {MainViewModel.Spell(PeerId)}, {(IsDirect ? "direct link" : "relay")}, connection {Quality}";
+        $"{Name}, {MainViewModel.Spell(PeerId)}, {(IsDirect ? "direct" : "relay")}, {Quality}";
 
     /// <summary>The figures, read as the row's description.</summary>
-    public string Details => $"Ping {Ping} milliseconds, packet loss {PacketLoss:F1} percent";
+    public string Details => $"Ping {Ping} ms, loss {PacketLoss:F1}%";
 
     public int QualityLevel
     {

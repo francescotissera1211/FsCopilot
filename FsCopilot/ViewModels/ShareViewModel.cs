@@ -94,7 +94,7 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
             {
                 var was = _trafficHost;
                 _trafficHost = host;
-                if (host != was) SpeakHost("AI traffic", host);
+                if (host != was) SpeakHost("traffic", host);
                 this.RaisePropertyChanged(nameof(TrafficCanHost));
                 this.RaisePropertyChanged(nameof(TrafficSharedBy));
                 this.RaisePropertyChanged(nameof(TrafficReceiving));
@@ -108,7 +108,7 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
             {
                 var was = _atcHostPeer;
                 _atcHostPeer = host;
-                if (host != was) SpeakHost("ATC audio", host);
+                if (host != was) SpeakHost("ATC", host);
                 this.RaisePropertyChanged(nameof(AtcCanHost));
                 this.RaisePropertyChanged(nameof(AtcSharedBy));
                 this.RaisePropertyChanged(nameof(AtcReceiving));
@@ -135,7 +135,7 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
             {
                 _foreignTraffic = foreign;
                 this.RaisePropertyChanged(nameof(ForeignTrafficWarning));
-                if (ForeignTrafficWarning) Announcer.Say("Detected existing AI traffic in your sim. Disable it to avoid duplicates.");
+                if (ForeignTrafficWarning) Announcer.Say("AI traffic already in your sim. Turn it off to avoid duplicates.");
             })
             .DisposeWith(_d);
 
@@ -146,7 +146,7 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
                 var before = AtcStatus;
                 _atcStatus = status;
                 this.RaisePropertyChanged(nameof(AtcStatus));
-                if (_atcOn && AtcStatus != before) Announcer.Say($"ATC audio: {AtcStatus}.");
+                if (_atcOn && AtcStatus != before) Announcer.Say($"ATC: {AtcStatus}.");
             })
             .DisposeWith(_d);
 
@@ -349,19 +349,19 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
     }
 
     /// <summary>What the mute button will do, which is what a screen reader should call it.</summary>
-    public string MuteLabel => AtcMuted ? "Unmute received ATC audio" : "Mute received ATC audio";
+    public string MuteLabel => AtcMuted ? "Unmute ATC" : "Mute ATC";
 
     public void ToggleMute()
     {
         AtcMuted = !AtcMuted;
-        Announcer.Say(AtcMuted ? "Received ATC audio muted." : "Received ATC audio unmuted.");
+        Announcer.Say(AtcMuted ? "ATC muted." : "ATC unmuted.");
     }
 
     private void SpeakHost(string feature, string? host)
     {
-        if (host is null) Announcer.Say($"{feature} is no longer shared.");
-        else if (host == _share.SelfId) Announcer.Say($"You are sharing {feature}.");
-        else Announcer.Say($"{Name(host)} is sharing {feature}.");
+        if (host is null) Announcer.Say($"{char.ToUpperInvariant(feature[0])}{feature[1..]} sharing stopped.");
+        else if (host == _share.SelfId) Announcer.Say($"Sharing {feature}.");
+        else Announcer.Say($"{Name(host)} shares {feature}.");
     }
 
     // -- card -------------------------------------------------------------------------------

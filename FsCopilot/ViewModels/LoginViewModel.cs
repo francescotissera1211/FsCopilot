@@ -22,8 +22,8 @@ public sealed class LoginViewModel : ReactiveObject
 
     public IReadOnlyList<ConnectionModeOption> ConnectionModeOptions { get; } =
     [
-        new(ConnectionModes.Automatic, "Automatic: direct link, relay if that fails"),
-        new(ConnectionModes.Direct, "Direct link only"),
+        new(ConnectionModes.Automatic, "Automatic"),
+        new(ConnectionModes.Direct, "Direct only"),
         new(ConnectionModes.Relay, "Relay only")
     ];
 
@@ -86,14 +86,14 @@ public sealed class LoginViewModel : ReactiveObject
     private string? Validate(string server, string name, string peerId)
     {
         if (string.IsNullOrWhiteSpace(server))
-            return "Server address is empty. Enter p2p.fscopilot.com or your own server.";
+            return "Server address is empty.";
         if (server.Any(char.IsWhiteSpace) || server.Contains("://"))
-            return "Server address must be a host name only, like p2p.fscopilot.com, without spaces or http.";
+            return "Server address: host name only, like p2p.fscopilot.com.";
         if (string.IsNullOrWhiteSpace(name))
-            return "Username is empty. Enter the name your crew will see.";
+            return "Username is empty.";
         // Join takes exactly 8 characters, so a shorter ID could never be joined.
         if (peerId.Length != 8 || !peerId.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9'))
-            return "Peer ID must be exactly 8 letters or digits.";
+            return "Peer ID must be 8 letters or digits.";
         return null;
     }
 
@@ -120,7 +120,7 @@ public sealed class LoginViewModel : ReactiveObject
 
         if (!saved.Save())
         {
-            ErrorMessage = $"Could not save the settings to {ConnectionConfig.ConfigPath}. Check that the folder is writable.";
+            ErrorMessage = $"Could not save settings to {ConnectionConfig.ConfigPath}.";
             Announcer.Say(ErrorMessage);
             return;
         }

@@ -106,7 +106,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ComboBox Width="230"
                                   AutomationProperties.Name="Screen"
-                                  AutomationProperties.HelpText="The glass display the buttons below act on. Empty means every screen."
+                                  AutomationProperties.HelpText="Empty means all"
                                   PlaceholderText="* (all screens)"
                                   ItemsSource="{Binding ScreenNames}"
                                   SelectedItem="{Binding SelectedScreen}"/>
@@ -153,7 +153,6 @@
                         Classes.Recording="{Binding IsRecording}"
                         IsEnabled="{Binding IsPlaying, Converter={StaticResource Inverse}}"
                         AutomationProperties.Name="Record, or stop recording"
-                        AutomationProperties.HelpText="Records physics, controls and variables until pressed again."
                         Command="{Binding RecordCommand}">
                     <PathIcon Data="{StaticResource record_regular}" />
                 </Button>
@@ -163,7 +162,6 @@
                         Classes.Playing="{Binding IsPlaying}"
                         IsEnabled="{Binding IsRecording, Converter={StaticResource Inverse}}"
                         AutomationProperties.Name="Play, or stop playback"
-                        AutomationProperties.HelpText="Replays the recording into the simulator."
                         Command="{Binding PlayCommand}">
                     <PathIcon Data="{StaticResource play_regular}" />
                 </Button>

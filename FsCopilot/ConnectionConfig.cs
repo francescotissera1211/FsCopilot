@@ -21,11 +21,6 @@ public class ConnectionConfig
     /// <summary>Share ground vehicles along with AI aircraft when hosting traffic (--traffic-ground).</summary>
     public bool ShareGroundVehicles { get; set; }
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        TypeInfoResolver = ConnectionConfigJsonContext.Default
-    };
-
     public static string ConfigPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FsCopilot", "config.json");
@@ -37,7 +32,7 @@ public class ConnectionConfig
             if (File.Exists(ConfigPath))
             {
                 var json = File.ReadAllText(ConfigPath);
-                var cfg = JsonSerializer.Deserialize<ConnectionConfig>(json, JsonOptions);
+                var cfg = JsonSerializer.Deserialize(json, ConnectionConfigJsonContext.Default.ConnectionConfig);
                 if (cfg != null) return cfg;
             }
         }
@@ -56,7 +51,7 @@ public class ConnectionConfig
             var dir = Path.GetDirectoryName(ConfigPath);
             if (dir != null && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
-            var json = JsonSerializer.Serialize(this, JsonOptions);
+            var json = JsonSerializer.Serialize(this, ConnectionConfigJsonContext.Default.ConnectionConfig);
             File.WriteAllText(ConfigPath, json);
             return true;
         }

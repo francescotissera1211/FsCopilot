@@ -128,7 +128,7 @@ internal static class UiaNotification
             {
                 unknown = Wrappers.GetOrCreateComInterfaceForObject(node, CreateComInterfaceFlags.None);
                 var iid = IidRawElementProviderSimple;
-                if (Marshal.QueryInterface(unknown, ref iid, out provider) != 0) provider = IntPtr.Zero;
+                if (Marshal.QueryInterface(unknown, in iid, out provider) != 0) provider = IntPtr.Zero;
             }
 
             // Fallback: the host provider. Accepted by Windows, though not every client hears it.
