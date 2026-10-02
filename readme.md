@@ -35,7 +35,7 @@ Everyone in the session must run **this build**. FS Copilot compares the list of
 
 ### Connecting: client code, direct links and the relay
 
-- Your **client code** is your peer ID (8 letters, shown at the top of the main window). To fly together, one pilot gives their code to the other, who types it into the **Client code to join** box and chooses **Join**. With three or more pilots, everyone joins the same person; once linked, the app introduces the rest to each other.
+- Your **client code** is your peer ID (8 letters, shown at the top of the main window). To fly together, one pilot gives their code to the other, who types it into the **Code to join** box and chooses **Join**. With three or more pilots, everyone joins the same person; once linked, the app introduces the rest to each other.
 - The code is only an address. It is not itself a direct connection. When you choose Join, the app tries a **direct** link first for about 4 seconds: both apps ask the server to introduce them, then punch through each other's router (UDP hole punching, with UPnP / NAT-PMP port mapping where the router allows it). A direct link is the fastest, and nothing passes through a server once it is up.
 - If the direct attempt fails, the app falls back to the **relay**. Both apps keep a connection to the server, and the server forwards every packet between them. A direct link fails when a router or ISP won't allow hole punching: carrier-grade NAT (common on mobile, satellite and some fibre ISPs), symmetric NAT, strict firewalls, or a server that does not introduce the two peers.
 - The relay carries everything the direct link carries: cockpit sync, pointer sync, traffic and ATC audio. It only adds latency, roughly the round trip to the server (about 100 ms from Europe to `p2p.fscopilot.com`). The connection list on the main window shows `direct` or `relay` for each peer, with its ping and packet loss.
@@ -75,7 +75,7 @@ Everyone in the session must run **this build**. FS Copilot compares the list of
 **Share ATC audio** (xiprox): one pilot's ATC app is heard by the whole crew.
 - Supported apps are found automatically: BeyondATC, SayIntentions, Pilot2ATC, PF3, FSHud and VoxATC. **Other…** lists every program currently making sound, so you can pick any app.
 - The host turns on **Share ATC audio** and picks the app from **ATC audio source app**. Only that program's sound is captured (Windows 10 version 2004 or later), compressed with Opus and streamed. The status reads "Capturing", or "Capturing — muted in the volume mixer" if Windows has that app muted.
-- Receivers get **Mute received ATC audio** and a **Received ATC audio volume** slider. Your choices are saved in `settings.json` beside the exe.
+- Receivers get a **Mute ATC** button and an **ATC volume** slider. Your choices are saved in `settings.json` beside the exe.
 
 **Developer tools** (xiprox, xray447): start with `--dev` for the Develop window. It records and replays a session's physics, controls and variables (variables-only traces leave the aircraft alone), browses the profile, and lists every glass display with its group and number. "Peer move" and "Peer click" pretend to be the other pilot on one machine.
 
@@ -102,12 +102,12 @@ Connection settings checks the fields when you save and says what is wrong ("Pee
 
 Built for screen readers and tested on 2026-10-02 with Windows UI Automation (the interface NVDA, JAWS and Narrator use):
 
-- **Every control has a name and a hint.** Every button, box, switch, list, slider and picker has a spoken name. Most also carry a hint saying what it does (NVDA: NVDA+Tab reads it). Decorative icons and images are hidden.
+- **Every control has a short name, and a short hint where one helps.** Every button, box, switch, list, slider and picker is named; hints are a few words (NVDA: NVDA+Tab reads them). Decorative icons and images are hidden.
 - **Headings.** Each window title is heading level 1, and the cards (Connection, ATC & Traffic, Onboard) are level 2. Press H in browse mode to jump between them.
 - **Spoken updates.** These are spoken as they happen:
   - joining, joined, and why a join failed;
   - who joined or left, and over which link;
-  - who has the controls, whenever that changes;
+  - who has control, by name, whenever it changes hands: "You have control" or "Alpha has control";
   - errors, such as the sim not running or the bridge missing;
   - a newer aircraft profile being available;
   - ATC and traffic sharing starting or stopping;
@@ -119,9 +119,9 @@ Built for screen readers and tested on 2026-10-02 with Windows UI Automation (th
   - Focus starts in a useful place: the first field in Connection settings, the action button in Setup, the client code box in the main window, and Open GitHub in the update message.
   - Enter submits Connection settings and joins from the code box. Escape closes the update message.
   - Tab follows reading order.
-- **Onboard list.** Each pilot is one list item, read as "name, code, direct link or relay, connection quality", with ping and packet loss as its description. Arrow keys move between pilots. The rows update in place, so the reader doesn't lose its spot as ping changes.
+- **Onboard list.** Each pilot is one list item, read as "name, code, direct or relay, quality", with ping and loss as its description. Arrow keys move between pilots. The rows update in place, so the reader doesn't lose its spot as ping changes.
 - **Readable codes.** Codes are spelled out ("Q F Q Y E C T D"). **Copy code** puts yours on the clipboard to paste into a message.
-- **Readable values.** The ATC volume slider reads as a percentage. The mute button is named for what it will do ("Mute received ATC audio" or "Unmute received ATC audio").
+- **Readable values.** The ATC volume slider reads as a percentage. The mute button is named for what it will do ("Mute ATC" or "Unmute ATC").
 
 ### Command-line options
 
