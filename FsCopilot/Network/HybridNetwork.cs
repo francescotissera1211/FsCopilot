@@ -15,6 +15,7 @@ public sealed class HybridNetwork : INetwork, IDisposable
 
     private readonly P2PNetwork _p2p;
     private readonly RelayNetwork _relay;
+    private readonly bool _direct;
     private int _connecting;
     private readonly BehaviorSubject<int> _connectingCount = new(0);
 
@@ -24,11 +25,19 @@ public sealed class HybridNetwork : INetwork, IDisposable
 
     public IObservable<string> PeerLeft => Observable.Merge(_p2p.PeerLeft, _relay.PeerLeft);
 
-    public HybridNetwork(string host, string peerId, string name)
+    /// <param name="direct">
+    /// False skips the direct attempt and links through the relay only. A development switch:
+    /// two instances on one machine always punch through to each other, so without it the relay
+    /// path is never exercised. Both instances need it - a direct link forms as soon as either
+    /// side asks the STUN server for an introduction.
+    /// </param>
+    public HybridNetwork(string host, string peerId, string name, bool direct = true)
     {
         _peerId = peerId;
+        _direct = direct;
         _p2p = new(host, peerId, name, false);
         _relay = new(host, peerId, name, false);
+        if (!direct) Log.Warning("[Hybrid] Direct links disabled; every peer goes through the relay at {Host}", host);
 
         // Merge peers from both networks. Prefer connected, then Direct, if both exist
         // for the same PeerId.
@@ -54,17 +63,20 @@ public sealed class HybridNetwork : INetwork, IDisposable
         _connectingCount.OnNext(Interlocked.Increment(ref _connecting));
         try
         {
-            // 1) Try Direct with timeout = 5s (implemented here, not inside P2PNetwork)
-            using var directCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            directCts.CancelAfter(DirectAttemptTimeout);
+            if (_direct)
+            {
+                // 1) Try Direct with timeout = 5s (implemented here, not inside P2PNetwork)
+                using var directCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                directCts.CancelAfter(DirectAttemptTimeout);
 
-            var directResult = await _p2p.Connect(target, directCts.Token).ConfigureAwait(false);
-            if (directResult == ConnectionResult.Success)
-                return ConnectionResult.Success;
+                var directResult = await _p2p.Connect(target, directCts.Token).ConfigureAwait(false);
+                if (directResult == ConnectionResult.Success)
+                    return ConnectionResult.Success;
 
-            // If caller cancelled - stop here
-            if (ct.IsCancellationRequested)
-                return ConnectionResult.Failed;
+                // If caller cancelled - stop here
+                if (ct.IsCancellationRequested)
+                    return ConnectionResult.Failed;
+            }
 
             // 2) Fallback to Relay (use original token, no hidden timeout)
             return await _relay.Connect(target, ct).ConfigureAwait(false);
@@ -89,12 +101,15 @@ public sealed class HybridNetwork : INetwork, IDisposable
         _relay.DrainDisconnect(grace);
     }
 
-    public void SendAll<TPacket>(TPacket packet, bool unreliable = false) where TPacket : notnull
+    public void SendAll<TPacket>(TPacket packet, bool unreliable = false) where TPacket : notnull =>
+        SendAll(packet, unreliable ? Delivery.Sequenced : Delivery.Reliable);
+
+    public void SendAll<TPacket>(TPacket packet, Delivery delivery) where TPacket : notnull
     {
         // Assumption: peers won't be connected via both transports simultaneously.
         // If that can happen, you'd need per-peer routing (not possible with current INetwork API).
-        _p2p.SendAll(packet, unreliable);
-        _relay.SendAll(packet, unreliable);
+        _p2p.SendAll(packet, delivery);
+        _relay.SendAll(packet, delivery);
     }
 
     public void RegisterPacket<TPacket, TCodec>()

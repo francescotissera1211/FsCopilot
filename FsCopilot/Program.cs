@@ -2,6 +2,7 @@
 
 using System.Globalization;
 using System.Reflection;
+using Audio;
 using Connection;
 using Microsoft.Extensions.DependencyInjection;
 using Network;
@@ -14,6 +15,11 @@ using ViewModels;
 
 sealed class Program
 {
+    // The relay and STUN host is the server saved in the login window (xray447), default
+    // p2p.fscopilot.com, overridable with --server <host> or --relay <host>. This build speaks
+    // xiprox's relay protocol v2, which p2p.fscopilot.com does not serve: direct links work
+    // against it, relayed links need a v2 relay entered there.
+
     [STAThread]
     public static void Main(string[] args)
     {
@@ -83,15 +89,22 @@ sealed class Program
         var p2pNetwork = args.Any(a => string.Equals(a, "--p2p", StringComparison.OrdinalIgnoreCase));
         var serverOverride = relayHost ?? Option(args, "--server");
         var peerIdOverride = Option(args, "--peer-id");
+        var trafficOptions = TrafficOptions.Parse(args);
+        // xiprox's development switch: --no-direct forces every link through the relay.
+        var direct = !args.Any(a => string.Equals(a, "--no-direct", StringComparison.OrdinalIgnoreCase));
+        if (serverOverride is not null) Log.Warning("[Application] Server overridden: {Host}", serverOverride);
 
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .UseReactiveUIWithMicrosoftDependencyResolver(
                 services =>
                 {
+                    services.AddSingleton(Settings.Load());
+                    services.AddSingleton(trafficOptions);
                     services.AddSingleton(new SimClient(!isDev ? "FS Copilot" : "FS Copilot DEV"));
                     var panelServer = new PanelServer();
                     services.AddSingleton(panelServer);
+                    services.AddSingleton(new SimTraffic(!isDev ? "FS Copilot (Traffic)" : "FS Copilot DEV (Traffic)"));
                     services.AddSingleton<SetupViewModel>();
                     services.AddSingleton<LoginViewModel>();
                     services.AddSingleton(new Updater("http://p2p.fscopilot.com:2320"));
@@ -105,12 +118,27 @@ sealed class Program
                             var peerId = peerIdOverride ?? cfg.PeerId;
                             if (p2pNetwork) return new P2PNetwork(host, peerId, cfg.Username);
                             if (relayNetwork) return new RelayNetwork(host, peerId, cfg.Username);
-                            return new HybridNetwork(host, peerId, cfg.Username);
+                            return new HybridNetwork(host, peerId, cfg.Username, direct);
                         });
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();
+                        // Registers the sharing packets; constructed after Coordinator so the
+                        // packet table is the same on every peer.
                         services.AddSingleton(sp =>
                         {
+                            sp.GetRequiredService<Coordinator>();
+                            return new ShareSwitch(peerIdOverride ?? ConnectionConfig.Load().PeerId,
+                                sp.GetRequiredService<INetwork>());
+                        });
+                        services.AddSingleton<TrafficReceiver>();
+                        services.AddSingleton<TrafficHost>();
+                        services.AddSingleton<AtcHost>();
+                        services.AddSingleton<AtcReceiver>();
+                        services.AddSingleton<ShareViewModel>();
+                        services.AddSingleton(sp =>
+                        {
+                            sp.GetRequiredService<ShareSwitch>();
+                            sp.GetRequiredService<TrafficHost>();
                             var cfg = ConnectionConfig.Load();
                             return new MainViewModel(
                                 peerIdOverride ?? cfg.PeerId,
@@ -120,7 +148,8 @@ sealed class Program
                                 sp.GetRequiredService<MasterSwitch>(),
                                 sp.GetRequiredService<Coordinator>(),
                                 sp.GetRequiredService<Updater>(),
-                                sp.GetRequiredService<PanelServer>()
+                                sp.GetRequiredService<PanelServer>(),
+                                sp.GetRequiredService<ShareViewModel>()
                             );
                         });
                     }

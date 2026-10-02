@@ -87,6 +87,7 @@ public class MainViewModel : ReactiveObject, IDisposable
         string.Empty;
 
     public ObservableCollection<Connection> Connections { get; set; } = [];
+    public ShareViewModel Share { get; }
     public ReactiveCommand<Unit, Unit> JoinCommand { get; }
     public ReactiveCommand<Unit, Unit> LeaveCommand { get; }
     public ReactiveCommand<Unit, Unit> TakeControlCommand { get; }
@@ -100,10 +101,12 @@ public class MainViewModel : ReactiveObject, IDisposable
         MasterSwitch masterSwitch,
         Coordinator coordinator,
         Updater updater,
-        PanelServer panels)
+        PanelServer panels,
+        ShareViewModel share)
     {
         ClientName = name;
         PeerId = peerId;
+        Share = share;
 
         sim.Aircraft
             .ObserveOn(RxApp.MainThreadScheduler)

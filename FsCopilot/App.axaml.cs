@@ -39,11 +39,19 @@ public class App : Application
                 // Before the sockets drop, so panels can tell a quit from a crash.
                 Locator.Current.GetService<PanelServer>()?.Shutdown();
 
+                Locator.Current.GetService<ShareSwitch>()?.StopAll();
+                Locator.Current.GetService<ViewModels.ShareViewModel>()?.Dispose();
+                Locator.Current.GetService<Audio.AtcHost>()?.Dispose();
+                Locator.Current.GetService<Audio.AtcReceiver>()?.Dispose();
+
                 var net = Locator.Current.GetService<INetwork>();
                 net?.Disconnect();
                 net?.DrainDisconnect(DisconnectGrace);
 
                 Locator.Current.GetService<MasterSwitch>()?.TakeControl();
+                // Closing the traffic connection removes every AI object it created.
+                Locator.Current.GetService<SimTraffic>()?.Dispose();
+                Locator.Current.GetService<Settings>()?.Dispose();
             };
             
             var args = desktop.Args ?? [];

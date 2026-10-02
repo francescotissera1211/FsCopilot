@@ -57,7 +57,8 @@ public sealed class P2PNetwork : INetwork, IDisposable
         {
             NatPunchEnabled = true,
             UnconnectedMessagesEnabled = true,
-            DisconnectTimeout = 15000
+            DisconnectTimeout = 15000,
+            ChannelsCount = Transport.ChannelsCount
         };
         _net.NatPunchModule.Init(_natListener);
 
@@ -238,7 +239,7 @@ public sealed class P2PNetwork : INetwork, IDisposable
     private void OnConnectionSuccess(NetPeer peer)
     {
         var peerId = peer.Tag as string ?? string.Empty;
-        Log.Debug("[Peer2Peer] CON {Peer} -> {Address}", peerId, new IPEndPoint(peer.Address, peer.Port));
+        Log.Debug("[Peer2Peer] CON {Peer} -> {Address} (mtu {Mtu})", peerId, new IPEndPoint(peer.Address, peer.Port), peer.Mtu);
 
         if (!string.IsNullOrEmpty(peerId) && _connectWaiters.TryGetValue(peerId, out var tcs))
             tcs.TrySetResult(ConnectionResult.Success);
@@ -415,12 +416,15 @@ public sealed class P2PNetwork : INetwork, IDisposable
             Thread.Sleep(5);
     }
 
-    public void SendAll<TPacket>(TPacket packet, bool unreliable = false) where TPacket : notnull
+    public void SendAll<TPacket>(TPacket packet, bool unreliable = false) where TPacket : notnull =>
+        SendAll(packet, unreliable ? Delivery.Sequenced : Delivery.Reliable);
+
+    public void SendAll<TPacket>(TPacket packet, Delivery delivery) where TPacket : notnull
     {
         var data = _codecs.Encode(packet);
         if (data.Length == 0) return;
-        var method = unreliable ? DeliveryMethod.Sequenced : DeliveryMethod.ReliableOrdered;
-        _net.SendToAll(data, method);
+        var (channel, method) = Transport.Map(delivery);
+        _net.SendToAll(data, channel, method);
     }
 
     public IObservable<TPacket> Stream<TPacket>() =>
