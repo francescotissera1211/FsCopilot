@@ -1,0 +1,1109 @@
+# iniBuilds A400M Atlas
+# Built from confirmed INI_ LVAR list (May 2026)
+# 4-engine military turboprop - uses INI_ namespace same as iniBuilds A350
+# Created for FS Copilot shared cockpit
+
+master:
+# Throttle - 4 engines
+# Confirmed from Behaviors panel - reads INI_3D_THROTTLE_LEVER_POSITION_X_ANIMATION, sets via B:ENGINE_Throttle_X_Set
+- get: L:INI_3D_THROTTLE_LEVER_POSITION_1_ANIMATION, Number
+  set: "`${value} (>B:ENGINE_Throttle_1_Set)`"
+- get: L:INI_3D_THROTTLE_LEVER_POSITION_2_ANIMATION, Number
+  set: "`${value} (>B:ENGINE_Throttle_2_Set)`"
+- get: L:INI_3D_THROTTLE_LEVER_POSITION_3_ANIMATION, Number
+  set: "`${value} (>B:ENGINE_Throttle_3_Set)`"
+- get: L:INI_3D_THROTTLE_LEVER_POSITION_4_ANIMATION, Number
+  set: "`${value} (>B:ENGINE_Throttle_4_Set)`"
+# Brakes
+- get: A:BRAKE LEFT POSITION EX1, Position 32k
+  set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+- get: A:BRAKE RIGHT POSITION EX1, Position 32k
+  set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+# Trim
+- get: A:RUDDER TRIM PCT, Position 16k
+  set: (>K:RUDDER_TRIM_SET_EX1)
+- get: A:ELEVATOR TRIM PCT, Position 16k
+  set: (>K:ELEVATOR_TRIM_SET)
+- get: A:AILERON TRIM PCT, Position 16k
+  set: (>K:AILERON_TRIM_SET_EX1)
+# Engine starters - master only, each pilot cranks their own
+# NOTE: Engines NOT synced to prevent start loop
+
+shared:
+  # FLIGHT CONTROLS
+  - get: A:ELEVATOR POSITION, Position 16k
+    set: (>K:ELEVATOR_SET)
+  - get: A:AILERON POSITION, Position 16k
+    set: (>K:AILERON_SET)
+  - get: A:RUDDER POSITION, Position 16k
+    set: (>K:RUDDER_SET)
+  - get: L:INI_SPOILERS_ARMED, Bool
+    set: "`${value} (>L:INI_SPOILERS_ARMED)`"
+  - get: L:INI_SPOILERS_HANDLE_POSITION, Number
+    set: "`${value} (>L:INI_SPOILERS_HANDLE_POSITION)`"
+  - get: A:GEAR HANDLE POSITION, Bool
+    set: (>K:GEAR_SET)
+  - get: A:BRAKE PARKING INDICATOR, Bool
+    set: (>K:PARKING_BRAKES)
+
+  # FLAPS
+  - get: A:FLAPS HANDLE PERCENT, Position 16k
+    set: "`${value} (>B:HANDLING_Flaps_Set)`"
+
+  # AUTOBRAKE
+  - get: L:INI_AUTOBRAKE_LEVEL, Number
+    set: "`${value} (>L:INI_AUTOBRAKE_LEVEL)`"
+  - get: L:INI_ANTISKID_SWITCH, Bool
+    set: "`${value} (>L:INI_ANTISKID_SWITCH)`"
+  - get: L:INI_AUTOBRAKE_LOW_DECEL, Bool
+    set: "`${value} (>L:INI_AUTOBRAKE_LOW_DECEL)`"
+  - get: L:INI_AUTOBRAKE_MED_DECEL, Bool
+    set: "`${value} (>L:INI_AUTOBRAKE_MED_DECEL)`"
+  - get: L:INI_AUTOBRAKE_HI_DECEL, Bool
+    set: "`${value} (>L:INI_AUTOBRAKE_HI_DECEL)`"
+
+  # FCU - SPEED
+  - get: L:INI_Airspeed_Dial, Number
+    set: "`${value} (>L:INI_Airspeed_Dial)`"
+  - get: L:INI_FCU_MANAGED_SPEED_BUTTON, Bool
+    set: "`${value} (>L:INI_FCU_MANAGED_SPEED_BUTTON)`"
+  - get: L:INI_FCU_SELECTED_SPEED_BUTTON, Bool
+    set: "`${value} (>L:INI_FCU_SELECTED_SPEED_BUTTON)`"
+  - get: L:INI_SPD_MACH_BUTTON, Bool
+    set: "`${value} (>L:INI_SPD_MACH_BUTTON)`"
+
+  # FCU - HEADING / TRACK
+  - get: L:INI_HEADING_DIAL, Number
+    set: "`${value} (>L:INI_HEADING_DIAL)`"
+  - get: L:INI_TRK_DIAL, Number
+    set: "`${value} (>L:INI_TRK_DIAL)`"
+  - get: L:INI_FCU_MANAGED_HEADING_BUTTON, Bool
+    set: "`${value} (>L:INI_FCU_MANAGED_HEADING_BUTTON)`"
+  - get: L:INI_FCU_SELECTED_HEADING_BUTTON, Bool
+    set: "`${value} (>L:INI_FCU_SELECTED_HEADING_BUTTON)`"
+  - get: L:INI_FCU_HDG_VS_COMMAND, Bool
+    set: "`${value} (>L:INI_FCU_HDG_VS_COMMAND)`"
+  - get: L:INI_FCU_SYNC_HEADING_BUTTON, Bool
+    set: "`${value} (>L:INI_FCU_SYNC_HEADING_BUTTON)`"
+  - get: L:INI_TRACK_FPA_STATE, Bool
+    set: "`${value} (>L:INI_TRACK_FPA_STATE)`"
+
+  # FCU - ALTITUDE
+  - get: L:INI_Altitude_Dial, Number
+    set: "`${value} (>L:INI_Altitude_Dial)`"
+  - get: L:INI_FCU_ALTITUDE_PUSH_COMMAND, Bool
+    set: "`${value} (>L:INI_FCU_ALTITUDE_PUSH_COMMAND)`"
+  - get: L:INI_FCU_ALTITUDE_PULL_COMMAND, Bool
+    set: "`${value} (>L:INI_FCU_ALTITUDE_PULL_COMMAND)`"
+  - get: L:INI_FCU_ALTITUDE_MODE_COMMAND, Bool
+    set: "`${value} (>L:INI_FCU_ALTITUDE_MODE_COMMAND)`"
+  - get: L:INI_FCU_LEVEL_OFF_COMMAND, Bool
+    set: "`${value} (>L:INI_FCU_LEVEL_OFF_COMMAND)`"
+  - get: L:INI_ALTITUDE_MEM_DIAL, Number
+    set: "`${value} (>L:INI_ALTITUDE_MEM_DIAL)`"
+
+  # FCU - V/S / FPA
+  - get: L:INI_vvi_dial, Number
+    set: "`${value} (>L:INI_vvi_dial)`"
+  - get: L:INI_FPA_DIAL, Number
+    set: "`${value} (>L:INI_FPA_DIAL)`"
+  - get: L:INI_FCU_PUSH_COMMAND, Bool
+    set: "`${value} (>L:INI_FCU_PUSH_COMMAND)`"
+  - get: L:INI_MAN_VS_CONTROL_SWITCH, Bool
+    set: "`${value} (>L:INI_MAN_VS_CONTROL_SWITCH)`"
+
+  # FCU - AUTOPILOT / AUTOTHRUST / APPROACH
+  - get: L:INI_AP1_BUTTON, Bool
+    set: "`${value} (>L:INI_AP1_BUTTON)`"
+  - get: L:INI_AP2_BUTTON, Bool
+    set: "`${value} (>L:INI_AP2_BUTTON)`"
+  - get: L:INI_FD1_ON, Bool
+    set: "`${value} (>L:INI_FD1_ON)`"
+  - get: L:INI_FD2_ON, Bool
+    set: "`${value} (>L:INI_FD2_ON)`"
+  - get: L:INI_AUTOTHROTTLE_ARMED, Bool
+    set: "`${value} (>L:INI_AUTOTHROTTLE_ARMED)`"
+  - get: L:INI_APPROACH_BUTTON, Bool
+    set: "`${value} (>L:INI_APPROACH_BUTTON)`"
+  - get: L:INI_LOCALIZER_BUTTON, Bool
+    set: "`${value} (>L:INI_LOCALIZER_BUTTON)`"
+  - get: L:INI_AP_DISCONNECT_BUTTON, Bool
+    set: "`${value} (>L:INI_AP_DISCONNECT_BUTTON)`"
+
+  # BAROMETER - Captain
+  - get: L:INI_1_ALTIMETER_PUSH_COMMAND, Bool
+    set: "`${value} (>L:INI_1_ALTIMETER_PUSH_COMMAND)`"
+  - get: L:INI_1_ALTIMETER_PULL_COMMAND, Bool
+    set: "`${value} (>L:INI_1_ALTIMETER_PULL_COMMAND)`"
+  # BAROMETER - FO
+  - get: L:INI_2_ALTIMETER_PUSH_COMMAND, Bool
+    set: "`${value} (>L:INI_2_ALTIMETER_PUSH_COMMAND)`"
+  - get: L:INI_2_ALTIMETER_PULL_COMMAND, Bool
+    set: "`${value} (>L:INI_2_ALTIMETER_PULL_COMMAND)`"
+  # ISIS Baro
+  - get: L:INI_ISIS_BARO_PUSH_COMMAND, Bool
+    set: "`${value} (>L:INI_ISIS_BARO_PUSH_COMMAND)`"
+  # Baro values
+  - get: A:KOHLSMAN SETTING MB:1, Millibars
+    set: "`${value * 16} 1 (>K:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars
+    set: "`${value * 16} 2 (>K:KOHLSMAN_SET)`"
+
+  # LIGHTING - EXTERIOR
+  - get: L:INI_STROBE_LIGHT_SWITCH, Number
+    set: "`${value} (>L:INI_STROBE_LIGHT_SWITCH)`"
+  - get: L:INI_BEACON_LIGHT_SWITCH, Bool
+    set: "`${value} (>L:INI_BEACON_LIGHT_SWITCH)`"
+  - get: L:INI_UPPER_BEACON_LIGHT_SWITCH, Bool
+    set: "`${value} (>L:INI_UPPER_BEACON_LIGHT_SWITCH)`"
+  - get: L:INI_WING_LIGHT_SWITCH, Bool
+    set: "`${value} (>L:INI_WING_LIGHT_SWITCH)`"
+  - get: L:INI_LOGO_LIGHT_SWITCH, Number
+    set: "`${value} (>L:INI_LOGO_LIGHT_SWITCH)`"
+  - get: L:INI_TURNOFF_LIGHT_SWITCH, Bool
+    set: "`${value} (>L:INI_TURNOFF_LIGHT_SWITCH)`"
+  - get: L:INI_TAXI_LIGHT_SWITCH, Bool
+    set: "`${value} (>L:INI_TAXI_LIGHT_SWITCH)`"
+  - get: L:INI_LANDING_LIGHT_SWITCH, Bool
+    set: "`${value} (>L:INI_LANDING_LIGHT_SWITCH)`"
+
+  # LIGHTING - INTERIOR
+  - get: L:INI_DOME_LIGHT_SWITCH, Bool
+    set: "`${value} (>L:INI_DOME_LIGHT_SWITCH)`"
+  - get: L:INI_ANNLT_SWITCH, Number
+    set: "`${value} (>L:INI_ANNLT_SWITCH)`"
+  - get: L:INI_SEATBELTS_SWITCH, Number
+    set: "`${value} (>L:INI_SEATBELTS_SWITCH)`"
+  - get: L:INI_NO_SMOKING_SWITCH, Number
+    set: "`${value} (>L:INI_NO_SMOKING_SWITCH)`"
+  - get: L:INI_EMER_EXIT_SWITCH, Number
+    set: "`${value} (>L:INI_EMER_EXIT_SWITCH)`"
+  - get: L:INI_STANDBY_COMPASS_SWITCH, Bool
+    set: "`${value} (>L:INI_STANDBY_COMPASS_SWITCH)`"
+  - get: L:INI_ICE_IND_SWITCH, Bool
+    set: "`${value} (>L:INI_ICE_IND_SWITCH)`"
+
+  # ENGINES - Masters (condition levers for turboprop)
+  # NOT syncing starters - each pilot starts their own engines
+  - get: L:INI_MIXTURE_RATIO1_HANDLE, Number
+    set: "`${value} (>L:INI_MIXTURE_RATIO1_HANDLE)`"
+  - get: L:INI_MIXTURE_RATIO2_HANDLE, Number
+    set: "`${value} (>L:INI_MIXTURE_RATIO2_HANDLE)`"
+  - get: L:INI_MIXTURE_RATIO3_HANDLE, Number
+    set: "`${value} (>L:INI_MIXTURE_RATIO3_HANDLE)`"
+  - get: L:INI_MIXTURE_RATIO4_HANDLE, Number
+    set: "`${value} (>L:INI_MIXTURE_RATIO4_HANDLE)`"
+  - get: L:INI_IGNITION_KNOB, Number
+    set: "`${value} (>L:INI_IGNITION_KNOB)`"
+
+  # APU
+  - get: L:INI_APU_MASTER_SWITCH, Bool
+    set: "`${value} (>L:INI_APU_MASTER_SWITCH)`"
+  - get: L:INI_APU_START_BUTTON, Bool
+    set: "`${value} (>L:INI_APU_START_BUTTON)`"
+  - get: L:INI_APU_MASTER_SWITCH_CMD, Bool
+    set: "`${value} (>L:INI_APU_MASTER_SWITCH_CMD)`"
+  - get: L:INI_APU_START_BUTTON_CMD, Bool
+    set: "`${value} (>L:INI_APU_START_BUTTON_CMD)`"
+
+  # FIRE PROTECTION
+  - get: L:INI_FIRE_HANDLE_APU, Bool
+    set: "`${value} (>L:INI_FIRE_HANDLE_APU)`"
+  - get: L:INI_FIRE_HANDLE_ENG1, Bool
+    set: "`${value} (>L:INI_FIRE_HANDLE_ENG1)`"
+  - get: L:INI_FIRE_HANDLE_ENG2, Bool
+    set: "`${value} (>L:INI_FIRE_HANDLE_ENG2)`"
+  - get: L:INI_FIRE_HANDLE_ENG3, Bool
+    set: "`${value} (>L:INI_FIRE_HANDLE_ENG3)`"
+  - get: L:INI_FIRE_HANDLE_ENG4, Bool
+    set: "`${value} (>L:INI_FIRE_HANDLE_ENG4)`"
+  - get: L:INI_APU_DISCH, Bool
+    set: "`${value} (>L:INI_APU_DISCH)`"
+  - get: L:INI_ENG1_AGENT1_DISCH, Bool
+    set: "`${value} (>L:INI_ENG1_AGENT1_DISCH)`"
+  - get: L:INI_ENG1_AGENT2_DISCH, Bool
+    set: "`${value} (>L:INI_ENG1_AGENT2_DISCH)`"
+  - get: L:INI_ENG2_AGENT1_DISCH, Bool
+    set: "`${value} (>L:INI_ENG2_AGENT1_DISCH)`"
+  - get: L:INI_ENG2_AGENT2_DISCH, Bool
+    set: "`${value} (>L:INI_ENG2_AGENT2_DISCH)`"
+  - get: L:INI_ENG3_AGENT1_DISCH, Bool
+    set: "`${value} (>L:INI_ENG3_AGENT1_DISCH)`"
+  - get: L:INI_ENG3_AGENT2_DISCH, Bool
+    set: "`${value} (>L:INI_ENG3_AGENT2_DISCH)`"
+  - get: L:INI_ENG4_AGENT1_DISCH, Bool
+    set: "`${value} (>L:INI_ENG4_AGENT1_DISCH)`"
+  - get: L:INI_ENG4_AGENT2_DISCH, Bool
+    set: "`${value} (>L:INI_ENG4_AGENT2_DISCH)`"
+
+  # ANTI-ICE (4 engines + 4 props + wing + auto + probe)
+  - get: L:INI_ENG1_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_ENG1_ANTI_ICE)`"
+  - get: L:INI_ENG2_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_ENG2_ANTI_ICE)`"
+  - get: L:INI_ENG3_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_ENG3_ANTI_ICE)`"
+  - get: L:INI_ENG4_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_ENG4_ANTI_ICE)`"
+  - get: L:INI_PROP1_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_PROP1_ANTI_ICE)`"
+  - get: L:INI_PROP2_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_PROP2_ANTI_ICE)`"
+  - get: L:INI_PROP3_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_PROP3_ANTI_ICE)`"
+  - get: L:INI_PROP4_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_PROP4_ANTI_ICE)`"
+  - get: L:INI_WING_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_WING_ANTI_ICE)`"
+  - get: L:INI_AUTO_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_AUTO_ANTI_ICE)`"
+  - get: L:INI_PROBE_ANTI_ICE, Bool
+    set: "`${value} (>L:INI_PROBE_ANTI_ICE)`"
+  - get: L:INI_OVH_PROBE_SWITCH, Number
+    set: "`${value} (>L:INI_OVH_PROBE_SWITCH)`"
+
+  # ELECTRICAL
+  - get: L:INI_OVHD_ELEC_BAT_1_PB_IS_AUTO_SWITCH, Bool
+    set: "`${value} (>L:INI_OVHD_ELEC_BAT_1_PB_IS_AUTO_SWITCH)`"
+  - get: L:INI_OVHD_ELEC_BAT_2_PB_IS_AUTO_SWITCH, Bool
+    set: "`${value} (>L:INI_OVHD_ELEC_BAT_2_PB_IS_AUTO_SWITCH)`"
+  - get: L:INI_OVHD_ELEC_BAT_3_PB_IS_AUTO_SWITCH, Bool
+    set: "`${value} (>L:INI_OVHD_ELEC_BAT_3_PB_IS_AUTO_SWITCH)`"
+  - get: L:INI_BATTERY_OVERHEAD_SELECTOR, Number
+    set: "`${value} (>L:INI_BATTERY_OVERHEAD_SELECTOR)`"
+  - get: L:INI_ENG1_GEN_ON, Bool
+    set: "`${value} (>L:INI_ENG1_GEN_ON)`"
+  - get: L:INI_ENG2_GEN_ON, Bool
+    set: "`${value} (>L:INI_ENG2_GEN_ON)`"
+  - get: L:INI_ENG3_GEN_ON, Bool
+    set: "`${value} (>L:INI_ENG3_GEN_ON)`"
+  - get: L:INI_ENG4_GEN_ON, Bool
+    set: "`${value} (>L:INI_ENG4_GEN_ON)`"
+  - get: L:INI_APU_GEN_ON, Bool
+    set: "`${value} (>L:INI_APU_GEN_ON)`"
+  - get: L:INI_BUS_TIE, Bool
+    set: "`${value} (>L:INI_BUS_TIE)`"
+  - get: L:INI_OVH_ELMF, Bool
+    set: "`${value} (>L:INI_OVH_ELMF)`"
+  - get: L:INI_OVH_LOADSHED, Bool
+    set: "`${value} (>L:INI_OVH_LOADSHED)`"
+  - get: L:INI_IDG1_BUTTON, Bool
+    set: "`${value} (>L:INI_IDG1_BUTTON)`"
+  - get: L:INI_IDG2_BUTTON, Bool
+    set: "`${value} (>L:INI_IDG2_BUTTON)`"
+  - get: L:INI_AC_ESS_FEED, Bool
+    set: "`${value} (>L:INI_AC_ESS_FEED)`"
+  - get: L:INI_CAB_ALT_MODE, Bool
+    set: "`${value} (>L:INI_CAB_ALT_MODE)`"
+
+  # ADIRS / IRS
+  - get: L:INI_IRS1_STATE, Number
+    set: "`${value} (>B:AIRLINER_OVH_IR1_Set)`"
+  - get: L:INI_IRS2_STATE, Number
+    set: "`${value} (>B:AIRLINER_OVH_IR2_Set)`"
+  - get: L:INI_IRS3_STATE, Number
+    set: "`${value} (>B:AIRLINER_OVH_IR3_Set)`"
+  - get: L:INI_ADR1_BUTTON, Bool
+    set: "`${value} (>L:INI_ADR1_BUTTON)`"
+  - get: L:INI_ADR2_BUTTON, Bool
+    set: "`${value} (>L:INI_ADR2_BUTTON)`"
+  - get: L:INI_ADR3_BUTTON, Bool
+    set: "`${value} (>L:INI_ADR3_BUTTON)`"
+  - get: L:INI_ATT_HDG_STATE, Number
+    set: "`${value} (>L:INI_ATT_HDG_STATE)`"
+  - get: L:INI_AIR_DATA_STATE, Number
+    set: "`${value} (>L:INI_AIR_DATA_STATE)`"
+  - get: L:INI_FM_STATE, Number
+    set: "`${value} (>L:INI_FM_STATE)`"
+  - get: L:INI_GADIRS, Bool
+    set: "`${value} (>L:INI_GADIRS)`"
+
+  # BLEED / PACKS / AIR CONDITIONING
+  - get: L:INI_PACK1_BUTTON, Bool
+    set: "`${value} (>L:INI_PACK1_BUTTON)`"
+  - get: L:INI_PACK2_BUTTON, Bool
+    set: "`${value} (>L:INI_PACK2_BUTTON)`"
+  - get: L:INI_PACK_FLOW, Number
+    set: "`${value} (>L:INI_PACK_FLOW)`"
+  - get: L:INI_APU_BLEED_BUTTON, Bool
+    set: "`${value} (>L:INI_APU_BLEED_BUTTON)`"
+  - get: L:INI_ENGINE1_BLEED, Bool
+    set: "`${value} (>L:INI_ENGINE1_BLEED)`"
+  - get: L:INI_ENGINE2_BLEED, Bool
+    set: "`${value} (>L:INI_ENGINE2_BLEED)`"
+  - get: L:INI_ENGINE3_BLEED, Bool
+    set: "`${value} (>L:INI_ENGINE3_BLEED)`"
+  - get: L:INI_ENGINE4_BLEED, Bool
+    set: "`${value} (>L:INI_ENGINE4_BLEED)`"
+  - get: L:INI_XBLEED_MODE, Number
+    set: "`${value} (>L:INI_XBLEED_MODE)`"
+  - get: L:INI_HOT_AIR_SUPPLY1_ON, Bool
+    set: "`${value} (>L:INI_HOT_AIR_SUPPLY1_ON)`"
+  - get: L:INI_HOT_AIR_SUPPLY2_ON, Bool
+    set: "`${value} (>L:INI_HOT_AIR_SUPPLY2_ON)`"
+  - get: L:INI_AIRCOND_LVL_1, Number
+    set: "`${value} (>L:INI_AIRCOND_LVL_1)`"
+  - get: L:INI_AIRCOND_LVL_2, Number
+    set: "`${value} (>L:INI_AIRCOND_LVL_2)`"
+  - get: L:INI_OVH_NVG_MODE_SWITCH, Number
+    set: "`${value} (>L:INI_OVH_NVG_MODE_SWITCH)`"
+  - get: L:INI_RAM_AIR_ON, Bool
+    set: "`${value} (>L:INI_RAM_AIR_ON)`"
+
+  # FLIGHT CONTROLS - PRIMS/SECS
+  - get: L:INI_PRIM1_STATUS, Bool
+    set: "`${value} (>L:INI_PRIM1_STATUS)`"
+  - get: L:INI_PRIM2_STATUS, Bool
+    set: "`${value} (>L:INI_PRIM2_STATUS)`"
+  - get: L:INI_PRIM3_STATUS, Bool
+    set: "`${value} (>L:INI_PRIM3_STATUS)`"
+  - get: L:INI_SEC1_STATUS, Bool
+    set: "`${value} (>L:INI_SEC1_STATUS)`"
+  - get: L:INI_SEC2_STATUS, Bool
+    set: "`${value} (>L:INI_SEC2_STATUS)`"
+  - get: L:INI_DIRECT_LAW_BUTTON, Bool
+    set: "`${value} (>L:INI_DIRECT_LAW_BUTTON)`"
+
+  # HYDRAULICS
+  - get: L:INI_GND_HYD_REMOTE, Bool
+    set: "`${value} (>L:INI_GND_HYD_REMOTE)`"
+  - get: L:INI_GND_HYD_CONVERTER, Bool
+    set: "`${value} (>L:INI_GND_HYD_CONVERTER)`"
+  - get: L:INI_GND_HYD_BLUE_PUMP, Bool
+    set: "`${value} (>L:INI_GND_HYD_BLUE_PUMP)`"
+  - get: L:INI_GND_HYD_YELLOW_PUMP, Bool
+    set: "`${value} (>L:INI_GND_HYD_YELLOW_PUMP)`"
+
+  # FUEL
+  - get: L:INI_FUEL_EEC_XFEED_OVRD, Bool
+    set: "`${value} (>L:INI_FUEL_EEC_XFEED_OVRD)`"
+  - get: L:INI_FUEL_RISER_DRAIN_PUMP, Bool
+    set: "`${value} (>L:INI_FUEL_RISER_DRAIN_PUMP)`"
+
+  # FADEC
+  - get: L:INI_FADEC1_GND_POWER_STATE, Bool
+    set: "`${value} (>L:INI_FADEC1_GND_POWER_STATE)`"
+  - get: L:INI_FADEC2_GND_POWER_STATE, Bool
+    set: "`${value} (>L:INI_FADEC2_GND_POWER_STATE)`"
+  - get: L:INI_FADEC3_GND_POWER_STATE, Bool
+    set: "`${value} (>L:INI_FADEC3_GND_POWER_STATE)`"
+  - get: L:INI_FADEC4_GND_POWER_STATE, Bool
+    set: "`${value} (>L:INI_FADEC4_GND_POWER_STATE)`"
+
+  # TRANSPONDER / IFF / SURV
+  - get: L:INI_tcas_mode, Number
+    set: "`${value} (>L:INI_tcas_mode)`"
+  - get: L:INI_tcas_mode_pedestal, Number
+    set: "`${value} (>L:INI_tcas_mode_pedestal)`"
+  - get: L:INI_IFF_MODE, Number
+    set: "`${value} (>L:INI_IFF_MODE)`"
+  - get: L:INI_IFF_SYS, Number
+    set: "`${value} (>L:INI_IFF_SYS)`"
+  - get: A:TRANSPONDER CODE:1, BCO16
+    set: (>K:XPNDR_SET)
+  - get: A:TRANSPONDER STATE:1, Number
+    set: (>K:XPNDR_STATE_SET)
+  - get: A:TRANSPONDER IDENT:1, Bool
+    set: (>K:XPNDR_IDENT_SET)
+
+  # RADIOS - STANDARD SIMVARS
+  - get: A:COM ACTIVE FREQUENCY:1, Hz
+    set: (>K:COM_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:2, Hz
+    set: (>K:COM2_RADIO_SET_HZ)
+  - get: A:COM ACTIVE FREQUENCY:3, Hz
+    set: (>K:COM3_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:1, Hz
+    set: (>K:COM_STBY_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:2, Hz
+    set: (>K:COM2_STBY_RADIO_SET_HZ)
+  - get: A:COM STANDBY FREQUENCY:3, Hz
+    set: (>K:COM3_STBY_RADIO_SET_HZ)
+  - get: A:NAV ACTIVE FREQUENCY:1, Hz
+    set: (>K:NAV1_RADIO_SET_HZ)
+  - get: A:NAV ACTIVE FREQUENCY:2, Hz
+    set: (>K:NAV2_RADIO_SET_HZ)
+  - get: A:NAV STANDBY FREQUENCY:1, Hz
+    set: (>K:NAV1_STBY_SET_HZ)
+  - get: A:NAV STANDBY FREQUENCY:2, Hz
+    set: (>K:NAV2_STBY_SET_HZ)
+  - get: A:ADF ACTIVE FREQUENCY:1, Frequency ADF BCD32
+    set: (>K:ADF_ACTIVE_SET)
+  - get: A:ADF STANDBY FREQUENCY:1, Frequency ADF BCD32
+    set: (>K:ADF_STBY_SET)
+
+  # RMP / AUDIO PANEL
+  - get: L:INI_CPT_TRANSMIT_CHANNEL, Number
+    set: "`${value} (>L:INI_CPT_TRANSMIT_CHANNEL)`"
+  - get: L:INI_FO_TRANSMIT_CHANNEL, Number
+    set: "`${value} (>L:INI_FO_TRANSMIT_CHANNEL)`"
+  - get: L:INI_VHF3_TRANSMIT_CHANNEL, Number
+    set: "`${value} (>L:INI_VHF3_TRANSMIT_CHANNEL)`"
+  - get: L:INI_RMP1_STATE, Bool
+    set: "`${value} (>L:INI_RMP1_STATE)`"
+  - get: L:INI_CPT_INT_RAD_SWITCH, Bool
+    set: "`${value} (>L:INI_CPT_INT_RAD_SWITCH)`"
+  - get: L:INI_FO_INT_RAD_SWITCH, Bool
+    set: "`${value} (>L:INI_FO_INT_RAD_SWITCH)`"
+  - get: L:INI_LS_CAPTAIN, Bool
+    set: "`${value} (>L:INI_LS_CAPTAIN)`"
+  - get: L:INI_LS_FO, Bool
+    set: "`${value} (>L:INI_LS_FO)`"
+
+  # CPT RADIO PANEL - Keypad buttons (confirmed from Behaviors panel)
+  - get: L:INI_CPT_COMM_KP_0, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_0_Set)`"
+  - get: L:INI_CPT_COMM_KP_1, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_1_Set)`"
+  - get: L:INI_CPT_COMM_KP_2, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_2_Set)`"
+  - get: L:INI_CPT_COMM_KP_3, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_3_Set)`"
+  - get: L:INI_CPT_COMM_KP_4, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_4_Set)`"
+  - get: L:INI_CPT_COMM_KP_5, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_5_Set)`"
+  - get: L:INI_CPT_COMM_KP_6, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_6_Set)`"
+  - get: L:INI_CPT_COMM_KP_7, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_7_Set)`"
+  - get: L:INI_CPT_COMM_KP_8, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_8_Set)`"
+  - get: L:INI_CPT_COMM_KP_9, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_9_Set)`"
+  - get: L:INI_CPT_COMM_KP_XY, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_XY_Set)`"
+  - get: L:INI_CPT_COMM_KP_CLR, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_KP_CLR_Set)`"
+  # CPT RADIO PANEL - Preset/basket buttons
+  - get: L:INI_CPT_COMM_BSK_1, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_BSK_1_Set)`"
+  - get: L:INI_CPT_COMM_BSK_2, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_BSK_2_Set)`"
+  - get: L:INI_CPT_COMM_BSK_3, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_BSK_3_Set)`"
+  - get: L:INI_CPT_COMM_BSK_4, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_BSK_4_Set)`"
+  # CPT RADIO PANEL - IDENT, HF and task buttons
+  - get: L:INI_CPT_COMM_IDENT, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_IDENT_Set)`"
+  - get: L:INI_CPT_COMM_HFF1, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_HFF1_Set)`"
+  - get: L:INI_CPT_COMM_HFF4, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_HFF4_Set)`"
+  - get: L:INI_CPT_COMM_TSK_1, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_TSK_1_Set)`"
+  - get: L:INI_CPT_COMM_TSK_2, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_TSK_2_Set)`"
+  - get: L:INI_CPT_COMM_TSK_3, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_TSK_3_Set)`"
+  - get: L:INI_CPT_COMM_TSK_4, Bool
+    set: "`${value} (>B:AIRLINER_CPT_COMM_TSK_4_Set)`"
+
+  # FO RADIO PANEL - Keypad buttons (FO mirror of CPT panel above)
+  - get: L:INI_FO_COMM_KP_0, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_0_Set)`"
+  - get: L:INI_FO_COMM_KP_1, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_1_Set)`"
+  - get: L:INI_FO_COMM_KP_2, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_2_Set)`"
+  - get: L:INI_FO_COMM_KP_3, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_3_Set)`"
+  - get: L:INI_FO_COMM_KP_4, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_4_Set)`"
+  - get: L:INI_FO_COMM_KP_5, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_5_Set)`"
+  - get: L:INI_FO_COMM_KP_6, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_6_Set)`"
+  - get: L:INI_FO_COMM_KP_7, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_7_Set)`"
+  - get: L:INI_FO_COMM_KP_8, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_8_Set)`"
+  - get: L:INI_FO_COMM_KP_9, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_9_Set)`"
+  - get: L:INI_FO_COMM_KP_XY, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_XY_Set)`"
+  - get: L:INI_FO_COMM_KP_CLR, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_KP_CLR_Set)`"
+  # FO RADIO PANEL - Preset/basket buttons
+  - get: L:INI_FO_COMM_BSK_1, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_BSK_1_Set)`"
+  - get: L:INI_FO_COMM_BSK_2, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_BSK_2_Set)`"
+  - get: L:INI_FO_COMM_BSK_3, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_BSK_3_Set)`"
+  - get: L:INI_FO_COMM_BSK_4, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_BSK_4_Set)`"
+  # FO RADIO PANEL - IDENT, HF and task buttons
+  - get: L:INI_FO_COMM_IDENT, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_IDENT_Set)`"
+  - get: L:INI_FO_COMM_HFF1, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_HFF1_Set)`"
+  - get: L:INI_FO_COMM_HFF4, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_HFF4_Set)`"
+  - get: L:INI_FO_COMM_TSK_1, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_TSK_1_Set)`"
+  - get: L:INI_FO_COMM_TSK_2, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_TSK_2_Set)`"
+  - get: L:INI_FO_COMM_TSK_3, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_TSK_3_Set)`"
+  - get: L:INI_FO_COMM_TSK_4, Bool
+    set: "`${value} (>B:AIRLINER_FO_COMM_TSK_4_Set)`"
+
+  # VOR FREQUENCIES (INI custom)
+  - get: L:INI_VOR1_FREQUENCY_MHZ, Number
+    set: "`${value} (>L:INI_VOR1_FREQUENCY_MHZ)`"
+  - get: L:INI_VOR1_FREQUENCY_KHZ, Number
+    set: "`${value} (>L:INI_VOR1_FREQUENCY_KHZ)`"
+  - get: L:INI_VOR2_FREQUENCY_MHZ, Number
+    set: "`${value} (>L:INI_VOR2_FREQUENCY_MHZ)`"
+  - get: L:INI_VOR2_FREQUENCY_KHZ, Number
+    set: "`${value} (>L:INI_VOR2_FREQUENCY_KHZ)`"
+  - get: L:INI_ILS_FREQUENCY_MHZ, Number
+    set: "`${value} (>L:INI_ILS_FREQUENCY_MHZ)`"
+  - get: L:INI_ILS_FREQUENCY_KHZ, Number
+    set: "`${value} (>L:INI_ILS_FREQUENCY_KHZ)`"
+
+  # ECAM
+  - get: L:INI_ECAM_CLR_LIGHT, Bool
+    set: "`${value} (>L:INI_ECAM_CLR_LIGHT)`"
+  - get: L:INI_ECAM_EMER_CANCEL, Bool
+    set: "`${value} (>L:INI_ECAM_EMER_CANCEL)`"
+
+  # MCDU 1 - Function keys
+  - get: L:INI_MCDU1_DIR, Bool
+    set: "`${value} (>L:INI_MCDU1_DIR)`"
+  - get: L:INI_MCDU1_PROG, Bool
+    set: "`${value} (>L:INI_MCDU1_PROG)`"
+  - get: L:INI_MCDU1_PERF, Bool
+    set: "`${value} (>L:INI_MCDU1_PERF)`"
+  - get: L:INI_MCDU1_INIT, Bool
+    set: "`${value} (>L:INI_MCDU1_INIT)`"
+  - get: L:INI_MCDU1_DATA, Bool
+    set: "`${value} (>L:INI_MCDU1_DATA)`"
+  - get: L:INI_MCDU1_FPLAN, Bool
+    set: "`${value} (>L:INI_MCDU1_FPLAN)`"
+  - get: L:INI_MCDU1_RADNAV, Bool
+    set: "`${value} (>L:INI_MCDU1_RADNAV)`"
+  - get: L:INI_MCDU1_FUEL, Bool
+    set: "`${value} (>L:INI_MCDU1_FUEL)`"
+  - get: L:INI_MCDU1_SEC, Bool
+    set: "`${value} (>L:INI_MCDU1_SEC)`"
+  - get: L:INI_MCDU1_ATC, Bool
+    set: "`${value} (>L:INI_MCDU1_ATC)`"
+  - get: L:INI_MCDU1_MENU, Bool
+    set: "`${value} (>L:INI_MCDU1_MENU)`"
+  - get: L:INI_MCDU1_AIRPORT, Bool
+    set: "`${value} (>L:INI_MCDU1_AIRPORT)`"
+  - get: L:INI_MCDU1_ENTER, Bool
+    set: "`${value} (>L:INI_MCDU1_ENTER)`"
+  - get: L:INI_MCDU1_BACKSPACE, Bool
+    set: "`${value} (>L:INI_MCDU1_BACKSPACE)`"
+  - get: L:INI_MCDU1_MARK, Bool
+    set: "`${value} (>L:INI_MCDU1_MARK)`"
+  - get: L:INI_MCDU1_LOCK, Bool
+    set: "`${value} (>L:INI_MCDU1_LOCK)`"
+  - get: L:INI_MCDU1_SLEW, Bool
+    set: "`${value} (>L:INI_MCDU1_SLEW)`"
+  - get: L:INI_MCDU1_REF, Bool
+    set: "`${value} (>L:INI_MCDU1_REF)`"
+  - get: L:INI_MCDU1_KBD, Bool
+    set: "`${value} (>L:INI_MCDU1_KBD)`"
+  - get: L:INI_MCDU1_CLR, Bool
+    set: "`${value} (>L:INI_MCDU1_CLR)`"
+  - get: L:INI_MCDU1_OVERFLY, Bool
+    set: "`${value} (>L:INI_MCDU1_OVERFLY)`"
+  - get: L:INI_MCDU1_FMT, Bool
+    set: "`${value} (>L:INI_MCDU1_FMT)`"
+  - get: L:INI_MCDU1_ESC, Bool
+    set: "`${value} (>L:INI_MCDU1_ESC)`"
+  - get: L:INI_MCDU1_SLASH, Bool
+    set: "`${value} (>L:INI_MCDU1_SLASH)`"
+  - get: L:INI_MCDU1_SPACE, Bool
+    set: "`${value} (>L:INI_MCDU1_SPACE)`"
+  - get: L:INI_MCDU1_DECIMAL, Bool
+    set: "`${value} (>L:INI_MCDU1_DECIMAL)`"
+  - get: L:INI_MCDU1_PLUS, Bool
+    set: "`${value} (>L:INI_MCDU1_PLUS)`"
+  - get: L:INI_MCDU1_MINUS, Bool
+    set: "`${value} (>L:INI_MCDU1_MINUS)`"
+  - get: L:INI_MCDU1_DOT, Bool
+    set: "`${value} (>L:INI_MCDU1_DOT)`"
+  # MCDU 1 - Navigation keys
+  - get: L:INI_MCDU1_PREV, Bool
+    set: "`${value} (>L:INI_MCDU1_PREV)`"
+  - get: L:INI_MCDU1_NEXT, Bool
+    set: "`${value} (>L:INI_MCDU1_NEXT)`"
+  - get: L:INI_MCDU1_UP, Bool
+    set: "`${value} (>L:INI_MCDU1_UP)`"
+  - get: L:INI_MCDU1_DOWN, Bool
+    set: "`${value} (>L:INI_MCDU1_DOWN)`"
+  - get: L:INI_MCDU1_LEFT, Bool
+    set: "`${value} (>L:INI_MCDU1_LEFT)`"
+  - get: L:INI_MCDU1_RIGHT, Bool
+    set: "`${value} (>L:INI_MCDU1_RIGHT)`"
+  - get: L:INI_MCDU1_UARROW, Bool
+    set: "`${value} (>L:INI_MCDU1_UARROW)`"
+  - get: L:INI_MCDU1_ARROW_LEFT, Bool
+    set: "`${value} (>L:INI_MCDU1_ARROW_LEFT)`"
+  - get: L:INI_MCDU1_ARROW_RIGHT, Bool
+    set: "`${value} (>L:INI_MCDU1_ARROW_RIGHT)`"
+  - get: L:INI_MCDU1_NOTEPAD, Bool
+    set: "`${value} (>L:INI_MCDU1_NOTEPAD)`"
+  - get: L:INI_MCDU1_OIS, Bool
+    set: "`${value} (>L:INI_MCDU1_OIS)`"
+  - get: L:INI_MCDU1_ND, Bool
+    set: "`${value} (>L:INI_MCDU1_ND)`"
+  - get: L:INI_MCDU1_MFD, Bool
+    set: "`${value} (>L:INI_MCDU1_MFD)`"
+  - get: L:INI_MCDU1_MAILBOX, Bool
+    set: "`${value} (>L:INI_MCDU1_MAILBOX)`"
+  - get: L:INI_MCDU1_DIR_TO, Bool
+    set: "`${value} (>L:INI_MCDU1_DIR_TO)`"
+  - get: L:INI_MCDU1_MODE, Bool
+    set: "`${value} (>L:INI_MCDU1_MODE)`"
+  - get: L:INI_MCDU1_TACT_MODE, Bool
+    set: "`${value} (>L:INI_MCDU1_TACT_MODE)`"
+  - get: L:INI_MCDU1_TO_APPR, Bool
+    set: "`${value} (>L:INI_MCDU1_TO_APPR)`"
+  - get: L:INI_MCDU1_SEC_PLAN, Bool
+    set: "`${value} (>L:INI_MCDU1_SEC_PLAN)`"
+  - get: L:INI_MCDU1_ENGOUT, Bool
+    set: "`${value} (>L:INI_MCDU1_ENGOUT)`"
+  - get: L:INI_MCDU1_SURV, Bool
+    set: "`${value} (>L:INI_MCDU1_SURV)`"
+  - get: L:INI_MCDU1_CL_MENU, Bool
+    set: "`${value} (>L:INI_MCDU1_CL_MENU)`"
+  - get: L:INI_MCDU1_DEST, Bool
+    set: "`${value} (>L:INI_MCDU1_DEST)`"
+  # MCDU 1 - LSKs
+  - get: L:INI_MCDU1_LSK1L, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK1L)`"
+  - get: L:INI_MCDU1_LSK2L, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK2L)`"
+  - get: L:INI_MCDU1_LSK3L, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK3L)`"
+  - get: L:INI_MCDU1_LSK4L, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK4L)`"
+  - get: L:INI_MCDU1_LSK5L, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK5L)`"
+  - get: L:INI_MCDU1_LSK6L, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK6L)`"
+  - get: L:INI_MCDU1_LSK1R, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK1R)`"
+  - get: L:INI_MCDU1_LSK2R, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK2R)`"
+  - get: L:INI_MCDU1_LSK3R, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK3R)`"
+  - get: L:INI_MCDU1_LSK4R, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK4R)`"
+  - get: L:INI_MCDU1_LSK5R, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK5R)`"
+  - get: L:INI_MCDU1_LSK6R, Bool
+    set: "`${value} (>L:INI_MCDU1_LSK6R)`"
+  # MCDU 1 - Alphabet
+  - get: L:INI_MCDU1_A, Bool
+    set: "`${value} (>L:INI_MCDU1_A)`"
+  - get: L:INI_MCDU1_B, Bool
+    set: "`${value} (>L:INI_MCDU1_B)`"
+  - get: L:INI_MCDU1_C, Bool
+    set: "`${value} (>L:INI_MCDU1_C)`"
+  - get: L:INI_MCDU1_D, Bool
+    set: "`${value} (>L:INI_MCDU1_D)`"
+  - get: L:INI_MCDU1_E, Bool
+    set: "`${value} (>L:INI_MCDU1_E)`"
+  - get: L:INI_MCDU1_F, Bool
+    set: "`${value} (>L:INI_MCDU1_F)`"
+  - get: L:INI_MCDU1_G, Bool
+    set: "`${value} (>L:INI_MCDU1_G)`"
+  - get: L:INI_MCDU1_H, Bool
+    set: "`${value} (>L:INI_MCDU1_H)`"
+  - get: L:INI_MCDU1_I, Bool
+    set: "`${value} (>L:INI_MCDU1_I)`"
+  - get: L:INI_MCDU1_J, Bool
+    set: "`${value} (>L:INI_MCDU1_J)`"
+  - get: L:INI_MCDU1_K, Bool
+    set: "`${value} (>L:INI_MCDU1_K)`"
+  - get: L:INI_MCDU1_L, Bool
+    set: "`${value} (>L:INI_MCDU1_L)`"
+  - get: L:INI_MCDU1_M, Bool
+    set: "`${value} (>L:INI_MCDU1_M)`"
+  - get: L:INI_MCDU1_N, Bool
+    set: "`${value} (>L:INI_MCDU1_N)`"
+  - get: L:INI_MCDU1_O, Bool
+    set: "`${value} (>L:INI_MCDU1_O)`"
+  - get: L:INI_MCDU1_P, Bool
+    set: "`${value} (>L:INI_MCDU1_P)`"
+  - get: L:INI_MCDU1_Q, Bool
+    set: "`${value} (>L:INI_MCDU1_Q)`"
+  - get: L:INI_MCDU1_R, Bool
+    set: "`${value} (>L:INI_MCDU1_R)`"
+  - get: L:INI_MCDU1_S, Bool
+    set: "`${value} (>L:INI_MCDU1_S)`"
+  - get: L:INI_MCDU1_T, Bool
+    set: "`${value} (>L:INI_MCDU1_T)`"
+  - get: L:INI_MCDU1_U, Bool
+    set: "`${value} (>L:INI_MCDU1_U)`"
+  - get: L:INI_MCDU1_V, Bool
+    set: "`${value} (>L:INI_MCDU1_V)`"
+  - get: L:INI_MCDU1_W, Bool
+    set: "`${value} (>L:INI_MCDU1_W)`"
+  - get: L:INI_MCDU1_X, Bool
+    set: "`${value} (>L:INI_MCDU1_X)`"
+  - get: L:INI_MCDU1_Y, Bool
+    set: "`${value} (>L:INI_MCDU1_Y)`"
+  - get: L:INI_MCDU1_Z, Bool
+    set: "`${value} (>L:INI_MCDU1_Z)`"
+  # MCDU 1 - Numbers
+  - get: L:INI_MCDU1_0, Bool
+    set: "`${value} (>L:INI_MCDU1_0)`"
+  - get: L:INI_MCDU1_1, Bool
+    set: "`${value} (>L:INI_MCDU1_1)`"
+  - get: L:INI_MCDU1_2, Bool
+    set: "`${value} (>L:INI_MCDU1_2)`"
+  - get: L:INI_MCDU1_3, Bool
+    set: "`${value} (>L:INI_MCDU1_3)`"
+  - get: L:INI_MCDU1_4, Bool
+    set: "`${value} (>L:INI_MCDU1_4)`"
+  - get: L:INI_MCDU1_5, Bool
+    set: "`${value} (>L:INI_MCDU1_5)`"
+  - get: L:INI_MCDU1_6, Bool
+    set: "`${value} (>L:INI_MCDU1_6)`"
+  - get: L:INI_MCDU1_7, Bool
+    set: "`${value} (>L:INI_MCDU1_7)`"
+  - get: L:INI_MCDU1_8, Bool
+    set: "`${value} (>L:INI_MCDU1_8)`"
+  - get: L:INI_MCDU1_9, Bool
+    set: "`${value} (>L:INI_MCDU1_9)`"
+
+  # MCDU 2 - Function keys
+  - get: L:INI_MCDU2_DIR, Bool
+    set: "`${value} (>L:INI_MCDU2_DIR)`"
+  - get: L:INI_MCDU2_PROG, Bool
+    set: "`${value} (>L:INI_MCDU2_PROG)`"
+  - get: L:INI_MCDU2_PERF, Bool
+    set: "`${value} (>L:INI_MCDU2_PERF)`"
+  - get: L:INI_MCDU2_INIT, Bool
+    set: "`${value} (>L:INI_MCDU2_INIT)`"
+  - get: L:INI_MCDU2_DATA, Bool
+    set: "`${value} (>L:INI_MCDU2_DATA)`"
+  - get: L:INI_MCDU2_FPLAN, Bool
+    set: "`${value} (>L:INI_MCDU2_FPLAN)`"
+  - get: L:INI_MCDU2_RADNAV, Bool
+    set: "`${value} (>L:INI_MCDU2_RADNAV)`"
+  - get: L:INI_MCDU2_FUEL, Bool
+    set: "`${value} (>L:INI_MCDU2_FUEL)`"
+  - get: L:INI_MCDU2_SEC, Bool
+    set: "`${value} (>L:INI_MCDU2_SEC)`"
+  - get: L:INI_MCDU2_ATC, Bool
+    set: "`${value} (>L:INI_MCDU2_ATC)`"
+  - get: L:INI_MCDU2_MENU, Bool
+    set: "`${value} (>L:INI_MCDU2_MENU)`"
+  - get: L:INI_MCDU2_AIRPORT, Bool
+    set: "`${value} (>L:INI_MCDU2_AIRPORT)`"
+  - get: L:INI_MCDU2_ENTER, Bool
+    set: "`${value} (>L:INI_MCDU2_ENTER)`"
+  - get: L:INI_MCDU2_BACKSPACE, Bool
+    set: "`${value} (>L:INI_MCDU2_BACKSPACE)`"
+  - get: L:INI_MCDU2_MARK, Bool
+    set: "`${value} (>L:INI_MCDU2_MARK)`"
+  - get: L:INI_MCDU2_LOCK, Bool
+    set: "`${value} (>L:INI_MCDU2_LOCK)`"
+  - get: L:INI_MCDU2_SLEW, Bool
+    set: "`${value} (>L:INI_MCDU2_SLEW)`"
+  - get: L:INI_MCDU2_REF, Bool
+    set: "`${value} (>L:INI_MCDU2_REF)`"
+  - get: L:INI_MCDU2_KBD, Bool
+    set: "`${value} (>L:INI_MCDU2_KBD)`"
+  - get: L:INI_MCDU2_CLR, Bool
+    set: "`${value} (>L:INI_MCDU2_CLR)`"
+  - get: L:INI_MCDU2_OVERFLY, Bool
+    set: "`${value} (>L:INI_MCDU2_OVERFLY)`"
+  - get: L:INI_MCDU2_FMT, Bool
+    set: "`${value} (>L:INI_MCDU2_FMT)`"
+  - get: L:INI_MCDU2_ESC, Bool
+    set: "`${value} (>L:INI_MCDU2_ESC)`"
+  - get: L:INI_MCDU2_SLASH, Bool
+    set: "`${value} (>L:INI_MCDU2_SLASH)`"
+  - get: L:INI_MCDU2_SPACE, Bool
+    set: "`${value} (>L:INI_MCDU2_SPACE)`"
+  - get: L:INI_MCDU2_DECIMAL, Bool
+    set: "`${value} (>L:INI_MCDU2_DECIMAL)`"
+  - get: L:INI_MCDU2_PLUS, Bool
+    set: "`${value} (>L:INI_MCDU2_PLUS)`"
+  - get: L:INI_MCDU2_MINUS, Bool
+    set: "`${value} (>L:INI_MCDU2_MINUS)`"
+  - get: L:INI_MCDU2_DOT, Bool
+    set: "`${value} (>L:INI_MCDU2_DOT)`"
+  # MCDU 2 - Navigation keys
+  - get: L:INI_MCDU2_PREV, Bool
+    set: "`${value} (>L:INI_MCDU2_PREV)`"
+  - get: L:INI_MCDU2_NEXT, Bool
+    set: "`${value} (>L:INI_MCDU2_NEXT)`"
+  - get: L:INI_MCDU2_DOWN, Bool
+    set: "`${value} (>L:INI_MCDU2_DOWN)`"
+  - get: L:INI_MCDU2_UARROW, Bool
+    set: "`${value} (>L:INI_MCDU2_UARROW)`"
+  - get: L:INI_MCDU2_ARROW_LEFT, Bool
+    set: "`${value} (>L:INI_MCDU2_ARROW_LEFT)`"
+  - get: L:INI_MCDU2_ARROW_RIGHT, Bool
+    set: "`${value} (>L:INI_MCDU2_ARROW_RIGHT)`"
+  - get: L:INI_MCDU2_NOTEPAD, Bool
+    set: "`${value} (>L:INI_MCDU2_NOTEPAD)`"
+  - get: L:INI_MCDU2_OIS, Bool
+    set: "`${value} (>L:INI_MCDU2_OIS)`"
+  - get: L:INI_MCDU2_ND, Bool
+    set: "`${value} (>L:INI_MCDU2_ND)`"
+  - get: L:INI_MCDU2_MFD, Bool
+    set: "`${value} (>L:INI_MCDU2_MFD)`"
+  - get: L:INI_MCDU2_MAILBOX, Bool
+    set: "`${value} (>L:INI_MCDU2_MAILBOX)`"
+  - get: L:INI_MCDU2_DIR_TO, Bool
+    set: "`${value} (>L:INI_MCDU2_DIR_TO)`"
+  - get: L:INI_MCDU2_MODE, Bool
+    set: "`${value} (>L:INI_MCDU2_MODE)`"
+  - get: L:INI_MCDU2_TACT_MODE, Bool
+    set: "`${value} (>L:INI_MCDU2_TACT_MODE)`"
+  - get: L:INI_MCDU2_TO_APPR, Bool
+    set: "`${value} (>L:INI_MCDU2_TO_APPR)`"
+  - get: L:INI_MCDU2_SEC_PLAN, Bool
+    set: "`${value} (>L:INI_MCDU2_SEC_PLAN)`"
+  - get: L:INI_MCDU2_ENGOUT, Bool
+    set: "`${value} (>L:INI_MCDU2_ENGOUT)`"
+  - get: L:INI_MCDU2_SURV, Bool
+    set: "`${value} (>L:INI_MCDU2_SURV)`"
+  - get: L:INI_MCDU2_CL_MENU, Bool
+    set: "`${value} (>L:INI_MCDU2_CL_MENU)`"
+  - get: L:INI_MCDU2_DEST, Bool
+    set: "`${value} (>L:INI_MCDU2_DEST)`"
+  # MCDU 2 - LSKs
+  - get: L:INI_MCDU2_LSK1L, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK1L)`"
+  - get: L:INI_MCDU2_LSK2L, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK2L)`"
+  - get: L:INI_MCDU2_LSK3L, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK3L)`"
+  - get: L:INI_MCDU2_LSK4L, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK4L)`"
+  - get: L:INI_MCDU2_LSK5L, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK5L)`"
+  - get: L:INI_MCDU2_LSK6L, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK6L)`"
+  - get: L:INI_MCDU2_LSK1R, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK1R)`"
+  - get: L:INI_MCDU2_LSK2R, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK2R)`"
+  - get: L:INI_MCDU2_LSK3R, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK3R)`"
+  - get: L:INI_MCDU2_LSK4R, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK4R)`"
+  - get: L:INI_MCDU2_LSK5R, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK5R)`"
+  - get: L:INI_MCDU2_LSK6R, Bool
+    set: "`${value} (>L:INI_MCDU2_LSK6R)`"
+  # MCDU 2 - Alphabet
+  - get: L:INI_MCDU2_A, Bool
+    set: "`${value} (>L:INI_MCDU2_A)`"
+  - get: L:INI_MCDU2_B, Bool
+    set: "`${value} (>L:INI_MCDU2_B)`"
+  - get: L:INI_MCDU2_C, Bool
+    set: "`${value} (>L:INI_MCDU2_C)`"
+  - get: L:INI_MCDU2_D, Bool
+    set: "`${value} (>L:INI_MCDU2_D)`"
+  - get: L:INI_MCDU2_E, Bool
+    set: "`${value} (>L:INI_MCDU2_E)`"
+  - get: L:INI_MCDU2_F, Bool
+    set: "`${value} (>L:INI_MCDU2_F)`"
+  - get: L:INI_MCDU2_G, Bool
+    set: "`${value} (>L:INI_MCDU2_G)`"
+  - get: L:INI_MCDU2_H, Bool
+    set: "`${value} (>L:INI_MCDU2_H)`"
+  - get: L:INI_MCDU2_I, Bool
+    set: "`${value} (>L:INI_MCDU2_I)`"
+  - get: L:INI_MCDU2_J, Bool
+    set: "`${value} (>L:INI_MCDU2_J)`"
+  - get: L:INI_MCDU2_K, Bool
+    set: "`${value} (>L:INI_MCDU2_K)`"
+  - get: L:INI_MCDU2_L, Bool
+    set: "`${value} (>L:INI_MCDU2_L)`"
+  - get: L:INI_MCDU2_M, Bool
+    set: "`${value} (>L:INI_MCDU2_M)`"
+  - get: L:INI_MCDU2_N, Bool
+    set: "`${value} (>L:INI_MCDU2_N)`"
+  - get: L:INI_MCDU2_O, Bool
+    set: "`${value} (>L:INI_MCDU2_O)`"
+  - get: L:INI_MCDU2_P, Bool
+    set: "`${value} (>L:INI_MCDU2_P)`"
+  - get: L:INI_MCDU2_Q, Bool
+    set: "`${value} (>L:INI_MCDU2_Q)`"
+  - get: L:INI_MCDU2_R, Bool
+    set: "`${value} (>L:INI_MCDU2_R)`"
+  - get: L:INI_MCDU2_S, Bool
+    set: "`${value} (>L:INI_MCDU2_S)`"
+  - get: L:INI_MCDU2_T, Bool
+    set: "`${value} (>L:INI_MCDU2_T)`"
+  - get: L:INI_MCDU2_U, Bool
+    set: "`${value} (>L:INI_MCDU2_U)`"
+  - get: L:INI_MCDU2_V, Bool
+    set: "`${value} (>L:INI_MCDU2_V)`"
+  - get: L:INI_MCDU2_W, Bool
+    set: "`${value} (>L:INI_MCDU2_W)`"
+  - get: L:INI_MCDU2_X, Bool
+    set: "`${value} (>L:INI_MCDU2_X)`"
+  - get: L:INI_MCDU2_Y, Bool
+    set: "`${value} (>L:INI_MCDU2_Y)`"
+  - get: L:INI_MCDU2_Z, Bool
+    set: "`${value} (>L:INI_MCDU2_Z)`"
+  # MCDU 2 - Numbers
+  - get: L:INI_MCDU2_0, Bool
+    set: "`${value} (>L:INI_MCDU2_0)`"
+  - get: L:INI_MCDU2_1, Bool
+    set: "`${value} (>L:INI_MCDU2_1)`"
+  - get: L:INI_MCDU2_2, Bool
+    set: "`${value} (>L:INI_MCDU2_2)`"
+  - get: L:INI_MCDU2_3, Bool
+    set: "`${value} (>L:INI_MCDU2_3)`"
+  - get: L:INI_MCDU2_4, Bool
+    set: "`${value} (>L:INI_MCDU2_4)`"
+  - get: L:INI_MCDU2_5, Bool
+    set: "`${value} (>L:INI_MCDU2_5)`"
+  - get: L:INI_MCDU2_6, Bool
+    set: "`${value} (>L:INI_MCDU2_6)`"
+  - get: L:INI_MCDU2_7, Bool
+    set: "`${value} (>L:INI_MCDU2_7)`"
+  - get: L:INI_MCDU2_8, Bool
+    set: "`${value} (>L:INI_MCDU2_8)`"
+  - get: L:INI_MCDU2_9, Bool
+    set: "`${value} (>L:INI_MCDU2_9)`"
+
+  # ENGINE MANUAL STARTS
+  - get: L:INI_ENG1_MAN_START, Bool
+    set: "`${value} (>L:INI_ENG1_MAN_START)`"
+  - get: L:INI_ENG2_MAN_START, Bool
+    set: "`${value} (>L:INI_ENG2_MAN_START)`"
+  - get: L:INI_ENG3_MAN_START, Bool
+    set: "`${value} (>L:INI_ENG3_MAN_START)`"
+  - get: L:INI_ENG4_MAN_START, Bool
+    set: "`${value} (>L:INI_ENG4_MAN_START)`"
+
+  # GEAR
+  - get: L:INI_GEAR_HANDLE_STATUS, Number
+  - get: L:INI_GRAVITY_GEAR_HANDLE_STATE, Number
+    set: "`${value} (>L:INI_GRAVITY_GEAR_HANDLE_STATE)`"
+  - get: L:INI_LDG_ELEV_KNOB, Number
+    set: "`${value} (>L:INI_LDG_ELEV_KNOB)`"
+
+  # EFIS - CAPTAIN
+  - get: L:INI_MAP_RANGE_CAPT, Number
+    set: "`${value} (>L:INI_MAP_RANGE_CAPT)`"
+  - get: L:INI_efis_selected_nav_capt, Number
+    set: "`${value} (>L:INI_efis_selected_nav_capt)`"
+  - get: L:INI_TERR_ON_CAPT, Bool
+    set: "`${value} (>L:INI_TERR_ON_CAPT)`"
+  - get: L:INI_SC_ROT_CPT, Number
+    set: "`${value} (>L:INI_SC_ROT_CPT)`"
+  - get: L:INI_DTA_ROT_CPT, Number
+    set: "`${value} (>L:INI_DTA_ROT_CPT)`"
+  - get: L:INI_FCU_ALT_ROT_CPT, Number
+    set: "`${value} (>L:INI_FCU_ALT_ROT_CPT)`"
+  - get: L:INI_TD_ROT_CPT, Number
+    set: "`${value} (>L:INI_TD_ROT_CPT)`"
+
+  # EFIS - FO
+  - get: L:INI_MAP_RANGE_FO, Number
+    set: "`${value} (>L:INI_MAP_RANGE_FO)`"
+  - get: L:INI_efis_selected_nav_fo, Number
+    set: "`${value} (>L:INI_efis_selected_nav_fo)`"
+  - get: L:INI_TERR_ON_FO, Bool
+    set: "`${value} (>L:INI_TERR_ON_FO)`"
+  - get: L:INI_SC_ROT_FO, Number
+    set: "`${value} (>L:INI_SC_ROT_FO)`"
+  - get: L:INI_DTA_ROT_FO, Number
+    set: "`${value} (>L:INI_DTA_ROT_FO)`"
+  - get: L:INI_FCU_ALT_ROT_FO, Number
+    set: "`${value} (>L:INI_FCU_ALT_ROT_FO)`"
+  - get: L:INI_TD_ROT_FO, Number
+    set: "`${value} (>L:INI_TD_ROT_FO)`"
+
+  # WEATHER RADAR
+  - get: L:INI_WX_SYS_SWITCH, Bool
+    set: "`${value} (>L:INI_WX_SYS_SWITCH)`"
+  - get: L:INI_WXR_MODE, Number
+    set: "`${value} (>L:INI_WXR_MODE)`"
+
+  # TCAS
+  - get: L:INI_tcas_mode, Number
+    set: "`${value} (>L:INI_tcas_mode)`"
+  - get: L:INI_tcas_mode_pedestal, Number
+    set: "`${value} (>L:INI_tcas_mode_pedestal)`"
+
+  # ISIS
+  - get: L:INI_ISIS_LS_ACTIVE, Bool
+    set: "`${value} (>L:INI_ISIS_LS_ACTIVE)`"
+  - get: L:INI_ISIS_BARO_PLUS_COMMAND, Bool
+    set: "`${value} (>L:INI_ISIS_BARO_PLUS_COMMAND)`"
+  - get: L:INI_ISIS_BARO_MINUS_COMMAND, Bool
+    set: "`${value} (>L:INI_ISIS_BARO_MINUS_COMMAND)`"
+  - get: L:INI_ISIS_BUGS_COMMAND, Bool
+    set: "`${value} (>L:INI_ISIS_BUGS_COMMAND)`"
+  - get: L:INI_ISIS_PLUS_COMMAND, Bool
+    set: "`${value} (>L:INI_ISIS_PLUS_COMMAND)`"
+  - get: L:INI_ISIS_MINUS_COMMAND, Bool
+    set: "`${value} (>L:INI_ISIS_MINUS_COMMAND)`"
+
+  # LINKED INSTRUMENTS
+  - get: L:INI_LINKED_INSTRUMENTS, Bool
+    set: "`${value} (>L:INI_LINKED_INSTRUMENTS)`"
+
+  # MASTER WARNING / CAUTION
+  - get: L:INI_MASTER_CAUTION_COMMAND, Bool
+    set: "`${value} (>L:INI_MASTER_CAUTION_COMMAND)`"
+  - get: L:INI_MASTER_WARNING_COMMAND, Bool
+    set: "`${value} (>L:INI_MASTER_WARNING_COMMAND)`"
+  - get: L:INI_ECAM_EMER_CANCEL, Bool
+    set: "`${value} (>L:INI_ECAM_EMER_CANCEL)`"
+
+  # MCDU BRT SWITCH
+  - get: L:INI_MCDU1_BRT_SWITCH, Number
+    set: "`${value} (>L:INI_MCDU1_BRT_SWITCH)`"
+
+  # THROTTLE REVERSE HANDLES (4 engines)
+  - get: L:INI_REVERSE1_HANDLE_PERCENT, Number
+    set: "`${value} (>L:INI_REVERSE1_HANDLE_PERCENT)`"
+  - get: L:INI_REVERSE2_HANDLE_PERCENT, Number
+    set: "`${value} (>L:INI_REVERSE2_HANDLE_PERCENT)`"
+  - get: L:INI_REVERSE3_HANDLE_PERCENT, Number
+    set: "`${value} (>L:INI_REVERSE3_HANDLE_PERCENT)`"
+  - get: L:INI_REVERSE4_HANDLE_PERCENT, Number
+    set: "`${value} (>L:INI_REVERSE4_HANDLE_PERCENT)`"
+
+  # TLA REQUESTS (autothrottle target positions)
+  - get: L:INI_TLA1_REQUEST, Number
+    set: "`${value} (>L:INI_TLA1_REQUEST)`"
+  - get: L:INI_TLA2_REQUEST, Number
+    set: "`${value} (>L:INI_TLA2_REQUEST)`"
+  - get: L:INI_TLA3_REQUEST, Number
+    set: "`${value} (>L:INI_TLA3_REQUEST)`"
+  - get: L:INI_TLA4_REQUEST, Number
+    set: "`${value} (>L:INI_TLA4_REQUEST)`"
+  - get: L:INI_AXIS1_TLA, Number
+    set: "`${value} (>L:INI_AXIS1_TLA)`"
+  - get: L:INI_AXIS2_TLA, Number
+    set: "`${value} (>L:INI_AXIS2_TLA)`"
+  - get: L:INI_AXIS3_TLA, Number
+    set: "`${value} (>L:INI_AXIS3_TLA)`"
+  - get: L:INI_AXIS4_TLA, Number
+    set: "`${value} (>L:INI_AXIS4_TLA)`"
+
+  # CABIN PRESSURE
+  - get: L:INI_CAB_PRESS_VALVE_SEL_SWITCH, Bool
+    set: "`${value} (>L:INI_CAB_PRESS_VALVE_SEL_SWITCH)`"
+
+  # EXTERNAL POWER
+  # Confirmed from Behaviors panel - uses B:AIRLINER_EXT_POWER_Set (1=ON, 0=OFF)
+  - get: A:EXTERNAL POWER ON, Bool
+    set: "`${value} (>B:AIRLINER_EXT_POWER_Set)`"
+
+  # DOOR
+  - get: L:INI_DOOR_CARGO_LEGS, Bool
+    set: "`${value} (>L:INI_DOOR_CARGO_LEGS)`"

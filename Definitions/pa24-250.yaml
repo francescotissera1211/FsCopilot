@@ -1,0 +1,521 @@
+# A2A Simulations PA-24 Comanche.
+# Author: xip
+# Version: 0.0.1
+# Updated: 2026-04-25
+
+# NOTES
+#
+# This profile assumes that gyro drift is disabled on both sides. I simply
+# haven't tried to make it work so if you are considering trying, please
+# go ahead.
+#
+# ADF heading is currently not synced.
+#
+# TPM & trims are shared (both pilots can control). This allows for seamless
+# help (e.g. if one pilot is learning), but if you have erratic inputs from
+# your peripherals, there'll be issues, so you might want to comment these
+# entries out under `shared:` and uncomment them under `master:`.
+
+include:
+  - modules/AS_GNS430.yaml
+  - modules/AS_GNS530.yaml
+  - modules/PMS50_GTN_650-750.yaml
+  - modules/payload.yaml
+  - modules/fuel.yaml
+
+shared:
+  # ═══ TESTING AREA ═════════════════════════════════════════════════════════
+  - get: A:FLAPS HANDLE INDEX
+  - get: L:CabinVentLeftLever
+  - get: L:OilLevelAnim
+
+
+  # ═══ WALKAROUND ═══════════════════════════════════════════════════════════
+
+  # ── Engine ────────────────────────────────────────────────────────────────
+  - get: L:OilInspectionPanel
+  - get: L:OilInspectionStick
+
+  # ── Belly ─────────────────────────────────────────────────────────────────
+  - get: L:WALKAROUND_BottleC_visible
+  - get: L:WALKAROUND_BottleC_Click
+  - get: L:WALKAROUND_BottleC_Drag
+
+  # ── Right Wing ────────────────────────────────────────────────────────────
+  - get: L:FuelTankOpeningRight
+  - get: L:FuelTankOpeningRightCap
+  - get: L:vis_WheelChockR
+  - get: L:vis_WingRight_TieDown
+  - get: L:FuelTipTankOpeningRight
+  - get: L:FuelTipTankOpeningRightCap
+  - get: L:WALKAROUND_BottleR_visible
+  - get: L:WALKAROUND_BottleR_Click
+  - get: L:WALKAROUND_BottleR_Drag
+
+  # ── Right Wing Control Surfaces ───────────────────────────────────────────
+  - get: L:WALKAROUND_AileronR_Click
+  - get: L:WALKAROUND_AileronR_Drag
+  - get: L:WALKAROUND_FlapR_Click
+  - get: L:WALKAROUND_FlapR_Drag
+
+  # ── Baggage ───────────────────────────────────────────────────────────────
+  - get: L:WALKAROUND_BaggageDoor_Click
+  - get: L:WALKAROUND_Baggage_Click
+  - get: L:WALKAROUND_Baggage_1
+  - get: L:WALKAROUND_Baggage_2
+  - get: L:WALKAROUND_Baggage_3
+  - get: L:WALKAROUND_Baggage_4
+  - get: L:WALKAROUND_Baggage_5
+
+  # ── Door ──────────────────────────────────────────────────────────────────
+  - get: L:Door1Latch
+  - get: L:Door1Handle
+
+  # ── Left Wing ─────────────────────────────────────────────────────────────
+  - get: L:FuelTankOpeningLeft
+  - get: L:FuelTankOpeningLeftCap
+  - get: L:vis_WheelChockL
+  - get: L:vis_WingLeft_TieDown
+  - get: L:Action_StallWarning
+  - get: L:PitotTubeCover
+  - get: L:FuelTipTankOpeningLeft
+  - get: L:FuelTipTankOpeningLeftCap
+  - get: L:WALKAROUND_BottleL_visible
+  - get: L:WALKAROUND_BottleL_Click
+  - get: L:WALKAROUND_BottleL_Drag
+
+  # ── Left Wing Control Surfaces ────────────────────────────────────────────
+  - get: L:WALKAROUND_AileronL_Click
+  - get: L:WALKAROUND_AileronL_Drag
+  - get: L:WALKAROUND_FlapL_Click
+  - get: L:WALKAROUND_FlapL_Drag
+
+  # ── Tail ──────────────────────────────────────────────────────────────────
+  - get: L:vis_Tail_TieDown
+  - get: L:WALKAROUND_Elevator_Click
+  - get: L:WALKAROUND_Elevator_Drag
+  - get: L:WALKAROUND_Rudder_Click
+  - get: L:WALKAROUND_Rudder_Drag
+
+  # ═══ CABIN ════════════════════════════════════════════════════════════════
+
+  # ── Controls lock ─────────────────────────────────────────────────────────
+  - get: L:ControlsLockLever
+
+  # ── Windows ───────────────────────────────────────────────────────────────
+  - get: L:WindowLeft
+  - get: L:WindowRight
+
+  # ── Ashtrays ──────────────────────────────────────────────────────────────
+  - get: L:Ashtray1Lid
+  - get: L:Ashtray2Lid
+
+  # ── Cabin Vents - Front ───────────────────────────────────────────────────
+  - get: L:CabinVent1Nozzle
+  - get: L:CabinVent1Lever
+  - get: L:CabinVent1LeverLock
+  - get: L:CabinVent2Nozzle
+  - get: L:CabinVent2Lever
+  - get: L:CabinVent2LeverLock
+
+  # ── Cabin Vents - Rear ────────────────────────────────────────────────────
+  - get: L:CabinVent3Nozzle
+  - get: L:CabinVent3Lever
+  - get: L:CabinVent3LeverLock
+  - get: L:CabinVent4Nozzle
+  - get: L:CabinVent4Lever
+  - get: L:CabinVent4LeverLock
+
+  # ── Cabin Vents - Overhead ────────────────────────────────────────────────
+  - get: L:CabinBallVent1Rotary
+  - get: L:CabinBallVent1Nozzle
+  - get: L:CabinBallVent2Rotary
+  - get: L:CabinBallVent2Nozzle
+  - get: L:CabinBallVent3Rotary
+  - get: L:CabinBallVent3Nozzle
+  - get: L:CabinBallVent4Rotary
+  - get: L:CabinBallVent4Nozzle
+
+  # ═══ OVERHEAD ═════════════════════════════════════════════════════════════
+
+  # ── Visors ────────────────────────────────────────────────────────────────
+  - get: L:VisorLeftPercent
+  - get: L:VisorRightPercent
+
+  # ── Light Switches ────────────────────────────────────────────────────────
+  - get: L:CabinFlood1LightSwitch
+  - get: L:CabinFlood2LightSwitch
+  - get: L:CabinRedLightSwitch
+
+  # ── Portable Lamp ─────────────────────────────────────────────────────────
+  - get: L:PortableLamp_Mode
+  - get: L:PortableLamp_Dimmer
+  - get: L:PortableLamp_DimmerClick
+  - get: L:PortableLamp_Main_ClickY
+  - get: L:PortableLamp_Main_ClickX
+  - get: L:PortableLamp_Main_DragY
+  - get: L:PortableLamp_Main_DragX
+
+  # ═══ PANEL ════════════════════════════════════════════════════════════════
+
+  # ── Registration Number Toggle ────────────────────────────────────────────
+  - get: L:VCRegNumber
+
+  # ── Markers ───────────────────────────────────────────────────────────────
+  - get: L:PushToTestMBI
+  - get: L:PushToTestMBIKnob
+  - get: L:PushToTestMBO
+  - get: L:PushToTestMBOKnob
+  - get: L:PushToTestMBM
+  - get: L:PushToTestMBMKnob
+
+  # ── GPSS/HDG Button ───────────────────────────────────────────────────────
+  - get: L:ApHdgGpssSwitch
+
+  # ── Narco CP 136 TSO ──────────────────────────────────────────────────────
+  # Needs testing
+
+  - get: L:AudioSensSwitch
+  - get: L:AudioMkrMuteSwitch
+  - get: L:AudioComSwitch
+  - get: L:AudioCom1HpSwitch
+  - get: L:AudioCom2HpSwitch
+  - get: L:AudioBothHpSwitch
+  - get: L:AudioNav1HpSwitch
+  - get: L:AudioNav2HpSwitch
+  - get: L:AudioAdf1HpSwitch
+  - get: L:AudioMkrHpSwitch
+  - get: L:AudioSpkrSwitch
+
+  # ── Narco NCS812 TSO - Com 1 & Nav 1 / DME ────────────────────────────────
+  - get: L:Com1OnOffPull
+  - get: L:Com1OnOffVolume
+  - get: L:Com1StbySwitch
+  - get: L:Com1FreqInnerKnob
+    set: "`${value * 100} (>L:Com1FreqInnerKnob)`"
+  - get: L:Com1FreqOuterKnob
+    set: "`${value * 100} (>L:Com1FreqOuterKnob)`"
+  - get: L:ActiveRecallSwitch
+  - get: L:DmeFunction
+  - get: L:Nav1StbySwitch
+  - get: L:Nav1PullIdent
+  - get: L:Nav1PullIdentVolume
+  - get: L:Nav1FreqInnerKnob
+    set: "`${value * 100} (>L:Nav1FreqInnerKnob)`"
+  - get: L:Nav1FreqOuterKnob
+    set: "`${value * 100} (>L:Nav1FreqOuterKnob)`"
+
+  # ── Narco MK 12E TSO - Com 2 & Nav 2 ──────────────────────────────────────
+  - get: L:Com2OnOffPull
+  - get: L:Com2OnOffVolume
+  - get: L:Com2StbySwitch
+  - get: L:Com2FreqInnerKnob
+    set: "`${value * 100} (>L:Com2FreqInnerKnob)`"
+  - get: L:Com2FreqOuterKnob
+    set: "`${value * 100} (>L:Com2FreqOuterKnob)`"
+  - get: L:Nav2StbySwitch
+  - get: L:Nav2PullIdent
+  - get: L:Nav2PullIdentVolume
+  - get: L:Nav2FreqInnerKnob
+    set: "`${value * 100} (>L:Nav2FreqInnerKnob)`"
+  - get: L:Nav2FreqOuterKnob, Number
+    set: "`${value * 100} (>L:Nav2FreqOuterKnob)`"
+
+  # ── Narco AT 150 TSO - Transponder ────────────────────────────────────────
+  - get: L:XpdrIdentSwitch
+  - get: L:XpdrIdentKnob
+  - get: L:XpdrModeKnobPos
+  - get: A:TRANSPONDER CODE:1
+
+  # ═══ AUTOPILOT ════════════════════════════════════════════════════════════
+  - get: L:ApTurnKnob
+  - get: L:ApModePushSwitch
+  - get: L:AttitudePlane
+
+  # ═══ GAUGES ═══════════════════════════════════════════════════════════════
+
+  # ── HSI CDI ───────────────────────────────────────────────────────────────
+  - get: A:NAV OBS:1, Degrees
+    set: (>K:VOR1_SET)
+
+  # ── HSI Heading Bug ───────────────────────────────────────────────────────
+  - get: L:AutopilotHeadingBug
+    set: (>K:HEADING_BUG_SET)
+  - get: L:HeadingSelectorPush # Pushed in or not
+
+  # ── Altimeter ─────────────────────────────────────────────────────────────
+  - get: A:KOHLSMAN SETTING MB:1, Millibars
+    set: "`2 ${value * 16} (>K:1:KOHLSMAN_SET)`"
+
+  # ── Engine Monitor ────────────────────────────────────────────────────────
+  - get: L:BUTTON_EDM730_Step
+  - get: L:BUTTON_EDM730_LF
+
+  # ── NAV 2 Heading ─────────────────────────────────────────────────────────
+  - get: A:NAV OBS:2, Degrees
+    set: (>K:VOR2_SET)
+
+  # ── ADF ───────────────────────────────────────────────────────────────────
+  - get: L:AdfHdgNeedle
+    # set: # Currently not implemented.
+  - get: L:AdfFrqButton
+  - get: L:AdfModeSelectSwitch # Needs live testing but seems to work
+  - get: L:AdfOnOffKnobVolume
+  - get: L:ADFFreqOuterKnob # Needs live testing
+    set: "`${value * 100} (>L:ADFFreqOuterKnob)`"
+  - get: L:ADFFreqInnerKnob # Needs live testing
+    set: "`${value * 100} (>L:ADFFreqInnerKnob)`"
+
+  # ═══ HEADPHONES ═══════════════════════════════════════════════════════════
+  # Unsynced to allow for pilot preference. Uncomment the lines below to enable sync.
+  # - get: L:Headphones
+  # - get: L:NoiseCancellingSwitch
+
+  # ═══ AP & AVIONICS SWITCHES & BUTTONS ═════════════════════════════════════
+  - get: L:ApMaster
+  - get: A:AVIONICS MASTER SWITCH:1, Bool
+    set: (>K:TOGGLE_AVIONICS_MASTER)
+  - get: L:ApDisconnectSwitch
+  - get: L:ApAltSwitch
+
+  # ═══ MAIN SWITCHES ════════════════════════════════════════════════════════
+  - get: L:Battery1Switch
+  - get: A:GENERAL ENG FUEL PUMP SWITCH:1, Bool
+    set: "`${value} (>K:ELECT_FUEL_PUMP1_SET)`"
+  - get: L:NavInstrLightSwitchPct
+  - get: L:LandingLightLeftSwitch
+  - get: L:LandingLightRightSwitch
+  - get: L:StrobeLightSwitch
+  - get: L:BeaconLightSwitch
+  - get: L:PitotHeatSwitch
+
+  # ═══ MAGNETO & STARTER ════════════════════════════════════════════════════
+  - get: L:Magnetos1
+    set: |
+      switch (value) {
+        case 0: return '0 (>K:MAGNETO1_SET)'
+        case 1: return '1 (>K:MAGNETO1_SET)'
+        case 2: return '2 (>K:MAGNETO1_SET)'
+        case 3: return '3 (>K:MAGNETO1_SET)'
+        default: return ''
+      }
+  - get: L:Eng1_StarterSwitch
+
+  # ═══ RIGHT SIDE CONTROLS ══════════════════════════════════════════════════
+  - get: L:Eng1_CarbHeatSwitch
+  - get: L:PrimerScrew
+  - get: L:PrimerState
+  - get: L:CabinVentLeftLever
+  - get: L:CabinTempControl
+  - get: L:WindowDefrosterControlKnob
+  - get: L:CabinVentRightLever
+
+  # ═══ BREAKERS ═════════════════════════════════════════════════════════════
+
+  # ── Main ──────────────────────────────────────────────────────────────────
+  - get: L:BreakerLandingGearMotor
+  - get: L:BreakerLandingGearIndicator
+  - get: L:BreakerGeneratorOutput
+  - get: L:BreakerLightNav
+  - get: L:BreakerGaugesEngine
+  - get: L:BreakerLightLanding
+  - get: L:BreakerLightBeacon
+  - get: L:BreakerPitotHeat
+  - get: L:BreakerNavCom2
+  - get: L:BreakerNavCom1
+  - get: L:BreakerWarningStall
+  - get: L:BreakerStarter
+
+  # ── Panel ─────────────────────────────────────────────────────────────────
+  - get: L:BreakerAutopilot
+  - get: L:BreakerGaugesTurnCoord
+
+  # ═══ FUEL INDICATOR SWITCH, GEAR, FLAPS ═══════════════════════════════════
+  - get: L:FuelIndicatorSwitch
+  - get: L:LandingGearLeverPos
+  - get: L:LandFlapsPos
+
+  # ═══ PARKING BRAKE ════════════════════════════════════════════════════════
+  - get: L:ParkingBrakePosition
+
+  # ═══ EMERGENCY GEAR HANDLE ════════════════════════════════════════════════
+  - get: L:EmergencyGearLever
+
+  # ═══ FUEL SELECTORS ═══════════════════════════════════════════════════════
+  - get: L:FSelComancheLeftState
+  - get: L:FSelComancheRightState
+
+  # ═══ TPM & TRIMS ══════════════════════════════════════════════════════════
+  # Move under master if you have input fighting issues between peers.
+
+  - get: L:Throttle1Position
+  - get: L:RPMLever1Position
+  - get: L:Eng1_MixtureManualLever
+  - get: A:RUDDER TRIM PCT, Percent
+    set: (>K:RUDDER_TRIM_SET)
+  - get: L:HANDLING_ElevatorTrim
+    set: (>K:ELEVATOR_TRIM_SET)
+
+  # ═══ GLOVEBOX ═════════════════════════════════════════════════════════════
+  - get: L:GloveboxAnim
+
+  # ═══ TABLET ═══════════════════════════════════════════════════════════════
+
+  # ── Controls ──────────────────────────────────────────────────────────────
+  - get: L:AvionicsConfiguration # GPS
+  - get: L:RNAV # GPS - RNAV
+  - get: L:GPU1 # Engine Heater
+  - get: L:OnJacks
+  # - get: L:Tow # Seems broken on my end so didn't implement.
+
+  # ── Controls - Options ────────────────────────────────────────────────────
+  - get: L:CockpitPersistence
+  - get: L:GyroDriftOn
+  - get: L:TemperatureUnits
+  - get: L:OptionSaveStatePerLivery
+  - get: L:GyroSoundOn
+  - get: L:AltimeterPressureUnits
+  - get: L:RealisticParkingBrake
+  - get: L:VC_Crew_Visible
+  - get: L:G5
+  # Below: volume sync disabled to allow personal preference. Uncomment to enable.
+  # - get: L:TabletVolume
+  # - get: L:WarningSoundsVolume
+
+  # ── Controls - Advanced Options ───────────────────────────────────────────
+  - get: L:ComChannelSpacing
+  - get: L:Gear3WaySwitch
+  - get: L:RPM_LeverVis
+  - get: L:RudderTrimSpeed
+  - get: L:ElevatorTrimSpeed
+  - get: L:TurbulenceStrength
+  - get: L:WearRate
+  - get: L:FailureRate
+
+  # ── Fuel / Payload ────────────────────────────────────────────────────────
+  - get: L:Units # "Metric units"
+  # - get: L:Character1Weight
+  # - get: L:Character2Weight
+  # - get: L:Character3Weight
+  # - get: L:Character4Weight
+  # - get: L:BaggageWeight
+  # - get: L:FuelLeftWingTank
+  # - get: L:FuelRightWingTank
+  # - get: L:WaterLeftFuelTank
+  # - get: L:WaterRightFuelTank
+  # - get: L:FuelLeftTipTank
+  # - get: L:FuelRightTipTank
+  # - get: L:WaterLeftTipTank
+  # - get: L:WaterRightTipTank
+  # - get: L:FuelPreset
+  # - get: L:FuelTotalizerUsedFuel
+  # - get: L:FuelTotalizerRemainingFuel
+
+  # ── Maintenance ───────────────────────────────────────────────────────────
+  - get: L:TipTank
+  - get: L:StabilizatorTips
+  - get: L:WingFairings
+  - get: L:MainGearLobes
+  - get: L:FlapsGapSeal # Wing gap seals
+  - get: L:SlipperFairing
+  - get: L:SoundProofing
+  - get: L:PropellerModel
+
+master:
+  # ═══ TPM & TRIMS ══════════════════════════════════════════════════════════
+  # Currently under `shared:`. If you uncomment these here, be sure to comment them
+  # out under `shared:`.
+  # - get: L:Throttle1Position
+  # - get: L:RPMLever1Position
+  # - get: L:Eng1_MixtureManualLever
+  # - get: A:RUDDER TRIM PCT, Percent
+  #   set: (>K:RUDDER_TRIM_SET)
+  # - get: L:HANDLING_ElevatorTrim
+  #   set: (>K:ELEVATOR_TRIM_SET)
+
+  # ═══ DIRT ═════════════════════════════════════════════════════════════════
+  - get: A:REGULAR DIRT PCT, Percent
+  - get: A:LEAKS DIRT PCT, Percent
+  - get: A:RUNWAY DIRT PCT, Percent
+  - get: A:MUD DIRT PCT, Percent
+  - get: A:DUST DIRT PCT, Percent
+
+  # ═══ EXPERIMENTAL - WEAR & TEAR ═══════════════════════════════════════════
+  #
+  # Synced from master -> slave (technical terms).
+  #
+  # You probaby need to ensure settings parity between two sides
+  # and avoid flying the given airframe in solo, but I don't really know.
+  # I don't even know if this will work well or work at all.
+  #
+  # Vars extracted from A2ATabletAppComanche250.js. All given line
+  # numbers from this file.
+
+  # ── Airframe (lines 8292-8314) ────────────────────────────────────────────
+  - get: L:C_Battery1
+  - get: L:C_HydraulicLeak
+  - get: L:C_GlycolLeak
+  - get: L:C_PneumaticLeak
+  - get: L:C_CoolantLeak
+  - get: L:C_Radiator
+  - get: L:C_BrakesLeft
+  - get: L:C_BrakesRight
+  - get: L:C_GearLeft
+  - get: L:C_GearRight
+  - get: L:C_GearCenter
+  - get: L:C_TireLeft
+  - get: L:C_TireRight
+  - get: L:C_TireCenter
+  - get: L:C_WingflapLeft
+  - get: L:C_WingflapRight
+  - get: L:C_AileronLeft
+  - get: L:C_AileronRight
+  - get: L:C_Aileron
+  - get: L:C_Elevator
+  - get: L:C_Rudder
+  - get: L:C_GearMainMotor
+  - get: L:C_AileronLeftTest
+
+  # ── Engine 1 (Lines 12198-12223) ──────────────────────────────────────────
+  - get: L:C_Eng1_Main
+  - get: L:C_Eng1_Carb
+  - get: L:C_Eng1_MagL
+  - get: L:C_Eng1_MagR
+  - get: L:C_Eng1_OilPump
+  - get: L:C_Eng1_Oilsystem
+  - get: L:C_Eng1_OilFilter
+  - get: L:C_Eng1_FuelPumpMechanical
+  - get: L:C_Eng1_FuelPumpElectrical
+  - get: L:C_Eng1_FuelFilter
+  - get: L:C_Eng1_Fuelsystem
+  - get: L:C_Eng1_AirFilter
+  - get: L:C_Eng1_AirPump
+  - get: L:C_Eng1_HydraulicPump1
+  - get: L:C_Eng1_CoolantPump
+  - get: L:C_Eng1_VacuumPump
+  - get: L:C_Eng1_Supercharger
+  - get: L:C_Eng1_Generator
+  - get: L:C_Eng1_Cowlflap
+  - get: L:C_Eng1_Starter
+  - get: L:C_Eng1_Prop
+  - get: L:C_Eng1_Baffling
+
+  # ── Cylinders ─────────────────────────────────────────────────────────────
+  - get: L:C_Eng1_Cyl[1]
+  - get: L:C_Eng1_Cyl[2]
+  - get: L:C_Eng1_Cyl[3]
+  - get: L:C_Eng1_Cyl[4]
+  - get: L:C_Eng1_Cyl[5]
+  - get: L:C_Eng1_Cyl[6]
+  - get: L:C_Eng1_Cyl1_SparkPlugL
+  - get: L:C_Eng1_Cyl2_SparkPlugL
+  - get: L:C_Eng1_Cyl3_SparkPlugL
+  - get: L:C_Eng1_Cyl4_SparkPlugL
+  - get: L:C_Eng1_Cyl5_SparkPlugL
+  - get: L:C_Eng1_Cyl6_SparkPlugL
+  - get: L:C_Eng1_Cyl1_SparkPlugR
+  - get: L:C_Eng1_Cyl2_SparkPlugR
+  - get: L:C_Eng1_Cyl3_SparkPlugR
+  - get: L:C_Eng1_Cyl4_SparkPlugR
+  - get: L:C_Eng1_Cyl5_SparkPlugR
+  - get: L:C_Eng1_Cyl6_SparkPlugR
