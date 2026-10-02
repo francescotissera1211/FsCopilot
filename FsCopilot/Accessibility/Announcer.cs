@@ -17,19 +17,25 @@ using Serilog;
 /// Speaks short messages through the screen reader: join results, peers arriving and leaving,
 /// who has the controls, errors. A sighted pilot sees these change on screen; a blind pilot
 /// would otherwise have to go looking for them. Every window carries a <see cref="LiveAnnouncer"/>
-/// that turns each message into a UI Automation live-region change.
+/// that turns each message into a UI Automation notification.
 /// </summary>
 public static class Announcer
 {
-    private static readonly Subject<string> MessagesSubject = new();
+    /// <param name="Interrupt">Replaces whatever was being said, for echo that must keep up
+    /// with the keyboard (a character under the cursor), rather than queueing behind it.</param>
+    public readonly record struct Message(string Text, bool Interrupt);
 
-    public static IObservable<string> Messages => MessagesSubject;
+    private static readonly Subject<Message> MessagesSubject = new();
 
-    public static void Say(string message)
+    public static IObservable<Message> Messages => MessagesSubject;
+
+    public static void Say(string message) => Say(message, interrupt: false);
+
+    public static void Say(string message, bool interrupt)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
-        Log.Debug("[Announce] {Message}", message);
-        MessagesSubject.OnNext(message);
+        if (!interrupt) Log.Debug("[Announce] {Message}", message);
+        MessagesSubject.OnNext(new Message(message, interrupt));
     }
 }
 
@@ -80,9 +86,9 @@ public sealed class LiveAnnouncer : TextBlock
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void Speak(string message)
+    private void Speak(Announcer.Message message)
     {
-        Text = message;
+        Text = message.Text;
 
         if (TopLevel.GetTopLevel(this) is not Window window) return;
         bool speaker;
@@ -93,7 +99,7 @@ public sealed class LiveAnnouncer : TextBlock
         }
         if (!speaker) return;
 
-        UiaNotification.Raise(window, message);
+        UiaNotification.Raise(window, message.Text, message.Interrupt);
     }
 }
 
@@ -108,6 +114,7 @@ internal static class UiaNotification
 {
     private const int NotificationKindOther = 4;
     private const int NotificationProcessingImportantAll = 0;
+    private const int NotificationProcessingMostRecent = 3;
     private const string ActivityId = "FsCopilot.Announcement";
     private static readonly Guid IidRawElementProviderSimple = new("d6dd68d1-86fd-4332-8666-9abedea2d24c");
     private static readonly StrategyBasedComWrappers Wrappers = new();
@@ -115,7 +122,7 @@ internal static class UiaNotification
     private static MethodInfo? _getOrCreate;
 
     [DynamicDependency("GetOrCreate", "Avalonia.Win32.Automation.AutomationNode", "Avalonia.Win32.Automation")]
-    public static void Raise(Window window, string message)
+    public static void Raise(Window window, string message, bool interrupt)
     {
         if (_unavailable || !OperatingSystem.IsWindows()) return;
         IntPtr unknown = IntPtr.Zero, provider = IntPtr.Zero;
@@ -138,8 +145,8 @@ internal static class UiaNotification
                 if (hwnd == IntPtr.Zero || UiaHostProviderFromHwnd(hwnd, out provider) != 0) return;
             }
 
-            var hr = UiaRaiseNotificationEvent(provider, NotificationKindOther, NotificationProcessingImportantAll,
-                message, ActivityId);
+            var hr = UiaRaiseNotificationEvent(provider, NotificationKindOther,
+                interrupt ? NotificationProcessingMostRecent : NotificationProcessingImportantAll, message, ActivityId);
             if (hr != 0) Log.Debug("[Announce] UiaRaiseNotificationEvent returned 0x{Hr:X8}", hr);
         }
         catch (EntryPointNotFoundException)

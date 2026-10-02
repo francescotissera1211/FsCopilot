@@ -16,6 +16,12 @@ public class App : Application
     private readonly CancellationTokenSource _appCts = new();
 
     private static readonly TimeSpan DisconnectGrace = TimeSpan.FromMilliseconds(500);
+
+    /// <summary>Set by Settings in the main window: start a fresh instance once this one has left.</summary>
+    public static bool RestartRequested { get; set; }
+
+    /// <summary>Passed to the restarted instance: the settings were just saved, skip the window.</summary>
+    private const string SkipSettingsArg = "--skip-settings";
     
     public static readonly string Version =
         Assembly.GetEntryAssembly()?
@@ -52,11 +58,16 @@ public class App : Application
                 // Closing the traffic connection removes every AI object it created.
                 Locator.Current.GetService<SimTraffic>()?.Dispose();
                 Locator.Current.GetService<Settings>()?.Dispose();
+
+                if (RestartRequested) Restart(desktop.Args ?? []);
             };
+
+            Accessibility.TextEcho.Install();
             
             var args = desktop.Args ?? [];
             var dev = args.Contains("--dev", StringComparer.OrdinalIgnoreCase);
             var skipInstall = args.Contains("--skip-install", StringComparer.OrdinalIgnoreCase);
+            var skipSettings = args.Contains(SkipSettingsArg, StringComparer.OrdinalIgnoreCase);
             
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
@@ -97,10 +108,32 @@ public class App : Application
                 }
             };
 
-            desktop.MainWindow = login;
+            if (skipSettings) loginVm.Continue();
+            else desktop.MainWindow = login;
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>
+    /// Starts a new instance with the same arguments, after this one has said goodbye on the
+    /// network, so the new one is not refused as a duplicate peer ID.
+    /// </summary>
+    private static void Restart(string[] args)
+    {
+        try
+        {
+            var path = Environment.ProcessPath;
+            if (path is null) return;
+            var start = new System.Diagnostics.ProcessStartInfo(path) { WorkingDirectory = AppContext.BaseDirectory, UseShellExecute = false };
+            foreach (var a in args.Where(a => !a.Equals(SkipSettingsArg, StringComparison.OrdinalIgnoreCase))) start.ArgumentList.Add(a);
+            start.ArgumentList.Add(SkipSettingsArg);
+            System.Diagnostics.Process.Start(start);
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "[App] Restart failed");
+        }
     }
 
     private static void CreateWindow(IClassicDesktopStyleApplicationLifetime desktop, bool dev)
