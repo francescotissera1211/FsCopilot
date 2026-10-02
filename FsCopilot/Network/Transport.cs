@@ -27,8 +27,13 @@ internal static class Transport
     /// </summary>
     public const int MtuFloor = 1024;
 
-    /// <summary>The floor less LiteNetLib's one-byte unreliable header.</summary>
-    public const int MaxUnreliablePayload = MtuFloor - 1;
+    /// <summary>
+    /// The floor less LiteNetLib's one-byte unreliable header and the relay's one-byte frame
+    /// type, which travels ahead of the packet on a v2 relay. Without the second byte a packet
+    /// budgeted to the limit is one byte over the MTU on the relay and is thrown away (measured
+    /// against fscrelay.ihsan.dev on 2026-10-02: 1023-byte packets 0/100, 1000-byte 100/100).
+    /// </summary>
+    public const int MaxUnreliablePayload = MtuFloor - 1 - 1;
 
     public static (byte Channel, DeliveryMethod Method) Map(Delivery delivery) => delivery switch
     {
