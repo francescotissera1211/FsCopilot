@@ -1,0 +1,4 @@
+# Alias: microsoft-a330.yaml and microsoft-belugaxl.yaml includes this name, but the module is published as modules/HuesZCore.yaml.
+# Kept as an alias so the profile works without editing it (a profile update would undo an edit).
+include:
+  - modules/HuesZCore.yaml

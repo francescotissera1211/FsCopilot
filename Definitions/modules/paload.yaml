@@ -1,0 +1,4 @@
+# Alias: bksq-aircraft-tbm850.yaml includes this name, but the module is published as modules/payload.yaml.
+# Kept as an alias so the profile works without editing it (a profile update would undo an edit).
+include:
+  - modules/payload.yaml

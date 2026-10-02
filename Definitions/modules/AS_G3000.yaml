@@ -1,0 +1,4 @@
+# Alias: citation_cj3_plus.yaml includes this name, but the module is published as AS_G3000.yaml.
+# Kept as an alias so the profile works without editing it (a profile update would undo an edit).
+include:
+  - AS_G3000.yaml

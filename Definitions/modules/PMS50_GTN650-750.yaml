@@ -1,0 +1,4 @@
+# Alias: flysimware_cessna_414aw.yaml includes this name, but the module is published as modules/PMS50_GTN_650-750.yaml.
+# Kept as an alias so the profile works without editing it (a profile update would undo an edit).
+include:
+  - modules/PMS50_GTN_650-750.yaml
