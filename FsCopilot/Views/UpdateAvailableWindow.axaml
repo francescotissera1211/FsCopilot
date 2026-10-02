@@ -52,6 +52,7 @@
                 <StackPanel Spacing="0">
 
                     <TextBlock Text="A newer version of FS Copilot is ready to download."
+                               AutomationProperties.HeadingLevel="1"
                                Margin="0,12,0,0"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
@@ -97,10 +98,15 @@
                                 Spacing="12"
                                 Margin="0,26,0,0">
                         <Button Classes="secondary"
+                                IsCancel="True"
+                                AutomationProperties.HelpText="Closes this message. Escape does the same."
                                 Content="Later"
                                 Command="{Binding LaterCommand}" />
 
-                        <Button Classes="primary"
+                        <Button x:Name="OpenButton"
+                                Classes="primary"
+                                IsDefault="True"
+                                AutomationProperties.HelpText="Opens the release page in your browser to download the new version."
                                 Content="Open GitHub"
                                 Command="{Binding OpenGitHubCommand}" />
                     </StackPanel>

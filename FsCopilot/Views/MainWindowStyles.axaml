@@ -24,6 +24,22 @@
         <Setter Property="Padding" Value="20"></Setter>
     </Style>
 
+    <!-- Every icon here is decoration beside a text that says the same; keep them out of the
+         screen reader's way. Card titles are headings, so H jumps between cards. -->
+    <Style Selector="PathIcon">
+        <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+    </Style>
+    <Style Selector="TextBlock.CardTitle">
+        <Setter Property="AutomationProperties.HeadingLevel" Value="2" />
+    </Style>
+    <Style Selector="ListBox.Connections">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <!-- The row's text is read through the list item's name; the pieces stay out of the way. -->
+    <Style Selector="ListBox.Connections ListBoxItem TextBlock">
+        <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+    </Style>
+
     <Style Selector="PathIcon.CardTitle">
         <Setter Property="Foreground" Value="#8ec6ff"></Setter>
         <Setter Property="Width" Value="15"></Setter>

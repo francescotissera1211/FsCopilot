@@ -49,11 +49,13 @@
             <TextBox Grid.Row="0" 
                      Classes="Search"
                      Watermark="Search"
+                     AutomationProperties.Name="Search the profile"
                      Text="{Binding Search}" />
             
             <Border Grid.Row="1"
                     Classes="Card Tree">
                     <TreeView x:Name="DefTree"
+                              AutomationProperties.Name="Profile variables"
                               DockPanel.Dock="Bottom"
                               Classes="Tree"
                               ItemsSource="{Binding Nodes}">
@@ -86,6 +88,7 @@
                                         <Button IsVisible="{Binding IsVariable}" 
                                                 Classes="Push"
                                                 Content="Push"
+                                                AutomationProperties.Name="{Binding Title, StringFormat='Push {0}'}"
                                                 Command="{Binding PushCommand}"/>
                                         <TextBlock Classes="Line"
                                                    Text="{Binding Title}"/>
@@ -102,11 +105,13 @@
 
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <ComboBox Width="230"
+                                  AutomationProperties.Name="Screen"
+                                  AutomationProperties.HelpText="The glass display the buttons below act on. Empty means every screen."
                                   PlaceholderText="* (all screens)"
                                   ItemsSource="{Binding ScreenNames}"
                                   SelectedItem="{Binding SelectedScreen}"/>
-                        <TextBox Width="64" Watermark="x" Text="{Binding ScreenX}"/>
-                        <TextBox Width="64" Watermark="y" Text="{Binding ScreenY}"/>
+                        <TextBox Width="64" Watermark="x" AutomationProperties.Name="Pointer X, 0 to 1" Text="{Binding ScreenX}"/>
+                        <TextBox Width="64" Watermark="y" AutomationProperties.Name="Pointer Y, 0 to 1" Text="{Binding ScreenY}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Spacing="6">
@@ -123,6 +128,7 @@
                     </StackPanel>
 
                     <ListBox Height="150"
+                             AutomationProperties.Name="Screen events"
                              ItemsSource="{Binding Screens}">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="conn:ScreenEvent">
@@ -137,6 +143,7 @@
             <DockPanel Grid.Row="3">
                 <Button DockPanel.Dock="Right"
                         Classes="Tool" 
+                        AutomationProperties.Name="Reload profile"
                         Command="{Binding ReloadCommand}">
                     <PathIcon Data="{StaticResource arrow_sync_regular}" />
                 </Button>
@@ -145,6 +152,8 @@
                         Classes="Tool" 
                         Classes.Recording="{Binding IsRecording}"
                         IsEnabled="{Binding IsPlaying, Converter={StaticResource Inverse}}"
+                        AutomationProperties.Name="Record, or stop recording"
+                        AutomationProperties.HelpText="Records physics, controls and variables until pressed again."
                         Command="{Binding RecordCommand}">
                     <PathIcon Data="{StaticResource record_regular}" />
                 </Button>
@@ -153,6 +162,8 @@
                         Classes="Tool"
                         Classes.Playing="{Binding IsPlaying}"
                         IsEnabled="{Binding IsRecording, Converter={StaticResource Inverse}}"
+                        AutomationProperties.Name="Play, or stop playback"
+                        AutomationProperties.HelpText="Replays the recording into the simulator."
                         Command="{Binding PlayCommand}">
                     <PathIcon Data="{StaticResource play_regular}" />
                 </Button>
@@ -160,6 +171,7 @@
                 <Border DockPanel.Dock="Left"
                         Classes="Card Badge">
                         <TextBlock Classes="Badge"
+                                   AutomationProperties.LiveSetting="Polite"
                                    Text="{Binding Status}" />
                 </Border>
             </DockPanel>
@@ -167,6 +179,7 @@
             <Border Grid.Row="3"
                     Classes="Card Badge">
                     <TextBlock Classes="Badge"
+                               AutomationProperties.LiveSetting="Polite"
                                Text="{Binding Loaded}" />
             </Border>
 

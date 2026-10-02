@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:fsCopilot="clr-namespace:FsCopilot"
+        xmlns:a11y="using:FsCopilot.Accessibility"
         mc:Ignorable="d"
         d:DesignWidth="500"
         d:DesignHeight="800"
@@ -59,6 +60,7 @@
                                 VerticalAlignment="Center"
                                 Margin="0,0,8,0">
                         <TextBlock Classes="Name"
+                                   AutomationProperties.HeadingLevel="1"
                                    Text="FS Copilot"  />
                         <TextBlock Classes="Version"
                                    Text="{Binding Version, StringFormat='v{0}'}" />
@@ -72,9 +74,19 @@
                         </PathIcon>
                     </Border>
                     <DockPanel DockPanel.Dock="Left">
-                        <SelectableTextBlock Classes="PeerId"
-                                   DockPanel.Dock="Bottom"
-                                   Text="{Binding PeerId}" />
+                        <DockPanel DockPanel.Dock="Bottom">
+                            <Button DockPanel.Dock="Right"
+                                    Classes="Link"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Content="Copy code"
+                                    AutomationProperties.Name="Copy your client code"
+                                    AutomationProperties.HelpText="Copies your client code to the clipboard so you can send it to your crew."
+                                    Command="{Binding CopyCodeCommand}" />
+                            <SelectableTextBlock Classes="PeerId"
+                                       AutomationProperties.HelpText="Your client code. Give it to your crew so they can join you."
+                                       Text="{Binding PeerId}" />
+                        </DockPanel>
                         <TextBlock Classes="ClientName"
                                    DockPanel.Dock="Top"
                                    Text="{Binding ClientName}" />
@@ -92,28 +104,46 @@
                                    Text="Connection" />
                     </DockPanel>
 
-                    <DockPanel>
+                    <!-- Tab order inside this row only: the code box, then Join, Leave, Take Control. -->
+                    <DockPanel KeyboardNavigation.TabNavigation="Local">
                         <Button DockPanel.Dock="Right"
                                 Classes="TakeControl"
                                 Content="Take Control"
+                                KeyboardNavigation.TabIndex="3"
+                                AutomationProperties.HelpText="Takes the controls of the shared aircraft from your co-pilot. Available while your co-pilot has them."
                                 IsEnabled="{Binding ShowTakeControl}"
                                 Command="{Binding TakeControlCommand}"/>
                         <Button DockPanel.Dock="Right"
                                 Classes="Leave"
                                 Content="Leave"
+                                KeyboardNavigation.TabIndex="2"
+                                AutomationProperties.HelpText="Leaves the session and gives you the controls."
                                 Command="{Binding LeaveCommand}"
                                 IsEnabled="{Binding Connected}" />
                         <Button DockPanel.Dock="Right"
                                 Classes="Connect"
                                 Content="Join"
+                                KeyboardNavigation.TabIndex="1"
+                                AutomationProperties.HelpText="Joins the pilot whose client code is in the box."
                                 Command="{Binding JoinCommand}"
                                 IsEnabled="{Binding IsBusy, Converter={StaticResource Inverse}}" />
-                        <TextBox Classes="Connect"
+                        <TextBox x:Name="CodeBox"
+                                 Classes="Connect"
+                                 KeyboardNavigation.TabIndex="0"
+                                 MaxLength="8"
                                  AutomationProperties.Name="Client code to join"
+                                 AutomationProperties.HelpText="The 8-character code of the pilot you want to join. Press Enter to join."
                                  IsEnabled="{Binding IsBusy, Converter={StaticResource Inverse}}"
                                  Watermark="Client code"
-                                 Text="{Binding ConnectionCode}" />
+                                 Text="{Binding ConnectionCode}">
+                            <TextBox.KeyBindings>
+                                <KeyBinding Gesture="Enter" Command="{Binding JoinCommand}" />
+                            </TextBox.KeyBindings>
+                        </TextBox>
                     </DockPanel>
+
+                    <TextBlock Classes="Note"
+                               Text="{Binding ControlStatus}" />
 
                     <TextBlock Classes="Note"
                                Text="Note: Make sure that all clients see each other after connecting." />
@@ -164,6 +194,7 @@
                         <ToggleSwitch DockPanel.Dock="Right"
                                       Classes="Share"
                                       AutomationProperties.Name="Share AI traffic"
+                                      AutomationProperties.HelpText="Shares the AI traffic in your sim with the crew. Needs a session and the simulator running. Only one pilot can share at a time."
                                       IsChecked="{Binding Share.TrafficOn}"
                                       IsEnabled="{Binding Share.TrafficCanHost}"
                                       IsVisible="{Binding Share.TrafficSharedBy, Converter={StaticResource Empty}}" />
@@ -190,6 +221,7 @@
                             <ToggleSwitch DockPanel.Dock="Right"
                                           Classes="Share"
                                           AutomationProperties.Name="Share ATC audio"
+                                          AutomationProperties.HelpText="Streams the sound of your ATC app to the crew. Pick the app in the list that appears."
                                           IsChecked="{Binding Share.AtcOn}"
                                           IsEnabled="{Binding Share.AtcCanHost}"
                                           IsVisible="{Binding Share.AtcSharedBy, Converter={StaticResource Empty}}" />
@@ -208,6 +240,7 @@
                         <ComboBox Classes="Share"
                                   IsVisible="{Binding Share.AtcOn}"
                                   AutomationProperties.Name="ATC audio source app"
+                                  AutomationProperties.HelpText="The program whose sound is shared. Other lists every program making sound now."
                                   ItemsSource="{Binding Share.AtcApps}"
                                   IsDropDownOpen="{Binding Share.AtcDropDownOpen, Mode=TwoWay}"
                                   SelectedItem="{Binding Share.SelectedAtcApp}" />
@@ -216,7 +249,7 @@
                                    IsVisible="{Binding Share.AtcReceiving}">
                             <Button DockPanel.Dock="Right"
                                     Classes="Icon"
-                                    AutomationProperties.Name="Mute received ATC audio"
+                                    AutomationProperties.Name="{Binding Share.MuteLabel}"
                                     Command="{Binding Share.ToggleMute}">
                                 <Panel>
                                     <PathIcon Data="{StaticResource speaker_2_regular}"
@@ -226,10 +259,12 @@
                                 </Panel>
                             </Button>
                             <Slider Classes="Share"
-                                    AutomationProperties.Name="Received ATC audio volume"
+                                    AutomationProperties.Name="Received ATC audio volume, percent"
                                     Minimum="0"
-                                    Maximum="1"
-                                    Value="{Binding Share.AtcVolume}" />
+                                    Maximum="100"
+                                    SmallChange="5"
+                                    LargeChange="10"
+                                    Value="{Binding Share.AtcVolumePercent}" />
                         </DockPanel>
                     </StackPanel>
 
@@ -263,6 +298,7 @@
                         <Button DockPanel.Dock="Right"
                                 Classes="ResetStats"
                                 Content="Reset Stats"
+                                AutomationProperties.HelpText="Clears the packet loss figures for every pilot."
                                 FontSize="10"
                                 Margin="0,0,4,0"
                                 Padding="6,2"
@@ -272,18 +308,26 @@
 
                     <ScrollViewer Classes="Connections"
                                   DockPanel.Dock="Bottom">
-                        <ItemsControl ItemsSource="{Binding Connections}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Vertical" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
+                        <!-- A list box, not an items control: Avalonia exposes no automation element
+                             for a template's panel, so each pilot needs a real list item to be one
+                             thing a screen reader can land on and arrow through. -->
+                        <ListBox ItemsSource="{Binding Connections}"
+                                 Classes="Connections"
+                                 AutomationProperties.Name="Pilots onboard">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem" x:DataType="vm:ConnectionItem">
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding Description}" />
+                                    <Setter Property="AutomationProperties.HelpText" Value="{Binding Details}" />
+                                    <Setter Property="Padding" Value="0" />
+                                </Style>
+                            </ListBox.Styles>
 
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ConnectionItem">
                                     <StackPanel>
                                         <StackPanel Orientation="Horizontal"
                                                     Spacing="10"
+                                                    AutomationProperties.AccessibilityView="Raw"
                                                     VerticalAlignment="Center">
 
                                                 <PathIcon Foreground="#4CAF50"
@@ -342,12 +386,13 @@
                                                 </StackPanel>
                                         </StackPanel>
 
-                                        <Separator IsVisible="{Binding HasSeparatorAfter}" />
+                                        <Separator AutomationProperties.AccessibilityView="Raw"
+                                                   IsVisible="{Binding HasSeparatorAfter}" />
                                         <!-- <Border Height="1" Background="#94a3b8" Margin="0,10,0,10" /> -->
                                     </StackPanel>
                                 </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </ScrollViewer>
 
                 </DockPanel>
@@ -360,6 +405,8 @@
                         <Button DockPanel.Dock="Right"
                                 Classes="Link"
                                 Content="Download"
+                                AutomationProperties.Name="Download profile"
+                                AutomationProperties.HelpText="Downloads the newer profile for this aircraft from the profile server."
                                 Command="{Binding DownloadProfileCommand}"/>
                         <TextBlock>New profile available</TextBlock>
                     </DockPanel>
@@ -377,5 +424,6 @@
             </StackPanel>
         </Grid>
 
+        <a11y:LiveAnnouncer />
     </Panel>
 </Window>

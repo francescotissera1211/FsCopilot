@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FsCopilot.ViewModels"
+        xmlns:a11y="using:FsCopilot.Accessibility"
         x:Class="FsCopilot.Views.SetupWindow"
         Title="FS Copilot - Setup"
         x:DataType="vm:SetupViewModel"
@@ -67,6 +68,7 @@
                     Margin="32">
 
             <Image Source="/Assets/hero.png"
+                   AutomationProperties.AccessibilityView="Raw"
                    Width="300"
                    HorizontalAlignment="Center"
                    Margin="0,0,0,36"
@@ -79,6 +81,7 @@
             </Image>
 
             <TextBlock Text="FS Copilot"
+                       AutomationProperties.HeadingLevel="1"
                        HorizontalAlignment="Center"
                        FontSize="48"
                        FontWeight="SemiBold"
@@ -92,6 +95,7 @@
             </TextBlock>
 
             <TextBlock Text="{Binding Subtitle}"
+                       AutomationProperties.HeadingLevel="2"
                        HorizontalAlignment="Center"
                        TextAlignment="Center"
                        Foreground="#F5FFFFFF"
@@ -105,12 +109,15 @@
                        IsVisible="{Binding IsBusy}"
                        Text="Please wait..." />
 
-            <Button Classes="cta"
+            <Button x:Name="PrimaryButton"
+                    Classes="cta"
+                    IsDefault="True"
                     IsVisible="{Binding ShowPrimaryButton}"
                     Content="{Binding PrimaryButtonText}"
                     Command="{Binding PrimaryCommand}"
                     IsEnabled="{Binding CanExecutePrimaryAction}"
                     HorizontalAlignment="Center" />
+            <a11y:LiveAnnouncer />
         </StackPanel>
     </Grid>
 </Window>

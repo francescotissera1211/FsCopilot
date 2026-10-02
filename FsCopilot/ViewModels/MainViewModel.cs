@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using Accessibility;
 using Connection;
 using Network;
 using ReactiveUI;
@@ -20,6 +21,9 @@ public class MainViewModel : ReactiveObject, IDisposable
     private bool _connected;
     private bool _showTakeControl;
     private bool _newProfileAvailable;
+    private bool _isMaster = true;
+    private string _lastSpokenError = string.Empty;
+    private DateTime _leftAt = DateTime.MinValue;
     private ViewErrors _errors = ViewErrors.None;
 
     private string Aircraft
@@ -38,7 +42,17 @@ public class MainViewModel : ReactiveObject, IDisposable
         {
             _errors = value;
             this.RaisePropertyChanged(nameof(ErrorMessage));
+            SpeakError();
         }
+    }
+
+    /// <summary>A new problem is spoken once; the same one is not repeated while it lasts.</summary>
+    private void SpeakError()
+    {
+        var message = ErrorMessage;
+        if (message == _lastSpokenError) return;
+        _lastSpokenError = message;
+        if (!string.IsNullOrEmpty(message)) Announcer.Say(message);
     }
 
     public bool IsBusy
@@ -68,8 +82,18 @@ public class MainViewModel : ReactiveObject, IDisposable
     public bool NewProfileAvailable
     {
         get => _newProfileAvailable;
-        set => this.RaiseAndSetIfChanged(ref _newProfileAvailable, value);
+        set
+        {
+            if (value && !_newProfileAvailable)
+                Announcer.Say("A newer profile for this aircraft is available. Use the Download profile button.");
+            this.RaiseAndSetIfChanged(ref _newProfileAvailable, value);
+        }
     }
+
+    /// <summary>Who flies the aircraft, in words: the Take Control button alone does not say.</summary>
+    public string ControlStatus => _isMaster ? "You have the controls" : "Your co-pilot has the controls";
+
+    public string ClientCodeDescription => $"Your client code: {Spell(PeerId)}";
 
     public string PeerId { get; init; }
     public string ClientName { get; init; }
@@ -86,7 +110,11 @@ public class MainViewModel : ReactiveObject, IDisposable
         _errors.HasFlag(ViewErrors.PanelChannel) ? "Panel channel unavailable - ports 9020-9024 are in use." :
         string.Empty;
 
-    public ObservableCollection<Connection> Connections { get; set; } = [];
+    public ObservableCollection<ConnectionItem> Connections { get; set; } = [];
+    public ReactiveCommand<Unit, Unit> CopyCodeCommand { get; }
+
+    /// <summary>Raised by <see cref="CopyCodeCommand"/>; the window owns the clipboard.</summary>
+    public event Func<string, Task>? CopyRequested;
     public ShareViewModel Share { get; }
     public ReactiveCommand<Unit, Unit> JoinCommand { get; }
     public ReactiveCommand<Unit, Unit> LeaveCommand { get; }
@@ -182,20 +210,7 @@ public class MainViewModel : ReactiveObject, IDisposable
         connectedPeers
             .Sample(TimeSpan.FromMilliseconds(250))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(peers =>
-            {
-                var i = 0;
-                Connections.Clear();
-                foreach (var peer in peers) Connections.Add(new(
-                    PeerId: peer.PeerId,
-                    Name: string.IsNullOrWhiteSpace(peer.Name) ? "Unknown" : peer.Name,
-                    Ping: peer.Ping,
-                    PacketLoss: peer.PacketLoss,
-                    IsDirect: peer.Transport == Peer.TransportKind.Direct,
-                    HasSeparatorAfter: i++ < peers.Count - 1
-                ));
-                Connected = Connections.Any();
-            })
+            .Subscribe(UpdateConnections)
             .DisposeWith(_d);
 
         connectedPeers
@@ -213,15 +228,29 @@ public class MainViewModel : ReactiveObject, IDisposable
 
         masterSwitch.Master
             .Sample(TimeSpan.FromMilliseconds(250))
-            .Select(isMaster => !isMaster)
+            .DistinctUntilChanged()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(isSlave => ShowTakeControl = isSlave)
+            .Subscribe(isMaster =>
+            {
+                ShowTakeControl = !isMaster;
+                var changed = isMaster != _isMaster;
+                _isMaster = isMaster;
+                this.RaisePropertyChanged(nameof(ControlStatus));
+                if (changed && Connected) Announcer.Say(ControlStatus + ".");
+            })
             .DisposeWith(_d);
 
         JoinCommand = ReactiveCommand.CreateFromTask(async () =>
         {
             if (IsBusy) return;
-            if (ConnectionCode.Length != 8) return;
+            var code = (ConnectionCode ?? string.Empty).Trim().ToUpperInvariant();
+            if (code.Length != 8)
+            {
+                Announcer.Say("Enter the 8-character client code of the pilot you want to join.");
+                return;
+            }
+            ConnectionCode = code;
+            Announcer.Say($"Joining {Spell(code)}.");
 
             Errors &= ~ViewErrors.Failed;
             IsBusy = true;
@@ -231,7 +260,7 @@ public class MainViewModel : ReactiveObject, IDisposable
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
 
                 masterSwitch.Join();
-                result = await net.Connect(ConnectionCode, cts.Token);
+                result = await net.Connect(code, cts.Token);
             }
             finally
             {
@@ -241,15 +270,17 @@ public class MainViewModel : ReactiveObject, IDisposable
             // Join() made us slave before the attempt.
             if (result != ConnectionResult.Success) masterSwitch.TakeControl();
 
+            if (result == ConnectionResult.Success)
+                Announcer.Say($"Joined {Spell(code)}.");
             if (result == ConnectionResult.Failed)
             {
                 Errors |= ViewErrors.Failed;
-                _ = Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => Errors &= ~ViewErrors.Failed);
+                _ = Task.Delay(TimeSpan.FromSeconds(10)).ContinueWith(_ => Errors &= ~ViewErrors.Failed);
             }
             else if (result == ConnectionResult.Rejected)
             {
                 Errors |= ViewErrors.Rejected;
-                _ = Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => Errors &= ~ViewErrors.Rejected);
+                _ = Task.Delay(TimeSpan.FromSeconds(10)).ContinueWith(_ => Errors &= ~ViewErrors.Rejected);
             }
         });
 
@@ -259,6 +290,8 @@ public class MainViewModel : ReactiveObject, IDisposable
             masterSwitch.TakeControl();
             // Leaving is not an outage: unlock panels instead of holding for a return.
             coordinator.EndSync();
+            _leftAt = DateTime.UtcNow;
+            Announcer.Say("You left the session.");
         });
 
         TakeControlCommand = ReactiveCommand.Create(masterSwitch.TakeControl);
@@ -266,15 +299,28 @@ public class MainViewModel : ReactiveObject, IDisposable
         ResetPacketLossCommand = ReactiveCommand.Create(() =>
         {
             net.ResetPacketLoss();
+            Announcer.Say("Packet loss statistics reset.");
+        });
+
+        CopyCodeCommand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            if (CopyRequested is { } copy) await copy(PeerId);
+            Announcer.Say($"Client code {Spell(PeerId)} copied to the clipboard.");
         });
 
         DownloadProfileCommand = ReactiveCommand.CreateFromTask(async ct =>
         {
             if (definitions.Value == null) return;
-            var cfg = await updater.Download(definitions.Value.Name, ct);
-            if (cfg == null) return;
-            var defs = Definitions.Save(definitions.Value.Name, cfg);
+            var name = definitions.Value.Name;
+            var cfg = await updater.Download(name, ct);
+            if (cfg == null)
+            {
+                Announcer.Say("The profile could not be downloaded. The profile server may be unreachable.");
+                return;
+            }
+            var defs = Definitions.Save(name, cfg);
             definitions.OnNext(defs);
+            Announcer.Say($"Profile for {name} updated.");
         });
     }
 
@@ -294,29 +340,48 @@ public class MainViewModel : ReactiveObject, IDisposable
         PanelChannel    = 0b_1000_0000
     }
 
-    public record Connection(string PeerId, string Name, int Ping, float PacketLoss, bool IsDirect, bool HasSeparatorAfter)
+    /// <summary>
+    /// Rows are updated in place rather than rebuilt every quarter second, so a screen reader
+    /// reading the list does not lose its place while ping and loss change.
+    /// </summary>
+    private void UpdateConnections(ICollection<Peer> peers)
     {
-        public int QualityLevel
+        var current = peers.Select(p => p.PeerId).ToHashSet();
+
+        foreach (var gone in Connections.Where(c => !current.Contains(c.PeerId)).ToArray())
         {
-            get
+            Connections.Remove(gone);
+            // After our own Leave, "you left" has been said; every peer going is no news.
+            if (gone.Announced && DateTime.UtcNow - _leftAt > TimeSpan.FromSeconds(3))
+                Announcer.Say($"{gone.Name} left the session.");
+        }
+
+        foreach (var peer in peers)
+        {
+            var name = string.IsNullOrWhiteSpace(peer.Name) ? "Unknown" : peer.Name;
+            var isDirect = peer.Transport == Peer.TransportKind.Direct;
+            var item = Connections.FirstOrDefault(c => c.PeerId == peer.PeerId);
+            if (item is null)
             {
-                // Quality: 1=excellent, 5=poor. Combines ping and packet loss.
-                var level = 1;
+                item = new ConnectionItem(peer.PeerId);
+                Connections.Add(item);
+            }
+            item.Update(name, peer.Ping, peer.PacketLoss, isDirect);
 
-                // Ping-based levels
-                if (Ping > 800) level = Math.Max(level, 5);
-                else if (Ping > 400) level = Math.Max(level, 4);
-                else if (Ping > 200) level = Math.Max(level, 3);
-                else if (Ping > 100) level = Math.Max(level, 2);
-
-                // Packet loss degrades quality further
-                if (PacketLoss > 20f) level = Math.Max(level, 5);
-                else if (PacketLoss > 10f) level = Math.Max(level, 4);
-                else if (PacketLoss > 5f) level = Math.Max(level, 3);
-                else if (PacketLoss > 2f) level = Math.Max(level, 2);
-
-                return level;
+            // A peer's name arrives a moment after its link; announce once it is known, or
+            // after a few seconds by code, rather than "Unknown joined".
+            if (!item.Announced && (name != "Unknown" || DateTime.UtcNow - item.FirstSeen > TimeSpan.FromSeconds(4)))
+            {
+                item.Announced = true;
+                var who = name != "Unknown" ? name : $"Pilot {Spell(peer.PeerId)}";
+                Announcer.Say($"{who} joined the session, {(isDirect ? "direct link" : "through the relay")}.");
             }
         }
+
+        for (var i = 0; i < Connections.Count; i++) Connections[i].HasSeparatorAfter = i < Connections.Count - 1;
+        Connected = Connections.Any();
     }
+
+    /// <summary>A code spelled out, so a screen reader reads "Q F Q Y" rather than a word.</summary>
+    internal static string Spell(string code) => string.Join(' ', code.ToCharArray());
 }

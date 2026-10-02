@@ -62,6 +62,9 @@ public sealed class SetupViewModel : ReactiveObject, IDisposable
             this.RaisePropertyChanged(nameof(PrimaryButtonText));
             this.RaisePropertyChanged(nameof(CanExecutePrimaryAction));
             this.RaisePropertyChanged(nameof(ShowPrimaryButton));
+            // Spoken, with what the button now does: the button keeps focus while its text changes.
+            var said = Subtitle.TrimEnd('.', ' ') + ".";
+            Accessibility.Announcer.Say(ShowPrimaryButton && CanExecutePrimaryAction ? $"{said} {PrimaryButtonText} button." : said);
         }
     }
 

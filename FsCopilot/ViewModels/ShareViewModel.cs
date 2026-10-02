@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using Accessibility;
 using Audio;
 using Connection;
 using Network;
@@ -91,7 +92,9 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(host =>
             {
+                var was = _trafficHost;
                 _trafficHost = host;
+                if (host != was) SpeakHost("AI traffic", host);
                 this.RaisePropertyChanged(nameof(TrafficCanHost));
                 this.RaisePropertyChanged(nameof(TrafficSharedBy));
                 this.RaisePropertyChanged(nameof(TrafficReceiving));
@@ -103,7 +106,9 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(host =>
             {
+                var was = _atcHostPeer;
                 _atcHostPeer = host;
+                if (host != was) SpeakHost("ATC audio", host);
                 this.RaisePropertyChanged(nameof(AtcCanHost));
                 this.RaisePropertyChanged(nameof(AtcSharedBy));
                 this.RaisePropertyChanged(nameof(AtcReceiving));
@@ -126,12 +131,23 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
             .Select(n => n > 0)
             .DistinctUntilChanged()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(foreign => { _foreignTraffic = foreign; this.RaisePropertyChanged(nameof(ForeignTrafficWarning)); })
+            .Subscribe(foreign =>
+            {
+                _foreignTraffic = foreign;
+                this.RaisePropertyChanged(nameof(ForeignTrafficWarning));
+                if (ForeignTrafficWarning) Announcer.Say("Detected existing AI traffic in your sim. Disable it to avoid duplicates.");
+            })
             .DisposeWith(_d);
 
         atcHost.CurrentStatus
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(status => { _atcStatus = status; this.RaisePropertyChanged(nameof(AtcStatus)); })
+            .Subscribe(status =>
+            {
+                var before = AtcStatus;
+                _atcStatus = status;
+                this.RaisePropertyChanged(nameof(AtcStatus));
+                if (_atcOn && AtcStatus != before) Announcer.Say($"ATC audio: {AtcStatus}.");
+            })
             .DisposeWith(_d);
 
         atcHost.Detected
@@ -306,16 +322,47 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
     public double AtcVolume
     {
         get => _atcReceiver.Volume;
-        set { _atcReceiver.Volume = value; this.RaisePropertyChanged(); }
+        set
+        {
+            _atcReceiver.Volume = value;
+            this.RaisePropertyChanged();
+            this.RaisePropertyChanged(nameof(AtcVolumePercent));
+        }
+    }
+
+    /// <summary>The volume as 0-100, so the slider reads as a percentage rather than 0.5.</summary>
+    public double AtcVolumePercent
+    {
+        get => Math.Round(AtcVolume * 100);
+        set => AtcVolume = Math.Clamp(value, 0, 100) / 100.0;
     }
 
     public bool AtcMuted
     {
         get => _atcReceiver.Muted;
-        set { _atcReceiver.Muted = value; this.RaisePropertyChanged(); }
+        set
+        {
+            _atcReceiver.Muted = value;
+            this.RaisePropertyChanged();
+            this.RaisePropertyChanged(nameof(MuteLabel));
+        }
     }
 
-    public void ToggleMute() => AtcMuted = !AtcMuted;
+    /// <summary>What the mute button will do, which is what a screen reader should call it.</summary>
+    public string MuteLabel => AtcMuted ? "Unmute received ATC audio" : "Mute received ATC audio";
+
+    public void ToggleMute()
+    {
+        AtcMuted = !AtcMuted;
+        Announcer.Say(AtcMuted ? "Received ATC audio muted." : "Received ATC audio unmuted.");
+    }
+
+    private void SpeakHost(string feature, string? host)
+    {
+        if (host is null) Announcer.Say($"{feature} is no longer shared.");
+        else if (host == _share.SelfId) Announcer.Say($"You are sharing {feature}.");
+        else Announcer.Say($"{Name(host)} is sharing {feature}.");
+    }
 
     // -- card -------------------------------------------------------------------------------
 
@@ -328,6 +375,7 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
             this.RaisePropertyChanged();
             _noticeTimer?.Dispose();
             if (string.IsNullOrEmpty(value)) return;
+            Announcer.Say(value);
             _noticeTimer = Observable.Timer(NoticeFor).ObserveOn(RxApp.MainThreadScheduler).Subscribe(_ => Notice = string.Empty);
         }
     }

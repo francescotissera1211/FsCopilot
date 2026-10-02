@@ -7,6 +7,13 @@ public partial class SetupWindow : Window
     public SetupWindow()
     {
         InitializeComponent();
+        // Focus the action so Enter or Space works at once, and say where the user is.
+        Opened += (_, _) =>
+        {
+            PrimaryButton.Focus();
+            if (DataContext is ViewModels.SetupViewModel vm)
+                Accessibility.Announcer.Say($"FS Copilot setup. {vm.Subtitle.TrimEnd('.', ' ')}. {vm.PrimaryButtonText} button.");
+        };
     }
 
     private void DragArea_OnPointerPressed(object? sender, PointerPressedEventArgs e)
