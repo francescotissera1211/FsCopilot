@@ -5,6 +5,11 @@ using ViewModels;
 
 public partial class MainWindow : Window
 {
+    private const double RowSpacing = 10;
+
+    private readonly double _baseHeight;
+    private readonly Border _notesCard;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -26,7 +31,19 @@ public partial class MainWindow : Window
                 Avalonia.Threading.DispatcherTimer.RunOnce(
                     () => Announcer.Say(vm.OpeningLine()), TimeSpan.FromMilliseconds(700));
         };
+
+        _baseHeight = Height;
+
+        // Increase window height when profile notes are visible (SamiSaleh98)
+        _notesCard = this.FindControl<Border>("NotesCard")!;
+        _notesCard.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == BoundsProperty || e.Property == IsVisibleProperty) UpdateHeight();
+        };
     }
+
+    private void UpdateHeight() =>
+        Height = _baseHeight + (_notesCard.IsVisible ? _notesCard.Bounds.Height + RowSpacing : 0);
 
     /// <summary>
     /// Connection settings again. Server, ID and connection type are fixed when the network

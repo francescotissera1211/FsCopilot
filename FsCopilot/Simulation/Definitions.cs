@@ -35,14 +35,16 @@ public class Definitions : IReadOnlyCollection<Definition>
     public DateTime UpdatedAt { get; }
     public string[] Ignore { get; }
     public string[] Pointer { get; }
+    public string[] Notes { get; }
 
-    private Definitions(string name, DateTime updatedAt, Definition[] links, string[] ignore, string[] pointer)
+    private Definitions(string name, DateTime updatedAt, Definition[] links, string[] ignore, string[] pointer, string[] notes)
     {
         Name = name;
         UpdatedAt = updatedAt;
         _links = links;
         Ignore = ignore;
         Pointer = pointer;
+        Notes = notes;
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(Config))]
@@ -88,6 +90,7 @@ public class Definitions : IReadOnlyCollection<Definition>
             .Select(m => new Definition(true, m.Get, m.Set, m.Skp)).ToArray();
         var ignore = (cfg.Ignore ?? []).Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => i.Trim()).ToArray();
         var pointer = (cfg.Pointer ?? []).Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => p.Trim()).ToArray();
+        var notes = (cfg.Notes ?? []).Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n.Trim()).ToArray();
         node = new(path, (cfg.Include ?? [])
             .Select(i =>
             {
@@ -96,21 +99,22 @@ public class Definitions : IReadOnlyCollection<Definition>
             })
             .Where(def => def.loaded)
             .Select(def => def.child)
-            .ToArray(), master, shared, ignore, pointer);
+            .ToArray(), master, shared, ignore, pointer, notes);
         return true;
     }
 
     public static Definitions Load(string name)
     {
         var cfgFile = LoadModule($"{name}.yaml") ?? string.Empty;
-        if (!TryLoadTree($"{name}.yaml", out var node)) return new(name, DateTime.MinValue, [], [], []);
+        if (!TryLoadTree($"{name}.yaml", out var node)) return new(name, DateTime.MinValue, [], [], [], []);
         var master = new List<Definition>();
         var shared = new List<Definition>();
         var ignore = new List<string>();
         var pointer = new List<string>();
-        Collect(node, master, shared, ignore, pointer);
+        var notes = new List<string>();
+        Collect(node, master, shared, ignore, pointer, notes);
         var simVars = master.Concat(shared).ToArray();
-        return new(name, TryReadUpdatedUtc(cfgFile) ?? DateTime.MinValue, simVars, ignore.ToArray(), pointer.ToArray());
+        return new(name, TryReadUpdatedUtc(cfgFile) ?? DateTime.MinValue, simVars, ignore.ToArray(), pointer.ToArray(), notes.ToArray());
     }
 
     private static string? LoadModule(string path)
@@ -131,9 +135,11 @@ public class Definitions : IReadOnlyCollection<Definition>
         }
     }
 
-    private static void Collect(DefinitionNode node, List<Definition> master, List<Definition> shared, List<string> ignore, List<string> pointer)
+    private static void Collect(DefinitionNode node, List<Definition> master, List<Definition> shared, List<string> ignore,
+        List<string> pointer, List<string> notes)
     {
-        foreach (var child in node.Include) Collect(child, master, shared, ignore, pointer);
+        notes.AddRange(node.Notes);
+        foreach (var child in node.Include) Collect(child, master, shared, ignore, pointer, notes);
         master.AddRange(node.Master);
         shared.AddRange(node.Shared);
         ignore.AddRange(node.Ignore);
@@ -190,6 +196,8 @@ public class Definitions : IReadOnlyCollection<Definition>
         // (e.g. 'DisplayUnits|config=Default') to name one panel of several.
         [YamlMember(Alias = "pointer")]
         public string[]? Pointer { get; set; } = [];
+        [YamlMember(Alias = "notes")]
+        public string[]? Notes { get; set; } = [];
 
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         public class Link
@@ -216,9 +224,10 @@ public record DefinitionNode(
     Definition[] Master,
     Definition[] Shared,
     string[] Ignore,
-    string[] Pointer)
+    string[] Pointer,
+    string[] Notes)
 {
-    public static readonly DefinitionNode Empty = new(string.Empty, [], [], [], [], []);
+    public static readonly DefinitionNode Empty = new(string.Empty, [], [], [], [], [], []);
 }
 
 public partial class Definition
