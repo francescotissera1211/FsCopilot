@@ -51,6 +51,13 @@ Everyone in the session must run **this build**. FS Copilot compares the list of
 
 **Connection settings window** (xray447, extended here): choose the server, your display name, a fixed peer ID that stays the same between sessions so your crew can keep your code, the connection type, and whether to share ground vehicles.
 
+**Profile notes** (SamiSaleh98, upstream PR #36): a profile can carry instructions for the crew, shown in a "Profile Notes" card when that aircraft loads, with "Profile notes available." spoken. Notes from included modules follow the profile's own. Without this, a profile with a `notes:` section would not load at all, in stock FS Copilot too.
+  ```yaml
+  notes:
+    - "Make sure the MCDU configs are the same for both pilots"
+    - "Request GPU from the MCDU rather than from the EFB"
+  ```
+
 **Packet loss per peer** (xray447): each peer in the onboard list shows `LOSS: n%` beside its ping. **Reset Stats** clears the counters.
 
 **Pointer sync for panels the normal sync can't reach** (xiprox, upstream PR #35): some glass displays draw with SVG or rebuild their element tree, so the usual "which button was pressed" sync can't find the button on the other side. For instruments listed under `pointer:` in the aircraft profile, the app sends *where* the pointer went instead (presses, holds and drags, as fractions of the display), and the other side replays the gesture at the same spot, one at a time and at the pilot's pace.
@@ -162,6 +169,7 @@ Five served profiles include modules under misspelled names (TBM 850, A330, Belu
 | Source | Brought |
 | --- | --- |
 | [xray447](https://github.com/xray447/FsCopilot) `new_master` | Connection settings window, packet loss, iniBuilds A380 display sync, Debian server script, WASM version fix |
+| [SamiSaleh98](https://github.com/SamiSaleh98/FsCopilot) `feature/profile-notes` (upstream PR #36) | Profile notes |
 | [Johnsmz13](https://github.com/Johnsmz13/FsCopilot) `main` | `--server`, `--p2p`, `--relay` |
 | [xiprox](https://github.com/xiprox/FsCopilot) `pointer-forwarding` (upstream PR #35), `ahead-*`, `dev-var-replay` | Pointer sync, traffic and ATC sharing, relay protocol v2, var replay, GTNXi / RDR1150XL / KFC 150 modules, fixes, research notes in `record/` |
 | [xiprox/fsc-editor](https://github.com/xiprox/fsc-editor) corpus | A350, A400M, PA-24 profiles, newer A220 profile |

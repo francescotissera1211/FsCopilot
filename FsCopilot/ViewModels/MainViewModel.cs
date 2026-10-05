@@ -139,7 +139,12 @@ public class MainViewModel : ReactiveObject, IDisposable
     public string Notes
     {
         get => _notes;
-        private set => this.RaiseAndSetIfChanged(ref _notes, value);
+        private set
+        {
+            // A sighted pilot sees the card appear; say so, and the reader finds it under its heading.
+            if (!string.IsNullOrEmpty(value) && value != _notes) Announcer.Say("Profile notes available.");
+            this.RaiseAndSetIfChanged(ref _notes, value);
+        }
     }
 
     public string PeerId { get; init; }
