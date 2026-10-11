@@ -76,8 +76,12 @@ jobs:
           if not wasm:
               sys.exit("::error::No .wasm module in the bundled bridge")
           for w in wasm:
-              found = sorted({m.decode() for m in re.findall(rb"\x00(\d+\.\d+(?:\.\d+)?(?:-rc\d*)?)\x00", w.read_bytes())})
-              print(f"{w}: version-like strings {found}, app expects {expected}")
+              data = w.read_bytes()
+              # Strings in a WASM data segment are NUL-terminated but may follow any byte.
+              found = sorted({m.decode() for m in re.findall(rb"(?<![0-9.])(\d+\.\d+(?:\.\d+)?(?:-rc\d*)?)\x00", data)})
+              print(f"{w} ({len(data)} bytes): version-like strings {found}, app expects {expected}")
+              for m in re.finditer(re.escape(expected.encode()), data):
+                  print(f"  '{expected}' at {m.start()}: {data[max(0, m.start() - 24):m.end() + 8]!r}")
               if expected not in found:
                   print(f"::warning::Bundled bridge {w.name} does not report version {expected}; the app will show a version mismatch")
           PY
