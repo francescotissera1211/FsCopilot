@@ -20,7 +20,10 @@ public class WeatherSync : IDisposable
     private const int MaxFailures = 3;
     private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan ApplyTimeout = TimeSpan.FromSeconds(15);
-    private static readonly TimeSpan BridgeTimeout = TimeSpan.FromSeconds(25);
+    private static readonly TimeSpan PingInterval = TimeSpan.FromSeconds(10);
+    // The cockpit (and so the bridge JS) only runs in flight, not in menus, so allow time to get there.
+    private const int PingsBeforeWarning = 9;
+    private const int MaxPings = 30;
 
     private readonly SimClient _sim;
     private readonly INetwork _net;
@@ -67,7 +70,10 @@ public class WeatherSync : IDisposable
         _d.Add(sim.Aircraft.Throttle(TimeSpan.FromSeconds(5)).Subscribe(_ =>
         {
             if (_env.PeerCount > 0) InitialSync();
-            _d.Add(Observable.Timer(BridgeTimeout).Subscribe(_ => CheckBridge()));
+            _d.Add(Observable.Interval(PingInterval)
+                .Take(MaxPings)
+                .TakeWhile(_ => !_bridgeSeen)
+                .Subscribe(i => CheckBridge((int)i + 1)));
         }));
 
         _d.Add(net.Stream<WeatherRequest>().Where(_ => _env.IsHost).Subscribe(_ => AskBridge()));
@@ -111,15 +117,18 @@ public class WeatherSync : IDisposable
         }
     }
 
-    private void CheckBridge()
+    // The bridge JS announces itself once when it starts, which can happen before the app is listening,
+    // so actively ask it until it answers.
+    private void CheckBridge(int attempt)
     {
+        _sim.SendBus(BusType, w => w.WriteString("op", "ping"));
         lock (_lock)
         {
-            if (_bridgeSeen || _bridgeWarned) return;
+            if (_bridgeSeen || _bridgeWarned || attempt < PingsBeforeWarning) return;
             _bridgeWarned = true;
         }
         _env.Write(SyncLevel.Warning,
-            "Weather sync unavailable: the installed bridge has no weather support. Install the bridge bundled with this build.");
+            "Weather module in the bridge is not answering. If you are already in the cockpit, restart the sim so it loads the bridge installed by this app.");
     }
 
     private void AskBridge() => _sim.SendBus(BusType, w => w.WriteString("op", "get"));
@@ -165,8 +174,9 @@ public class WeatherSync : IDisposable
             _bridgeSeen = true;
         }
         Log.Information("[Weather] Bridge hello (listener ok: {Ok})", ok);
-        if (!ok && first)
-            _env.Write(SyncLevel.Warning, "Weather sync unavailable: the sim refused the weather listener");
+        if (!first) return;
+        if (!ok) _env.Write(SyncLevel.Warning, "Weather sync unavailable: the sim refused the weather listener");
+        else if (_bridgeWarned) _env.Write(SyncLevel.Info, "Weather module in the bridge is answering now");
     }
 
     private void OnDiag(string text)
