@@ -128,7 +128,10 @@ public sealed class ShareSwitch : IDisposable
 
     private void OnPeers(ICollection<Peer> peers)
     {
-        var ids = peers.Select(p => p.PeerId).ToHashSet(StringComparer.Ordinal);
+        // Connected only. A direct handshake shows up first as a peer that is not connected;
+        // counting it would mark it known while our re-send cannot reach it, and nothing fires
+        // again when it does connect, so it would never hear who hosts what.
+        var ids = peers.Where(p => p.Connected).Select(p => p.PeerId).ToHashSet(StringComparer.Ordinal);
         List<string> joined;
         var reclaim = new List<ShareHost>();
         lock (_lock)

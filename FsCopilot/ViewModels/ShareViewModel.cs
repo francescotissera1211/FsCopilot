@@ -58,9 +58,11 @@ public sealed class ShareViewModel : ReactiveObject, IDisposable
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(peers =>
             {
+                // A handshake that may still fail is not a session, as on the main window.
+                var connected = peers.Where(p => p.Connected).ToArray();
                 _peerNames.Clear();
-                foreach (var p in peers) _peerNames[p.PeerId] = string.IsNullOrWhiteSpace(p.Name) ? p.PeerId : p.Name;
-                var active = peers.Count > 0;
+                foreach (var p in connected) _peerNames[p.PeerId] = string.IsNullOrWhiteSpace(p.Name) ? p.PeerId : p.Name;
+                var active = connected.Length > 0;
                 if (active != _sessionActive)
                 {
                     _sessionActive = active;
