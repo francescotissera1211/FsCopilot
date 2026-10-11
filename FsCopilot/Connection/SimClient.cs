@@ -10,7 +10,7 @@ using Microsoft.FlightSimulator.SimConnect;
 
 public class SimClient : IDisposable
 {
-    private const string WasmVersion = "1.2";
+    public const string WasmVersion = "1.2";
 
     private static readonly object DefaultHValue = 1;
 
@@ -35,6 +35,8 @@ public class SimClient : IDisposable
 
     public readonly IObservable<bool> WasmReady;
     public readonly IObservable<bool> WasmVersionMismatch;
+    /// <summary>Version string reported by the loaded bridge WASM module.</summary>
+    public readonly IObservable<string> WasmVersionReported;
     public IObservable<bool> Connected => _consumer.Connected.ObserveOn(TaskPoolScheduler.Default);
     public IObservable<string> Aircraft => _consumer.Aircraft.ObserveOn(TaskPoolScheduler.Default);
     public IObservable<bool> Conflict => _conflict.ObserveOn(TaskPoolScheduler.Default);
@@ -70,6 +72,12 @@ public class SimClient : IDisposable
 
         WasmReady = wasmVersion
             .Select(v => !string.IsNullOrWhiteSpace(v));
+
+        WasmVersionReported = wasmVersion
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .DistinctUntilChanged()
+            .Do(v => Log.Information("[SimConnect] Bridge reports version {Version} (app expects {Expected})", v, WasmVersion))
+            .Replay(1).RefCount();
 
         WasmVersionMismatch = wasmVersion
             .Where(v => !string.IsNullOrWhiteSpace(v))

@@ -64,6 +64,24 @@ jobs:
           cp -r "$bridge" publish/Community/
           python .github/scripts/overlay_bridge.py publish/Community/fscopilot-bridge FsCopilot.Bridge/PackageSources/HTML_UI
 
+      # The app refuses a bridge whose WASM reports a different version, so check the bundled one here.
+      - name: Check bridge WASM version
+        shell: bash
+        run: |
+          expected=$(sed -n 's:.*WasmVersion = "\(.*\)";.*:\1:p' FsCopilot/Connection/SimClient.cs)
+          python - "$expected" <<'PY'
+          import pathlib, re, sys
+          expected = sys.argv[1]
+          wasm = list(pathlib.Path("publish/Community/fscopilot-bridge").rglob("*.wasm"))
+          if not wasm:
+              sys.exit("::error::No .wasm module in the bundled bridge")
+          for w in wasm:
+              found = sorted({m.decode() for m in re.findall(rb"\x00(\d+\.\d+(?:\.\d+)?(?:-rc\d*)?)\x00", w.read_bytes())})
+              print(f"{w}: version-like strings {found}, app expects {expected}")
+              if expected not in found:
+                  print(f"::warning::Bundled bridge {w.name} does not report version {expected}; the app will show a version mismatch")
+          PY
+
       - uses: actions/upload-artifact@v4
         with:
           name: FsCopilot-win-x64
