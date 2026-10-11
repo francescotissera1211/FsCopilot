@@ -87,23 +87,10 @@ the evidence, and a later session will want to re-read rather than trust a summa
 
 ## Tools
 
-`tools/ahead-rebuild.sh` used to live here. It now lives in the **fscopilot-profiles** repo
-(`tools/ahead-rebuild.sh`), which carries the FS Copilot fork as its `src` submodule, so the
-script sits beside the thing it drives and has a remote to survive in.
-
-It rebuilds the fork's `ahead` integration branch: reset to `main`, then merge every `ahead-*`
-branch in name order. `ahead` is derived and is never committed to directly — see the
-2026-09-06 log entry for why, and for the two failure modes that disguise themselves as
-something else. It cannot live inside the fork, because resetting `ahead` to `main` would
-delete the script from the working tree mid-run.
-
-## Tools
-
-`tools/` is for scripts that operate on the *other* repositories rather than on this one.
-
-| Script | What it does |
-| --- | --- |
-| [tools/ahead-rebuild.sh](../tools/ahead-rebuild.sh) | Rebuilds the FS Copilot fork's `ahead` integration branch: reset to `main`, then merge every `ahead-*` topic branch in name order. `ahead` is derived and is never committed to directly — see the 2026-09-06 log entry for why, and for the two failure modes that do not announce themselves. It lives here rather than in the fork because resetting `ahead` to `main` would delete it from the working tree mid-run. |
+`tools/ahead-rebuild.sh` rebuilt the fork's old `ahead` integration branch. It was retired on
+2026-10-11, when the fork moved to a single `main`; see "Before 2026-10-11" in
+[`record/conventions.md`](../../conventions.md). The 2026-09-06 log entry still explains
+why that model existed.
 
 ## Names
 
