@@ -2,6 +2,7 @@
 
 using System.Globalization;
 using System.Reflection;
+using Audio;
 using Connection;
 using Microsoft.Extensions.DependencyInjection;
 using Network;
@@ -14,6 +15,13 @@ using ViewModels;
 
 sealed class Program
 {
+    /// <summary>
+    /// The relay and STUN host. The fork speaks relay protocol v2 (see <see cref="RelayNetwork"/>),
+    /// which upstream's <c>p2p.fscopilot.com</c> does not, so this is the fork's own, built from
+    /// this tree (record/self-hosted-relay); <c>--relay host</c> overrides it for a local one.
+    /// </summary>
+    private const string RelayHost = "fscrelay.ihsan.dev";
+
     [STAThread]
     public static void Main(string[] args)
     {
@@ -72,20 +80,26 @@ sealed class Program
         var isDev = args.Any(a => string.Equals(a, "--dev", StringComparison.OrdinalIgnoreCase));
         // var isExperimental = args.Any(a => string.Equals(a, "--experimental", StringComparison.OrdinalIgnoreCase));
         // For a harness driving this build from outside - BenchControl, or the exerciser in
-        // its own repo: two instances on one machine need a relay the harness can restart,
-        // and ids it can name before either starts. --relay also points the app at a
-        // self-hosted relay, which is not a test concern.
-        var host = Option(args, "--relay") ?? "p2p.fscopilot.com";
+        // its own repo: two instances on one machine need ids it can name before either starts.
         var peerId = Option(args, "--peer-id") ?? Random.String(8);
         var name = Environment.UserName;
+        var trafficOptions = TrafficOptions.Parse(args);
+        // Development switches for the network: `--relay host` to use a relay of your own (the
+        // one-machine bed runs one on localhost), `--no-direct` to force every link through it.
+        var relayHost = Option(args, "--relay") ?? RelayHost;
+        var direct = !args.Any(a => string.Equals(a, "--no-direct", StringComparison.OrdinalIgnoreCase));
+        if (relayHost != RelayHost) Log.Warning("[Application] Relay host overridden: {Host}", relayHost);
 
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .UseReactiveUIWithMicrosoftDependencyResolver(
                 services =>
                 {
+                    services.AddSingleton(Settings.Load());
+                    services.AddSingleton(trafficOptions);
                     var simClient = new SimClient(!isDev ? "FS Copilot" : "FS Copilot DEV");
                     services.AddSingleton(simClient);
+                    services.AddSingleton(new SimTraffic(!isDev ? "FS Copilot (Traffic)" : "FS Copilot DEV (Traffic)"));
                     var panelServer = new PanelServer();
                     if (isDev)
                     {
@@ -102,22 +116,37 @@ sealed class Program
                     
                     if (!isDev)
                     {
-                        services.AddSingleton<INetwork>(new HybridNetwork(host, peerId, name));
-                        // services.AddSingleton<INetwork>(!isExperimental
-                        //     ? new P2PNetwork("p2p.fscopilot.com", peerId, name)
-                        //     : new HybridNetwork("p2p.fscopilot.com", peerId, name));
+                        services.AddSingleton<INetwork>(new HybridNetwork(relayHost, peerId, name, direct));
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();
-                        services.AddSingleton(sp => new MainViewModel(
-                            peerId,
-                            name,
-                            sp.GetRequiredService<INetwork>(),
-                            sp.GetRequiredService<SimClient>(),
-                            sp.GetRequiredService<MasterSwitch>(),
-                            sp.GetRequiredService<Coordinator>(),
-                            sp.GetRequiredService<Updater>(),
-                            sp.GetRequiredService<PanelServer>()
-                        ));
+                        // Registers the sharing packets; constructed after Coordinator so the
+                        // packet table is the same on every peer.
+                        services.AddSingleton(sp =>
+                        {
+                            sp.GetRequiredService<Coordinator>();
+                            return new ShareSwitch(peerId, sp.GetRequiredService<INetwork>());
+                        });
+                        services.AddSingleton<TrafficReceiver>();
+                        services.AddSingleton<TrafficHost>();
+                        services.AddSingleton<AtcHost>();
+                        services.AddSingleton<AtcReceiver>();
+                        services.AddSingleton<ShareViewModel>();
+                        services.AddSingleton(sp =>
+                        {
+                            sp.GetRequiredService<ShareSwitch>();
+                            sp.GetRequiredService<TrafficHost>();
+                            return new MainViewModel(
+                                peerId,
+                                name,
+                                sp.GetRequiredService<INetwork>(),
+                                sp.GetRequiredService<SimClient>(),
+                                sp.GetRequiredService<MasterSwitch>(),
+                                sp.GetRequiredService<Coordinator>(),
+                                sp.GetRequiredService<Updater>(),
+                                sp.GetRequiredService<PanelServer>(),
+                                sp.GetRequiredService<ShareViewModel>()
+                            );
+                        });
                     }
                     else
                     {

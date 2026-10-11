@@ -1,4 +1,4 @@
-namespace FsCopilot;
+﻿namespace FsCopilot;
 
 using System.Reflection;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -43,6 +43,10 @@ public class App : Application
                 // Before the sockets drop: tell pointer-synced panels this was a quit, not
                 // a fault. They cannot tell from the close alone and would warn the pilot.
                 Locator.Current.GetService<PanelServer>()?.Shutdown();
+                Locator.Current.GetService<ShareSwitch>()?.StopAll();
+                Locator.Current.GetService<ViewModels.ShareViewModel>()?.Dispose();
+                Locator.Current.GetService<Audio.AtcHost>()?.Dispose();
+                Locator.Current.GetService<Audio.AtcReceiver>()?.Dispose();
 
                 // Same shape as the goodbye above, for the same reason: the departure is
                 // queued, and the peer only learns this was a quit rather than an outage if
@@ -52,6 +56,9 @@ public class App : Application
                 net?.DrainDisconnect(DisconnectGrace);
 
                 Locator.Current.GetService<MasterSwitch>()?.TakeControl();
+                // Closing the traffic connection removes every AI object it created.
+                Locator.Current.GetService<SimTraffic>()?.Dispose();
+                Locator.Current.GetService<Settings>()?.Dispose();
                 _bench?.Dispose();
             };
             
