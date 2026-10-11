@@ -83,7 +83,7 @@ jobs:
               for m in re.finditer(re.escape(expected.encode()), data):
                   print(f"  '{expected}' at {m.start()}: {data[max(0, m.start() - 24):m.end() + 8]!r}")
               if expected not in found:
-                  print(f"::warning::Bundled bridge {w.name} does not report version {expected}; the app will show a version mismatch")
+                  sys.exit(f"::error::Bundled bridge {w.name} reports {found}, but the app expects {expected} (SimClient.WasmVersion). The app would show a version mismatch.")
           PY
 
       - uses: actions/upload-artifact@v4

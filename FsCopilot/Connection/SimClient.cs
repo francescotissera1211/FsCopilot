@@ -10,7 +10,7 @@ using Microsoft.FlightSimulator.SimConnect;
 
 public class SimClient : IDisposable
 {
-    public const string WasmVersion = "1.2";
+    public const string WasmVersion = "1.2.1";
 
     private static readonly object DefaultHValue = 1;
 
