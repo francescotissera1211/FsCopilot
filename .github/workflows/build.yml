@@ -26,7 +26,13 @@ jobs:
         shell: bash
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            # Accept v1.2.3, v1.2.3-beta.1 and the v.1.2.3 typo.
             version="${GITHUB_REF#refs/tags/v}"
+            version="${version#.}"
+            if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+              echo "::error::Tag '${GITHUB_REF#refs/tags/}' is not a version. Use v1.2.3 or v1.2.3-beta.1"
+              exit 1
+            fi
           else
             version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' FsCopilot/FsCopilot.csproj)
           fi
@@ -71,5 +77,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
-          (cd publish && 7z a -tzip "../FsCopilot-$tag-win-x64.zip" . > /dev/null)
-          gh release create "$tag" "FsCopilot-$tag-win-x64.zip" --repo "$GITHUB_REPOSITORY" --title "$tag" --generate-notes
+          zip="FsCopilot-$tag-win-x64.zip"
+          (cd publish && 7z a -tzip "../$zip" . > /dev/null)
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            # Release was created on GitHub (which also pushed the tag): just attach the build.
+            gh release upload "$tag" "$zip" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            # Versions with a suffix (-beta.1) are pre-releases; the app's update check ignores those.
+            prerelease=""
+            [[ "${{ steps.version.outputs.version }}" == *-* ]] && prerelease="--prerelease"
+            gh release create "$tag" "$zip" --repo "$GITHUB_REPOSITORY" --title "$tag" --generate-notes $prerelease
+          fi
