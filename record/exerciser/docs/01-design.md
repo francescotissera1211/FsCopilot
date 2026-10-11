@@ -1,0 +1,235 @@
+# Exerciser design
+
+    Purpose:    What the exerciser is, how it connects to FS Copilot, and how the pointer
+                page turns a click on a picture into a click in the simulator.
+    Depends on: log.md (p01, p02); pointer-forwarding/docs/11-fsc-implementation-plan.md
+    Decides:    peer not dev mode; shell and pages; window capture; contain-fit mapping
+    Status:     Built 2026-09-17 (adf1c60, 5599643 on ahead-pointer-forwarding).
+                Sections marked OPEN are waiting on a decision.
+
+## What it is for
+
+Three uses, one app:
+
+- **Testing on one machine.** Everything the bench cannot reach needs a real panel: the
+  replay into the display, the replay queue's pacing, the overlays.
+- **The maintainer testing the PR.** Run the PR's FSC, run the exerciser, join. No second
+  machine, no second pilot, no build flags.
+- **Recording a demo.** Both ends of every gesture on screen at once.
+
+## Shape: a shell and pages
+
+The shell owns what every feature shares: the connection to FSC, the session, and the
+controls that break the session on purpose. A page owns one feature's view and inputs.
+Pointer forwarding is the first page. The next PR adds a page.
+
+The window is three numbered cards - the app, the session, the panel - each saying where it
+stands, with one line underneath saying what to do next. That line and every card's text are
+computed from state in one place, so there is a single answer to "what does the window say
+now" rather than one per event handler. Buttons that do not apply yet are hidden rather than
+disabled: Join disappears once joined, and Take control, Drop link and Leave appear.
+Recording, the rendezvous and the log live in an expander.
+
+A page gets from the shell:
+
+- the peer link: send a packet, subscribe to a packet type
+- FSC's panel channel: the current config and sync state, as FSC broadcasts them
+- the session controls' state, so a page can show what an outage does to its feature
+
+## Session: the exerciser is a peer
+
+It joins FSC's session with the session code, the way a second pilot does. FSC runs
+unmodified.
+
+Dev mode was the alternative and does not test the feature. `--dev` builds no Coordinator
+and no network; its echo sends a panel's capture straight back to the panels. The wire,
+the acks, the resend history and the session state machine never run.
+
+As a peer, a click in the exerciser goes exerciser → network → Coordinator → PanelServer →
+pointer.js → display, and a click in the sim comes back the same way reversed (p01).
+
+Shell controls, each a real session event:
+
+| Control | What FSC sees |
+| --- | --- |
+| Join / Leave | a peer arriving, a peer leaving on purpose |
+| Take control | the master handover |
+| Drop link | the link going quiet with no goodbye: an outage |
+| Rejoin | recovery; FSC resends everything after the last ack |
+
+Drop link is followed by Rejoin, not by waiting. A dropped link does not come back on its
+own (pointer-forwarding Q12).
+
+A second connection goes to FSC's PanelServer as a plain WebSocket client. Its hello uses
+a key nobody configures, so nothing is routed to it, and it receives `{t:"config"}` and
+`{t:"state"}` like any panel (p01). That is where the page's panel list comes from. No
+aircraft detection and no profile lookup.
+
+## Relay
+
+A same-machine pair crosses the relay twice, so every gesture pays the relay's round trip
+twice (p01):
+
+| Relay | ICMP from this machine | Gesture latency, one way |
+| --- | --- | --- |
+| local `FsCopilot.Discovery` | ~0 | ~0 |
+| upstream `p2p.fscopilot.com` | 72 ms | ~145 ms |
+| `fscrelay.ihsan.dev` | 116 ms | ~230 ms |
+
+The picker defaults to `p2p.fscopilot.com`, which is what an unmodified PR build uses. A
+local relay is the fast option and has to be started by hand
+(`dotnet run --project FsCopilot.Discovery -r win-x64 --no-self-contained`), with FSC given
+`--relay localhost` to match.
+
+The relay protocol has to match FSC's build. `ahead` speaks v2 to `fscrelay.ihsan.dev`;
+the PR branch speaks v1 to `p2p.fscopilot.com`, and a v2 relay refuses it. Built from the
+same branch as FSC, the exerciser speaks FSC's protocol automatically; only the host is a
+setting.
+
+**OPEN: the PR build has no `--relay`.** It arrived with BenchControl, which is test-only
+and not in the PR. The maintainer would then be on the public relay, at ~145 ms, which is
+fine for testing and visible in a recording.
+
+## Wire compatibility
+
+`Codecs.Schema` hashes each registered packet type's assembly-qualified name, so the
+exerciser registers FSC's own types, in FSC's order: SetMaster, Update, Interact, Physics,
+Surfaces, PointerEvent, PointerAck. Copies in another assembly can never match.
+
+Three of them are nested and were private (Coordinator.Update, Coordinator.InteractCodec,
+MasterSwitch.SetMaster). They are now `internal`, with `InternalsVisibleTo` for this
+assembly, so the compiler catches a rename instead of a startup failing on reflection.
+Both changes ride in the exerciser's own commit and go with it if it is dropped.
+
+Either way the exerciser also receives FSC's variable and physics traffic and ignores it.
+
+## Pointer page
+
+### Panels
+
+The dropdown is the `pointer:` key list from `{t:"config"}`, live: loading another aircraft
+replaces it.
+
+### Pop-out
+
+**Built, and it automates.** The instrument has to be its own window before it can be
+captured. The simulator has no command for that - pop-out is bound to Right-Alt + click in
+the cockpit - so the exerciser sends that click (p06): front the simulator, prime it with
+two bare move events, then Right-Alt + click. A plain click primes it just as well and
+presses whatever is under the cursor, which on a display is a button.
+
+The one thing nothing supplies is where the panel is in a 3D cockpit under an arbitrary
+camera. So the pilot points at it and presses F9, once per panel: the pop-out persists. The
+new window is then found by watching for one that appeared.
+
+The pop-out is a top-level window of class `AceApp` titled with the instrument identifier;
+on the A220, `DISPLAYUNITS` for `DisplayUnits|config=N324DU` (p02).
+
+Matching by title is a shortcut, not the mechanism:
+
+- Two instruments can share an identifier. The A220 has two CTP documents, whose keys
+  differ only in the query string, and the title carries no query string.
+- Only one aircraft has been checked, so the title rule is unconfirmed elsewhere.
+
+So the window picker preselects a single title match and otherwise leaves the choice alone,
+and a pop-out whose title does not match the selected panel says so in the log.
+
+### Capture
+
+Window capture by the OS. The Coherent inspector has no working snapshot (p02).
+
+PrintWindow is what the page uses, into a DIB section whose BGRA pixels go straight to a
+WriteableBitmap: 33 ms per frame for the main window, 63 ms for the 7394x1071 A220 pop-out,
+because it re-renders the whole window every call. The page grabs at 15 Hz. If a recording
+looks choppy, Windows.Graphics.Capture copies GPU frames at display rate instead, and
+Capture.Grab is the only thing that changes.
+
+Not yet measured: the simulator's frame rate while capturing.
+
+### Mapping
+
+A click has to become fractions of the instrument's rect, the numbers pointer.js sends and
+replays. Two scalings sit between a pixel in the exerciser and a fraction:
+
+1. **Sim to pop-out.** The sim draws the instrument into the pop-out contain-fit and
+   centred. The 7410x1110 A220 strip in a 7394x1071 window: height fills it at scale 0.965,
+   width scales by the same 0.965, and 122 px of bar is left either side. Predicting where
+   five markers land with that rule was off by at most 6.5 instrument px (p02), from the sim's
+   horizontal scale running 0.15% under its vertical one. Nothing corrects for that. It is
+   under a pixel of exerciser screen at any practical zoom, and no button is that small.
+2. **Pop-out to exerciser.** The page draws the capture at whatever size its view is.
+   This is a plain view transform the page controls, so it inverts exactly.
+
+The page inverts both: exerciser pixel → pop-out pixel → strip the bars → divide by the
+drawn instrument size. The window is resizable in the sim; the transform is recomputed from
+the capture size every frame, so resizing the pop-out needs nothing.
+
+**The instrument's aspect ratio comes from FSC.** Step 1 cannot be inverted without it, and
+the capture does not carry it. The bars cannot be detected: a display's own background is
+black too. Each panel's hello carries its rect, and FSC passes it on (b9a03a4):
+
+    exerciser  -> FSC   {"t":"watch"}
+    FSC -> exerciser    {"t":"config",...}  {"t":"state",...}
+                        {"t":"panels","panels":[{"key":"DisplayUnits|config=N324DU","rect":[7410,1110]},
+                                                {"key":"CTP|side=left","rect":null}, ...]}
+
+`panels` is re-sent when a hello adds a key or changes a rect, and when a panel disconnects.
+Panels never send `watch` and never receive `panels`.
+
+Rejected: the pop-out's initial size (6.90 against the true 6.68, and wrong once resized),
+and reading `panel.cfg` (needs the package path, and per-aircraft parsing).
+
+Panels used to measure once, when the Hook was built and before most instruments were laid
+out: 9 of 14 A220 panels reported no rect, CTP and MKP among them, and a reconnect re-sent
+the same empty hello. 7f8bbd6 keeps measuring until there is a size and helloes again with
+the first one it sees; 14 of 14 now report a rect (p03, second run). A null rect now means a
+sizeless element - Sentry and WasmInstrument report 10x10 placeholders - and the page asks
+for those.
+
+### View
+
+Default: the whole instrument, fitted to the view. The mapping above holds at any size.
+
+Zoom and pan, by wheel and drag, are there for strips. The A220 instrument is five screens
+side by side at 6.7:1: fitted to an 1800 px wide view, each screen is 360 px wide and a
+synoptic tab button (STATUS, AIR, DOOR) is about 45x12 px. On a 5120 px monitor fitted is readable. Zoom is a view
+transform only, so it never needs configuring and never affects the mapping.
+
+### Input from the exerciser
+
+Pointer down, move and up on the view become a press or a drag with the thresholds
+pointer.js uses (4 px, 33 ms, 2 px sampling, 240 points), and go out as a PointerEvent. The
+thresholds are a copy; each copy's comment names the other.
+
+The exerciser's own gestures are drawn on the view: a ring at a press, the path for a drag.
+
+### Input from the sim
+
+A PointerEvent from FSC is drawn on the view at its fractions: a pulse at a press, the drag
+path redrawn at its recorded timing with a fading tail.
+
+A drag reaches the exerciser at mouse-up, because the wire carries a drag as one packet.
+Replaying its path at recorded timing shows the whole gesture, arriving just after the hand
+finished it.
+
+No marker is added to pointer.js. The sim shows what the display does, nothing more.
+
+### Recording and replay
+
+Record writes every PointerEvent sent or received to NDJSON, with arrival time. Replay
+sends a recording's events at their recorded gaps. The pointer-forwarding
+`recordings/*.ndjson` (v4) convert with a small shim.
+
+## Known limits
+
+- One machine. Two machines disagreeing on an instrument rect (pointer-forwarding Q04) is
+  out of reach.
+- WASM-rendered displays capture fine and still cannot receive a replay
+  (pointer-forwarding 07-wasm-surface).
+- A dropped link needs a rejoin (Q12).
+
+## Where it ships
+
+A project in the solution, `FsCopilot.Exerciser`, in its own commit, so the PR can drop it
+by dropping that commit - and with it the `internal` and `InternalsVisibleTo` changes it
+needs. Whether the PR keeps it or links a built binary instead is the maintainer's call.
