@@ -84,6 +84,8 @@ sealed class Program
                         //     : new HybridNetwork("p2p.fscopilot.com", peerId, name));
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();
+                        services.AddSingleton<EnvironmentSync>();
+                        services.AddSingleton<WeatherSync>();
                         services.AddSingleton(sp => new MainViewModel(
                             peerId,
                             name,
@@ -91,6 +93,8 @@ sealed class Program
                             sp.GetRequiredService<SimClient>(),
                             sp.GetRequiredService<MasterSwitch>(),
                             sp.GetRequiredService<Coordinator>(),
+                            sp.GetRequiredService<EnvironmentSync>(),
+                            sp.GetRequiredService<WeatherSync>(),
                             sp.GetRequiredService<Updater>()
                         ));
                     }

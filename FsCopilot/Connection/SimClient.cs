@@ -23,6 +23,7 @@ public class SimClient : IDisposable
     private uint _defId = 100;
     private uint _requestId = 100;
     private readonly IObservable<string> _hEvents;
+    private readonly IObservable<JsonElement> _busMessages;
     private readonly IObservable<bool> _conflict;
     private readonly BehaviorSubject<BehaviorControl> _control = new(BehaviorControl.Master);
     private readonly DEF _commBusDefId;
@@ -99,6 +100,7 @@ public class SimClient : IDisposable
             .Do(json => Log.Verbose("[SimConnect] RECV: {json}", json))
             .Select(json => JsonDocument.Parse(json).RootElement)
             .Replay(0).RefCount();
+        _busMessages = socketMessages;
 
        _hEvents = socketMessages
            .Where(json => json.String("type").Equals("hevent"))
@@ -213,6 +215,23 @@ public class SimClient : IDisposable
         _producer.Post(sim => sim.SetClientData(_commBusDefId, _commBusDefId, SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT, 0, new StrMsg { Msg = msg }));
     }
 
+    /// <summary>Messages of the given "type" sent by the bridge JS over the comm bus.</summary>
+    public IObservable<JsonElement> BusMessages(string type) =>
+        _busMessages.Where(json => json.String("type").Equals(type));
+
+    /// <summary>Broadcasts a JSON message of the given "type" to the bridge JS. Must fit in 511 bytes.</summary>
+    public bool SendBus(string type, Action<Utf8JsonWriter> write)
+    {
+        var msg = Envelope(type, write);
+        if (Encoding.UTF8.GetByteCount(msg) > 511)
+        {
+            Log.Error("[SimConnect] Bus message too large ({Length} bytes): {Type}", msg.Length, type);
+            return false;
+        }
+        _producer.Post(sim => sim.SetClientData(_commBusDefId, _commBusDefId, SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT, 0, new StrMsg { Msg = msg }));
+        return true;
+    }
+
     public void Execute(string expression)
     {
         if (string.IsNullOrWhiteSpace(expression)) return;
@@ -230,6 +249,40 @@ public class SimClient : IDisposable
         if (name.Length > 2 && name[1] == ':')
             Execute($"{string.Join(' ', values.Select(value => Convert.ToString(value, CultureInfo.InvariantCulture)))} (>{name})");
     }
+
+    /// <summary>
+    /// Transmits a single key event exactly once (unlike <see cref="Set(string, string?, object[])"/>,
+    /// which also executes it as an RPN expression). Use for non-idempotent events such as SIM_RATE_DECR.
+    /// </summary>
+    public void Trigger(string eventName, params object[] values) =>
+        TransmitKEvent(eventName, values.Length > 0 ? values : [0]);
+
+    /// <summary>
+    /// Subscribes to a SimConnect system event (e.g. "Pause_EX1") and emits its dwData.
+    /// </summary>
+    public IObservable<uint> SystemEvent(string eventName) =>
+        (IObservable<uint>)_streams.GetOrAdd($"SystemEvent_{eventName}", _ => Observable.Create<uint>(observer =>
+        {
+            var eventId = (EVT)Interlocked.Increment(ref _defId);
+
+            var sub = _consumer.SimEventData.ObserveOn(TaskPoolScheduler.Default).Subscribe(e =>
+                {
+                    if ((EVT)e.uEventID != eventId) return;
+                    observer.OnNext(e.dwData);
+                },
+                observer.OnError,
+                observer.OnCompleted);
+
+            var consumerConfig = _consumer.Configure(
+                sim => sim.SubscribeToSystemEvent(eventId, eventName),
+                sim => sim.UnsubscribeFromSystemEvent(eventId));
+
+            return () =>
+            {
+                sub.Dispose();
+                consumerConfig.Dispose();
+            };
+        }).Publish().RefCount());
 
     private void SetLVar(string datumName, string? sUnits, object value)
     {

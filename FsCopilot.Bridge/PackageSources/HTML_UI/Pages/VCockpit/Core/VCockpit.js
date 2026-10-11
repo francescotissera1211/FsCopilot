@@ -59,6 +59,11 @@ Include.addImports(['/FsCopilot/hook.js'], () => {
     console.log('[Hook] References loaded.');
     jsLoaded = true;
     if (templateToLoad != null) hook = new Hook(templateToLoad);
+    // Experimental weather sync, loaded separately so a failure can't affect the hook above.
+    Include.addImports(['/FsCopilot/weather.js'], () => {
+        try { if (typeof FscWeather !== 'undefined') window.fscWeather = new FscWeather(new Bus()); }
+        catch (e) { console.error('[FsCopilot] [Weather] init failed', e); }
+    });
 })))));
 /* End of FS Copilot Integration */
 

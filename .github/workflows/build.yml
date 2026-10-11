@@ -1,0 +1,75 @@
+name: Build
+
+on:
+  push:
+    branches: [ "**" ]
+    tags: [ "v*" ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF#refs/tags/v}"
+          else
+            version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' FsCopilot/FsCopilot.csproj)
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Version: $version"
+
+      - name: Publish app
+        shell: bash
+        run: dotnet publish FsCopilot/FsCopilot.csproj -c Release -r win-x64 -o publish -p:Version=${{ steps.version.outputs.version }}
+
+      # The bridge package needs the MSFS SDK only for its WASM module, which this fork does not change.
+      # Take the prebuilt package from upstream and overlay this repo's bridge HTML/JS on top of it.
+      - name: Build bridge package
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          upstream_version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' FsCopilot/FsCopilot.csproj)
+          mkdir -p upstream
+          gh release download "v$upstream_version" --repo yury-sch/FsCopilot --pattern '*.zip' --dir upstream \
+            || gh release download "$upstream_version" --repo yury-sch/FsCopilot --pattern '*.zip' --dir upstream
+          for z in upstream/*.zip; do unzip -q -o "$z" -d upstream/extracted; done
+          bridge=$(find upstream/extracted -type d -name fscopilot-bridge | head -n 1)
+          if [ -z "$bridge" ]; then
+            echo "::error::Bridge package not found in upstream release v$upstream_version"
+            exit 1
+          fi
+          mkdir -p publish/Community
+          cp -r "$bridge" publish/Community/
+          python .github/scripts/overlay_bridge.py publish/Community/fscopilot-bridge FsCopilot.Bridge/PackageSources/HTML_UI
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FsCopilot-win-x64
+          path: publish/
+          if-no-files-found: error
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          (cd publish && 7z a -tzip "../FsCopilot-$tag-win-x64.zip" . > /dev/null)
+          gh release create "$tag" "FsCopilot-$tag-win-x64.zip" --repo "$GITHUB_REPOSITORY" --title "$tag" --generate-notes

@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using Avalonia.Media;
 using Connection;
 using Network;
 using ReactiveUI;
@@ -20,6 +21,7 @@ public class MainViewModel : ReactiveObject, IDisposable
     private bool _connected;
     private bool _showTakeControl;
     private bool _newProfileAvailable;
+    private string _syncRole = "Host";
     private ViewErrors _errors = ViewErrors.None;
 
     private string Aircraft
@@ -71,6 +73,12 @@ public class MainViewModel : ReactiveObject, IDisposable
         set => this.RaiseAndSetIfChanged(ref _newProfileAvailable, value);
     }
 
+    public string SyncRole
+    {
+        get => _syncRole;
+        set => this.RaiseAndSetIfChanged(ref _syncRole, value);
+    }
+
     public string PeerId { get; init; }
     public string ClientName { get; init; }
 
@@ -86,6 +94,7 @@ public class MainViewModel : ReactiveObject, IDisposable
         string.Empty;
 
     public ObservableCollection<Connection> Connections { get; set; } = [];
+    public ObservableCollection<SyncLogItem> SyncLog { get; } = [];
     public ReactiveCommand<Unit, Unit> JoinCommand { get; }
     public ReactiveCommand<Unit, Unit> LeaveCommand { get; }
     public ReactiveCommand<Unit, Unit> TakeControlCommand { get; }
@@ -97,6 +106,8 @@ public class MainViewModel : ReactiveObject, IDisposable
         SimClient sim,
         MasterSwitch masterSwitch,
         Coordinator coordinator,
+        EnvironmentSync environmentSync,
+        WeatherSync weatherSync,
         Updater updater)
     {
         ClientName = name;
@@ -200,6 +211,20 @@ public class MainViewModel : ReactiveObject, IDisposable
             .Subscribe(isSlave => ShowTakeControl = isSlave)
             .DisposeWith(_d);
 
+        environmentSync.Log
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(entry =>
+            {
+                SyncLog.Insert(0, new(entry.Time, entry.Message, entry.Level switch
+                {
+                    EnvironmentSync.SyncLevel.Error => ErrorBrush,
+                    EnvironmentSync.SyncLevel.Warning => WarningBrush,
+                    _ => InfoBrush
+                }));
+                while (SyncLog.Count > 50) SyncLog.RemoveAt(SyncLog.Count - 1);
+            })
+            .DisposeWith(_d);
+
         JoinCommand = ReactiveCommand.CreateFromTask(async () =>
         {
             if (IsBusy) return;
@@ -213,11 +238,21 @@ public class MainViewModel : ReactiveObject, IDisposable
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
 
                 masterSwitch.Join();
+                environmentSync.Join();
+                weatherSync.Reset();
+                SyncRole = "Following host";
                 result = await net.Connect(ConnectionCode, cts.Token);
             }
             finally
             {
                 IsBusy = false;;
+            }
+
+            if (result != ConnectionResult.Success)
+            {
+                environmentSync.Leave();
+                weatherSync.Reset();
+                SyncRole = "Host";
             }
 
             if (result == ConnectionResult.Failed)
@@ -234,6 +269,9 @@ public class MainViewModel : ReactiveObject, IDisposable
 
         LeaveCommand = ReactiveCommand.Create(() =>
         {
+            environmentSync.Leave();
+            weatherSync.Reset();
+            SyncRole = "Host";
             net.Disconnect();
             masterSwitch.TakeControl();
         });
@@ -264,6 +302,12 @@ public class MainViewModel : ReactiveObject, IDisposable
         NotLoadedBridge = 0b_0010_0000,
         BridgeMismatch  = 0b_0100_0000
     }
+
+    private static readonly IBrush InfoBrush = new SolidColorBrush(Color.Parse("#cbd5e1"));
+    private static readonly IBrush WarningBrush = new SolidColorBrush(Color.Parse("#FFC107"));
+    private static readonly IBrush ErrorBrush = new SolidColorBrush(Color.Parse("#F44336"));
+
+    public record SyncLogItem(DateTime Time, string Message, IBrush Brush);
 
     public record Connection(string PeerId, string Name, int Ping, bool IsDirect, bool HasSeparatorAfter)
     {

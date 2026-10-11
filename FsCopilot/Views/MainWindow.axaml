@@ -6,9 +6,9 @@
         xmlns:fsCopilot="clr-namespace:FsCopilot"
         mc:Ignorable="d"
         d:DesignWidth="500"
-        d:DesignHeight="700"
+        d:DesignHeight="840"
         Width="500"
-        Height="700"
+        Height="840"
         CanResize="False"
         RequestedThemeVariant="Dark"
         x:Class="FsCopilot.Views.MainWindow"
@@ -50,7 +50,7 @@
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
 
-        <Grid Classes="Wrapper" RowDefinitions="Auto,Auto,*,Auto">
+        <Grid Classes="Wrapper" RowDefinitions="Auto,Auto,*,Auto,Auto">
             <Border Grid.Row="0"
                     Classes="Card">
                 <DockPanel>
@@ -242,7 +242,41 @@
                 </DockPanel>
             </Border>
 
-            <StackPanel Grid.Row="3" Spacing="10">
+            <Border Grid.Row="3"
+                    Classes="Card SyncLog">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top"
+                               Margin="0,0,0,8">
+                        <PathIcon DockPanel.Dock="Left"
+                                  Classes="CardTitle"
+                                  Data="{StaticResource settings_regular}" />
+                        <TextBlock DockPanel.Dock="Left"
+                                   Classes="CardTitle"
+                                   Text="Sync log" />
+                        <TextBlock DockPanel.Dock="Right"
+                                   Classes="SyncRole"
+                                   Text="{Binding SyncRole}" />
+                    </DockPanel>
+
+                    <ScrollViewer Classes="SyncLog">
+                        <ItemsControl ItemsSource="{Binding SyncLog}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Classes="SyncLogTime"
+                                                   Text="{Binding Time, StringFormat='{}{0:HH:mm:ss}'}" />
+                                        <TextBlock Classes="SyncLogMessage"
+                                                   Foreground="{Binding Brush}"
+                                                   Text="{Binding Message}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <StackPanel Grid.Row="4" Spacing="10">
                 <Border IsVisible="{Binding NewProfileAvailable}"
                         Classes="Card Badge Info">
                     <DockPanel>

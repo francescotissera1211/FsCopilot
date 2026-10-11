@@ -87,7 +87,7 @@ public sealed class Updater(string baseAddress)
 
     public async Task<GitHubReleaseInfo?> CheckForUpdateAsync(string version, CancellationToken ct)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/yury-sch/FsCopilot/releases/latest");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/ragerin/FsCopilotSync/releases/latest");
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
         request.Headers.UserAgent.ParseAdd("FS-Copilot-Updater");
 

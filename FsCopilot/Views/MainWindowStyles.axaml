@@ -217,4 +217,30 @@
         <Setter Property="Foreground" Value="#3b82f6"/>
         <Setter Property="Padding" Value="0"/>
     </Style>
+
+    <Style Selector="Border.SyncLog">
+        <Setter Property="Height" Value="150"></Setter>
+        <Setter Property="Padding" Value="20,14,20,14"></Setter>
+    </Style>
+
+    <Style Selector="TextBlock.SyncRole">
+        <Setter Property="HorizontalAlignment" Value="Right"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="FontSize" Value="11"></Setter>
+        <Setter Property="Foreground" Value="#94a3b8"></Setter>
+    </Style>
+
+    <Style Selector="TextBlock.SyncLogTime">
+        <Setter Property="FontSize" Value="11"></Setter>
+        <Setter Property="Foreground" Value="#94a3b8"></Setter>
+        <Setter Property="FontFamily" Value="Courier New"></Setter>
+        <Setter Property="VerticalAlignment" Value="Top"></Setter>
+        <Setter Property="Margin" Value="0,1,0,0"></Setter>
+    </Style>
+
+    <Style Selector="TextBlock.SyncLogMessage">
+        <Setter Property="FontSize" Value="12"></Setter>
+        <Setter Property="TextWrapping" Value="Wrap"></Setter>
+        <Setter Property="MaxWidth" Value="360"></Setter>
+    </Style>
 </Styles>
