@@ -22,6 +22,7 @@ public class MainViewModel : ReactiveObject, IDisposable
     private bool _showTakeControl;
     private bool _newProfileAvailable;
     private string _syncRole = "Host";
+    private string _bridgeVersion = "unknown";
     private ViewErrors _errors = ViewErrors.None;
 
     private string Aircraft
@@ -87,7 +88,7 @@ public class MainViewModel : ReactiveObject, IDisposable
         _errors.HasFlag(ViewErrors.Failed) ? "Failed to connect." :
         _errors.HasFlag(ViewErrors.NotRunning) ? "Microsoft Flight Simulator is not running!" :
         _errors.HasFlag(ViewErrors.NotLoadedBridge) ? "Bridge package is not loaded. Check your Community folder." :
-        _errors.HasFlag(ViewErrors.BridgeMismatch) ? "Bridge version mismatch. Update Community package." :
+        _errors.HasFlag(ViewErrors.BridgeMismatch) ? $"Bridge version mismatch: the sim loaded bridge {_bridgeVersion}, this app needs {SimClient.WasmVersion}. Restart the sim after the app has installed its bridge." :
         _errors.HasFlag(ViewErrors.NotSupported) ? $"No profile available for the {_aircraft}." :
         _errors.HasFlag(ViewErrors.Rejected) ? "Both sides must use the same FS Copilot version." :
         _errors.HasFlag(ViewErrors.Conflict) ? "Conflict detected with YourControls package." :
@@ -155,6 +156,15 @@ public class MainViewModel : ReactiveObject, IDisposable
             .Subscribe(notLoaded => Errors = notLoaded
                 ? _errors | ViewErrors.NotLoadedBridge
                 : _errors & ~ViewErrors.NotLoadedBridge)
+            .DisposeWith(_d);
+
+        sim.WasmVersionReported
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(v =>
+            {
+                _bridgeVersion = v;
+                this.RaisePropertyChanged(nameof(ErrorMessage));
+            })
             .DisposeWith(_d);
 
         sim.WasmVersionMismatch

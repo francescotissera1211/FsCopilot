@@ -14,7 +14,7 @@
  is reported to the app and never throws into the instrument.
 
  Bus protocol (type 'wx'), payloads base64-chunked to fit the 512-byte bus:
-   app -> js: {op:'get'} | {op:'chunk', k:'apply', s, i, n, d}
+   app -> js: {op:'ping'} | {op:'get'} | {op:'chunk', k:'apply', s, i, n, d}
    js -> app: {op:'hello', v} | {op:'log', m} | {op:'result', ok, how, err}
               {op:'chunk', k:'state'|'diag', s, i, n, d}
 */
@@ -78,6 +78,7 @@ class FscWeather {
 
     onMessage(msg) {
         if (!msg || msg.type !== 'wx' || !this.leader) return;
+        if (msg.op === 'ping') this.send({op: 'hello', v: FSC_WX_VERSION, ok: !!this.listener});
         if (msg.op === 'get') this.report();
         if (msg.op === 'chunk' && msg.k === 'apply') {
             const json = this.collect(msg);

@@ -64,6 +64,28 @@ jobs:
           cp -r "$bridge" publish/Community/
           python .github/scripts/overlay_bridge.py publish/Community/fscopilot-bridge FsCopilot.Bridge/PackageSources/HTML_UI
 
+      # The app refuses a bridge whose WASM reports a different version, so check the bundled one here.
+      - name: Check bridge WASM version
+        shell: bash
+        run: |
+          expected=$(sed -n 's:.*WasmVersion = "\(.*\)";.*:\1:p' FsCopilot/Connection/SimClient.cs)
+          python - "$expected" <<'PY'
+          import pathlib, re, sys
+          expected = sys.argv[1]
+          wasm = list(pathlib.Path("publish/Community/fscopilot-bridge").rglob("*.wasm"))
+          if not wasm:
+              sys.exit("::error::No .wasm module in the bundled bridge")
+          for w in wasm:
+              data = w.read_bytes()
+              # Strings in a WASM data segment are NUL-terminated but may follow any byte.
+              found = sorted({m.decode() for m in re.findall(rb"(?<![0-9.])(\d+\.\d+(?:\.\d+)?(?:-rc\d*)?)\x00", data)})
+              print(f"{w} ({len(data)} bytes): version-like strings {found}, app expects {expected}")
+              for m in re.finditer(re.escape(expected.encode()), data):
+                  print(f"  '{expected}' at {m.start()}: {data[max(0, m.start() - 24):m.end() + 8]!r}")
+              if expected not in found:
+                  sys.exit(f"::error::Bundled bridge {w.name} reports {found}, but the app expects {expected} (SimClient.WasmVersion). The app would show a version mismatch.")
+          PY
+
       - uses: actions/upload-artifact@v4
         with:
           name: FsCopilot-win-x64
