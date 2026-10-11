@@ -85,6 +85,7 @@ sealed class Program
                         services.AddSingleton<MasterSwitch>();
                         services.AddSingleton<Coordinator>();
                         services.AddSingleton<EnvironmentSync>();
+                        services.AddSingleton<WeatherSync>();
                         services.AddSingleton(sp => new MainViewModel(
                             peerId,
                             name,
@@ -93,6 +94,7 @@ sealed class Program
                             sp.GetRequiredService<MasterSwitch>(),
                             sp.GetRequiredService<Coordinator>(),
                             sp.GetRequiredService<EnvironmentSync>(),
+                            sp.GetRequiredService<WeatherSync>(),
                             sp.GetRequiredService<Updater>()
                         ));
                     }

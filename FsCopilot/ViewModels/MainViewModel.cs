@@ -107,6 +107,7 @@ public class MainViewModel : ReactiveObject, IDisposable
         MasterSwitch masterSwitch,
         Coordinator coordinator,
         EnvironmentSync environmentSync,
+        WeatherSync weatherSync,
         Updater updater)
     {
         ClientName = name;
@@ -238,6 +239,7 @@ public class MainViewModel : ReactiveObject, IDisposable
 
                 masterSwitch.Join();
                 environmentSync.Join();
+                weatherSync.Reset();
                 SyncRole = "Following host";
                 result = await net.Connect(ConnectionCode, cts.Token);
             }
@@ -249,6 +251,7 @@ public class MainViewModel : ReactiveObject, IDisposable
             if (result != ConnectionResult.Success)
             {
                 environmentSync.Leave();
+                weatherSync.Reset();
                 SyncRole = "Host";
             }
 
@@ -267,6 +270,7 @@ public class MainViewModel : ReactiveObject, IDisposable
         LeaveCommand = ReactiveCommand.Create(() =>
         {
             environmentSync.Leave();
+            weatherSync.Reset();
             SyncRole = "Host";
             net.Disconnect();
             masterSwitch.TakeControl();

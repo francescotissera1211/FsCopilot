@@ -6,7 +6,8 @@ using Network;
 /// <summary>
 /// Keeps the free-flight environment (zulu date/time, pause, sim rate) in parity between clients.
 /// The session creator (the client that did not press Join) is authoritative for date and time.
-/// Pause is synced in both directions. Sim rate is locked to 1x on every client while connected.
+/// Pause (including the Esc menu) is synced in both directions. Sim rate is locked to 1x on every client
+/// while connected.
 /// </summary>
 public class EnvironmentSync : IDisposable
 {
@@ -18,6 +19,7 @@ public class EnvironmentSync : IDisposable
     // Pause_EX1 flags
     private const uint PauseFull = 1;
     private const uint PauseActive = 4;
+    private const uint PauseMenu = 8;
 
     private readonly SimClient _sim;
     private readonly INetwork _net;
@@ -44,6 +46,9 @@ public class EnvironmentSync : IDisposable
 
     public IObservable<SyncLogEntry> Log => _log;
     public bool IsHost => _isHost;
+    public bool HasAircraft => _hasAircraft;
+    public int PeerCount => _peerCount;
+    public IObservable<int> PeersChanged { get; }
 
     public EnvironmentSync(SimClient sim, INetwork net)
     {
@@ -70,11 +75,17 @@ public class EnvironmentSync : IDisposable
             if (!_isHost && _peerCount > 0) RequestSync("aircraft loaded");
         }));
 
+        var peersChanged = new Subject<int>();
+        PeersChanged = peersChanged;
         _d.Add(net.Peers
             .Select(p => p.Count)
             .DistinctUntilChanged()
             .Scan((Prev: 0, Curr: 0), (s, c) => (s.Curr, c))
-            .Subscribe(x => OnPeersChanged(x.Prev, x.Curr)));
+            .Subscribe(x =>
+            {
+                OnPeersChanged(x.Prev, x.Curr);
+                peersChanged.OnNext(x.Curr);
+            }));
 
         // Host: periodic parity broadcast. Joiners compare against their own clock on receipt.
         _d.Add(Observable.Interval(CheckInterval)
@@ -267,7 +278,11 @@ public class EnvironmentSync : IDisposable
 
     private void OnLocalPause(uint flags)
     {
-        var paused = (flags & (PauseFull | PauseActive)) != 0;
+        var reason = (flags & PauseMenu) != 0 ? PauseReason.Menu
+            : (flags & PauseFull) != 0 ? PauseReason.Pause
+            : (flags & PauseActive) != 0 ? PauseReason.ActivePause
+            : PauseReason.None;
+        var paused = reason != PauseReason.None;
         bool changed;
         lock (_lock)
         {
@@ -282,8 +297,13 @@ public class EnvironmentSync : IDisposable
         }
 
         if (!changed || _peerCount == 0) return;
-        Write(SyncLevel.Info, paused ? "You paused the sim" : "You resumed the sim");
-        try { _net.SendAll(new PauseState(paused)); }
+        Write(SyncLevel.Info, reason switch
+        {
+            PauseReason.Menu => "You opened the menu, pausing other pilots",
+            PauseReason.None => "You resumed the sim",
+            _ => "You paused the sim"
+        });
+        try { _net.SendAll(new PauseState(paused, (byte)reason)); }
         catch (Exception e) { Serilog.Log.Error(e, "[EnvSync] Failed to send pause state"); }
     }
 
@@ -296,9 +316,17 @@ public class EnvironmentSync : IDisposable
             _pauseEchoAt = DateTime.UtcNow;
         }
 
+        // Every remote pause kind is applied as a full pause; the Esc menu itself can't be opened remotely.
         _sim.Trigger("PAUSE_SET", state.Paused ? 1 : 0);
-        Write(SyncLevel.Info, state.Paused ? "Sim paused by other pilot" : "Sim resumed by other pilot");
+        Write(SyncLevel.Info, (PauseReason)state.Reason switch
+        {
+            PauseReason.Menu => "Other pilot opened the menu - sim paused",
+            PauseReason.None => "Sim resumed by other pilot",
+            _ => "Sim paused by other pilot"
+        });
     }
+
+    private enum PauseReason : byte { None, Pause, ActivePause, Menu }
 
     #endregion
 
@@ -326,7 +354,7 @@ public class EnvironmentSync : IDisposable
 
     #endregion
 
-    private void Write(SyncLevel level, string message)
+    public void Write(SyncLevel level, string message)
     {
         switch (level)
         {
@@ -365,13 +393,17 @@ public class EnvironmentSync : IDisposable
         }
     }
 
-    private record PauseState(bool Paused)
+    private record PauseState(bool Paused, byte Reason)
     {
         public class Codec : IPacketCodec<PauseState>
         {
-            public void Encode(PauseState packet, BinaryWriter bw) => bw.Write(packet.Paused);
+            public void Encode(PauseState packet, BinaryWriter bw)
+            {
+                bw.Write(packet.Paused);
+                bw.Write(packet.Reason);
+            }
 
-            public PauseState Decode(BinaryReader br) => new(br.ReadBoolean());
+            public PauseState Decode(BinaryReader br) => new(br.ReadBoolean(), br.ReadByte());
         }
     }
 }
