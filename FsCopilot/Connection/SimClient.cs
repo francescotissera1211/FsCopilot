@@ -231,6 +231,40 @@ public class SimClient : IDisposable
             Execute($"{string.Join(' ', values.Select(value => Convert.ToString(value, CultureInfo.InvariantCulture)))} (>{name})");
     }
 
+    /// <summary>
+    /// Transmits a single key event exactly once (unlike <see cref="Set(string, string?, object[])"/>,
+    /// which also executes it as an RPN expression). Use for non-idempotent events such as SIM_RATE_DECR.
+    /// </summary>
+    public void Trigger(string eventName, params object[] values) =>
+        TransmitKEvent(eventName, values.Length > 0 ? values : [0]);
+
+    /// <summary>
+    /// Subscribes to a SimConnect system event (e.g. "Pause_EX1") and emits its dwData.
+    /// </summary>
+    public IObservable<uint> SystemEvent(string eventName) =>
+        (IObservable<uint>)_streams.GetOrAdd($"SystemEvent_{eventName}", _ => Observable.Create<uint>(observer =>
+        {
+            var eventId = (EVT)Interlocked.Increment(ref _defId);
+
+            var sub = _consumer.SimEventData.ObserveOn(TaskPoolScheduler.Default).Subscribe(e =>
+                {
+                    if ((EVT)e.uEventID != eventId) return;
+                    observer.OnNext(e.dwData);
+                },
+                observer.OnError,
+                observer.OnCompleted);
+
+            var consumerConfig = _consumer.Configure(
+                sim => sim.SubscribeToSystemEvent(eventId, eventName),
+                sim => sim.UnsubscribeFromSystemEvent(eventId));
+
+            return () =>
+            {
+                sub.Dispose();
+                consumerConfig.Dispose();
+            };
+        }).Publish().RefCount());
+
     private void SetLVar(string datumName, string? sUnits, object value)
     {
         var defId = _defs.GetOrAdd($"PRODUCER_{datumName}_{sUnits}", _ =>

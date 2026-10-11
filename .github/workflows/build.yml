@@ -1,0 +1,54 @@
+name: Build
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Publish app
+        shell: bash
+        run: dotnet publish FsCopilot/FsCopilot.csproj -c Release -r win-x64 -o publish
+
+      # The bridge package (Community/fscopilot-bridge) needs the MSFS SDK to build, which is not
+      # available on CI. This fork does not change the bridge, so take it from the matching upstream release.
+      - name: Add bridge package from upstream release
+        shell: bash
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' FsCopilot/FsCopilot.csproj)
+          mkdir -p upstream
+          gh release download "v$version" --repo yury-sch/FsCopilot --pattern '*.zip' --dir upstream \
+            || gh release download "$version" --repo yury-sch/FsCopilot --pattern '*.zip' --dir upstream \
+            || gh release download --repo yury-sch/FsCopilot --pattern '*.zip' --dir upstream
+          for z in upstream/*.zip; do unzip -q -o "$z" -d upstream/extracted; done
+          bridge=$(find upstream/extracted -type d -name fscopilot-bridge | head -n 1)
+          if [ -z "$bridge" ]; then
+            echo "::warning::Bridge package not found in upstream release; keep the one already in your Community folder."
+            exit 0
+          fi
+          mkdir -p publish/Community
+          cp -r "$bridge" publish/Community/
+          echo "Bridge package copied from $bridge"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FsCopilot-win-x64
+          path: publish/
+          if-no-files-found: error
