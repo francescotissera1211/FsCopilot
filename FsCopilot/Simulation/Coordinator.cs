@@ -1,5 +1,6 @@
 namespace FsCopilot.Simulation;
 
+using System.Globalization;
 using System.Security.Cryptography;
 using Connection;
 using Network;
@@ -12,9 +13,16 @@ public class Coordinator : IDisposable
     private readonly CompositeDisposable _d = new();
     private CompositeDisposable _cSubs = new();
     private HashSet<string> _ignore = [];
+    // Current local value of every state-like profile variable, for the load-in snapshot.
+    private readonly ConcurrentDictionary<string, StateLink> _states = new();
+    private readonly EnvironmentSync _env;
 
-    public Coordinator(SimClient sim, INetwork net, MasterSwitch masterSwitch)
+    /// <summary>Names of the variables the loaded profile syncs (used to avoid double-syncing them elsewhere).</summary>
+    public ICollection<string> ProfileVariables => _states.Keys;
+
+    public Coordinator(SimClient sim, INetwork net, MasterSwitch masterSwitch, EnvironmentSync env)
     {
+        _env = env;
         _net = net;
         _masterSwitch = masterSwitch;
         _sim = sim;
@@ -26,6 +34,8 @@ public class Coordinator : IDisposable
 
         net.RegisterPacket<Update, Update.Codec>();
         net.RegisterPacket<Interact, InteractCodec>();
+        net.RegisterPacket<SnapshotRequest, SnapshotRequest.Codec>();
+        net.RegisterPacket<Snapshot, Snapshot.Codec>();
 
         _sim.Register<Physics>();
         _sim.Register<Surfaces>();
@@ -49,6 +59,62 @@ public class Coordinator : IDisposable
             .Subscribe(interact => _net.SendAll(interact)));
         _d.Add(_net.Stream<Interact>()
             .Subscribe(update => _sim.Set(update)));
+
+        // Load-in: the joiner (not in control) asks; the pilot in control sends every profile state it knows.
+        _d.Add(env.SessionReady
+            .Where(_ => !_masterSwitch.IsMaster)
+            .Subscribe(_ =>
+            {
+                try { _net.SendAll(new SnapshotRequest(0)); }
+                catch (Exception e) { Log.Error(e, "[Coordinator] Failed to request snapshot"); }
+            }));
+        _d.Add(_net.Stream<SnapshotRequest>()
+            .Where(_ => _masterSwitch.IsMaster)
+            .Subscribe(_ => SendSnapshot()));
+        _d.Add(_net.Stream<Snapshot>()
+            .Where(_ => !_masterSwitch.IsMaster)
+            .Subscribe(ApplySnapshot));
+    }
+
+    private void SendSnapshot()
+    {
+        var items = _states
+            .Select(kv => (Name: kv.Key, Value: kv.Value.Current()))
+            .Where(x => x.Value != null)
+            .Select(x => new Update(x.Name, x.Value!))
+            .ToArray();
+        if (items.Length == 0) return;
+        Log.Information("[Coordinator] Sending snapshot of {Count} profile states", items.Length);
+        try { _net.SendAll(new Snapshot(items)); }
+        catch (Exception e) { Log.Error(e, "[Coordinator] Failed to send snapshot"); }
+    }
+
+    private void ApplySnapshot(Snapshot snapshot)
+    {
+        var applied = 0;
+        foreach (var update in snapshot.Items)
+        {
+            if (!_states.TryGetValue(update.Name, out var link)) continue;
+            var current = link.Current();
+            if (current != null && SameValue(current, update.Value)) continue;
+            try
+            {
+                Apply(link.Def, update.Value, current);
+                applied++;
+            }
+            catch (Exception e) { Log.Error(e, "[Coordinator] Error applying snapshot value {Name}", update.Name); }
+        }
+        Log.Information("[Coordinator] Snapshot: {Applied} of {Count} profile states differed and were applied",
+            applied, snapshot.Items.Length);
+        if (applied > 0)
+            _env.Write(EnvironmentSync.SyncLevel.Info, $"Matched {applied} cockpit settings to the pilot in control");
+    }
+
+    private static bool SameValue(object a, object b)
+    {
+        if (a is string || b is string) return Equals(Convert.ToString(a, CultureInfo.InvariantCulture), Convert.ToString(b, CultureInfo.InvariantCulture));
+        try { return Math.Abs(Convert.ToDouble(a, CultureInfo.InvariantCulture) - Convert.ToDouble(b, CultureInfo.InvariantCulture)) < 1e-6; }
+        catch (Exception) { return Equals(a, b); }
     }
 
     public void Dispose()
@@ -61,6 +127,7 @@ public class Coordinator : IDisposable
     {
         if (!_cSubs.IsDisposed) _cSubs.Dispose();
         _ignore.Clear();
+        _states.Clear();
         _cSubs = new();
         foreach (var def in definitions) AddLink(def);
         foreach (var i in definitions.Ignore) _ignore.Add(i);
@@ -94,6 +161,10 @@ public class Coordinator : IDisposable
         object? currentValue = null;
         var getVar = def.Get;
 
+        // H: events and K: events are actions, not states, so they are not part of the load-in snapshot.
+        if (getVar.Length > 2 && getVar[1] == ':' && getVar[0] != 'H' && getVar[0] != 'K')
+            _states[getVar] = new(def, () => currentValue);
+
         var simRx = _sim.Stream(getVar, def.Units);
         if (master) simRx = simRx.Sample(TimeSpan.FromMilliseconds(30), DefaultScheduler.Instance); // 33 fps
         simRx = simRx
@@ -114,34 +185,70 @@ public class Coordinator : IDisposable
             .Where(update => update.Name == getVar)
             .Do(update => Log.Verbose("[PACKET] RECV {Name} {Value}", getVar, update.Value))
             .Where(_ => !master || !_masterSwitch.IsMaster)
-            .Subscribe(update =>
+            .Subscribe(update => Apply(def, update.Value, currentValue)));
+    }
+
+    private void Apply(Definition def, object value, object? currentValue)
+    {
+        var getVar = def.Get;
+        if (!def.Shared)
+        {
+            var set = def.ParseSet(value, currentValue ?? value, out var units, out var values);
+            if (values.Length == 0) return;
+            _sim.Set(set, units, values);
+        }
+        else
+        {
+            var expression = def.Set(value, currentValue ?? value);
+            if (expression.Contains(">K:#"))
             {
-                if (master)
-                {
-                    var set = def.ParseSet(update.Value, currentValue ?? update.Value, out var units, out var values);
-                    if (values.Length == 0) return;
-                    _sim.Set(set, units, values);
-                }
-                else
-                {
-                    var expression = def.Set(update.Value, currentValue ?? update.Value);
-                    if (expression.Contains(">K:#"))
-                    {
-                        var set = def.ParseSet(update.Value, currentValue ?? update.Value, out var units, out var values);
-                        if (values.Length == 0) return;
-                        Skip.Next(getVar);
-                        _sim.Set(set, units, values);
-                    }
-                    else
-                    {
-                        if ((expression.Contains(">K:") || expression.Contains(">B:"))
-                            && expression.Contains("TOGGLE", StringComparison.OrdinalIgnoreCase)
-                            && update.Value.Equals(currentValue)) return;
-                        Skip.Next(getVar);
-                        _sim.Execute(expression);
-                    }
-                }
-            }));
+                var set = def.ParseSet(value, currentValue ?? value, out var units, out var values);
+                if (values.Length == 0) return;
+                Skip.Next(getVar);
+                _sim.Set(set, units, values);
+            }
+            else
+            {
+                if ((expression.Contains(">K:") || expression.Contains(">B:"))
+                    && expression.Contains("TOGGLE", StringComparison.OrdinalIgnoreCase)
+                    && value.Equals(currentValue)) return;
+                Skip.Next(getVar);
+                _sim.Execute(expression);
+            }
+        }
+    }
+
+    private record StateLink(Definition Def, Func<object?> Current);
+
+    private record SnapshotRequest(byte Reserved)
+    {
+        public class Codec : IPacketCodec<SnapshotRequest>
+        {
+            public void Encode(SnapshotRequest packet, BinaryWriter bw) => bw.Write(packet.Reserved);
+
+            public SnapshotRequest Decode(BinaryReader br) => new(br.ReadByte());
+        }
+    }
+
+    private record Snapshot(Update[] Items)
+    {
+        public class Codec : IPacketCodec<Snapshot>
+        {
+            private static readonly Update.Codec Item = new();
+
+            public void Encode(Snapshot packet, BinaryWriter bw)
+            {
+                bw.Write(packet.Items.Length);
+                foreach (var item in packet.Items) Item.Encode(item, bw);
+            }
+
+            public Snapshot Decode(BinaryReader br)
+            {
+                var items = new Update[br.ReadInt32()];
+                for (var i = 0; i < items.Length; i++) items[i] = Item.Decode(br);
+                return new(items);
+            }
+        }
     }
 
     private record Update(string Name, object Value)

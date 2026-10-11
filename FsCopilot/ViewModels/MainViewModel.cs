@@ -109,6 +109,7 @@ public class MainViewModel : ReactiveObject, IDisposable
         Coordinator coordinator,
         EnvironmentSync environmentSync,
         WeatherSync weatherSync,
+        AircraftStateSync aircraftStateSync,
         Updater updater)
     {
         ClientName = name;

@@ -292,6 +292,16 @@ public class SimClient : IDisposable
             };
         }).Publish().RefCount());
 
+    /// <summary>
+    /// Sets an A: simvar through a SimConnect data definition with explicit units only (no RPN fallback that
+    /// would apply default units). Other variable kinds go through <see cref="Set(string, string?, object[])"/>.
+    /// </summary>
+    public void SetVar(string name, string units, object value)
+    {
+        if (name.StartsWith("A:")) SetSimVar(name[2..], units, value);
+        else Set(name, units, [value]);
+    }
+
     private void SetLVar(string datumName, string? sUnits, object value)
     {
         var defId = _defs.GetOrAdd($"PRODUCER_{datumName}_{sUnits}", _ =>

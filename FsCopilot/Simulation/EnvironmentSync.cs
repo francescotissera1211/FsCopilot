@@ -7,12 +7,20 @@ using Network;
 /// Keeps the free-flight environment (zulu date/time, pause, sim rate) in parity between clients.
 /// The session creator (the client that did not press Join) is authoritative for date and time.
 /// Pause (including the Esc menu) is synced in both directions. Sim rate is locked to 1x on every client
-/// while connected.
+/// while connected. <see cref="SessionReady"/> drives the initial sync of everything on load-in.
 /// </summary>
 public class EnvironmentSync : IDisposable
 {
     private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaxDrift = TimeSpan.FromSeconds(30);
+    // Right after load-in the clocks are matched closely, not just within the periodic tolerance.
+    private static readonly TimeSpan InitialMaxDrift = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan VerifyDelay = TimeSpan.FromSeconds(3);
+    // The sim flips pause flags while an aircraft loads; don't sync those.
+    private static readonly TimeSpan LoadSettle = TimeSpan.FromSeconds(15);
+    // Re-announce readiness a few times: the other side may still be loading the first time.
+    private static readonly TimeSpan[] ReadyBursts =
+        [TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(8), TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(45)];
     private static readonly TimeSpan EchoWindow = TimeSpan.FromSeconds(3);
     private const int MaxSilentCorrections = 3;
 
@@ -40,15 +48,30 @@ public class EnvironmentSync : IDisposable
 
     private bool? _pauseEcho;
     private DateTime _pauseEchoAt;
+    private DateTime _aircraftLoadedAt = DateTime.MinValue;
+    private PauseState? _lastRemotePause;
+    private bool _pauseIgnoredLogged;
     private IDisposable? _pendingCorrection;
     private int _consecutiveCorrections;
+    private bool _initialTimePending;
+    // The bridge only answers once a cockpit is running, so one miss during load-in doesn't rule it out.
+    private int _bridgeTimeFailures;
+    private const int MaxBridgeTimeFailures = 2;
     private bool _rateLogged;
+    private readonly Subject<Unit> _sessionReady = new();
 
     public IObservable<SyncLogEntry> Log => _log;
     public bool IsHost => _isHost;
     public bool HasAircraft => _hasAircraft;
     public int PeerCount => _peerCount;
     public IObservable<int> PeersChanged { get; }
+
+    /// <summary>
+    /// Fires a few times after a peer connects or an aircraft loads while connected. Every sync component sends
+    /// (host) or requests (joiner) its full state on it, so load-in gets everything without waiting for the
+    /// periodic checks. Handlers must be idempotent.
+    /// </summary>
+    public IObservable<Unit> SessionReady => _sessionReady;
 
     public EnvironmentSync(SimClient sim, INetwork net)
     {
@@ -71,8 +94,8 @@ public class EnvironmentSync : IDisposable
         _d.Add(sim.Aircraft.Subscribe(_ =>
         {
             _hasAircraft = true;
-            // Joiner entered the sim with an aircraft: ask the host for the initial sync.
-            if (!_isHost && _peerCount > 0) RequestSync("aircraft loaded");
+            _aircraftLoadedAt = DateTime.UtcNow;
+            if (_peerCount > 0) AnnounceReady("aircraft loaded");
         }));
 
         var peersChanged = new Subject<int>();
@@ -96,6 +119,20 @@ public class EnvironmentSync : IDisposable
             .Where(_ => _isHost)
             .Subscribe(_ => BroadcastTime()));
 
+        _d.Add(SessionReady.Subscribe(_ =>
+        {
+            if (_isHost)
+            {
+                BroadcastTime();
+                if (_paused) SendPause(true, PauseReason.Pause);
+            }
+            else
+            {
+                lock (_lock) _initialTimePending = true;
+                RequestSync("load-in");
+            }
+        }));
+
         _d.Add(net.Stream<TimeState>()
             .Where(_ => !_isHost)
             .Subscribe(OnTimeState));
@@ -112,6 +149,13 @@ public class EnvironmentSync : IDisposable
     {
         _d.Dispose();
         _pendingCorrection?.Dispose();
+    }
+
+    private void AnnounceReady(string reason)
+    {
+        Serilog.Log.Information("[EnvSync] Session ready ({Reason}), syncing state", reason);
+        foreach (var delay in ReadyBursts)
+            _d.Add(Observable.Timer(delay).Where(_ => _peerCount > 0).Subscribe(_ => _sessionReady.OnNext(Unit.Default)));
     }
 
     /// <summary>Called when this client joins someone else's session; the other side becomes authoritative.</summary>
@@ -141,14 +185,9 @@ public class EnvironmentSync : IDisposable
         if (curr > prev)
         {
             _leaving = false;
-            if (_isHost) Write(SyncLevel.Info, "Peer connected, sending date/time to clients");
-            else Write(SyncLevel.Info, "Connected, requesting date/time from host");
-            // Give the link a moment to settle before the initial sync.
-            _d.Add(Observable.Timer(TimeSpan.FromSeconds(2)).Subscribe(_ =>
-            {
-                if (_isHost) BroadcastTime();
-                else RequestSync("connected");
-            }));
+            if (_isHost) Write(SyncLevel.Info, "Peer connected, sending sim state to clients");
+            else Write(SyncLevel.Info, "Connected, requesting sim state from host");
+            AnnounceReady("peer connected");
         }
         else if (curr == 0 && prev > 0)
         {
@@ -160,7 +199,7 @@ public class EnvironmentSync : IDisposable
 
             if (_hasAircraft && !_paused)
             {
-                _sim.Trigger("PAUSE_SET", 1);
+                ApplyPause(true);
                 Write(SyncLevel.Error, "Connection lost - sim paused so you can reconnect");
             }
             else
@@ -210,7 +249,9 @@ public class EnvironmentSync : IDisposable
 
         lock (_lock)
         {
-            if (drift.Duration() <= MaxDrift)
+            var initial = _initialTimePending;
+            _initialTimePending = false;
+            if (drift.Duration() <= (initial ? InitialMaxDrift : MaxDrift))
             {
                 if (_consecutiveCorrections > 0)
                     Write(SyncLevel.Info, $"Time in sync with host (drift {FormatDrift(drift)})");
@@ -233,9 +274,34 @@ public class EnvironmentSync : IDisposable
                     "MSFS keeps rejecting the time change. Check that the flight does not use live/real time. Still retrying quietly.");
             }
 
+            var receivedAt = Stopwatch.StartNew();
+            if (_bridgeTimeFailures < MaxBridgeTimeFailures)
+            {
+                // The sim's own time control (through the bridge) sets seconds directly and applies at once.
+                // Verify it took; if not, fall back to the key events below for the rest of the session.
+                var target = host + TimeSpan.FromMilliseconds(100);
+                SetTimeViaBridge(target);
+                _pendingCorrection = Observable.Timer(VerifyDelay).Subscribe(_ =>
+                {
+                    lock (_lock) _pendingCorrection = null;
+                    if (!TryGetLocalTime(out var now)) return;
+                    var expected = host + receivedAt.Elapsed;
+                    if ((expected - now).Duration() <= InitialMaxDrift)
+                    {
+                        Write(SyncLevel.Info, $"Set time to {expected:yyyy-MM-dd HH:mm:ss}Z");
+                        lock (_lock) _bridgeTimeFailures = 0;
+                        return;
+                    }
+                    lock (_lock) _bridgeTimeFailures++;
+                    Serilog.Log.Warning("[EnvSync] Bridge time set did not take (local {Local:O}, expected {Expected:O}); trying key events",
+                        now, expected);
+                    OnTimeState(state with { ZuluTicks = expected.Ticks });
+                });
+                return;
+            }
+
             // ZULU_*_SET only has minute resolution. Apply exactly at the next whole host minute and zero
             // the seconds, so the remaining error is just network latency.
-            var receivedAt = Stopwatch.StartNew();
             var toBoundary = TimeSpan.FromMinutes(1) - TimeSpan.FromTicks(host.Ticks % TimeSpan.TicksPerMinute);
             if (toBoundary < TimeSpan.FromSeconds(2)) toBoundary += TimeSpan.FromMinutes(1);
 
@@ -249,6 +315,19 @@ public class EnvironmentSync : IDisposable
                 ApplyTime(target);
             });
         }
+    }
+
+    private void SetTimeViaBridge(DateTime target)
+    {
+        var sent = _sim.SendBus("wx", w =>
+        {
+            w.WriteString("op", "time");
+            w.WriteNumber("sec", (int)target.TimeOfDay.TotalSeconds);
+            w.WriteNumber("day", target.Day);
+            w.WriteNumber("month", target.Month);
+            w.WriteNumber("year", target.Year);
+        });
+        Serilog.Log.Information("[EnvSync] Setting zulu time {Target:O} through the bridge (sent: {Sent})", target, sent);
     }
 
     private void ApplyTime(DateTime target)
@@ -278,6 +357,7 @@ public class EnvironmentSync : IDisposable
 
     private void OnLocalPause(uint flags)
     {
+        Serilog.Log.Debug("[EnvSync] Pause_EX1 flags {Flags}", flags);
         var reason = (flags & PauseMenu) != 0 ? PauseReason.Menu
             : (flags & PauseFull) != 0 ? PauseReason.Pause
             : (flags & PauseActive) != 0 ? PauseReason.ActivePause
@@ -297,12 +377,22 @@ public class EnvironmentSync : IDisposable
         }
 
         if (!changed || _peerCount == 0) return;
+        if (DateTime.UtcNow - _aircraftLoadedAt < LoadSettle)
+        {
+            Serilog.Log.Information("[EnvSync] Not syncing pause change during aircraft load ({Reason})", reason);
+            return;
+        }
         Write(SyncLevel.Info, reason switch
         {
             PauseReason.Menu => "You opened the menu, pausing other pilots",
             PauseReason.None => "You resumed the sim",
             _ => "You paused the sim"
         });
+        SendPause(paused, reason);
+    }
+
+    private void SendPause(bool paused, PauseReason reason)
+    {
         try { _net.SendAll(new PauseState(paused, (byte)reason)); }
         catch (Exception e) { Serilog.Log.Error(e, "[EnvSync] Failed to send pause state"); }
     }
@@ -311,19 +401,54 @@ public class EnvironmentSync : IDisposable
     {
         lock (_lock)
         {
-            if (state.Paused == _paused) return;
+            // Apply even if we believe we're already in that state: our view of the local pause flags can be
+            // stale (the sim doesn't always report every change), and setting the same pause twice is harmless.
+            if (state == _lastRemotePause && state.Paused == _paused) return;
+            _lastRemotePause = state;
             _pauseEcho = state.Paused;
             _pauseEchoAt = DateTime.UtcNow;
         }
 
         // Every remote pause kind is applied as a full pause; the Esc menu itself can't be opened remotely.
-        _sim.Trigger("PAUSE_SET", state.Paused ? 1 : 0);
+        ApplyPause(state.Paused);
         Write(SyncLevel.Info, (PauseReason)state.Reason switch
         {
             PauseReason.Menu => "Other pilot opened the menu - sim paused",
             PauseReason.None => "Sim resumed by other pilot",
             _ => "Sim paused by other pilot"
         });
+    }
+
+    // Sets the pause through SimConnect and through the bridge (in-sim calculator code), then checks the sim's
+    // reported pause state and tries PAUSE_ON/PAUSE_OFF if PAUSE_SET was ignored.
+    private void ApplyPause(bool pause)
+    {
+        var value = pause ? 1 : 0;
+        _sim.Trigger("PAUSE_SET", value);
+        _sim.Execute($"{value} (>K:PAUSE_SET)");
+
+        _d.Add(Observable.Timer(VerifyDelay).Subscribe(_ =>
+        {
+            if (_paused == pause) return;
+            Serilog.Log.Warning("[EnvSync] PAUSE_SET {Value} did not take, trying {Event}", value, pause ? "PAUSE_ON" : "PAUSE_OFF");
+            lock (_lock)
+            {
+                _pauseEcho = pause;
+                _pauseEchoAt = DateTime.UtcNow;
+            }
+            var evt = pause ? "PAUSE_ON" : "PAUSE_OFF";
+            _sim.Trigger(evt);
+            _sim.Execute($"(>K:{evt})");
+
+            _d.Add(Observable.Timer(VerifyDelay).Subscribe(_ =>
+            {
+                if (_paused == pause || _pauseIgnoredLogged) return;
+                _pauseIgnoredLogged = true;
+                Write(SyncLevel.Warning, pause
+                    ? "MSFS did not pause when the other pilot paused. Pause manually; pause sync may not work in this sim version."
+                    : "MSFS did not resume when the other pilot resumed. Resume manually.");
+            }));
+        }));
     }
 
     private enum PauseReason : byte { None, Pause, ActivePause, Menu }
