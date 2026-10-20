@@ -266,7 +266,8 @@ public class EnvironmentSync : IDisposable
             if (_consecutiveCorrections <= MaxSilentCorrections)
             {
                 Write(SyncLevel.Warning,
-                    $"Time drift {FormatDrift(drift)} (host {host:yyyy-MM-dd HH:mm:ss}Z, local {local:yyyy-MM-dd HH:mm:ss}Z), correcting");
+                    $"Time drift {FormatDrift(drift)} (host {host:yyyy-MM-dd HH:mm:ss}Z, local {local:yyyy-MM-dd HH:mm:ss}Z), correcting",
+                    announce: false);
             }
             if (_consecutiveCorrections == MaxSilentCorrections + 1)
             {
@@ -411,12 +412,13 @@ public class EnvironmentSync : IDisposable
 
         // Every remote pause kind is applied as a full pause; the Esc menu itself can't be opened remotely.
         ApplyPause(state.Paused);
+        // The other pilot freezing or releasing your sim interrupts you; it is spoken.
         Write(SyncLevel.Info, (PauseReason)state.Reason switch
         {
             PauseReason.Menu => "Other pilot opened the menu - sim paused",
             PauseReason.None => "Sim resumed by other pilot",
             _ => "Sim paused by other pilot"
-        });
+        }, announce: true);
     }
 
     // Sets the pause through SimConnect and through the bridge (in-sim calculator code), then checks the sim's
@@ -479,7 +481,11 @@ public class EnvironmentSync : IDisposable
 
     #endregion
 
-    public void Write(SyncLevel level, string message)
+    /// <param name="announce">
+    /// Whether a screen reader should hear it as it happens: by default warnings and errors, the
+    /// things that interrupt a sighted pilot too. Routine, repeating notes pass false.
+    /// </param>
+    public void Write(SyncLevel level, string message, bool? announce = null)
     {
         switch (level)
         {
@@ -487,12 +493,12 @@ public class EnvironmentSync : IDisposable
             case SyncLevel.Warning: Serilog.Log.Warning("[EnvSync] {Message}", message); break;
             default: Serilog.Log.Information("[EnvSync] {Message}", message); break;
         }
-        _log.OnNext(new(DateTime.Now, level, message));
+        _log.OnNext(new(DateTime.Now, level, message, announce ?? level != SyncLevel.Info));
     }
 
     public enum SyncLevel { Info, Warning, Error }
 
-    public record SyncLogEntry(DateTime Time, SyncLevel Level, string Message);
+    public record SyncLogEntry(DateTime Time, SyncLevel Level, string Message, bool Announce);
 
     private record TimeState(long ZuluTicks, bool Paused)
     {

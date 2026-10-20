@@ -387,6 +387,10 @@
         <Setter Property="Foreground" Value="#8ec6ff"></Setter>
     </Style>
 
+    <Style Selector="ListBox.SyncLog">
+        <Setter Property="Background" Value="Transparent"></Setter>
+    </Style>
+
     <Style Selector="Border.SyncLog">
         <Setter Property="Height" Value="150"></Setter>
         <Setter Property="Padding" Value="20,14,20,14"></Setter>

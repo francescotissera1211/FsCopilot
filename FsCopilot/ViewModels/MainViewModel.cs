@@ -335,8 +335,9 @@ public class MainViewModel : ReactiveObject, IDisposable
                     EnvironmentSync.SyncLevel.Error => ErrorBrush,
                     EnvironmentSync.SyncLevel.Warning => WarningBrush,
                     _ => InfoBrush
-                }));
+                }, entry.Level));
                 while (SyncLog.Count > 50) SyncLog.RemoveAt(SyncLog.Count - 1);
+                if (entry.Announce) Announcer.Say(entry.Message);
             })
             .DisposeWith(_d);
 
@@ -456,7 +457,16 @@ public class MainViewModel : ReactiveObject, IDisposable
     private static readonly IBrush WarningBrush = new SolidColorBrush(Color.Parse("#FFC107"));
     private static readonly IBrush ErrorBrush = new SolidColorBrush(Color.Parse("#F44336"));
 
-    public record SyncLogItem(DateTime Time, string Message, IBrush Brush);
+    public record SyncLogItem(DateTime Time, string Message, IBrush Brush, EnvironmentSync.SyncLevel Level)
+    {
+        /// <summary>The entry for a screen reader: severity in words, since colour alone says nothing.</summary>
+        public string Spoken => Level switch
+        {
+            EnvironmentSync.SyncLevel.Error => $"Error: {Message}, {Time:HH:mm}",
+            EnvironmentSync.SyncLevel.Warning => $"Warning: {Message}, {Time:HH:mm}",
+            _ => $"{Message}, {Time:HH:mm}"
+        };
+    }
 
     /// <summary>
     /// Rows are updated in place rather than rebuilt every quarter second, so a screen reader
