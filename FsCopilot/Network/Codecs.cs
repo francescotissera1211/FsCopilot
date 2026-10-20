@@ -18,6 +18,15 @@ internal sealed class Codecs
     private readonly List<IPacketCodecAdapter> _byId = [];
     private readonly Dictionary<Type, byte> _idByType = new();
     
+    private readonly StringBuilder _schemaParts = new();
+
+    /// <summary>
+    /// One 64-character digest of every registered packet's shape, in registration order. Peers
+    /// compare it to refuse a different packet table. It travels in every connection request
+    /// (direct, relay and IP direct), so it must stay small: it used to be the per-packet hashes
+    /// strung together, 64 characters a packet, and at around 20 packets the request outgrew a
+    /// UDP datagram and every connection attempt failed with no error.
+    /// </summary>
     public string Schema { get; private set; } = string.Empty;
 
     public Codecs Add<TPacket, TCodec>()
@@ -33,7 +42,8 @@ internal sealed class Codecs
         _byId.Add(adapter);
         _idByType.Add(t, (byte)id);
         
-        Schema += SchemaFor<TPacket>();
+        _schemaParts.Append(SchemaFor<TPacket>());
+        Schema = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(_schemaParts.ToString())));
         return this;
     }
 
