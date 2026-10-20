@@ -17,6 +17,8 @@ public record PeerTags(PeerTags.Tag[] Peers)
         public PeerTags Decode(BinaryReader br)
         {
             var count = br.ReadInt32();
+            // A corrupt count would otherwise allocate whatever it says.
+            if (count is < 0 or > 256) throw new InvalidDataException($"Peer tag count out of range: {count}");
             var peers = new Tag[count];
             for (var i = 0; i < count; i++)
             {

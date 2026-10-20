@@ -232,7 +232,10 @@ public class AircraftStateSync : IDisposable
             public StateValues Decode(BinaryReader br)
             {
                 var snapshot = br.ReadBoolean();
-                var values = new StateValue[br.ReadInt32()];
+                var count = br.ReadInt32();
+                // A corrupt count would otherwise allocate whatever it says (the list holds ~35 items).
+                if (count is < 0 or > 1024) throw new InvalidDataException($"State value count out of range: {count}");
+                var values = new StateValue[count];
                 for (var i = 0; i < values.Length; i++) values[i] = new(br.ReadString(), br.ReadDouble());
                 return new(values, snapshot);
             }

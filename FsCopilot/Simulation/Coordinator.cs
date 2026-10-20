@@ -492,7 +492,10 @@ public class Coordinator : IDisposable
 
             public Snapshot Decode(BinaryReader br)
             {
-                var items = new Update[br.ReadInt32()];
+                var count = br.ReadInt32();
+                // A corrupt count would otherwise allocate whatever it says.
+                if (count is < 0 or > 65536) throw new InvalidDataException($"Snapshot item count out of range: {count}");
+                var items = new Update[count];
                 for (var i = 0; i < items.Length; i++) items[i] = Item.Decode(br);
                 return new(items);
             }
