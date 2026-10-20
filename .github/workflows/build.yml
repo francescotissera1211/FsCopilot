@@ -50,7 +50,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          upstream_version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' FsCopilot/FsCopilot.csproj)
+          # The WASM module comes from upstream's 1.2.1 release whatever this fork's own version is
+          # (the app's version line has moved on; the module and its source have not).
+          upstream_version=1.2.1
           mkdir -p upstream
           gh release download "v$upstream_version" --repo yury-sch/FsCopilot --pattern '*.zip' --dir upstream \
             || gh release download "$upstream_version" --repo yury-sch/FsCopilot --pattern '*.zip' --dir upstream
