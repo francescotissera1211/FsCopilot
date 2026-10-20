@@ -53,6 +53,8 @@ public sealed class HybridNetwork : INetwork, IDisposable
 
     public void Dispose()
     {
+        // Cancel first: a connect burst still running holds a token linked to this one.
+        _cts.Cancel();
         _cts.Dispose();
         _p2p.Dispose();
         _relay.Dispose();

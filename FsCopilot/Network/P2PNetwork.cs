@@ -343,7 +343,9 @@ public sealed class P2PNetwork : INetwork, IDisposable
             if (tag.PeerId == _peerId) continue;
             _peerNames.AddOrUpdate(tag.PeerId, tag.Name, (_, _) => tag.Name);
             
-            if (_autoConnect && !peers.Any(p => p.Tag.Equals(tag.PeerId))) AskIntroduce(tag.PeerId);
+            // A peer's tag is set just after the poll thread creates it, so it can still be null here;
+            // a throw on this pool thread would end the process.
+            if (_autoConnect && !peers.Any(p => p.Tag as string == tag.PeerId)) AskIntroduce(tag.PeerId);
         }
     }
 
