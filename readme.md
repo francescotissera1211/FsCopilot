@@ -32,7 +32,6 @@ app starts in the original rendezvous/relay mode and behaves exactly like upstre
 If this saved you a flight, you can buy me a coffee:
 
 - PayPal: [paypal.me/Grainlin](https://paypal.me/Grainlin)
-- Payoneer: [link](https://link.payoneer.com/Token?t=B65D3C4D79EC4A8A8D19EFD0D8734841&src=dpl)
 - WECHAT and ALI PAY:PLEASE KEEP SCROLLING DOWN
 
 Bug reports: open an issue on this fork. Upstream support for the original app: their Discord./Or you can contact me:graingrl@outlook.com
@@ -72,7 +71,6 @@ Tailscale、WireGuard……）里的 IP。下载：[latest release](https://gith
 如果这个版本帮你省了一次绕地球的延迟，可以请作者喝杯咖啡：
 
 - PayPal：[paypal.me/Grainlin](https://paypal.me/Grainlin)
-- Payoneer：[点此](https://link.payoneer.com/Token?t=B65D3C4D79EC4A8A8D19EFD0D8734841&src=dpl)
 - 微信/支付宝：
 - ![image text](https://github.com/GrainLin-0507/FsCopilot-IP-direct-connect/blob/main/.github/ALI%20and%20wechat%20pay.jpg)
 
