@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using Accessibility;
+using Avalonia.Media;
 using Connection;
 using Network;
 using ReactiveUI;
@@ -29,6 +30,8 @@ public class MainViewModel : ReactiveObject, IDisposable
     private bool _greeted;
     private DateTime _leftAt = DateTime.MinValue;
     private string _notes = string.Empty;
+    private string _syncRole = "Host";
+    private string _bridgeVersion = "unknown";
     private ViewErrors _errors = ViewErrors.None;
 
     private string Aircraft
@@ -147,6 +150,12 @@ public class MainViewModel : ReactiveObject, IDisposable
         }
     }
 
+    public string SyncRole
+    {
+        get => _syncRole;
+        set => this.RaiseAndSetIfChanged(ref _syncRole, value);
+    }
+
     public string PeerId { get; init; }
     public string ClientName { get; init; }
 
@@ -155,7 +164,7 @@ public class MainViewModel : ReactiveObject, IDisposable
         _errors.HasFlag(ViewErrors.Failed) ? "Failed to connect." :
         _errors.HasFlag(ViewErrors.NotRunning) ? "Microsoft Flight Simulator is not running!" :
         _errors.HasFlag(ViewErrors.NotLoadedBridge) ? "Bridge package is not loaded. Check your Community folder." :
-        _errors.HasFlag(ViewErrors.BridgeMismatch) ? "Bridge version mismatch. Update Community package." :
+        _errors.HasFlag(ViewErrors.BridgeMismatch) ? $"Bridge version mismatch: the sim loaded bridge {_bridgeVersion}, this app needs {SimClient.WasmVersion}. Restart the sim after the app has installed its bridge." :
         _errors.HasFlag(ViewErrors.NotSupported) ? $"No profile available for the {_aircraft}." :
         _errors.HasFlag(ViewErrors.Rejected) ? "Both sides must use the same FS Copilot version." :
         _errors.HasFlag(ViewErrors.Conflict) ? "Conflict detected with YourControls package." :
@@ -168,6 +177,7 @@ public class MainViewModel : ReactiveObject, IDisposable
     /// <summary>Raised by <see cref="CopyCodeCommand"/>; the window owns the clipboard.</summary>
     public event Func<string, Task>? CopyRequested;
     public ShareViewModel Share { get; }
+    public ObservableCollection<SyncLogItem> SyncLog { get; } = [];
     public ReactiveCommand<Unit, Unit> JoinCommand { get; }
     public ReactiveCommand<Unit, Unit> LeaveCommand { get; }
     public ReactiveCommand<Unit, Unit> TakeControlCommand { get; }
@@ -182,7 +192,10 @@ public class MainViewModel : ReactiveObject, IDisposable
         Coordinator coordinator,
         Updater updater,
         PanelServer panels,
-        ShareViewModel share)
+        ShareViewModel share,
+        EnvironmentSync environmentSync,
+        WeatherSync weatherSync,
+        AircraftStateSync aircraftStateSync)
     {
         ClientName = name;
         PeerId = peerId;
@@ -236,6 +249,15 @@ public class MainViewModel : ReactiveObject, IDisposable
             .Subscribe(notLoaded => Errors = notLoaded
                 ? _errors | ViewErrors.NotLoadedBridge
                 : _errors & ~ViewErrors.NotLoadedBridge)
+            .DisposeWith(_d);
+
+        sim.WasmVersionReported
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(v =>
+            {
+                _bridgeVersion = v;
+                this.RaisePropertyChanged(nameof(ErrorMessage));
+            })
             .DisposeWith(_d);
 
         sim.WasmVersionMismatch
@@ -304,6 +326,20 @@ public class MainViewModel : ReactiveObject, IDisposable
             })
             .DisposeWith(_d);
 
+        environmentSync.Log
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(entry =>
+            {
+                SyncLog.Insert(0, new(entry.Time, entry.Message, entry.Level switch
+                {
+                    EnvironmentSync.SyncLevel.Error => ErrorBrush,
+                    EnvironmentSync.SyncLevel.Warning => WarningBrush,
+                    _ => InfoBrush
+                }));
+                while (SyncLog.Count > 50) SyncLog.RemoveAt(SyncLog.Count - 1);
+            })
+            .DisposeWith(_d);
+
         JoinCommand = ReactiveCommand.CreateFromTask(async () =>
         {
             if (IsBusy) return;
@@ -324,6 +360,9 @@ public class MainViewModel : ReactiveObject, IDisposable
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
 
                 masterSwitch.Join();
+                environmentSync.Join();
+                weatherSync.Reset();
+                SyncRole = "Following host";
                 result = await net.Connect(code, cts.Token);
             }
             finally
@@ -332,7 +371,13 @@ public class MainViewModel : ReactiveObject, IDisposable
             }
 
             // Join() made us slave before the attempt.
-            if (result != ConnectionResult.Success) masterSwitch.TakeControl();
+            if (result != ConnectionResult.Success)
+            {
+                masterSwitch.TakeControl();
+                environmentSync.Leave();
+                weatherSync.Reset();
+                SyncRole = "Host";
+            }
 
             if (result == ConnectionResult.Success)
                 Announcer.Say($"Joined {Spell(code)}.");
@@ -352,6 +397,9 @@ public class MainViewModel : ReactiveObject, IDisposable
         {
             _leftAt = DateTime.UtcNow;
             Announcer.Say("Left the session.");
+            environmentSync.Leave();
+            weatherSync.Reset();
+            SyncRole = "Host";
             net.Disconnect();
             masterSwitch.TakeControl();
             // Leaving is not an outage: unlock panels instead of holding for a return.
@@ -403,6 +451,12 @@ public class MainViewModel : ReactiveObject, IDisposable
         BridgeMismatch  = 0b_0100_0000,
         PanelChannel    = 0b_1000_0000
     }
+
+    private static readonly IBrush InfoBrush = new SolidColorBrush(Color.Parse("#cbd5e1"));
+    private static readonly IBrush WarningBrush = new SolidColorBrush(Color.Parse("#FFC107"));
+    private static readonly IBrush ErrorBrush = new SolidColorBrush(Color.Parse("#F44336"));
+
+    public record SyncLogItem(DateTime Time, string Message, IBrush Brush);
 
     /// <summary>
     /// Rows are updated in place rather than rebuilt every quarter second, so a screen reader

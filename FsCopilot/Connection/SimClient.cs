@@ -10,7 +10,7 @@ using Microsoft.FlightSimulator.SimConnect;
 
 public class SimClient : IDisposable
 {
-    private const string WasmVersion = "1.2.1";
+    public const string WasmVersion = "1.2.1";
 
     private static readonly object DefaultHValue = 1;
 
@@ -23,6 +23,7 @@ public class SimClient : IDisposable
     private uint _defId = 100;
     private uint _requestId = 100;
     private readonly IObservable<string> _hEvents;
+    private readonly IObservable<JsonElement> _busMessages;
     private readonly IObservable<bool> _conflict;
     private readonly BehaviorSubject<BehaviorControl> _control = new(BehaviorControl.Master);
     private readonly DEF _commBusDefId;
@@ -34,6 +35,8 @@ public class SimClient : IDisposable
 
     public readonly IObservable<bool> WasmReady;
     public readonly IObservable<bool> WasmVersionMismatch;
+    /// <summary>Version string reported by the loaded bridge WASM module.</summary>
+    public readonly IObservable<string> WasmVersionReported;
     public IObservable<bool> Connected => _consumer.Connected.ObserveOn(TaskPoolScheduler.Default);
     public IObservable<string> Aircraft => _consumer.Aircraft.ObserveOn(TaskPoolScheduler.Default);
     public IObservable<bool> Conflict => _conflict.ObserveOn(TaskPoolScheduler.Default);
@@ -71,6 +74,12 @@ public class SimClient : IDisposable
         WasmReady = wasmVersion
             .Select(v => !string.IsNullOrWhiteSpace(v));
 
+        WasmVersionReported = wasmVersion
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .DistinctUntilChanged()
+            .Do(v => Log.Information("[SimConnect] Bridge reports version {Version} (app expects {Expected})", v, WasmVersion))
+            .Replay(1).RefCount();
+
         WasmVersionMismatch = wasmVersion
             .Where(v => !string.IsNullOrWhiteSpace(v))
             .Select(v => !v.Equals(WasmVersion));
@@ -100,6 +109,7 @@ public class SimClient : IDisposable
             .Do(json => Log.Verbose("[SimConnect] RECV: {json}", json))
             .Select(json => JsonDocument.Parse(json).RootElement)
             .Replay(0).RefCount();
+        _busMessages = socketMessages;
 
        _hEvents = socketMessages
            .Where(json => json.String("type").Equals("hevent"))
@@ -287,6 +297,23 @@ public class SimClient : IDisposable
     private void Send(string msg) =>
         _producer.Post(sim => sim.SetClientData(_commBusDefId, _commBusDefId, SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT, 0, new StrMsg { Msg = msg }));
 
+    /// <summary>Messages of the given "type" sent by the bridge JS over the comm bus.</summary>
+    public IObservable<JsonElement> BusMessages(string type) =>
+        _busMessages.Where(json => json.String("type").Equals(type));
+
+    /// <summary>Broadcasts a JSON message of the given "type" to the bridge JS. Must fit in 511 bytes.</summary>
+    public bool SendBus(string type, Action<Utf8JsonWriter> write)
+    {
+        var msg = Envelope(type, write);
+        if (Encoding.UTF8.GetByteCount(msg) > 511)
+        {
+            Log.Error("[SimConnect] Bus message too large ({Length} bytes): {Type}", msg.Length, type);
+            return false;
+        }
+        _producer.Post(sim => sim.SetClientData(_commBusDefId, _commBusDefId, SIMCONNECT_CLIENT_DATA_SET_FLAG.DEFAULT, 0, new StrMsg { Msg = msg }));
+        return true;
+    }
+
     public void Execute(string expression)
     {
         if (string.IsNullOrWhiteSpace(expression)) return;
@@ -303,6 +330,50 @@ public class SimClient : IDisposable
         // B / H / Z / Others
         if (name.Length > 2 && name[1] == ':')
             Execute($"{string.Join(' ', values.Select(value => Convert.ToString(value, CultureInfo.InvariantCulture)))} (>{name})");
+    }
+
+    /// <summary>
+    /// Transmits a single key event exactly once (unlike <see cref="Set(string, string?, object[])"/>,
+    /// which also executes it as an RPN expression). Use for non-idempotent events such as SIM_RATE_DECR.
+    /// </summary>
+    public void Trigger(string eventName, params object[] values) =>
+        TransmitKEvent(eventName, values.Length > 0 ? values : [0]);
+
+    /// <summary>
+    /// Subscribes to a SimConnect system event (e.g. "Pause_EX1") and emits its dwData.
+    /// </summary>
+    public IObservable<uint> SystemEvent(string eventName) =>
+        (IObservable<uint>)_streams.GetOrAdd($"SystemEvent_{eventName}", _ => Observable.Create<uint>(observer =>
+        {
+            var eventId = (EVT)Interlocked.Increment(ref _defId);
+
+            var sub = _consumer.SimEventData.ObserveOn(TaskPoolScheduler.Default).Subscribe(e =>
+                {
+                    if ((EVT)e.uEventID != eventId) return;
+                    observer.OnNext(e.dwData);
+                },
+                observer.OnError,
+                observer.OnCompleted);
+
+            var consumerConfig = _consumer.Configure(
+                sim => sim.SubscribeToSystemEvent(eventId, eventName),
+                sim => sim.UnsubscribeFromSystemEvent(eventId));
+
+            return () =>
+            {
+                sub.Dispose();
+                consumerConfig.Dispose();
+            };
+        }).Publish().RefCount());
+
+    /// <summary>
+    /// Sets an A: simvar through a SimConnect data definition with explicit units only (no RPN fallback that
+    /// would apply default units). Other variable kinds go through <see cref="Set(string, string?, object[])"/>.
+    /// </summary>
+    public void SetVar(string name, string units, object value)
+    {
+        if (name.StartsWith("A:")) SetSimVar(name[2..], units, value);
+        else Set(name, units, [value]);
     }
 
     private void SetLVar(string datumName, string? sUnits, object value)

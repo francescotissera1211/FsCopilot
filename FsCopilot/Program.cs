@@ -136,6 +136,9 @@ sealed class Program
                             sp.GetRequiredService<INetwork>(),
                             peerIdOverride ?? ConnectionConfig.Load().PeerId));
                         services.AddSingleton<Coordinator>();
+                        services.AddSingleton<EnvironmentSync>();
+                        services.AddSingleton<WeatherSync>();
+                        services.AddSingleton<AircraftStateSync>();
                         // Registers the sharing packets; constructed after Coordinator so the
                         // packet table is the same on every peer.
                         services.AddSingleton(sp =>
@@ -163,7 +166,10 @@ sealed class Program
                                 sp.GetRequiredService<Coordinator>(),
                                 sp.GetRequiredService<Updater>(),
                                 sp.GetRequiredService<PanelServer>(),
-                                sp.GetRequiredService<ShareViewModel>()
+                                sp.GetRequiredService<ShareViewModel>(),
+                                sp.GetRequiredService<EnvironmentSync>(),
+                                sp.GetRequiredService<WeatherSync>(),
+                                sp.GetRequiredService<AircraftStateSync>()
                             );
                         });
                     }
