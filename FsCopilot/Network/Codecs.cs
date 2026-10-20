@@ -111,7 +111,7 @@ internal sealed class Codecs
     private sealed class CodecAdapter<T>(IPacketCodec<T> inner) : IPacketCodecAdapter
     {
         public void Encode(object packet, BinaryWriter bw) => inner.Encode((T)packet, bw);
-        public object Decode(BinaryReader br) => inner.Decode(br);
+        public object Decode(BinaryReader br) => inner.Decode(br)!;
     }
     
     private static string SchemaFor<T>() => SchemaFor(typeof(T));
@@ -172,7 +172,7 @@ internal sealed class Codecs
             var map = allProps.ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
             var ordered = ctor.GetParameters()
                 .Select(p => map.TryGetValue(p.Name!, out var pi) ? pi : null)
-                .Where(pi => pi != null)!
+                .OfType<PropertyInfo>()
                 .ToList();
 
             // Append any leftover properties deterministically

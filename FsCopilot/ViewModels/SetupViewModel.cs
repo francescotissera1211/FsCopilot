@@ -114,7 +114,7 @@ public sealed class SetupViewModel : ReactiveObject, IDisposable
                 "YourControls module detected. Close Microsoft Flight Simulator to continue",
 
             InstallerStep.NeedRemoveYourControls =>
-                "YourControls module detected in Community folder. Remove it to continue",
+                "YourControls module detected in Community folder. Remove it (to the Recycle Bin) to continue",
 
             InstallerStep.InstallingBridge =>
                 "Installing FS Copilot components...",

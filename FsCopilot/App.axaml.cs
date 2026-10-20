@@ -89,6 +89,7 @@ public class App : Application
                         {
                             CreateWindow(desktop, dev);
                             setup.Close();
+                            _ = CheckForUpdatesAsync(Locator.Current.GetService<Updater>()!, _appCts.Token);
                         };
 
                         desktop.MainWindow = setup;

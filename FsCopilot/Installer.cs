@@ -105,7 +105,9 @@ public class Installer
         }
         catch (Exception e)
         {
-            Log.Debug(e.Message);
+            // Setup reports it: a half-copied bridge must not read as "Setup complete".
+            Log.Error(e, "[Application] FS Copilot module could not be deployed");
+            throw;
         }
     }
 
@@ -189,7 +191,8 @@ public class Installer
                     continue;
 
                 var fullPath = Path.GetFullPath(Path.Combine(ProfilesPath, safeRelativePath));
-                var profilesRootFullPath = Path.GetFullPath(ProfilesPath);
+                // With the separator, so "Definitions-old" is not taken for inside "Definitions".
+                var profilesRootFullPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(ProfilesPath)) + Path.DirectorySeparatorChar;
 
                 if (!fullPath.StartsWith(profilesRootFullPath, StringComparison.OrdinalIgnoreCase))
                     continue;
@@ -212,7 +215,11 @@ public class Installer
         foreach (var community in PackagesPaths)
         {
             var target = Path.Combine(community, YcPackage);
-            if (Directory.Exists(target)) Directory.Delete(target, recursive: true);
+            // To the Recycle Bin, so a pilot who still wants YourControls can restore it.
+            if (Directory.Exists(target))
+                Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target,
+                    Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,
+                    Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
         }
     }
 }
