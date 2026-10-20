@@ -7,8 +7,7 @@ The original app always connects through a public rendezvous server and falls
 back to an overseas relay when NAT hole punching fails — which is the case for many players behind
 symmetric NAT (NAT4). This fork adds an **opt-in** mode that skips all of that and connects straight
 to your peer's LAN / VPN IP (n2n, ZeroTier, Radmin, Tailscale, WireGuard, …).
-**Download (Windows x64):** [latest release](https://github.com/GrainLin-0507/FsCopilot/releases/latest)
-
+**Download (Windows x64):** [latest release](https://github.com/GrainLin-0507/FsCopilot-IP-direct-connect/releases)
 ### Quick start
 1. Download `FsCopilot-v*-direct-win-x64.zip` from Releases and extract it anywhere.
 2. Run `FsCopilot.exe`. The first run asks for administrator once (it adds a UDP firewall rule);
@@ -48,7 +47,7 @@ Bug reports: open an issue on this fork. Upstream support for the original app: 
 原版始终要通过作者的公共会合服务器（`p2p.fscopilot.com`）牵线，打洞失败再退回海外中继——
 很多在对称型 NAT（NAT4）后面的玩家根本打不通，流量只能绕道国外。本分支增加了一个**可选**的
 直连模式：完全跳过会合与中继，直接连对方在局域网／虚拟局域网（n2n、ZeroTier、Radmin、
-Tailscale、WireGuard……）里的 IP。下载：[latest release](https://github.com/GrainLin-0507/FsCopilot/releases/latest)
+Tailscale、WireGuard……）里的 IP。下载：[latest release](https://github.com/GrainLin-0507/FsCopilot-IP-direct-connect/releases)
 
 ### 快速上手
 1. 到 Releases 下载 `FsCopilot-v*-direct-win-x64.zip`，解压到任意目录。
