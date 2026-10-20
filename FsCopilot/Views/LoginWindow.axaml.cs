@@ -9,7 +9,7 @@ public partial class LoginWindow : Window
     public LoginWindow()
     {
         InitializeComponent();
-        // Start in the first field, and say that the ID is already there: it is generated.
+        // Start in the first field, and say the ID: it is filled in already (made on first run, then kept).
         Opened += (_, _) =>
         {
             ServerBox.Focus();
@@ -17,7 +17,7 @@ public partial class LoginWindow : Window
             // screen reader, which has not looked at the window yet.
             if (DataContext is LoginViewModel vm)
                 Avalonia.Threading.DispatcherTimer.RunOnce(
-                    () => Announcer.Say($"Connection settings. Your peer ID {vm.PeerIdSpelled} is generated for you."),
+                    () => Announcer.Say($"Connection settings. Your peer ID is {vm.PeerIdSpelled}."),
                     TimeSpan.FromMilliseconds(700));
         };
     }
