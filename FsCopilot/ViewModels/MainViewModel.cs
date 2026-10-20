@@ -285,7 +285,10 @@ public class MainViewModel : ReactiveObject, IDisposable
             .Subscribe(defs => definitions.OnNext(defs))
             .DisposeWith(_d);
 
-        definitions.Subscribe(defs => Errors = defs is { Count: 0 }
+        // Profiles load on the simulator's thread; what the window shows changes on the UI thread.
+        definitions
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(defs => Errors = defs is { Count: 0 }
                 ? _errors | ViewErrors.NotSupported
                 : _errors & ~ViewErrors.NotSupported).DisposeWith(_d);
 
@@ -304,7 +307,8 @@ public class MainViewModel : ReactiveObject, IDisposable
             .Where(defs => defs != null)
             .SelectMany(defs => Observable.FromAsync(ct => updater.Check(defs!.Name, ct))
                 .Select(updatedAt => updatedAt != null && updatedAt > defs!.UpdatedAt))
-            .Subscribe(updateAvailable => NewProfileAvailable =  updateAvailable).DisposeWith(_d);
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(updateAvailable => NewProfileAvailable = updateAvailable).DisposeWith(_d);
 
         sim.Connected
             .Sample(TimeSpan.FromMilliseconds(250))
@@ -443,7 +447,7 @@ public class MainViewModel : ReactiveObject, IDisposable
             }
             finally
             {
-                IsBusy = false;;
+                IsBusy = false;
             }
 
             // Join() made us slave before the attempt.
@@ -460,12 +464,13 @@ public class MainViewModel : ReactiveObject, IDisposable
             if (result == ConnectionResult.Failed)
             {
                 Errors |= ViewErrors.Failed;
-                _ = Task.Delay(TimeSpan.FromSeconds(10)).ContinueWith(_ => Errors &= ~ViewErrors.Failed);
+                // Cleared on the UI thread: a thread-pool continuation would change bound state off it.
+                Avalonia.Threading.DispatcherTimer.RunOnce(() => Errors &= ~ViewErrors.Failed, TimeSpan.FromSeconds(10));
             }
             else if (result == ConnectionResult.Rejected)
             {
                 Errors |= ViewErrors.Rejected;
-                _ = Task.Delay(TimeSpan.FromSeconds(10)).ContinueWith(_ => Errors &= ~ViewErrors.Rejected);
+                Avalonia.Threading.DispatcherTimer.RunOnce(() => Errors &= ~ViewErrors.Rejected, TimeSpan.FromSeconds(10));
             }
         });
 
