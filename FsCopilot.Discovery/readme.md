@@ -4,13 +4,14 @@ This directory contains the **Discovery (rendezvous) service** used by FS Copilo
 
 ### ⚙️ Overview
 
-The discovery server acts as a lightweight relay that:
-- Registers clients by a **short connection code** (session ID).
-- Temporarily stores their **public and local endpoint info**.
-- Facilitates **NAT traversal** by sharing that info between matching peers.
-- Does **not proxy traffic** — it only assists with the initial handshake.
+The server runs two services:
 
-Once peers exchange endpoints, they communicate directly over UDP without server involvement.
+- **Matchmaking (STUN), UDP 3480.** It registers clients by their peer ID (the client code), keeps their public and local endpoints, and introduces two peers to each other so they can hole-punch a direct link. Once a direct link is up, the server carries nothing.
+- **Relay, UDP 3600.** When a direct link can't be made, both clients connect here and the relay forwards every packet between linked peers. It serves relay protocol v1 (upstream's, which `p2p.fscopilot.com` speaks) and v2 (xiprox's, with a frame-type byte so unreliable traffic and ATC packets aren't mistaken for control messages) side by side, and never links a v1 client to a v2 one. Clients of this combined build speak v2 and fall back to v1 by themselves.
+
+Clients in IP direct mode use neither: they connect to each other's address.
+
+On Debian 13, `for_debian_13_run.sh` (xray447) installs .NET and starts the server. Open UDP 3480 and 3600 in the host's firewall.
 
 ---
 

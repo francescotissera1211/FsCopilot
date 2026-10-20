@@ -17,8 +17,8 @@ sealed class Program
 {
     // The relay and STUN host is the server saved in the login window (xray447), default
     // p2p.fscopilot.com, overridable with --server <host> or --relay <host>. This build speaks
-    // xiprox's relay protocol v2, which p2p.fscopilot.com does not serve: direct links work
-    // against it, relayed links need a v2 relay entered there.
+    // xiprox's relay protocol v2 and falls back to v1 for a relay that only speaks that, as
+    // p2p.fscopilot.com does (RelayNetwork). IP direct mode uses no server at all.
 
     [STAThread]
     public static void Main(string[] args)

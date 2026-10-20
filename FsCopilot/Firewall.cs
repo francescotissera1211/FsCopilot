@@ -122,13 +122,13 @@ public static class Firewall
                 return new FirewallState(true, "Network ready (firewall rule added)", port);
 
             if (process.ExitCode == DeclinedExitCode)
-                return new FirewallState(false, "Elevation declined: partners may not reach you. Press Fix to retry.", port);
+                return new FirewallState(false, "Elevation declined: partners may not reach you. Choose Fix firewall to retry.", port);
 
             return new FirewallState(false, $"Elevation failed (code {process.ExitCode}). Retry or configure manually.", port);
         }
         catch (Win32Exception e) when (e.NativeErrorCode == 1223)
         {
-            return new FirewallState(false, "Elevation declined: partners may not reach you. Press Fix to retry.", port);
+            return new FirewallState(false, "Elevation declined: partners may not reach you. Choose Fix firewall to retry.", port);
         }
         catch (Exception e)
         {
