@@ -39,6 +39,10 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Version: $version"
 
+      - name: Test
+        shell: bash
+        run: dotnet test tests/FsCopilot.Tests/FsCopilot.Tests.csproj -c Release
+
       - name: Publish app
         shell: bash
         run: dotnet publish FsCopilot/FsCopilot.csproj -c Release -r win-x64 -o publish -p:Version=${{ steps.version.outputs.version }}

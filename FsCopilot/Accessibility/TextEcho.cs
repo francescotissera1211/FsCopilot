@@ -55,13 +55,13 @@ public static class TextEcho
         }, DispatcherPriority.Background);
     }
 
-    private readonly record struct Snapshot(string Text, int Caret, int SelectionStart, int SelectionEnd)
+    internal readonly record struct Snapshot(string Text, int Caret, int SelectionStart, int SelectionEnd)
     {
         public int SelectionLength => Math.Abs(SelectionEnd - SelectionStart);
         public string Selected => Text.Substring(Math.Min(SelectionStart, SelectionEnd), SelectionLength);
     }
 
-    private static string Deleted(Snapshot before, bool word)
+    internal static string Deleted(Snapshot before, bool word)
     {
         if (before.SelectionLength > 0) return Spoken(before.Selected);
         if (before.Caret <= 0) return string.Empty;
@@ -72,7 +72,7 @@ public static class TextEcho
         return Spoken(before.Text[start..before.Caret]);
     }
 
-    private static string Selection(Snapshot before, Snapshot after)
+    internal static string Selection(Snapshot before, Snapshot after)
     {
         if (after.SelectionLength == before.SelectionLength) return string.Empty;
         // The moving end of a selection is SelectionEnd; CaretIndex stays at the anchor while
@@ -83,9 +83,9 @@ public static class TextEcho
         return after.SelectionLength > before.SelectionLength ? $"{span} selected" : $"{span} unselected";
     }
 
-    private static string CharAt(string text, int caret) => caret >= 0 && caret < text.Length ? Name(text[caret]) : "blank";
+    internal static string CharAt(string text, int caret) => caret >= 0 && caret < text.Length ? Name(text[caret]) : "blank";
 
-    private static string WordAt(string text, int caret)
+    internal static string WordAt(string text, int caret)
     {
         if (caret >= text.Length) return "blank";
         var end = caret;
@@ -95,7 +95,7 @@ public static class TextEcho
     }
 
     /// <summary>A single character in words, as a screen reader names it.</summary>
-    private static string Name(char c) => c switch
+    internal static string Name(char c) => c switch
     {
         ' ' => "space",
         '.' => "dot",
@@ -113,5 +113,5 @@ public static class TextEcho
         _ => c.ToString()
     };
 
-    private static string Spoken(string text) => text.Length == 1 ? Name(text[0]) : text.Length == 0 ? "blank" : text;
+    internal static string Spoken(string text) => text.Length == 1 ? Name(text[0]) : text.Length == 0 ? "blank" : text;
 }

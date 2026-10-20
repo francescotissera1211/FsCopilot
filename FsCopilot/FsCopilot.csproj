@@ -23,6 +23,11 @@
         <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     </PropertyGroup>
 
+    <!-- Pure logic is covered by tests/FsCopilot.Tests. -->
+    <ItemGroup>
+        <InternalsVisibleTo Include="FsCopilot.Tests" />
+    </ItemGroup>
+
     <ItemGroup>
         <AvaloniaResource Include="Assets\icon.svg"/>
         <AvaloniaResource Include="Assets\fscopilot.ico"/>
