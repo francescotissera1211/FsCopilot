@@ -60,13 +60,15 @@ public static class Firewall
         // Replace any previous rule with our name (path or scope may have changed).
         Run($"/c netsh advfirewall firewall delete rule name=\"{RuleName}\"");
 
-        // Block rules win over allow rules; drop ones aimed at this executable if they exist.
+        // Block rules win over allow rules, so a block rule for this executable is removed. Only
+        // block rules, by name: deleting "name=all program=..." would also take the user's own
+        // allow rules. netsh prints localised field names, so on a non-English Windows nothing is
+        // matched and nothing is deleted - the safe way to be wrong.
         var (blockCode, blockOutput) = Run("/c netsh advfirewall firewall show rule name=all dir=in verbose");
-        if (blockCode == 0 &&
-            blockOutput.Contains(exePath, StringComparison.OrdinalIgnoreCase) &&
-            blockOutput.Contains("Block", StringComparison.OrdinalIgnoreCase))
+        if (blockCode == 0)
         {
-            Run($"/c netsh advfirewall firewall delete rule name=all dir=in program=\"{exePath}\"");
+            foreach (var rule in BlockRulesFor(blockOutput, exePath))
+                Run($"/c netsh advfirewall firewall delete rule name=\"{rule}\" dir=in program=\"{exePath}\"");
         }
 
         var (code, output) = Run(
@@ -142,6 +144,30 @@ public static class Firewall
 
         var (code, _) = Run($"/c netsh advfirewall firewall delete rule name=\"{RuleName}\"");
         return code == 0;
+    }
+
+    /// <summary>Names of the inbound block rules for <paramref name="exePath"/> in netsh's verbose listing.</summary>
+    internal static IEnumerable<string> BlockRulesFor(string netshOutput, string exePath)
+    {
+        foreach (var block in netshOutput.Replace("\r\n", "\n").Split("\n\n"))
+        {
+            string? name = null, action = null, program = null;
+            foreach (var line in block.Split('\n'))
+            {
+                var colon = line.IndexOf(':');
+                if (colon <= 0) continue;
+                var key = line[..colon].Trim();
+                var value = line[(colon + 1)..].Trim();
+                if (key.Equals("Rule Name", StringComparison.OrdinalIgnoreCase)) name = value;
+                else if (key.Equals("Action", StringComparison.OrdinalIgnoreCase)) action = value;
+                else if (key.Equals("Program", StringComparison.OrdinalIgnoreCase)) program = value;
+            }
+
+            if (name is { Length: > 0 } && !name.Contains('"') &&
+                string.Equals(action, "Block", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(program, exePath, StringComparison.OrdinalIgnoreCase))
+                yield return name;
+        }
     }
 
     private static (int Code, string Output) Run(string arguments)

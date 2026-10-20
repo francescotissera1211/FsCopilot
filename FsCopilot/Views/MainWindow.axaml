@@ -134,11 +134,11 @@
                         <TextBox x:Name="CodeBox"
                                  Classes="Connect"
                                  KeyboardNavigation.TabIndex="0"
-                                 MaxLength="8"
-                                 AutomationProperties.Name="Code to join"
+                                 MaxLength="{Binding CodeMaxLength}"
+                                 AutomationProperties.Name="{Binding ConnectionHint}"
                                  AutomationProperties.HelpText="Enter to join"
                                  IsEnabled="{Binding IsBusy, Converter={StaticResource Inverse}}"
-                                 Watermark="Client code"
+                                 Watermark="{Binding ConnectionHint}"
                                  Text="{Binding ConnectionCode}">
                             <TextBox.KeyBindings>
                                 <KeyBinding Gesture="Enter" Command="{Binding JoinCommand}" />
@@ -150,7 +150,26 @@
                                Text="{Binding ControlStatus}" />
 
                     <TextBlock Classes="Note"
-                               Text="Note: Make sure that all clients see each other after connecting." />
+                               TextWrapping="Wrap"
+                               Text="{Binding NetworkNote}" />
+
+                    <!-- IP direct mode: where the partner points, and whether Windows lets them in. -->
+                    <TextBlock Classes="Note"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding IsDirectMode}"
+                               Text="{Binding ListenInfo}" />
+                    <DockPanel IsVisible="{Binding FirewallWarning}">
+                        <Button DockPanel.Dock="Right"
+                                Classes="TakeControl"
+                                Margin="8,0,0,0"
+                                Content="Fix firewall"
+                                AutomationProperties.HelpText="Asks Windows to let partners in"
+                                Command="{Binding FixFirewallCommand}" />
+                        <TextBlock Classes="Note ErrorNote"
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding FirewallStatus}" />
+                    </DockPanel>
                 </StackPanel>
             </Border>
 

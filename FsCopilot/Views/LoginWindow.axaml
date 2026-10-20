@@ -183,6 +183,22 @@
                       ItemsSource="{Binding ConnectionModeOptions}"
                       SelectedItem="{Binding ConnectionMode}" />
 
+            <!-- IP direct only: both pilots listen on this UDP port. -->
+            <StackPanel IsVisible="{Binding IsIpDirect}">
+                <TextBlock x:Name="PortLabel"
+                           Classes="label"
+                           Text="Direct port" />
+                <TextBox Classes="input"
+                         AutomationProperties.Name="Direct port"
+                         AutomationProperties.LabeledBy="{Binding #PortLabel}"
+                         AutomationProperties.HelpText="UDP; both pilots use the same"
+                         MaxLength="5"
+                         Text="{Binding DirectPort}"
+                         SelectionBrush="#333333"
+                         SelectionForegroundBrush="#CCCCCC"
+                         CaretBrush="#AAAAAA" />
+            </StackPanel>
+
             <CheckBox Margin="0,16,0,0"
                       Foreground="White"
                       IsChecked="{Binding ShareGroundVehicles}"

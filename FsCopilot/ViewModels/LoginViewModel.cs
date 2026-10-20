@@ -11,6 +11,7 @@ public sealed class LoginViewModel : ReactiveObject
     private string _peerId;
     private ConnectionModeOption _connectionMode;
     private bool _shareGroundVehicles;
+    private string _directPort;
     private string _errorMessage = string.Empty;
 
     public event Action? Completed;
@@ -24,7 +25,8 @@ public sealed class LoginViewModel : ReactiveObject
     [
         new(ConnectionModes.Automatic, "Automatic"),
         new(ConnectionModes.Direct, "Direct only"),
-        new(ConnectionModes.Relay, "Relay only")
+        new(ConnectionModes.Relay, "Relay only"),
+        new(ConnectionModes.IpDirect, "IP direct, no server")
     ];
 
     public string ServerAddress
@@ -48,8 +50,21 @@ public sealed class LoginViewModel : ReactiveObject
     public ConnectionModeOption ConnectionMode
     {
         get => _connectionMode;
-        set => this.RaiseAndSetIfChanged(ref _connectionMode, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _connectionMode, value);
+            this.RaisePropertyChanged(nameof(IsIpDirect));
+        }
     }
+
+    /// <summary>The UDP port for IP direct mode, as typed (checked on save).</summary>
+    public string DirectPort
+    {
+        get => _directPort;
+        set => this.RaiseAndSetIfChanged(ref _directPort, value);
+    }
+
+    public bool IsIpDirect => ConnectionMode.Mode == ConnectionModes.IpDirect;
 
     public bool ShareGroundVehicles
     {
@@ -82,6 +97,7 @@ public sealed class LoginViewModel : ReactiveObject
         _username = saved.Username;
         _peerId = saved.PeerId;
         _shareGroundVehicles = saved.ShareGroundVehicles;
+        _directPort = saved.DirectPort.ToString(System.Globalization.CultureInfo.InvariantCulture);
         var mode = ConnectionModes.Normalize(saved.ConnectionMode);
         _connectionMode = ConnectionModeOptions.First(o => o.Mode == mode);
 
@@ -109,6 +125,8 @@ public sealed class LoginViewModel : ReactiveObject
         // Join takes exactly 8 characters, so a shorter ID could never be joined.
         if (peerId.Length != 8 || !peerId.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9'))
             return "Peer ID must be 8 letters or digits.";
+        if (IsIpDirect && !TryPort(out _))
+            return "Direct port must be a number from 1024 to 65535.";
         return null;
     }
 
@@ -132,6 +150,7 @@ public sealed class LoginViewModel : ReactiveObject
         saved.PeerId = peerId;
         saved.ConnectionMode = ConnectionMode.Mode;
         saved.ShareGroundVehicles = ShareGroundVehicles;
+        if (TryPort(out var port)) saved.DirectPort = port;
 
         if (!saved.Save())
         {
@@ -143,6 +162,10 @@ public sealed class LoginViewModel : ReactiveObject
         ErrorMessage = string.Empty;
         Completed?.Invoke();
     }
+
+    private bool TryPort(out int port) =>
+        int.TryParse((DirectPort ?? string.Empty).Trim(), System.Globalization.NumberStyles.None,
+            System.Globalization.CultureInfo.InvariantCulture, out port) && port is >= 1024 and <= 65535;
 
     /// <summary>Goes on with the saved settings, as after a restart from Settings.</summary>
     public void Continue() => Completed?.Invoke();

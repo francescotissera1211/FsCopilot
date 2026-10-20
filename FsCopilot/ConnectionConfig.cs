@@ -21,6 +21,9 @@ public class ConnectionConfig
     /// <summary>Share ground vehicles along with AI aircraft when hosting traffic (--traffic-ground).</summary>
     public bool ShareGroundVehicles { get; set; }
 
+    /// <summary>UDP port for <see cref="ConnectionModes.IpDirect"/>; both pilots listen on it (--direct-port).</summary>
+    public int DirectPort { get; set; } = NetworkConfig.DefaultDirectPort;
+
     public static string ConfigPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "FsCopilot", "config.json");
@@ -68,10 +71,13 @@ public static class ConnectionModes
     public const string Automatic = "Automatic";
     public const string Direct = "Direct";
     public const string Relay = "Relay";
+    /// <summary>No server at all: the joiner types the partner's IP address (GrainLin-0507).</summary>
+    public const string IpDirect = "IpDirect";
 
     public static string Normalize(string? mode) =>
         string.Equals(mode, Direct, StringComparison.OrdinalIgnoreCase) ? Direct :
         string.Equals(mode, Relay, StringComparison.OrdinalIgnoreCase) ? Relay :
+        string.Equals(mode, IpDirect, StringComparison.OrdinalIgnoreCase) ? IpDirect :
         Automatic;
 }
 

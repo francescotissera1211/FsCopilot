@@ -23,6 +23,19 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // Elevated one-shot helpers for IP direct mode (GrainLin-0507): add or remove the
+        // firewall rule and exit. Started by the app itself with Verb=runas; no UI, no log file.
+        if (args.Any(a => string.Equals(a, "--install-firewall", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.ExitCode = Firewall.Apply() ? 0 : 1;
+            return;
+        }
+        if (args.Any(a => string.Equals(a, "--uninstall-firewall", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.ExitCode = Firewall.Remove() ? 0 : 1;
+            return;
+        }
+
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
@@ -89,6 +102,9 @@ sealed class Program
         var p2pNetwork = args.Any(a => string.Equals(a, "--p2p", StringComparison.OrdinalIgnoreCase));
         var serverOverride = relayHost ?? Option(args, "--server");
         var peerIdOverride = Option(args, "--peer-id");
+        // GrainLin-0507's switches: --direct for IP direct mode, --direct-port <port> for its port.
+        var ipDirect = args.Any(a => string.Equals(a, "--direct", StringComparison.OrdinalIgnoreCase));
+        var directPortOverride = int.TryParse(Option(args, "--direct-port"), out var dp) && dp is > 0 and <= 65535 ? dp : (int?)null;
         var trafficOptions = TrafficOptions.Parse(args);
         // xiprox's development switch: --no-direct forces every link through the relay.
         var direct = !args.Any(a => string.Equals(a, "--no-direct", StringComparison.OrdinalIgnoreCase));
@@ -120,13 +136,16 @@ sealed class Program
                             var host = serverOverride ?? cfg.ServerAddress;
                             var peerId = peerIdOverride ?? cfg.PeerId;
                             // A command-line switch wins for this run; otherwise Connection settings decides.
-                            var mode = p2pNetwork ? ConnectionModes.Direct
+                            var mode = ipDirect ? ConnectionModes.IpDirect
+                                : p2pNetwork ? ConnectionModes.Direct
                                 : relayNetwork || !direct ? ConnectionModes.Relay
                                 : ConnectionModes.Normalize(cfg.ConnectionMode);
                             Log.Information("[Application] Server {Host}, connection type {Mode}", host, mode);
                             return mode switch
                             {
                                 ConnectionModes.Direct => new P2PNetwork(host, peerId, cfg.Username),
+                                ConnectionModes.IpDirect => new DirectNetwork(peerId, cfg.Username,
+                                    directPortOverride ?? cfg.DirectPort, "0.0.0.0"),
                                 ConnectionModes.Relay => new HybridNetwork(host, peerId, cfg.Username, direct: false),
                                 _ => new HybridNetwork(host, peerId, cfg.Username)
                             };

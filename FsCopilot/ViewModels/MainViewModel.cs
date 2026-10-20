@@ -111,8 +111,71 @@ public class MainViewModel : ReactiveObject, IDisposable
         _greeted = true;
         _lastSpokenError = ErrorMessage;
         var problem = string.IsNullOrEmpty(ErrorMessage) ? string.Empty : " " + ErrorMessage;
-        return $"FS Copilot {Version}. {ClientCodeDescription}.{problem}";
+        var direct = IsDirectMode ? $" IP direct mode. {ListenInfo}." : string.Empty;
+        return $"FS Copilot {Version}. {ClientCodeDescription}.{direct}{problem}";
     }
+
+    // ---- IP direct mode (GrainLin-0507) ------------------------------------------------------
+
+    /// <summary>No server: the join box takes the partner's IP address instead of a code.</summary>
+    public bool IsDirectMode { get; }
+
+    /// <summary>What the join box asks for, which is also its name for a screen reader.</summary>
+    public string ConnectionHint => IsDirectMode ? "Partner IP to join" : "Code to join";
+
+    /// <summary>A code is 8 characters; an address can be longer.</summary>
+    public int CodeMaxLength => IsDirectMode ? 64 : 8;
+
+    /// <summary>Where the partner should point: this machine's addresses and the listening port.</summary>
+    public string ListenInfo { get; } = string.Empty;
+
+    public string NetworkNote => IsDirectMode
+        ? "IP direct: no server is used. Give your partner one of your IP addresses."
+        : "Note: Make sure that all clients see each other after connecting.";
+
+    private bool _firewallReady = true;
+    public bool FirewallReady
+    {
+        get => _firewallReady;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _firewallReady, value);
+            this.RaisePropertyChanged(nameof(FirewallWarning));
+        }
+    }
+
+    private string _firewallStatus = string.Empty;
+    public string FirewallStatus
+    {
+        get => _firewallStatus;
+        private set => this.RaiseAndSetIfChanged(ref _firewallStatus, value);
+    }
+
+    public bool FirewallWarning => IsDirectMode && !FirewallReady;
+
+    public ReactiveCommand<Unit, Unit> FixFirewallCommand { get; }
+
+    /// <summary>
+    /// Direct mode needs an inbound UDP rule. Checked in the background: adding it raises a UAC
+    /// prompt, and waiting for it must not hold the window. FSCOPILOT_SKIP_FIREWALL=1 skips it.
+    /// </summary>
+    private async Task CheckFirewallAsync(int port, bool announce)
+    {
+        if (Environment.GetEnvironmentVariable("FSCOPILOT_SKIP_FIREWALL") is "1")
+        {
+            FirewallStatus = "Automatic firewall setup skipped (FSCOPILOT_SKIP_FIREWALL=1)";
+            FirewallReady = false;
+            return;
+        }
+        var state = await Task.Run(() => Firewall.Ensure(port)).ConfigureAwait(true);
+        FirewallStatus = state.Status;
+        FirewallReady = state.Ready;
+        Log.Information("[Firewall] {Ready} {Status}", state.Ready, state.Status);
+        if (announce || !state.Ready) Announcer.Say(state.Status);
+    }
+
+    /// <summary>A code is spelled letter by letter; an address is read as it is.</summary>
+    private string SayTarget(string target) => IsDirectMode ? target : Spell(target);
 
     /// <summary>The holder's name, or "Your co-pilot" until it is known (or for an older build).</summary>
     private string HolderName()
@@ -198,6 +261,16 @@ public class MainViewModel : ReactiveObject, IDisposable
         AircraftStateSync aircraftStateSync)
     {
         ClientName = name;
+        IsDirectMode = net is DirectNetwork;
+        if (net is DirectNetwork directNet)
+        {
+            ListenInfo = $"Listening on UDP port {directNet.Port}, your IP: {NetworkConfig.LocalAddresses()}";
+            _ = CheckFirewallAsync(directNet.Port, announce: false);
+        }
+        FixFirewallCommand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            if (net is DirectNetwork d) await CheckFirewallAsync(d.Port, announce: true);
+        });
         PeerId = peerId;
         Share = share;
 
@@ -344,14 +417,16 @@ public class MainViewModel : ReactiveObject, IDisposable
         JoinCommand = ReactiveCommand.CreateFromTask(async () =>
         {
             if (IsBusy) return;
-            var code = (ConnectionCode ?? string.Empty).Trim().ToUpperInvariant();
-            if (code.Length != 8)
+            var code = (ConnectionCode ?? string.Empty).Trim();
+            if (IsDirectMode ? code.Length < 3 : code.Length != 8)
             {
-                Announcer.Say("Enter an 8-character code.");
+                Announcer.Say(IsDirectMode ? "Enter the partner's IP address." : "Enter an 8-character code.");
                 return;
             }
+            // A code is upper case; an address or host name is left as typed.
+            if (!IsDirectMode) code = code.ToUpperInvariant();
             ConnectionCode = code;
-            Announcer.Say($"Joining {Spell(code)}.");
+            Announcer.Say($"Joining {SayTarget(code)}.");
 
             Errors &= ~ViewErrors.Failed;
             IsBusy = true;
@@ -381,7 +456,7 @@ public class MainViewModel : ReactiveObject, IDisposable
             }
 
             if (result == ConnectionResult.Success)
-                Announcer.Say($"Joined {Spell(code)}.");
+                Announcer.Say($"Joined {SayTarget(code)}.");
             if (result == ConnectionResult.Failed)
             {
                 Errors |= ViewErrors.Failed;
