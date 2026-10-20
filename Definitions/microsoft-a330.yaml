@@ -1,5 +1,7 @@
-# Original author: https://discord.com/channels/1454265644416765974/1497953358881755146/1554587523001614366
-# Updated: 2026-10-01 11:28:07
+# Original author: https://discord.com/channels/1454265644416765974/1497953358881755146/1561457967587401919
+# Updated: 2026-10-18 19:16:35
+
+
 
 
 
@@ -75,6 +77,8 @@ shared:
     set: "value == 1 ? '1 (>L:INI_MCDU1_RADNAV)' : ''"
   - get: L:INI_MCDU1_FUEL
     set: "value == 1 ? '1 (>L:INI_MCDU1_FUEL)' : ''"
+  - get: L:INI_MCDU1_Sec
+    set: "value == 1 ? '1 (>L:INI_MCDU1_Sec)' : ''"
   - get: L:INI_MCDU1_ATC
     set: "value == 1 ? '1 (>L:INI_MCDU1_ATC)' : ''"
   - get: L:INI_MCDU1_MENU
@@ -217,6 +221,8 @@ shared:
     set: "value == 1 ? '1 (>L:INI_MCDU2_RADNAV)' : ''"
   - get: L:INI_MCDU2_FUEL
     set: "value == 1 ? '1 (>L:INI_MCDU2_FUEL)' : ''"
+  - get: L:INI_MCDU2_Sec
+    set: "value == 1 ? '1 (>L:INI_MCDU2_Sec)' : ''"
   - get: L:INI_MCDU2_ATC
     set: "value == 1 ? '1 (>L:INI_MCDU2_ATC)' : ''"
   - get: L:INI_MCDU2_MENU
@@ -404,24 +410,8 @@ shared:
   - get: L:INI_TCAS_STBY_STATE
   - get: L:INI_TCAS_ATC_STATE
   - get: L:INI_TCAS_ALT_STATE
-  - get: B:AIRLINER_TCAS_1_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_1_set)' : ''"
-  - get: B:AIRLINER_TCAS_2_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_2_set)' : ''"
-  - get: B:AIRLINER_TCAS_3_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_3_set)' : ''"
-  - get: B:AIRLINER_TCAS_4_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_4_set)' : ''"
-  - get: B:AIRLINER_TCAS_5_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_5_set)' : ''"
-  - get: B:AIRLINER_TCAS_6_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_6_set)' : ''"
-  - get: B:AIRLINER_TCAS_7_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_7_set)' : ''"
-  - get: B:AIRLINER_TCAS_0_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_0_set)' : ''"
-  - get: B:AIRLINER_TCAS_CLR_set
-    set: "value == 1 ? '1 (>B:AIRLINER_TCAS_CLR_set)' : ''"
+  - get: A:TRANSPONDER CODE:1, Bco16
+    set: (>K:XPNDR_SET)
   - get: L:INI_TCAS_IDENT_COMMAND
   - get: L:INI_TCAS_MODE
   - get: L:INI_TCAS_MODE_PEDESTAL
@@ -841,3 +831,7 @@ shared:
   - get: A:COVER ON:0, Bool 
   - get: A:COVER ON:1, Bool 
   - get: A:COVER ON:2, Bool
+
+  #a330-200
+  - get: B:AIRLINER_FUEL_CTR_L_Toggle
+  - get: B:AIRLINER_FUEL_CTR_R_Toggle

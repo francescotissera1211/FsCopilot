@@ -1,0 +1,239 @@
+# Original author: https://discord.com/channels/1454265644416765974/1558539352869437540/1559181132677779508
+# Updated: 2026-10-12 12:29:17
+
+
+
+
+#Info
+#Yoke dissapear not synced on purpose
+#Paper Chart not sunced on purpose
+
+#EFB Sync Issues
+#- Doors not work eg. Cabin Door(do manually), Baggage, Oil Door
+#- All Aircraft Options selects dont sync. !!make sure its the same before connection!!
+#- Manintinance Not Synced !!Do at the same time!!
+#- Only Aircraft section is synced in the efb.
+
+#Instruments
+#-Autopilot Heading Selector can be out of sync turn slowly!
+
+include:
+  - modules/AS_GNS530.yaml
+  - modules/AS_GNS430.yaml
+  - modules/payload.yaml
+  - modules/fuel.yaml
+master:
+
+- get: A:BRAKE LEFT POSITION, Position
+  set: (>K:AXIS_LEFT_BRAKE_SET)
+- get: A:BRAKE RIGHT POSITION, Position
+  set: (>K:AXIS_RIGHT_BRAKE_SET)
+- get: A:HEADING INDICATOR, Degrees
+  set: (>K:GYRO_DRIFT_SET_EX1)
+
+shared:
+#Main instruments
+- get: L:ASI_tas_knob, number
+- get: L:ATTITUDE_INDICATOR_knob, enum
+- get: A:KOHLSMAN SETTING MB:0, Millibar
+  set: "`0 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+- get: A:KOHLSMAN SETTING MB:2, Millibar
+  set: "`2 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+- get: A:NAV OBS:1, degrees
+  set: (>K:VOR1_SET)
+- get: A:NAV OBS:2, degrees
+  set: (>K:VOR2_SET)
+- get: L:HSI_heading_knob, enum # Spin Slow fix later
+- get: L:ADF_knob, enum
+- get: L:LEFT_MISC_lv_IsDown
+- get: L:LEFT_MISC_press_test_IsDown
+- get: L:LEFT_MISC_navgps, bool
+
+#Com1 Analogue 
+- get: L:KX170_COMM1_offon
+- get: L:KX170_NAV1_offon
+- get: L:KX170_COMM1_vol_knob, enum
+- get: L:KX170_NAV1_vol_knob, enum
+
+#Com2 Analogue 
+- get: L:KX175_COMM2_offon
+- get: L:KX175_NAV2_offon
+- get: L:KX175_COMM2_vol_knob, enum
+- get: L:KX175_NAV2_vol_knob, enum
+
+#Audio Panel
+- get: L:KMA20_knob
+- get: L:KMA20_Auto
+- get: L:KMA20_Com1
+- get: L:KMA20_Com2
+- get: L:KMA20_Nav1
+- get: L:KMA20_Nav2
+- get: L:KMA20_ADF
+- get: L:KMA20_Dme
+- get: L:KMA20_Mkr
+- get: L:KMA20_mkr_hilo
+- get: L:RIGHT_MISC_icomm, bool
+- get: L:RIGHT_MISC_dme_nav, bool
+
+#GPS100
+- get: L:GPS100_Msg
+- get: L:GPS100_Goto
+- get: L:GPS100_Autosto
+- get: L:GPS100_Set
+- get: L:GPS100_offon
+- get: L:GPS100_rte
+- get: L:GPS100_wpt
+- get: L:GPS100_nav
+- get: L:GPS100_arrows
+- get: L:GPS100_abc
+- get: L:GPS100_def
+- get: L:GPS100_ghi
+- get: L:GPS100_jkl
+- get: L:GPS100_mno
+- get: L:GPS100_pqr
+- get: L:GPS100_stu
+- get: L:GPS100_vwx
+- get: L:GPS100_yz
+- get: L:GPS100_Zero
+- get: L:GPS100_clr
+- get: L:GPS100_ent
+
+#DME
+- get: L:KN62_mode_knob
+- get: L:KN62_power
+- get: A:NAV ACTIVE FREQUENCY:3 Hz
+  set: (>K:NAV3_Radio_set_hz)
+  
+#ADF
+- get: L:KR85_dig1_counter
+- get: L:KR85_dig2_counter
+- get: L:KR85_dig3_counter
+- get: L:KR85_mode_knob
+- get: L:KR85_vol_knob, enum
+
+
+#Transponder
+- get: L:KT76_mode_knob
+- get: L:KT76_ident_button_IsDown
+- get: A:TRANSPONDER CODE:1, Bco16
+  set: (>K:XPNDR_SET)
+
+#Autopilot
+- get: L:AUTOPILOT_onoff, bool
+- get: L:AUTOPILOT_roll, enum
+- get: L:AUTOPILOT_hdg, bool
+# get: L:AUTOPILOT_vs_up, number #Invisible button not IRL
+# get: L:AUTOPILOT_vs_dn, number #Invisible button not IRL
+# get: L:AUTOPILOT_vs, bool #Invisible button not IRL
+- get: L:AUTOPILOT_mode
+- get: L:LEFT_LOWER_elec_trim, bool
+- get: L:AUTOPILOT_nav
+
+#Magnetos
+- get: A:RECIP ENG LEFT MAGNETO:1, Bool 
+- get: A:RECIP ENG RIGHT MAGNETO:1, Bool 
+- get: A:GENERAL ENG STARTER:1, Bool 
+  set: (>K:SET_STARTER1_HELD)
+
+#Bottom Panel + Lights
+- get: L:LDG_GEAR_lever
+- get: B:ENGINE_Throttle_1_Set
+- get: B:ENGINE_Propeller_1_Set
+- get: B:FUEL_Mixture_1_Set
+- get: L:CENTRE_LOWER_nav_light, enum
+- get: L:CENTRE_LOWER_bat, bool
+- get: L:CENTRE_LOWER_alt, bool
+- get: L:CENTRE_LOWER_fuelpump, bool
+- get: L:CENTRE_LOWER_ldg_light, bool
+- get: L:CENTRE_LOWER_bcn_light, bool
+- get: L:CENTRE_LOWER_anticol_light, bool
+- get: L:CENTRE_LOWER_pitotheat, bool
+- get: L:CENTRE_LOWER_panel_light, enum
+- get: L:THROTTLE_QUADRANT_friction, bool
+- get: L:RIGHT_LOWER_altair, bool
+- get: L:RIGHT_LOWER_egt_red_needle
+- get: L:RIGHT_LOWER_fan
+- get: L:RIGHT_LOWER_cabin_heat_1, number
+- get: L:RIGHT_LOWER_cabin_heat_2, number
+
+#Curcuit Breaker
+- get: L:CIRCUIT_BREAKERS_autopilot, bool
+- get: L:CIRCUIT_BREAKERS_altntr, bool
+- get: L:CIRCUIT_BREAKERS_engine, bool
+- get: L:CIRCUIT_BREAKERS_Fuel_pump, bool
+- get: L:CIRCUIT_BREAKERS_ldg_gear_cont, bool
+- get: L:CIRCUIT_BREAKERS_ldg_gear_lts, bool
+- get: L:CIRCUIT_BREAKERS_stall, bool
+- get: L:CIRCUIT_BREAKERS_ac_blower, bool
+- get: L:CIRCUIT_BREAKERS_beacon, bool
+- get: L:CIRCUIT_BREAKERS_pitot, bool
+- get: L:CIRCUIT_BREAKERS_turn_bank, bool
+- get: L:CIRCUIT_BREAKERS_pitch_trim, bool
+- get: L:CIRCUIT_BREAKERS_start, bool
+- get: L:CIRCUIT_BREAKERS_icomm, bool
+- get: L:CIRCUIT_BREAKERS_inst_pnl, bool
+- get: L:CIRCUIT_BREAKERS_lts_ovhd, bool
+- get: L:CIRCUIT_BREAKERS_nav_lts, bool
+- get: L:CIRCUIT_BREAKERS_anticoll_lts, bool
+- get: L:CIRCUIT_BREAKERS_ldg_lts, bool
+- get: L:CIRCUIT_BREAKERS_com1, bool
+- get: L:CIRCUIT_BREAKERS_com2, bool
+- get: L:CIRCUIT_BREAKERS_adf, bool
+- get: L:CIRCUIT_BREAKERS_audio_pnl, bool
+- get: L:CIRCUIT_BREAKERS_nav1, bool
+- get: L:CIRCUIT_BREAKERS_nav2, bool
+- get: L:CIRCUIT_BREAKERS_Dme, bool
+- get: L:CIRCUIT_BREAKERS_xpdr, bool
+- get: L:CIRCUIT_BREAKERS_radio_lts, bool
+
+#Floor
+- get: L:LEFT_MISC_fuel_sel
+- get: A:BRAKE PARKING INDICATOR, bool
+  set: (>K:PARKING_BRAKE_SET)
+- get: A:RUDDER TRIM PCT, Number 
+- get: A:FLAPS HANDLE PERCENT, position 16k
+  set: (>B:HANDLING_Flaps_Set)
+- get: L:HANDLING_ElevatorTrim
+  set: (>B:HANDLING_ElevatorTrim_1_Set)
+- get: L:LOWER_emergency_gear		
+
+#Door
+- get: L:LEFT_MISC_window_LC, bool
+  set: "value == 1 ? '1 (>L:LEFT_MISC_window_LC, bool)' : ''" 
+- get: L:LEFT_MISC_window_latch, bool
+- get: L:LEFT_MISC_elt
+- get: L:DOOR_door, bool
+  set: "value == 1 ? '1 (>L:DOOR_door, bool)' : ''" 
+- get: L:DOOR_lower_latch, number
+- get: L:DOOR_upper_latch_old
+  set: (>L:DOOR_upper_latch)
+
+#EFB
+- get: L:EFB_Home_SC, bool
+- get: L:EXT_chocks
+- get: L:EXT_tiedowns			
+- get: L:EXT_towbar		
+# get:(need cabin door)
+# get: L:Oil_door #To test
+# get: L:baggage_door   
+# get: L:EFB_option_gps 
+# get: L:HSI_enabled
+# get: L:EFB_maint_reset_batt
+- get: L:EFB_selected_state
+- get: L:EFB_brt
+
+
+
+
+#Misc
+- get: L:YOKE_rst_IsDown
+- get: L:YOKE_mode_IsDown
+- get: L:YOKE_stsp_IsDown
+- get: L:JF_Visor_Position_1
+- get: L:JF_Visor_Position_2
+- get: B:LIGHTING_CABIN_0_set 
+- get: L:UPPER_cabin_air, bool	
+- get: L:EXT_Chocks
+- get: L:EXT_tiedowns			
+- get: L:EXT_towbar		
+- get: L:EFB_Home_SC, bool

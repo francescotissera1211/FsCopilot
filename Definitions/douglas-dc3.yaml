@@ -1,0 +1,344 @@
+# Original author: https://discord.com/channels/1454265644416765974/1558960260931129514/1558960260931129514
+# Updated: 2026-10-12 12:57:20
+
+# Microsoft / Aeroplane Heaven Douglas DC-3 (MSFS 2024 default) - FsCopilot profile
+# Version: 0.1.0  (2026-10-11)
+#
+#   This profile has been tested extensively on MSFS 2024 ONLY for both the classic AND retrofitted versions of the aircraft, there are currently no blaring issues.
+#   If you find any issues please report via Discord. Enjoy the Doug :)
+# 
+
+include:
+  - modules/AS_GNS530.yaml
+  - modules/AS_GNS430.yaml
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+master:
+  # ---- Engine levers (pedestal quadrant) ----------------------------------------
+  - get: B:ENGINE_THROTTLE_1, Number
+    set: (>B:ENGINE_THROTTLE_1_Set)
+  - get: B:ENGINE_THROTTLE_2, Number
+    set: (>B:ENGINE_THROTTLE_2_Set)
+  - get: B:ENGINE_PROPELLER_1, Number
+    set: (>B:ENGINE_PROPELLER_1_Set)
+  - get: B:ENGINE_PROPELLER_2, Number
+    set: (>B:ENGINE_PROPELLER_2_Set)
+  - get: B:FUEL_MIXTURE_1, Number
+    set: (>B:FUEL_MIXTURE_1_Set)
+  - get: B:FUEL_MIXTURE_2, Number
+    set: (>B:FUEL_MIXTURE_2_Set)
+  # ---- Brakes --------------------------------------------------------------------
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+  # ---- Trim wheels / knobs (0-100 scale on this aircraft) ------------------------
+  - get: B:HANDLING_ELEVATORTRIM_1, Number
+    set: (>B:HANDLING_ELEVATORTRIM_1_Set)
+  - get: B:HANDLING_AILERONSTRIM_1, Number
+    set: (>B:HANDLING_AILERONSTRIM_1_Set)
+  - get: B:HANDLING_RUDDERTRIM_1, Number
+    set: (>B:HANDLING_RUDDERTRIM_1_Set)
+  # ---- Flaps (9 handle positions, hydraulic) -------------------------------------
+  - get: A:FLAPS HANDLE INDEX, Number
+  # ---- Tailwheel lock ------------------------------------------------------------
+  - get: B:INSTRUMENT_AH_TAILWHEEL_LOCK, Number
+    set: (>B:INSTRUMENT_AH_TAILWHEEL_LOCK_Set)
+
+shared:
+  # ================= LANDING GEAR / HYDRAULICS ===================================
+  - get: B:LANDING_GEAR_GEAR, Number
+    set: (>B:LANDING_GEAR_GEAR_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_DC3_GEAR_LATCH, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_DC3_GEAR_LATCH_Set)
+  - get: A:GEAR HANDLE POSITION, Bool
+    set: (>K:GEAR_SET)
+  - get: B:LANDING_GEAR_PARKINGBRAKE, Number
+    set: (>B:LANDING_GEAR_PARKINGBRAKE_Set)
+  - get: B:INSTRUMENT_FLAPSELECTOR, Number
+    set: (>B:INSTRUMENT_FLAPSELECTOR_Set)
+  - get: B:INSTRUMENT_FLAPHANDLE, Number
+    set: (>B:INSTRUMENT_FLAPHANDLE_Set)
+  - get: B:INSTRUMENT_HYDPUMPSELECTORHANDLE, Number
+    set: (>B:INSTRUMENT_HYDPUMPSELECTORHANDLE_Set)
+  - get: B:INSTRUMENT_PUMPSELECTORHUB_VIS, Number
+    set: (>B:INSTRUMENT_PUMPSELECTORHUB_VIS_Set)
+  - get: B:INSTRUMENT_HYDRAULICHANDPUMP, Number
+    set: (>B:INSTRUMENT_HYDRAULICHANDPUMP_Set)
+  - get: B:INSTRUMENT_HYDSHUTOFFVALVE, Number
+    set: (>B:INSTRUMENT_HYDSHUTOFFVALVE_Set)
+  - get: B:INSTRUMENT_APHYDROVALVE, Number
+    set: (>B:INSTRUMENT_APHYDROVALVE_Set)
+
+  # ================= ELECTRICAL ====================================================
+  - get: B:ELECTRICAL_BATTERY_1, Number
+    set: (>B:ELECTRICAL_BATTERY_1_Set)
+  - get: B:INSTRUMENT_SWITCH_BATTERY, Number
+    set: (>B:INSTRUMENT_SWITCH_BATTERY_Set)
+  - get: B:ELECTRICAL_AVIONICS_BUS_1, Number
+    set: (>B:ELECTRICAL_AVIONICS_BUS_1_Set)
+  - get: B:ELECTRICAL_EXTERNALPOWER_1, Number
+    set: (>B:ELECTRICAL_EXTERNALPOWER_1_Set)
+  - get: A:EXTERNAL POWER ON, Bool
+    set: (>K:TOGGLE_EXTERNAL_POWER)
+  - get: B:INSTRUMENT_SWITCH_INVERTER, Number
+    set: (>B:INSTRUMENT_SWITCH_INVERTER_Set)
+  - get: B:INSTRUMENT_SWITCH_IGNITION, Number
+    set: (>B:INSTRUMENT_SWITCH_IGNITION_Set)
+  - get: B:INSTRUMENT_SWITCH_SECURITY, Number
+    set: (>B:INSTRUMENT_SWITCH_SECURITY_Set)
+  - get: B:INSTRUMENT_SWITCH_COMPASS, Number
+    set: (>B:INSTRUMENT_SWITCH_COMPASS_Set)
+
+  # ================= ENGINES =======================================================
+  - get: B:ENGINE_MAGNETO_1, Number
+    set: (>B:ENGINE_MAGNETO_1_Set)
+  - get: B:ENGINE_MAGNETO_2, Number
+    set: (>B:ENGINE_MAGNETO_2_Set)
+  - get: B:INSTRUMENT_SWITCH_ENGINE_PRIMER1, Number
+    set: (>B:INSTRUMENT_SWITCH_ENGINE_PRIMER1_Set)
+  - get: B:INSTRUMENT_SWITCH_ENGINE_PRIMER2, Number
+    set: (>B:INSTRUMENT_SWITCH_ENGINE_PRIMER2_Set)
+  - get: B:INSTRUMENT_STARTSWITCH, Number
+    set: (>B:INSTRUMENT_STARTSWITCH_Set)
+  - get: B:INSTRUMENT_MESH_STARTER, Number
+    set: (>B:INSTRUMENT_MESH_STARTER_Set)
+  - get: A:GENERAL ENG STARTER:1, Bool
+    set: (>K:SET_STARTER1_HELD)
+  - get: A:GENERAL ENG STARTER:2, Bool
+    set: (>K:SET_STARTER2_HELD)
+  - get: B:FUEL_PUMP_1, Number
+    set: (>B:FUEL_PUMP_1_Set)
+  - get: B:FUEL_PUMP_2, Number
+    set: (>B:FUEL_PUMP_2_Set)
+  - get: B:INSTRUMENT_C47_SUPERCHARGER_ENG1, Number
+    set: (>B:INSTRUMENT_C47_SUPERCHARGER_ENG1_Set)
+  - get: B:INSTRUMENT_C47_SUPERCHARGER_ENG2, Number
+    set: (>B:INSTRUMENT_C47_SUPERCHARGER_ENG2_Set)
+  - get: B:INSTRUMENT_DC3_PROPFEATHER1, Number
+    set: (>B:INSTRUMENT_DC3_PROPFEATHER1_Set)
+  - get: B:INSTRUMENT_DC3_PROPFEATHER2, Number
+    set: (>B:INSTRUMENT_DC3_PROPFEATHER2_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_CARBHEATLEFT, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_CARBHEATLEFT_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_CARBHEATRIGHT, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_CARBHEATRIGHT_Set)
+  - get: B:INSTRUMENT_CARBHEATLOCKLEVER, Number
+    set: (>B:INSTRUMENT_CARBHEATLOCKLEVER_Set)
+  - get: B:INSTRUMENT_DC3_LEVER_COWL_FLAPS0_KNOB, Number
+    set: (>B:INSTRUMENT_DC3_LEVER_COWL_FLAPS0_KNOB_Set)
+  - get: B:INSTRUMENT_DC3_LEVER_COWL_FLAPS1_KNOB, Number
+    set: (>B:INSTRUMENT_DC3_LEVER_COWL_FLAPS1_KNOB_Set)
+  - get: B:INSTRUMENT_FRICTIONKNOB, Number
+    set: (>B:INSTRUMENT_FRICTIONKNOB_Set)
+  - get: B:INSTRUMENT_FUEL_OIL_CUTOFFS, Number
+    set: (>B:INSTRUMENT_FUEL_OIL_CUTOFFS_Set)
+  - get: B:INSTRUMENT_FUELCUT_EMERG, Number
+    set: (>B:INSTRUMENT_FUELCUT_EMERG_Set)
+  - get: B:INSTRUMENT_OILCUT_EMERG, Number
+    set: (>B:INSTRUMENT_OILCUT_EMERG_Set)
+  - get: B:INSTRUMENT_DEICE_SWITCH_ENGINE, Number
+    set: (>B:INSTRUMENT_DEICE_SWITCH_ENGINE_Set)
+  - get: B:INSTRUMENT_DC3_MANIFOLD_GAUGE_SELECT_KNOB, Number
+    set: (>B:INSTRUMENT_DC3_MANIFOLD_GAUGE_SELECT_KNOB_Set)
+  - get: B:INSTRUMENT_SWITCHES_QCOLD, Number
+    set: (>B:INSTRUMENT_SWITCHES_QCOLD_Set)
+  - get: B:INSTRUMENT_SWITCHES_QSTART, Number
+    set: (>B:INSTRUMENT_SWITCHES_QSTART_Set)
+
+  # ================= FUEL ==========================================================
+  - get: B:INSTRUMENT_DC3_FUELQUANTGAUGE_KNOB, Number
+    set: (>B:INSTRUMENT_DC3_FUELQUANTGAUGE_KNOB_Set)
+  - get: B:INSTRUMENT_LEFTMAIN001, Number
+    set: (>B:INSTRUMENT_LEFTMAIN001_Set)
+  - get: B:INSTRUMENT_LEFTAUX, Number
+    set: (>B:INSTRUMENT_LEFTAUX_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_LEFTFUEOFF, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_LEFTFUEOFF_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_RIGHTAUX, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_RIGHTAUX_Set)
+  - get: B:INSTRUMENT_R_LEFTMAIN, Number
+    set: (>B:INSTRUMENT_R_LEFTMAIN_Set)
+  - get: B:INSTRUMENT_R_LEFTAUX, Number
+    set: (>B:INSTRUMENT_R_LEFTAUX_Set)
+  - get: B:INSTRUMENT_R_RIGHTMAIN, Number
+    set: (>B:INSTRUMENT_R_RIGHTMAIN_Set)
+  - get: B:INSTRUMENT_RIGHTMAIN001, Number
+    set: (>B:INSTRUMENT_RIGHTMAIN001_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_R_RIGHTAUX, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_R_RIGHTAUX_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_RIGHTFUELOFF, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_RIGHTFUELOFF_Set)
+
+  # ================= FIRE PROTECTION ===============================================
+  - get: B:INSTRUMENT_EXTINGUISHERSELECTOR, Number
+    set: (>B:INSTRUMENT_EXTINGUISHERSELECTOR_Set)
+  - get: B:INSTRUMENT_EXTINGUISHERPULL, Number
+    set: (>B:INSTRUMENT_EXTINGUISHERPULL_Set)
+  - get: B:INSTRUMENT_FIRE_DOOR, Number
+    set: (>B:INSTRUMENT_FIRE_DOOR_Set)
+
+  # ================= ICE PROTECTION ================================================
+  - get: B:DEICE_PITOT_1, Number
+    set: (>B:DEICE_PITOT_1_Set)
+  - get: B:DEICE_AIRFRAME_1, Number
+    set: (>B:DEICE_AIRFRAME_1_Set)
+  - get: B:DEICE_PROPELLER_1, Number
+    set: (>B:DEICE_PROPELLER_1_Set)
+  - get: B:DEICE_WINDSHIELD_1, Number
+    set: (>B:DEICE_WINDSHIELD_1_Set)
+
+  # ================= LIGHTS ========================================================
+  - get: B:LIGHTING_NAV_1, Number
+    set: (>B:LIGHTING_NAV_1_Set)
+  - get: B:LIGHTING_BEACON_1, Number
+    set: (>B:LIGHTING_BEACON_1_Set)
+  - get: B:LIGHTING_LANDING_1, Number
+    set: (>B:LIGHTING_LANDING_1_Set)
+  - get: B:LIGHTING_LANDING_2, Number
+    set: (>B:LIGHTING_LANDING_2_Set)
+  - get: B:LIGHTING_CABIN_1, Number
+    set: (>B:LIGHTING_CABIN_1_Set)
+  - get: B:LIGHTING_CABIN_2, Number
+    set: (>B:LIGHTING_CABIN_2_Set)
+  - get: B:LIGHTING_CABIN_3, Number
+    set: (>B:LIGHTING_CABIN_3_Set)
+  - get: B:LIGHTING_CABIN_4, Number
+    set: (>B:LIGHTING_CABIN_4_Set)
+  - get: B:INSTRUMENT_LIGHTING_UVGAUGE, Number
+    set: (>B:INSTRUMENT_LIGHTING_UVGAUGE_Set)
+  - get: B:INSTRUMENT_SPERRY_LIGHTS, Number
+    set: (>B:INSTRUMENT_SPERRY_LIGHTS_Set)
+
+  # ================= FLIGHT INSTRUMENTS ============================================
+  - get: B:INSTRUMENT_ALTIMETER_1, Number
+    set: (>B:INSTRUMENT_ALTIMETER_1_Set)
+  - get: B:INSTRUMENT_ALTIMETER_2, Number
+    set: (>B:INSTRUMENT_ALTIMETER_2_Set)
+  - get: B:INSTRUMENT_ATTITUDE_INDICATOR_BARS, Number
+    set: (>B:INSTRUMENT_ATTITUDE_INDICATOR_BARS_Set)
+  - get: K:GYRO_DRIFT_SET_EX1
+  - get: L:DC3_nonAP_heading
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, Degrees
+    set: (>K:HEADING_BUG_SET)
+  - get: B:INSTRUMENT_COURSE_1, Number
+    set: (>B:INSTRUMENT_COURSE_1_Set)
+  - get: B:INSTRUMENT_COURSE_2, Number
+    set: (>B:INSTRUMENT_COURSE_2_Set)
+  - get: A:NAV OBS:1, Degrees
+    set: (>K:VOR1_SET)
+  - get: A:NAV OBS:2, Degrees
+    set: (>K:VOR2_SET)
+  - get: B:INSTRUMENT_SWITCH_VORSWAP, Number
+    set: (>B:INSTRUMENT_SWITCH_VORSWAP_Set)
+  - get: B:INSTRUMENT_AH_KNOB_DECISION_HEIGHT, Number
+    set: (>B:INSTRUMENT_AH_KNOB_DECISION_HEIGHT_Set)
+  - get: B:INSTRUMENT_AH_DC3_KNOB_DECISION_HEIGHT, Number
+    set: (>B:INSTRUMENT_AH_DC3_KNOB_DECISION_HEIGHT_Set)
+  - get: B:INSTRUMENT_ADF, Number
+    set: (>B:INSTRUMENT_ADF_Set)
+  - get: A:ADF CARD, Degrees
+    set: (>K:ADF_CARD_SET)
+
+  # ================= SPERRY AUTOPILOT (period AP) ==================================
+  - get: B:INSTRUMENT_SWITCH_SPERRYSHOW, Number
+    set: (>B:INSTRUMENT_SWITCH_SPERRYSHOW_Set)
+  - get: B:INSTRUMENT_SWITCH_SPERRYPOWER, Number
+    set: (>B:INSTRUMENT_SWITCH_SPERRYPOWER_Set)
+  - get: B:INSTRUMENT_AUTOPILOTMASTER, Number
+    set: (>B:INSTRUMENT_AUTOPILOTMASTER_Set)
+  - get: B:INSTRUMENT_KNOB_SPERRY_DESIRED_HEADING, Number
+    set: (>B:INSTRUMENT_KNOB_SPERRY_DESIRED_HEADING_Set)
+  - get: B:INSTRUMENT_SPERRY_ATTITUDE_WING, Number
+    set: (>B:INSTRUMENT_SPERRY_ATTITUDE_WING_Set)
+  - get: B:INSTRUMENT_SPERRY_BANKADJUST, Number
+    set: (>B:INSTRUMENT_SPERRY_BANKADJUST_Set)
+  - get: B:INSTRUMENT_SPERRY_ELEVATOR_KNOB, Number
+    set: (>B:INSTRUMENT_SPERRY_ELEVATOR_KNOB_Set)
+  - get: B:INSTRUMENT_RUDDER_KNOB, Number
+    set: (>B:INSTRUMENT_RUDDER_KNOB_Set)
+  - get: B:INSTRUMENT_SPERRY_CAGE, Number
+    set: (>B:INSTRUMENT_SPERRY_CAGE_Set)
+  - get: B:INSTRUMENT_SPERRYWASHER_CAGE, Number
+    set: (>B:INSTRUMENT_SPERRYWASHER_CAGE_Set)
+
+  # ================= KAP140 AUTOPILOT (modern option) ==============================
+  - get: H:KAP140_Push_AP
+  - get: H:KAP140_Push_HDG
+  - get: H:KAP140_Push_NAV
+  - get: H:KAP140_Push_APR
+  - get: H:KAP140_Push_REV
+  - get: H:KAP140_Push_ALT
+  - get: H:KAP140_Push_UP
+  - get: H:KAP140_Push_DOWN
+  - get: H:KAP140_Push_ARM
+  - get: H:KAP140_Push_BARO
+  - get: H:KAP140_KNOB_OUTER_INC
+  - get: H:KAP140_KNOB_OUTER_DEC
+  - get: H:KAP140_KNOB_INNER_INC
+  - get: H:KAP140_KNOB_INNER_DEC
+  - get: A:AUTOPILOT ALTITUDE LOCK VAR:1, Feet
+  - get: A:AUTOPILOT VERTICAL HOLD VAR:1, Feet per minute
+  - get: A:AUTOPILOT DISENGAGED, Bool
+
+  # ================= RADIOS / AUDIO ===============================================
+  - get: H:AS530_CLR_Push_Long
+  - get: H:AS430_CLR_Push_Long
+  - get: H:AS430_LeftSmallKnob_Push
+  - get: B:NAVCOM_COM1_TRANSMIT, Number
+    set: (>B:NAVCOM_COM1_TRANSMIT_Set)
+  - get: B:NAVCOM_COM2_TRANSMIT, Number
+    set: (>B:NAVCOM_COM2_TRANSMIT_Set)
+  - get: B:NAVCOM_NAV1_SOUND, Number
+    set: (>B:NAVCOM_NAV1_SOUND_Set)
+  - get: B:NAVCOM_NAV2_SOUND, Number
+    set: (>B:NAVCOM_NAV2_SOUND_Set)
+  - get: B:NAVCOM_ADF1_SOUND, Number
+    set: (>B:NAVCOM_ADF1_SOUND_Set)
+  - get: B:NAVCOM_DME1_SOUND, Number
+    set: (>B:NAVCOM_DME1_SOUND_Set)
+  - get: B:NAVCOM_MARKER1_SOUND, Number
+    set: (>B:NAVCOM_MARKER1_SOUND_Set)
+  - get: B:NAVCOM_AUDIO_MARKER_SENSITIVITY, Number
+    set: (>B:NAVCOM_AUDIO_MARKER_SENSITIVITY_Set)
+  - get: B:NAVCOM_SPEAKER, Number
+    set: (>B:NAVCOM_SPEAKER_Set)
+  - get: A:ADF ACTIVE FREQUENCY:1, Frequency ADF BCD32
+    set: (>K:ADF_ACTIVE_SET)
+  - get: A:ADF STANDBY FREQUENCY:1, Frequency ADF BCD32
+    set: (>K:ADF_STBY_SET)
+  - get: B:NAVCOM_ADF_MODE, Number
+    set: (>B:NAVCOM_ADF_MODE_Set)
+  - get: B:NAVCOM_ADF_VOLUME, Number
+    set: (>B:NAVCOM_ADF_VOLUME_Set)
+  - get: B:NAVCOM_TRANSPONDER_MODE, Number
+    set: (>B:NAVCOM_TRANSPONDER_MODE_Set)
+  - get: A:TRANSPONDER CODE:1, BCO16
+    set: (>K:XPNDR_SET)
+  - get: A:TRANSPONDER IDENT:1, Bool
+    set: "value ? '1 (>K:XPNDR_IDENT_ON)' : '1 (>K:XPNDR_IDENT_OFF)'"
+
+  # ================= DOORS / WINDOWS / MISC =======================================
+  - get: B:INSTRUMENT_SWITCH_DOORMAIN, Number
+    set: (>B:INSTRUMENT_SWITCH_DOORMAIN_Set)
+  - get: B:INSTRUMENT_SWITCH_DOORLUGGAGE, Number
+    set: (>B:INSTRUMENT_SWITCH_DOORLUGGAGE_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_DC3_PILOTSLIDER, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_DC3_PILOTSLIDER_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_DC3_COPILOTSLIDER, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_DC3_COPILOTSLIDER_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_DC3_WINDOW_LATCH, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_DC3_WINDOW_LATCH_Set)
+  - get: B:INSTRUMENT_MOUSEZONE_DC3_RIGHTWINDOW_LATCH, Number
+    set: (>B:INSTRUMENT_MOUSEZONE_DC3_RIGHTWINDOW_LATCH_Set)
+  - get: B:INSTRUMENT_SWITCH_PILOTWIPER, Number
+    set: (>B:INSTRUMENT_SWITCH_PILOTWIPER_Set)
+  - get: B:INSTRUMENT_SWITCH_COPILOTWIPER, Number
+    set: (>B:INSTRUMENT_SWITCH_COPILOTWIPER_Set)
+  - get: B:HANDLING_YOKE_HIDER_1, Number
+    set: (>B:HANDLING_YOKE_HIDER_1_Set)
+  - get: B:HANDLING_YOKE_HIDER_2, Number
+    set: (>B:HANDLING_YOKE_HIDER_2_Set)
+  - get: B:INSTRUMENT_SEAT_ARM, Number
+    set: (>B:INSTRUMENT_SEAT_ARM_Set)

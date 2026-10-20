@@ -11,3 +11,7 @@ Profiles here are not loaded: FS Copilot only reads aircraft profiles from the t
   ([degroat-c/pmdg737-fscopilot](https://github.com/degroat-c/pmdg737-fscopilot), January 2026). Its
   header says some behaviours may need manual adjustment. The loaded 737-800 profile is the newer
   hand-built V2.1 by Hawks1326 and Av8rChris from the profile server.
+- `PMDG DC-6.yaml`: the earlier DC-6 profile (July 2026, about 1,180 variables), an automatic
+  conversion whose own header says it was not yet verified. The loaded DC-6 profile is DKgolfnut's
+  hand-built rewrite from the profile server (October 2026, fewer variables, known issues listed
+  at its top).

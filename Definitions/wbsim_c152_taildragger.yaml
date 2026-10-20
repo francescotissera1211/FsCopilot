@@ -1,5 +1,7 @@
-# Original author: https://discord.com/channels/1454265644416765974/1520379671446032425/1520379842296807475
-# Updated: 2026-06-27 10:46:45
+# Original author: https://discord.com/channels/1454265644416765974/1520379671446032425/1558127113649922050
+# Updated: 2026-10-09 14:40:57
+
+
 
 
 
@@ -17,28 +19,33 @@ master:
 - get: A:BRAKE RIGHT POSITION, Position
   set: (>K:AXIS_RIGHT_BRAKE_SET)
 - get: A:HEADING INDICATOR, Degrees
-  set: (>K:GYRO_DRIFT_SET_EX1)x
+  set: (>K:GYRO_DRIFT_SET_EX1)
+- get: A:KOHLSMAN SETTING MB:2, Millibars 
+  set: "`${value * 16}  (>K:2:KOHLSMAN_SET)`"
 
 shared:
+- get: B:NAVCOM_ADF_Freq_Khz_Set
 - get: L:HANDLING_ElevatorTrim
   set: (>B:HANDLING_ElevatorTrim_1_Set)
 #Bottom Panel
 - get: A:RECIP ENG PRIMER:1, percent
 - get: B:ELECTRICAL_Alternator_1_Toggle
 - get: B:ELECTRICAL_Battery_1_Toggle
-- get: L:C152X_STARTER_SWITCH_STATE
-  set: (>K:MAGNETO1_SET)
+- get: A:RECIP ENG LEFT MAGNETO:1, Bool 
+- get: A:RECIP ENG RIGHT MAGNETO:1, Bool 
+- get: A:GENERAL ENG STARTER:1, Bool 
+  set: (>K:SET_STARTER1_HELD)
 - get: A:LIGHT POTENTIOMETER:5, percent
   set: (>K:LIGHT_POTENTIOMETER_5_SET)
 - get: A:LIGHT POTENTIOMETER:6, percent
   set: (>K:LIGHT_POTENTIOMETER_6_SET)
-- get: K:PANEL_LIGHTS_SET
-- get: K:PITOT_HEAT_SET
-- get: K:NAV_LIGHTS_SET
-- get: K:STROBES_SET
-- get: K:BEACON_LIGHTS_SET
-- get: K:TAXI_LIGHTS_SET
-- get: K:LANDING_LIGHTS_SET
+- get: A:LIGHT PANEL, bool
+- get: A:PITOT HEAT SWITCH:1, Bool 
+- get: A:LIGHT NAV, bool
+- get: A:LIGHT STROBE:0, Bool
+- get: A:LIGHT BEACON:1, Bool
+- get: A:LIGHT TAXI:1, Bool
+- get: A:LIGHT LANDING:1, Bool
 
 #curcuit brakers
 - get: L:C152X_ALT_BREAKER_PULLED
@@ -68,7 +75,7 @@ shared:
 - get: L:C152X_CABIN_HEAT
 
 #MIP
-- get: A:ATTITUDE BARS POSITION, percent
+- get: A:ATTITUDE BARS POSITION, bool
   set: "value > current ?  '1 (>K:ATTITUDE_BARS_POSITION_UP) ' : '1 (>K:ATTITUDE_BARS_POSITION_DOWN) '"
 
 - get: L:XMLVAR_Minutes_Delta
@@ -115,6 +122,10 @@ shared:
   set: (>K:NAV1_VOLUME_SET_EX1)
 - get: A:NAV VOLUME:2, Percent
   set: (>K:NAV2_VOLUME_SET_EX1)
+- get: H:KX155_NAV1_RAD_PULL
+- get: H:KX155_NAV2_RAD_PULL
+- get: L:KX155_COM1_MODE_SPACING_PULL
+- get: L:KX155_COM2_MODE_SPACING_PULL
 - get: H:KA134_EXT_PRESS
 - get: H:KA134_EXT_RELEASE
 - get: H:KA134_MIC1_PRESS
@@ -143,8 +154,8 @@ shared:
 #Autopilot Intrument Addon
 - get: A:AUTOPILOT HEADING LOCK DIR:1, degrees
   set: (>K:HEADING_BUG_SET)
-- get: H:KAP140_AP_PRESS
-- get: H:KAP140_AP_RELEASE
+- get: A:AUTOPILOT MASTER, Bool 
+  set: "value ? '(>K:AUTOPILOT_ON)' : '(>K:AUTOPILOT_OFF)'"
 - get: H:KAP140_HDG_PRESS
 - get: H:KAP140_HDG_RELEASE
 - get: H:KAP140_NAV_PRESS
@@ -201,6 +212,16 @@ shared:
 - get: H:TransponderCRSR
 - get: H:TransponderCLR
 - get: H:TransponderSTARTSTOP
+- get: H:Transponder0
+- get: H:Transponder1
+- get: H:Transponder2
+- get: H:Transponder3
+- get: H:Transponder4
+- get: H:Transponder5
+- get: H:Transponder6
+- get: H:Transponder7
+- get: H:Transponder8
+- get: H:Transponder9
 
 - get: K:ADF_VOLUME_INC
 - get: K:ADF_VOLUME_DEC
@@ -220,7 +241,7 @@ shared:
 - get: A:GENERAL ENG FUEL VALVE:1, bool
   set: (>K:TOGGLE_FUEL_VALVE_ENG1)
 
-- get: A:KOHLSMAN SETTING MB:2, Millibars # ALTIMETER CALIBRATION
+- get: A:KOHLSMAN SETTING MB:2, Millibars 
   set: "`${value * 16}  (>K:2:KOHLSMAN_SET)`"
 
 # Top Panel

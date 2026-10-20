@@ -1,0 +1,2225 @@
+# Original author: https://discord.com/channels/1454265644416765974/1514274518716121139/1529589140272840757
+# Updated: 2026-07-22 20:45:54
+
+# PMDG Douglas DC-6 - FS Copilot Profile
+# Source: PMDG Simulations - Douglas DC-6 (Version 2.0.51)
+#
+# NOTE: core get/set syntax below is already FsCopilot-compatible
+# (plain SimConnect calculator-code strings, same mechanic FsCopilot uses).
+# NOT YET VERIFIED against current FsCopilot schema: whether the top-level
+# master:/shared: split is still used, and whether a module needs a header
+# block (title/ICAO match) to be auto-loaded. Confirm against an existing
+# file in Definitions/modules before placing this in your Community folder.
+
+
+master:
+  - get: A:AILERON POSITION, Position 16k
+    set: "(>K:AXIS_AILERONS_SET)"
+  - get: A:ELEVATOR POSITION, Position 16k
+    set: "(>K:AXIS_ELEVATOR_SET)"
+  - get: A:RUDDER PEDAL POSITION, Position 16k
+    set: "(>K:AXIS_RUDDER_SET)"
+  - get: L:dc6_511_obj
+  - get: L:dc6_512_obj
+  - get: L:dc6_513_obj
+  - get: L:dc6_514_obj
+
+shared:
+  # Brakes
+  - get: A:BRAKE PARKING POSITION, Bool
+    set: "(>K:PARKING_BRAKES)"
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "(>K:AXIS_LEFT_BRAKE_SET)"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "(>K:AXIS_RIGHT_BRAKE_SET)"
+  # Main Cabin Exit
+  - get: A:INTERACTIVE POINT GOAL:0, Bool
+    set: "1 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)"
+  # Front Cabin Exit
+  - get: A:INTERACTIVE POINT GOAL:1, Bool
+    set: "2 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)"
+  # Cargo Holds
+  - get: A:INTERACTIVE POINT GOAL:2, Bool
+    set: "3 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)"
+  # Front Cabin Exit Air Stairs
+  - get: A:INTERACTIVE POINT GOAL:3, Bool
+    set: "4 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)"
+  # CA Window
+  - get: A:INTERACTIVE POINT GOAL:4, Bool
+    set: "5 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)"
+  # FO Window
+  - get: A:INTERACTIVE POINT GOAL:5, Bool
+    set: "6 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)"
+  # Cargo Doors/Main Cabin Exit
+  - get: A:INTERACTIVE POINT GOAL:6, Bool
+    set: "7 (>K:TOGGLE_AIRCRAFT_EXIT_FAST)"
+  # GPS
+  - get: A:GPS DRIVES NAV1, Bool
+    set: "(>K:TOGGLE_GPS_DRIVES_NAV1)"
+  # Trim
+  - get: A:AILERON TRIM PCT, Position 16k
+    set: "(>K:AILERON_TRIM_SET)"
+  - get: A:ELEVATOR TRIM PCT, Position 16k
+    set: "(>K:ELEVATOR_TRIM_SET)"
+  - get: L:dc6_434_obj
+    set: "43401 (>K:ROTOR_BRAKE)"
+  - get: A:RUDDER TRIM PCT, Position 16k
+    set: "(>K:RUDDER_TRIM_SET)"
+  # LVAR's
+  - get: L:GPSandRadioOptions
+  - get: L:GPSDrivesNav1Check
+  - get: L:TabletOnOff
+  - get: L:TabletSensor
+  - get: L:AutoBright
+  # Doesn't move with pedals
+  - get: L:NosewheelSteerAngle
+  # Front Cabin Exit Air Stairs EFB
+  - get: L:dc6_447_obj
+  # Front Cabin Exit (EFB)
+  - get: L:dc6_446_obj
+  # Cargo Holds (EFB)
+  - get: L:dc6_448_obj
+  # Main Cabin Exit for B, Main Cargo Doors for A (EFB)
+  - get: L:dc6_451_obj
+  # Main Cabin Exit Stairs for B, Cargo Entrance for A (EFB)
+  - get: L:dc6_452_obj
+  - get: L:MainStairs
+  # Towbar and Tractor (EFB)
+  - get: L:dc6_455_obj
+  - get: L:TractorTowBar
+  # Wheel Chocks (EFB)
+  - get: L:dc6_456_obj
+  - get: L:WheelChocks
+  # Pitot Covers (EFB)
+  - get: L:dc6_457_obj
+  - get: L:PitotCovers
+  # Engine Oil Pans (EFB)
+  - get: L:dc6_458_obj
+  - get: L:EngOilPans
+  # Mechanic Stands (EFB)
+  - get: L:dc6_459_obj
+  - get: L:MechStands
+  - get: L:window_ca
+  - get: L:window_fo
+  # Landing Lights Position Control Switch
+  - get: L:dc6_122_obj
+  # CPT/FO Intercom Mode Knob
+  - get: L:dc6_579_obj
+  - get: L:CheckExit
+  - get: L:InitChannelSpacing
+  - get: L:SpeakerCheck
+  - get: L:XPDRSwitchOn
+  # CPT XPDR Mode Selector Knob
+  - get: L:dc6_550_obj
+  # FO XPDR Mode Selector Knob
+  - get: L:dc6_970_obj
+  - get: L:DMESwitchOn
+  # DME Mode Knob
+  - get: L:dc6_271_obj
+  - get: L:StopWatchStart
+  # CPT/FO Audio Volume Control
+  - get: L:dc6_561_obj
+  - get: L:window_ca_latch
+  - get: L:window_handle_ca
+  - get: L:window_fo_latch
+  - get: L:window_handle_fo
+  - get: L:FEJumpSeat
+  - get: L:FEJumpSeatDown
+  - get: L:FEJumpSeatUp
+  - get: L:PICSeatLeftRest
+  - get: L:PICSeatLeftRestDown
+  - get: L:PICSeatLeftRestUp
+  - get: L:PICSeatRightRest
+  - get: L:PICSeatRightRestDown
+  - get: L:PICSeatRightRestUp
+  - get: L:FOSeatLeftRest
+  - get: L:FOSeatLeftRestDown
+  - get: L:FOSeatLeftRestUp
+  - get: L:FOSeatRightRest
+  - get: L:FOSeatRightRestDown
+  - get: L:FOSeatRightRestUp
+  - get: L:TransponderCACode1000
+  - get: L:TransponderCACode100
+  - get: L:TransponderCACode10
+  - get: L:TransponderCACode1
+  - get: L:TransponderFOCode1000
+  - get: L:TransponderFOCode100
+  - get: L:TransponderFOCode10
+  - get: L:TransponderFOCode1
+  # XPDNR 1/2 Switch
+  - get: L:dc6_270_obj
+    set: "27001 (>K:ROTOR_BRAKE)"
+  - get: L:TransponderCACode
+  - get: L:TransponderFOCode
+  - get: L:CockpitLighting
+  - get: L:SetCockpitLights
+  # Radio Backlight Knob
+  - get: L:RadioBL
+  # Cockpit Flood Light Knob
+  - get: L:dc6_174_obj
+  # Entrance Lights Switch
+  - get: L:dc6_036_obj
+  # 3rd Crew Map Light Red/White Knob
+  - get: L:dc6_007_obj
+  # Upper Left Instrument Panel Lights Red Knob
+  - get: L:dc6_048_obj
+  # Upper Right Instrument Panel Lights Red Knob
+  - get: L:dc6_058_obj
+  # CPT Map Light White Knob
+  - get: L:dc6_707_obj
+  # FO Map Light White Knob
+  - get: L:dc6_709_obj
+  # Main JBOX Flood Light Switch
+  - get: L:dc6_037_obj
+  # CPT Flight Instruments Light Red Knob
+  - get: L:dc6_708_obj
+  # FO Flight Instruments Light Red Knob
+  - get: L:dc6_699_obj
+  # Main Instrument Panel Lights White Knob
+  - get: L:dc6_049_obj
+  # Engine Instrument Panel Lights Red Knob
+  - get: L:dc6_043_obj
+  # Magnetic Compass Light Red Knob
+  - get: L:dc6_050_obj
+  # Beacon Light Switch
+  - get: L:dc6_041_obj
+  # Position Flash/Steady Switch
+  - get: L:dc6_040_obj
+  # Landing Light Lamps Switches
+  - get: L:dc6_121_obj
+  - get: L:dc6_478_obj
+  - get: L:voltreg_indicator_switch
+  # Power Cart / GPU
+  - get: L:dc6_892_obj
+  - get: L:ground_power_switch
+  # Wing Illumination Light Switch
+  - get: L:dc6_042_obj
+  - get: L:wing_illum_switch
+  # Wheel Well Lights Switch
+  - get: L:dc6_067_obj
+  - get: L:wheel_well_switch
+  # LANDING GEAR Lever
+  - get: L:dc6_405_obj
+  # Emergency Exit Lights
+  - get: L:dc6_092_obj
+  - get: L:emerg_exit_switch
+  - get: L:supercharger_oil_temp_switch
+  - get: L:supercharger_oil_press_switch
+  - get: L:fuel_pressure_low_switch
+  - get: L:oil_pressure_low_switch
+  - get: L:dc6_313_obj_switch
+  - get: L:dc6_314_obj_switch
+  - get: L:dc6_315_obj_switch
+  - get: L:dc6_316_obj_switch
+  # CPT Outer Marker Annunciator Test Switch
+  - get: L:dc6_299_obj_switch
+  # CPT Middle Marker Annunciator Test Switch
+  - get: L:dc6_300_obj_switch
+  # CPT Inner Marker Annunciator Test Switch
+  - get: L:dc6_301_obj_switch
+  # FO Outer Marker Annunciator Test Switch
+  - get: L:dc6_379_obj_switch
+  # FO Middle Marker Annunciator Test Switch
+  - get: L:dc6_380_obj_switch
+  # FO Inner Marker Annunciator Test Switch
+  - get: L:dc6_381_obj_switch
+  - get: L:dc6_443_obj_switch
+  - get: L:dc6_444_obj_switch
+  - get: L:dc6_524_obj_switch
+  - get: L:dc6_525_obj_switch
+  - get: L:dc6_526_obj_switch
+  - get: L:dc6_527_obj_switch
+  - get: L:dc6_528_obj_switch
+  - get: L:dc6_529_obj_switch
+  - get: L:dc6_530_obj_switch
+  - get: L:dc6_531_obj_switch
+  # ADF Volume Knob
+  - get: L:dc6_138_obj
+  - get: L:SETRST
+  - get: L:ELTimerStart
+  - get: L:ELTimer
+  - get: L:ADFFreqChk
+  # Settable (no var)
+  - get: L:ADFStbyFreq
+  # Settable (no var)
+  - get: L:ADFActiveFreq
+  - get: L:ADF2FreqChk
+  - get: L:ADF2StbyFreq
+  - get: L:ADF2ActiveFreq
+  # ADF Mode Button
+  - get: L:dc6_133_obj
+  - get: L:FRQ_FLT_ET_Mode
+  # ADF BFO Button
+  - get: L:dc6_134_obj
+  # COM2 Volume Knob
+  - get: L:dc6_163_obj
+  # NAV2 Volume Knob
+  - get: L:dc6_168_obj
+  - get: L:XpndrCAIdent
+  - get: L:XpndrFOIdent
+  # Emergency Deice Switches
+  - get: L:dc6_003_obj
+    set: "301 (>K:ROTOR_BRAKE)"
+  # Emergency Deice Switches GUARD
+  - get: L:dc6_004_obj
+  # Engine 1-4 Spark Advance Switches
+  - get: L:dc6_017_obj
+    set: "1701 (>K:ROTOR_BRAKE)"
+  # Engine 1-4 Spark Advance GUARD
+  - get: L:dc6_018_obj
+  # Oil 1 Dilution Switch
+  - get: L:dc6_019_obj
+    set: "1901 (>K:ROTOR_BRAKE)"
+  # Oil 2 Dilution Switch
+  - get: L:dc6_020_obj
+    set: "2001 (>K:ROTOR_BRAKE)"
+  # Oil 3 Dilution Switch
+  - get: L:dc6_021_obj
+    set: "2101 (>K:ROTOR_BRAKE)"
+  # Oil 4 Dilution Switch
+  - get: L:dc6_022_obj
+    set: "2201 (>K:ROTOR_BRAKE)"
+  # Eng 1 Water Injection Pump Switch
+  - get: L:dc6_023_obj
+    set: "2301 (>K:ROTOR_BRAKE)"
+  # Eng 2 Water Injection Pump Switch
+  - get: L:dc6_024_obj
+    set: "2401 (>K:ROTOR_BRAKE)"
+  # Eng 3 Water Injection Pump Switch
+  - get: L:dc6_025_obj
+    set: "2501 (>K:ROTOR_BRAKE)"
+  # Eng 4 Water Injection Pump Switch
+  - get: L:dc6_026_obj
+    set: "2601 (>K:ROTOR_BRAKE)"
+  # Main Fuel Booster Pump Eng 1 CB switch
+  - get: L:dc6_027_obj
+  # Main Fuel Booster Pump Eng 2 CB switch
+  - get: L:dc6_028_obj
+  # Main Fuel Booster Pump Eng 3 CB switch
+  - get: L:dc6_029_obj
+  # Main Fuel Booster Pump Eng 4 CB switch
+  - get: L:dc6_030_obj
+  # Alternate Fuel Booster Pump Eng 1 CB switch
+  - get: L:dc6_031_obj
+  # Alternate Fuel Booster Pump Eng 2 CB switch
+  - get: L:dc6_032_obj
+  # Alternate Fuel Booster Pump Eng 3 CB switch
+  - get: L:dc6_033_obj
+  # Alternate Fuel Booster Pump Eng 4 CB switch
+  - get: L:dc6_034_obj
+  # No Smoking Switch
+  - get: L:dc6_038_obj
+  # Seat Belt Switch
+  - get: L:dc6_039_obj
+  # Eng 1 Auto Feather Test Switch
+  - get: L:dc6_044_obj
+    set: "4401 (>K:ROTOR_BRAKE)"
+  # Eng 2 Auto Feather Test Switch
+  - get: L:dc6_045_obj
+    set: "4501 (>K:ROTOR_BRAKE)"
+  # Eng 3 Auto Feather Test Switch
+  - get: L:dc6_090_obj
+    set: "9001 (>K:ROTOR_BRAKE)"
+  # Eng 4 Auto Feather Test Switch
+  - get: L:dc6_091_obj
+    set: "9101 (>K:ROTOR_BRAKE)"
+  # Eng 1 Feather Switch
+  - get: L:dc6_046_obj
+  # Eng 2 Feather Switch
+  - get: L:dc6_047_obj
+  # Eng 3 Feather Switch
+  - get: L:dc6_088_obj
+  # Eng 4 Feather Switch
+  - get: L:dc6_089_obj
+  # Autofeather On/Off Switch
+  - get: L:dc6_051_obj
+  # Aux Blower Switch
+  - get: L:dc6_066_obj
+    set: "6601 (>K:ROTOR_BRAKE)"
+  # Inverter 1 and 2 Flip Switch
+  - get: L:dc6_062_obj
+  # Main Fuel Booster Pump 1
+  - get: L:dc6_069_obj
+  # Main Fuel Booster Pump 2
+  - get: L:dc6_070_obj
+  # Main Fuel Booster Pump 3
+  - get: L:dc6_071_obj
+  # Main Fuel Booster Pump 4
+  - get: L:dc6_072_obj
+  # Alternate Fuel Booster Pump 1
+  - get: L:dc6_073_obj
+  # Alternate Fuel Booster Pump 2
+  - get: L:dc6_074_obj
+  # Alternate Fuel Booster Pump 3
+  - get: L:dc6_075_obj
+  # Alternate Fuel Booster Pump 4
+  - get: L:dc6_076_obj
+  # Plane Battery Ground Power Switch
+  - get: L:dc6_078_obj
+    set: "7801 (>K:ROTOR_BRAKE)"
+  # Emergency Instrument Power and Inst. Lighting Switch
+  - get: L:dc6_080_obj
+    set: "8001 (>K:ROTOR_BRAKE)"
+  # Inverter Standby CB
+  - get: L:dc6_731_obj
+    set: "73101 (>K:ROTOR_BRAKE)"
+  # Battery and Ground Power Switch
+  - get: L:dc6_082_obj
+    set: "8201 (>K:ROTOR_BRAKE)"
+  # Generator Control 1 Switch
+  - get: L:dc6_083_obj
+    set: "8301 (>K:ROTOR_BRAKE)"
+  # Generator Control 2 Switch
+  - get: L:dc6_084_obj
+    set: "8401 (>K:ROTOR_BRAKE)"
+  # Generator Control 3 Switch
+  - get: L:dc6_085_obj
+    set: "8501 (>K:ROTOR_BRAKE)"
+  # Generator Control 4 Switch
+  - get: L:dc6_086_obj
+    set: "8601 (>K:ROTOR_BRAKE)"
+  # Emergency Exit Lights GUARD
+  - get: L:dc6_093_obj
+  # Pitot and Scoop Heaters
+  - get: L:dc6_096_obj
+    set: "9601 (>K:ROTOR_BRAKE)"
+  # Fuel Quantity Test Switch
+  - get: L:dc6_107_obj
+  # Engine 1 Supercharger Control Switch
+  - get: L:dc6_1281_obj
+    set: "128101 (>K:ROTOR_BRAKE)"
+  # Engine 2 Supercharger Control Switch
+  - get: L:dc6_1282_obj
+    set: "128201 (>K:ROTOR_BRAKE)"
+  # Engine 3 Supercharger Control Switch
+  - get: L:dc6_1283_obj
+    set: "128301 (>K:ROTOR_BRAKE)"
+  # Engine 4 Supercharger Control Switch
+  - get: L:dc6_1284_obj
+    set: "128401 (>K:ROTOR_BRAKE)"
+  # Fire Extinguisher System - CO2 BOTTLES SELECTOR
+  - get: L:dc6_195_obj
+    set: "19501 (>K:ROTOR_BRAKE)"
+  # Htr Fuel Crossfeed
+  - get: L:dc6_205_obj
+    set: "20501 (>K:ROTOR_BRAKE)"
+  # Htr Fuel and Ignition Selector Cabin
+  - get: L:dc6_206_obj
+    set: "20601 (>K:ROTOR_BRAKE)"
+  # Htr Fuel and Ignition Selector Tail
+  - get: L:dc6_207_obj
+    set: "20701 (>K:ROTOR_BRAKE)"
+  # Htr Fuel and Ignition Selector L Wing
+  - get: L:dc6_208_obj
+    set: "20801 (>K:ROTOR_BRAKE)"
+  # Htr Fuel and Ignition Selector R Wing
+  - get: L:dc6_209_obj
+    set: "20901 (>K:ROTOR_BRAKE)"
+  # Htr Ignition Selector Check CABIN
+  - get: L:dc6_210_obj
+    set: "21001 (>K:ROTOR_BRAKE)"
+  # Htr Ignition Selector Check TAIL
+  - get: L:dc6_211_obj
+    set: "21101 (>K:ROTOR_BRAKE)"
+  # Htr Ignition Selector Check L WING
+  - get: L:dc6_212_obj
+    set: "21201 (>K:ROTOR_BRAKE)"
+  # Htr Ignition Selector Check R WING
+  - get: L:dc6_213_obj
+    set: "21301 (>K:ROTOR_BRAKE)"
+  # CABIN HEATER MASTER
+  - get: L:dc6_214_obj
+    set: "21401 (>K:ROTOR_BRAKE)"
+  # CABIN AND AIRFOIL HEATER MASTERS GUARD
+  - get: L:dc6_215_obj
+  # AIRFOIL HEATER MASTER
+  - get: L:dc6_216_obj
+    set: "21601 (>K:ROTOR_BRAKE)"
+  # PROP DEICER
+  - get: L:dc6_217_obj
+    set: "21701 (>K:ROTOR_BRAKE)"
+  # Engine 1 Carb De-icer Eng 1
+  - get: L:dc6_218_obj
+    set: "21801 (>K:ROTOR_BRAKE)"
+  # Engine 2 CARB DE-ICER ENG 2
+  - get: L:dc6_219_obj
+    set: "21901 (>K:ROTOR_BRAKE)"
+  # Engine 3 CARB DE-ICER ENG 3
+  - get: L:dc6_220_obj
+    set: "22001 (>K:ROTOR_BRAKE)"
+  # Engine 4 CARB DE-ICER ENG 4
+  - get: L:dc6_221_obj
+    set: "22101 (>K:ROTOR_BRAKE)"
+  # CABIN ALT MAN CONT Inc/Dec
+  - get: L:dc6_254_obj
+  # CABIN PRESS CONT AUTO MANUAL Switch GUARD
+  - get: L:dc6_256_obj
+  # Cooling Turbine Switch
+  - get: L:dc6_589_obj
+    set: "58901 (>K:ROTOR_BRAKE)"
+  # CO2 DISCHARGE LEFT BANK Handle
+  - get: L:dc6_259_obj
+    set: "25901 (>K:ROTOR_BRAKE)"
+  # ENG1 CO2 SELECTOR VALVE Handle
+  - get: L:dc6_262_obj
+    set: "26201 (>K:ROTOR_BRAKE)"
+  # ENG2 CO2 SELECTOR VALVE Handle
+  - get: L:dc6_263_obj
+    set: "26301 (>K:ROTOR_BRAKE)"
+  # ENG3 CO2 SELECTOR VALVE Handle
+  - get: L:dc6_265_obj
+    set: "26501 (>K:ROTOR_BRAKE)"
+  # ENG4 CO2 SELECTOR VALVE Handle
+  - get: L:dc6_266_obj
+    set: "26601 (>K:ROTOR_BRAKE)"
+  # CO2 DISCHARGE RIGHT BANK Handle
+  - get: L:dc6_269_obj
+    set: "26901 (>K:ROTOR_BRAKE)"
+  # Gyro Heading Increase/Decrease Switch
+  - get: L:dc6_303_obj
+  # Slaving Cutoff Switch
+  - get: L:dc6_304_obj
+    set: "30401 (>K:ROTOR_BRAKE)"
+  # Gust Lock Lever
+  - get: L:dc6_398_obj
+    set: "39801 (>K:ROTOR_BRAKE)"
+  # Mixture Lock Lever
+  - get: L:dc6_399_obj
+    set: "39901 (>K:ROTOR_BRAKE)"
+  # ENG 1 MIXTURE Lever
+  - get: L:dc6_400_obj
+  # ENG 2 MIXTURE Lever
+  - get: L:dc6_401_obj
+  # ENG 3 MIXTURE Lever
+  - get: L:dc6_402_obj
+  # ENG 4 MIXTURE Lever
+  - get: L:dc6_403_obj
+  # ENG 1 CARB AIR
+  - get: L:dc6_411_obj
+  # ENG 2 CARB AIR
+  - get: L:dc6_412_obj
+  # ENG 3 CARB AIR
+  - get: L:dc6_413_obj
+  # ENG 4 CARB AIR
+  - get: L:dc6_414_obj
+  # HYD SYS BYPASS Valve Control Lever
+  - get: L:dc6_415_obj
+    set: "41501 (>K:ROTOR_BRAKE)"
+  # EMERGENCY HYDRAULIC PUMP Switch GUARD
+  - get: L:dc6_418_obj
+  # FLAP LEVER
+  - get: L:dc6_419_obj
+  # GYRO PILOT switch
+  - get: L:dc6_434_obj
+    set: "43401 (>K:ROTOR_BRAKE)"
+  # ALTITUDE CONTROL switch
+  - get: L:dc6_436_obj
+    set: "43601 (>K:ROTOR_BRAKE)"
+  # THROTTLE LOCK Lever
+  - get: L:dc6_517_obj
+    set: "51701 (>K:ROTOR_BRAKE)"
+  # PROPELLER PITCH Lever
+  - get: L:dc6_518_obj
+  # TANK 1 FUEL Selector
+  - get: L:dc6_520_obj
+  # TANK 2 FUEL Selector
+  - get: L:dc6_521_obj
+  # TANK 3 FUEL Selector
+  - get: L:dc6_522_obj
+  # TANK 4 FUEL Selector
+  - get: L:dc6_523_obj
+  # Eng 1 Prop Pitch Switch
+  - get: L:dc6_532_obj
+  # Eng 2 Prop Pitch Switch
+  - get: L:dc6_533_obj
+  # Eng 3 Prop Pitch Switch
+  - get: L:dc6_534_obj
+  # Eng 4 Prop Pitch Switch
+  - get: L:dc6_535_obj
+  # REVERSE PITCH SELECTOR Lever
+  - get: L:dc6_538_obj
+    set: "53801 (>K:ROTOR_BRAKE)"
+  # LEFT HAND CROSSFEED Selector
+  - get: L:dc6_539_obj
+  # RIGHT HAND CROSSFEED Selector
+  - get: L:dc6_540_obj
+  # FUEL DUMP LEVER 1
+  - get: L:dc6_941_obj
+  # FUEL DUMP LEVER 2
+  - get: L:dc6_942_obj
+  # FUEL DUMP LEVER 3
+  - get: L:dc6_943_obj
+  # FUEL DUMP LEVER 4
+  - get: L:dc6_944_obj
+  # FUEL DUMP LEVER LID
+  - get: L:dc6_945_obj
+    set: "94501 (>K:ROTOR_BRAKE)"
+  # COM1 Volume Knob
+  - get: L:dc6_466_obj
+  # NAV1 Volume Knob (Bendix)
+  - get: L:dc6_472_obj
+  # NAV1 Volume Knob (GNS430)
+  - get: L:dc6_472a_obj
+  - get: L:TabletPower
+  - get: L:FuelLoadHelp
+  - get: L:TotalBaggageLBS
+  - get: L:NumberOfPax
+  - get: L:EngineDamage
+  - get: L:RealisticStart
+  - get: L:CarbIcing
+  - get: L:CBFailure
+  - get: L:APDiscSound
+  - get: L:RealAPEngage
+  - get: L:TimeAccel
+  - get: L:XMLVAR_LANDING_TAXI_OFF_Switch_Position
+  - get: L:XMLVAR_Autopilot_1_Status
+  - get: L:AirStairRails
+  - get: L:AirStairRailsShow
+  - get: L:FrontCabinDoor
+  - get: L:AirStairs
+  - get: L:CargoMainDoor
+  - get: L:MainCabinDoor
+  - get: L:COM2oldPos
+  - get: L:NAV2oldPos
+  - get: L:ADFSndInit
+  - get: L:CargoDoors
+  - get: L:CargoEntrance
+  - get: L:dc6_5321_obj
+  - get: L:dc6_5323_obj
+  - get: L:dc6_5331_obj
+  - get: L:dc6_5333_obj
+  - get: L:dc6_5341_obj
+  - get: L:dc6_5343_obj
+  - get: L:dc6_5351_obj
+  - get: L:dc6_5353_obj
+  # PROP SYNC AUTO/MANUAL Switch
+  - get: L:dc6_537_obj
+  # RESYNCHRONIZE Switch
+  - get: L:dc6_536_obj
+    set: "53601 (>K:ROTOR_BRAKE)"
+  # Prop Deicer Ammeter Selector
+  - get: L:dc6_460_obj
+  # Cabin Pressure Control Start Marker Knob
+  - get: L:dc6_2471_obj
+  # Cabin Pressure Control Hand Knob
+  - get: L:dc6_2473_obj
+  # Cabin Pressure Control AUTO/MANUAL Switch
+  - get: L:dc6_255_obj
+    set: "25501 (>K:ROTOR_BRAKE)"
+  # Auxiliary Oil Tank Selector Knob
+  - get: L:dc6_005_obj
+  # Auxiliary Oil Transfer Switch
+  - get: L:dc6_006_obj
+  # Marker Beacon On/Off Switch
+  - get: L:dc6_541_obj
+  # Marker Beacon High/Low Switch
+  - get: L:dc6_542_obj
+  # EMERGENCY AIR BRAKE CONTROL Lever (INOP)
+  - get: L:dc6_258_obj
+  # EMERGENCY HYDRAULIC PUMP Switch
+  - get: L:dc6_417_obj
+    set: "41701 (>K:ROTOR_BRAKE)"
+  # EMERGENCY HYDRAULIC PUMP Selector Valve
+  - get: L:dc6_420_obj
+  # WINDSHIELD WIPER Knob
+  - get: L:dc6_582_obj
+  - get: L:dc6_932_obj
+  - get: L:dc6_933_obj
+  # LANDING GEAR WARNING HORN
+  - get: L:dc6_408_obj
+    set: "40801 (>K:ROTOR_BRAKE)"
+  - get: L:MainCargoLBS
+  - get: L:LowerCargoLBS
+  - get: L:dc6_946_obj
+  - get: L:dc6_616_obj
+  - get: L:dc6_617_obj
+  - get: L:dc6_949_obj
+  - get: L:dc6_950_obj
+  - get: L:dc6_951_obj
+  - get: L:dc6_952_obj
+  - get: L:dc6_700_obj
+  # THROTTLE INTERLOCK Selector
+  - get: L:dc6_940_obj
+  # FIRE Detection Test ZONE 1
+  - get: L:dc6_175_obj
+    set: "17501 (>K:ROTOR_BRAKE)"
+  # FIRE Detection Test ZONES 2 AND 3
+  - get: L:dc6_176_obj
+    set: "17601 (>K:ROTOR_BRAKE)"
+  # FIRE Detection Test FWD BAG
+  - get: L:dc6_177_obj
+    set: "17701 (>K:ROTOR_BRAKE)"
+  # Fire Detection Test HYD ACC COMPT
+  - get: L:dc6_178_obj
+    set: "17801 (>K:ROTOR_BRAKE)"
+  # Fire Detection Test HEATER COMPT
+  - get: L:dc6_179_obj
+    set: "17901 (>K:ROTOR_BRAKE)"
+  # Fire Detection Test AFT BAG
+  - get: L:dc6_180_obj
+    set: "18001 (>K:ROTOR_BRAKE)"
+  # Fire Detection Test L WING HTR
+  - get: L:dc6_181_obj
+    set: "18101 (>K:ROTOR_BRAKE)"
+  # Fire Detection Test R WING HTR
+  - get: L:dc6_182_obj
+    set: "18201 (>K:ROTOR_BRAKE)"
+  # Fire Detection Test CABIN HTR
+  - get: L:dc6_183_obj
+    set: "18301 (>K:ROTOR_BRAKE)"
+  # Fire Detection Test TAIL HTR
+  - get: L:dc6_184_obj
+    set: "18401 (>K:ROTOR_BRAKE)"
+  # FIRE Extinguisher Selectors GUARD
+  - get: L:dc6_185_obj
+    set: "18501 (>K:ROTOR_BRAKE)"
+  # Fire Extinguisher System - L WING
+  - get: L:dc6_186_obj
+    set: "18601 (>K:ROTOR_BRAKE)"
+  # Fire Extinguisher System - R WING
+  - get: L:dc6_187_obj
+    set: "18701 (>K:ROTOR_BRAKE)"
+  # Fire Extinguisher System - CABIN
+  - get: L:dc6_188_obj
+    set: "18801 (>K:ROTOR_BRAKE)"
+  # Fire Extinguisher System - TAIL
+  - get: L:dc6_189_obj
+    set: "18901 (>K:ROTOR_BRAKE)"
+  # Fire Extinguisher System - WING HEATERS DISCHARGE
+  - get: L:dc6_194_obj
+    set: "19401 (>K:ROTOR_BRAKE)"
+  # Fire Extinguisher System - CABIN AND TAIL HEATERS DISCHARGE
+  - get: L:dc6_196_obj
+    set: "19601 (>K:ROTOR_BRAKE)"
+  # Pitot and Scoop Heater Ammeter Selector Knob
+  - get: L:dc6_095_obj
+  # WINDSHIELD HEAT AND RADOME ANTI ICING Selector Knob
+  - get: L:dc6_173_obj
+  # Cockpit Temperature Knob
+  - get: L:dc6_172_obj
+  # Temperature Control Knob
+  - get: L:dc6_222_obj
+  # AP MECHANICAL DISCONNECT Lever
+  - get: L:dc6_404_obj
+    set: "40401 (>K:ROTOR_BRAKE)"
+  # AUTOPILOT MODE Switch
+  - get: L:dc6_445_obj
+  # AP CLIMB GLIDE WHEEL
+  - get: L:dc6_440_obj
+  # AP TURN KNOB
+  - get: L:dc6_442_obj
+  # AP AILERON TRIM knob
+  - get: L:dc6_435_obj
+  # TURN KNOB CLICKSPOT-TO-CENTER
+  - get: L:dc6_957_obj
+    set: "95701 (>K:ROTOR_BRAKE)"
+  # Cowl Flaps Engine 1 Knob
+  - get: L:dc6_124_obj
+  # Cowl Flaps Engine 2 Knob
+  - get: L:dc6_125_obj
+  # Cowl Flaps Engine 3 Knob
+  - get: L:dc6_126_obj
+  # Cowl Flaps Engine 4 Knob
+  - get: L:dc6_127_obj
+  # Engine Start Selector
+  - get: L:dc6_061_obj
+  # Prime Switch
+  - get: L:dc6_601_obj
+    set: "60101 (>K:ROTOR_BRAKE)"
+  # Boost Switch
+  - get: L:dc6_602_obj
+    set: "60201 (>K:ROTOR_BRAKE)"
+  # Start Switch
+  - get: L:dc6_060_obj
+    set: "6001 (>K:ROTOR_BRAKE)"
+  # Engine Start Safety Switch (keep var)
+  - get: L:dc6_059_obj
+  # DC VOLTMETER Selector Switch
+  - get: L:dc6_236_obj
+  # AC VOLTMETER ENG INST Selector Switch
+  - get: L:dc6_233_obj
+  # Inverter 1 Switch
+  - get: L:dc6_063_obj
+  # Inverter 2 Switch
+  - get: L:dc6_064_obj
+  # Engine Instruments Inverter
+  - get: L:dc6_065_obj
+  # Master Batt and Gen Control Power Cutoff
+  - get: L:dc6_087_obj
+    set: "8701 (>K:ROTOR_BRAKE)"
+  # Engine 1 FUEL AND OIL PRESS WARNING ISOLATION SWITCH
+  - get: L:dc6_545_obj
+    set: "54501 (>K:ROTOR_BRAKE)"
+  # Engine 2 FUEL AND OIL PRESS WARNING ISOLATION SWITCH
+  - get: L:dc6_546_obj
+    set: "54601 (>K:ROTOR_BRAKE)"
+  # Engine 3 FUEL AND OIL PRESS WARNING ISOLATION SWITCH
+  - get: L:dc6_547_obj
+    set: "54701 (>K:ROTOR_BRAKE)"
+  # Engine 4 FUEL AND OIL PRESS WARNING ISOLATION SWITCH
+  - get: L:dc6_548_obj
+    set: "54801 (>K:ROTOR_BRAKE)"
+  # CB Switches GUARD
+  - get: L:dc6_035_obj
+    set: "3501 (>K:ROTOR_BRAKE)"
+  # Cabin Attendant's Call
+  - get: L:dc6_056_obj
+    set: "5601 (>K:ROTOR_BRAKE)"
+  # Mechanic's Call
+  - get: L:dc6_057_obj
+    set: "5701 (>K:ROTOR_BRAKE)"
+  # MAIN J BOX CB
+  - get: L:dc6_710_obj
+    set: "71001 (>K:ROTOR_BRAKE)"
+  # GENERATOR FIELD 1 CB
+  - get: L:dc6_711_obj
+    set: "71101 (>K:ROTOR_BRAKE)"
+  # GENERATOR FIELD 2 CB
+  - get: L:dc6_712_obj
+    set: "71201 (>K:ROTOR_BRAKE)"
+  # GENERATOR FIELD 3 CB
+  - get: L:dc6_713_obj
+    set: "71301 (>K:ROTOR_BRAKE)"
+  # GENERATOR FIELD 4 CB
+  - get: L:dc6_714_obj
+    set: "71401 (>K:ROTOR_BRAKE)"
+  # EMER HYD PUMP POWER CB
+  - get: L:dc6_715_obj
+    set: "71501 (>K:ROTOR_BRAKE)"
+  # EMER HYDR PUMP CONTROL CB
+  - get: L:dc6_716_obj
+    set: "71601 (>K:ROTOR_BRAKE)"
+  # AUTO FEATHER CB
+  - get: L:dc6_717_obj
+    set: "71701 (>K:ROTOR_BRAKE)"
+  # PROP 1 FEATHER CONTROL CB
+  - get: L:dc6_718_obj
+    set: "71801 (>K:ROTOR_BRAKE)"
+  # PROP 2 FEATHER CONTROL CB
+  - get: L:dc6_719_obj
+    set: "71901 (>K:ROTOR_BRAKE)"
+  # PROP 3 FEATHER CONTROL CB
+  - get: L:dc6_720_obj
+    set: "72001 (>K:ROTOR_BRAKE)"
+  # PROP 4 FEATHER CONTROL CB
+  - get: L:dc6_721_obj
+    set: "72101 (>K:ROTOR_BRAKE)"
+  # PROP 2 and 3 REVERSE INDICATOR CB
+  - get: L:dc6_722_obj
+    set: "72201 (>K:ROTOR_BRAKE)"
+  # PROP 1 and 4 REVERSE INDICATOR CB
+  - get: L:dc6_723_obj
+    set: "72301 (>K:ROTOR_BRAKE)"
+  # PROP 2 and 3 REVERSE CONTROL CB
+  - get: L:dc6_724_obj
+    set: "72401 (>K:ROTOR_BRAKE)"
+  # PROP 1 and 4 REVERSE CONTROL CB
+  - get: L:dc6_725_obj
+    set: "72501 (>K:ROTOR_BRAKE)"
+  # PROP GOV SYNC CB
+  - get: L:dc6_726_obj
+    set: "72601 (>K:ROTOR_BRAKE)"
+  # PROP GOV MAN CB
+  - get: L:dc6_727_obj
+    set: "72701 (>K:ROTOR_BRAKE)"
+  # CIRCUIT BREAKER HANDLE POSITION PLACARD CB
+  - get: L:dc6_728_obj
+    set: "72801 (>K:ROTOR_BRAKE)"
+  # MASTER RADIO CB
+  - get: L:dc6_729_obj
+    set: "72901 (>K:ROTOR_BRAKE)"
+  # MASTER RADIO CB
+  - get: L:dc6_730_obj
+    set: "73001 (>K:ROTOR_BRAKE)"
+  # INVERTER 1 CB
+  - get: L:dc6_732_obj
+    set: "73201 (>K:ROTOR_BRAKE)"
+  # INVERTER 2 CB
+  - get: L:dc6_733_obj
+    set: "73301 (>K:ROTOR_BRAKE)"
+  # FUEL PUMPS 4 and 1 CB
+  - get: L:dc6_734_obj
+    set: "73401 (>K:ROTOR_BRAKE)"
+  # FUEL PUMPS 3 and 2 CB
+  - get: L:dc6_735_obj
+    set: "73501 (>K:ROTOR_BRAKE)"
+  # GEN CONTROL PANEL GEN 1 CB
+  - get: L:dc6_736_obj
+    set: "73601 (>K:ROTOR_BRAKE)"
+  # GEN CONTROL PANEL GEN 2 CB
+  - get: L:dc6_737_obj
+    set: "73701 (>K:ROTOR_BRAKE)"
+  # GEN CONTROL PANEL GEN 3 CB
+  - get: L:dc6_738_obj
+    set: "73801 (>K:ROTOR_BRAKE)"
+  # GEN CONTROL PANEL GEN 4 CB
+  - get: L:dc6_739_obj
+    set: "73901 (>K:ROTOR_BRAKE)"
+  # WATER INJECTION PUMP ENG 1 CB
+  - get: L:dc6_740_obj
+    set: "74001 (>K:ROTOR_BRAKE)"
+  # WATER INJECTION PUMP ENG 2 CB
+  - get: L:dc6_741_obj
+    set: "74101 (>K:ROTOR_BRAKE)"
+  # WATER INJECTION PUMP ENG 3 CB
+  - get: L:dc6_742_obj
+    set: "74201 (>K:ROTOR_BRAKE)"
+  # WATER INJECTION PUMP ENG 4 CB
+  - get: L:dc6_743_obj
+    set: "74301 (>K:ROTOR_BRAKE)"
+  # TAKEOFF WARN HORN CB
+  - get: L:dc6_744_obj
+    set: "74401 (>K:ROTOR_BRAKE)"
+  # LDG GEAR WARN HORN CB
+  - get: L:dc6_745_obj
+    set: "74501 (>K:ROTOR_BRAKE)"
+  # DOOR WARN CB
+  - get: L:dc6_746_obj
+    set: "74601 (>K:ROTOR_BRAKE)"
+  # TEMP AND INV WARN LIGHTS CB
+  - get: L:dc6_747_obj
+    set: "74701 (>K:ROTOR_BRAKE)"
+  # CAPT 24v UTILITY OUTLETS CB
+  - get: L:dc6_748_obj
+    set: "74801 (>K:ROTOR_BRAKE)"
+  # FO 24v UTILITY OUTLETS CB
+  - get: L:dc6_749_obj
+    set: "74901 (>K:ROTOR_BRAKE)"
+  # MAN CONTROL WARN LIGHTS CB
+  - get: L:dc6_750_obj
+    set: "75001 (>K:ROTOR_BRAKE)"
+  # AUTO CONTROL WARN LIGHTS CB
+  - get: L:dc6_751_obj
+    set: "75101 (>K:ROTOR_BRAKE)"
+  # AFT WATER HEATER CB
+  - get: L:dc6_752_obj
+    set: "75201 (>K:ROTOR_BRAKE)"
+  # FWD WATER HEATER CB
+  - get: L:dc6_753_obj
+    set: "75301 (>K:ROTOR_BRAKE)"
+  # CONT AIRSCOOP HEATER CB
+  - get: L:dc6_754_obj
+    set: "75401 (>K:ROTOR_BRAKE)"
+  # WING and CABIN AIRSCOOP HEATERS CB
+  - get: L:dc6_755_obj
+    set: "75501 (>K:ROTOR_BRAKE)"
+  # POWER CONTROL CABIN HEATERS CB
+  - get: L:dc6_756_obj
+    set: "75601 (>K:ROTOR_BRAKE)"
+  # CONTROL CABIN HEATERS CB
+  - get: L:dc6_757_obj
+    set: "75701 (>K:ROTOR_BRAKE)"
+  # MAIN AIRFOIL HEATERS CB
+  - get: L:dc6_758_obj
+    set: "75801 (>K:ROTOR_BRAKE)"
+  # TAIL AIRFOIL HEATERS CB
+  - get: L:dc6_759_obj
+    set: "75901 (>K:ROTOR_BRAKE)"
+  # L AND R WING AIRFOIL HEATERS CB
+  - get: L:dc6_760_obj
+    set: "76001 (>K:ROTOR_BRAKE)"
+  # MAIN HEATER FUEL PUMPS CB
+  - get: L:dc6_761_obj
+    set: "76101 (>K:ROTOR_BRAKE)"
+  # AIRFOIL HEATER FUEL PUMPS CB
+  - get: L:dc6_762_obj
+    set: "76201 (>K:ROTOR_BRAKE)"
+  # CABIN HEATER FUEL PUMPS CB
+  - get: L:dc6_763_obj
+    set: "76301 (>K:ROTOR_BRAKE)"
+  # LDG GEAR GROUND CONTROL RELAY CB
+  - get: L:dc6_764_obj
+    set: "76401 (>K:ROTOR_BRAKE)"
+  # AIRFOIL and CABIN HEATER BLOWER CONT CB
+  - get: L:dc6_765_obj
+    set: "76501 (>K:ROTOR_BRAKE)"
+  # AIRFOIL HTR GRD BLOWER CONT CB
+  - get: L:dc6_766_obj
+    set: "76601 (>K:ROTOR_BRAKE)"
+  # AIRFOIL HTRS GRD BLOWER CB
+  - get: L:dc6_767_obj
+    set: "76701 (>K:ROTOR_BRAKE)"
+  # ENGINE 1 SUPERCHARGER CONTROL MOTORS CB
+  - get: L:dc6_768_obj
+    set: "76801 (>K:ROTOR_BRAKE)"
+  # ENGINE 2 SUPERCHARGER CONTROL MOTORS CB
+  - get: L:dc6_769_obj
+    set: "76901 (>K:ROTOR_BRAKE)"
+  # ENGINE 3 SUPERCHARGER CONTROL MOTORS CB
+  - get: L:dc6_770_obj
+    set: "77001 (>K:ROTOR_BRAKE)"
+  # ENGINE 4 SUPERCHARGER CONTROL MOTOR CB
+  - get: L:dc6_771_obj
+    set: "77101 (>K:ROTOR_BRAKE)"
+  # ENGINE 1 OIL TEMPERATURE CONTROL ACTUATOR CB
+  - get: L:dc6_772_obj
+    set: "77201 (>K:ROTOR_BRAKE)"
+  # ENGINE 2 OIL TEMPERATURE CONTROL ACTUATOR CB
+  - get: L:dc6_773_obj
+    set: "77301 (>K:ROTOR_BRAKE)"
+  # ENGINE 3 OIL TEMPERATURE CONTROL ACTUATOR CB
+  - get: L:dc6_774_obj
+    set: "77401 (>K:ROTOR_BRAKE)"
+  # ENGINE 4 OIL TEMPERATURE CONTROL ACTUATOR CB
+  - get: L:dc6_775_obj
+    set: "77501 (>K:ROTOR_BRAKE)"
+  # START PRIMER and IND VIB CB
+  - get: L:dc6_776_obj
+    set: "77601 (>K:ROTOR_BRAKE)"
+  # SPARK ADVANCE CB
+  - get: L:dc6_777_obj
+    set: "77701 (>K:ROTOR_BRAKE)"
+  # OIL DIL SOL VALVE CB
+  - get: L:dc6_778_obj
+    set: "77801 (>K:ROTOR_BRAKE)"
+  # AUX OIL PUMP CONTR and QTY CB
+  - get: L:dc6_779_obj
+    set: "77901 (>K:ROTOR_BRAKE)"
+  # SUPER CHGR OIL CARB AIR and ENG OIL TEMP CB
+  - get: L:dc6_780_obj
+    set: "78001 (>K:ROTOR_BRAKE)"
+  # FREE AIR CARB AIR and ENG OIL TEMP CB
+  - get: L:dc6_781_obj
+    set: "78101 (>K:ROTOR_BRAKE)"
+  # ALCOHOL HYD OIL WATER INJECT CB
+  - get: L:dc6_782_obj
+    set: "78201 (>K:ROTOR_BRAKE)"
+  # EMER LIGHTS CB
+  - get: L:dc6_783_obj
+    set: "78301 (>K:ROTOR_BRAKE)"
+  # PASS WARN SIGNS CB
+  - get: L:dc6_784_obj
+    set: "78401 (>K:ROTOR_BRAKE)"
+  # SUPERCHARGER OIL PRESS WARN CB
+  - get: L:dc6_785_obj
+    set: "78501 (>K:ROTOR_BRAKE)"
+  # FUEL and OIL PRESS WARN CB
+  - get: L:dc6_786_obj
+    set: "78601 (>K:ROTOR_BRAKE)"
+  # LEAD EDGE LIGHTS CB
+  - get: L:dc6_787_obj
+    set: "78701 (>K:ROTOR_BRAKE)"
+  # WHEEL WELL LIGHTS CB
+  - get: L:dc6_788_obj
+    set: "78801 (>K:ROTOR_BRAKE)"
+  # NAV LIGHTS CB
+  - get: L:dc6_789_obj
+    set: "78901 (>K:ROTOR_BRAKE)"
+  # MAP and SPOT LIGHTS CB
+  - get: L:dc6_790_obj
+    set: "79001 (>K:ROTOR_BRAKE)"
+  # CAPT and U INST LIGHTS CB
+  - get: L:dc6_791_obj
+    set: "79101 (>K:ROTOR_BRAKE)"
+  # ENG INST RED LIGHTS CB
+  - get: L:dc6_792_obj
+    set: "79201 (>K:ROTOR_BRAKE)"
+  # PANEL SWITCH WHITE LIGHTS CB
+  - get: L:dc6_793_obj
+    set: "79301 (>K:ROTOR_BRAKE)"
+  # DOME LIGHT CONTR CB
+  - get: L:dc6_794_obj
+    set: "79401 (>K:ROTOR_BRAKE)"
+  # AFT CABIN DOME LIGHTS CB
+  - get: L:dc6_795_obj
+    set: "79501 (>K:ROTOR_BRAKE)"
+  # FWD CABIN DOME LIGHTS CB
+  - get: L:dc6_796_obj
+    set: "79601 (>K:ROTOR_BRAKE)"
+  # L FWD CABIN DOME LIGHTS CB
+  - get: L:dc6_797_obj
+    set: "79701 (>K:ROTOR_BRAKE)"
+  # FIRE WARN BELL CB
+  - get: L:dc6_798_obj
+    set: "79801 (>K:ROTOR_BRAKE)"
+  # HEATER FIRE EXT CB
+  - get: L:dc6_799_obj
+    set: "79901 (>K:ROTOR_BRAKE)"
+  # FIRE DETECTOR FWD BAG CB
+  - get: L:dc6_800_obj
+    set: "80001 (>K:ROTOR_BRAKE)"
+  # FIRE DETECTOR AFT BAG CB
+  - get: L:dc6_801_obj
+    set: "80101 (>K:ROTOR_BRAKE)"
+  # FIRE DETECTOR HYD ACC CB
+  - get: L:dc6_802_obj
+    set: "80201 (>K:ROTOR_BRAKE)"
+  # FIRE DETECTOR HEAT COMPT CB
+  - get: L:dc6_803_obj
+    set: "80301 (>K:ROTOR_BRAKE)"
+  # HEATER FIRE DETECTOR CB
+  - get: L:dc6_804_obj
+    set: "80401 (>K:ROTOR_BRAKE)"
+  # ENG ZONE 1 FIRE DETECTOR CB
+  - get: L:dc6_805_obj
+    set: "80501 (>K:ROTOR_BRAKE)"
+  # ENG & NAV ZONE 2 3 FIRE DETECTORS CB
+  - get: L:dc6_806_obj
+    set: "80601 (>K:ROTOR_BRAKE)"
+  # RAZOR INVERT CB
+  - get: L:dc6_807_obj
+    set: "80701 (>K:ROTOR_BRAKE)"
+  # WASTE WATER HEATERS CB
+  - get: L:dc6_808_obj
+    set: "80801 (>K:ROTOR_BRAKE)"
+  # COWL FLAP MOTOR 1 CB
+  - get: L:dc6_809_obj
+    set: "80901 (>K:ROTOR_BRAKE)"
+  # COWL FLAP MOTOR 2 CB
+  - get: L:dc6_810_obj
+    set: "81001 (>K:ROTOR_BRAKE)"
+  # COWL FLAP MOTOR 3 CB
+  - get: L:dc6_811_obj
+    set: "81101 (>K:ROTOR_BRAKE)"
+  # COWL FLAP MOTOR 4 CB
+  - get: L:dc6_812_obj
+    set: "81201 (>K:ROTOR_BRAKE)"
+  # COWL FLAP MOTOR CONTROL 1 CB
+  - get: L:dc6_813_obj
+    set: "81301 (>K:ROTOR_BRAKE)"
+  # COWL FLAP MOTOR CONTROL 2 CB
+  - get: L:dc6_814_obj
+    set: "81401 (>K:ROTOR_BRAKE)"
+  # COWL FLAP MOTOR CONTROL 3 CB
+  - get: L:dc6_815_obj
+    set: "81501 (>K:ROTOR_BRAKE)"
+  # COWL FLAP MOTOR CONTROL 4 CB
+  - get: L:dc6_816_obj
+    set: "81601 (>K:ROTOR_BRAKE)"
+  # 1st OFF STATIC VENT and PITOT HEATERS CB
+  - get: L:dc6_817_obj
+    set: "81701 (>K:ROTOR_BRAKE)"
+  # CAPT STATIC VENT and PITOT HEATERS CB
+  - get: L:dc6_818_obj
+    set: "81801 (>K:ROTOR_BRAKE)"
+  # SOL VALVE WINDSHIELD and CARB DEICER CB
+  - get: L:dc6_819_obj
+    set: "81901 (>K:ROTOR_BRAKE)"
+  # CAPT PUMP WINDSHIELD and CARB DEICER CB
+  - get: L:dc6_820_obj
+    set: "82001 (>K:ROTOR_BRAKE)"
+  # TIMER PROP DEICER CONTROL CB
+  - get: L:dc6_821_obj
+    set: "82101 (>K:ROTOR_BRAKE)"
+  # MAN PROP DEICER CONTROL CB
+  - get: L:dc6_822_obj
+    set: "82201 (>K:ROTOR_BRAKE)"
+  # WING DRAIN and SPLTR HEATERS CB
+  - get: L:dc6_823_obj
+    set: "82301 (>K:ROTOR_BRAKE)"
+  # INTERPHONE HEATERS CB
+  - get: L:dc6_824_obj
+    set: "82401 (>K:ROTOR_BRAKE)"
+  # STEWARDESS CALL CB
+  - get: L:dc6_825_obj
+    set: "82501 (>K:ROTOR_BRAKE)"
+  # FWD and AFT CABIN CALL CB
+  - get: L:dc6_826_obj
+    set: "82601 (>K:ROTOR_BRAKE)"
+  # RH LANDING LIGHT CONTROL CB
+  - get: L:dc6_827_obj
+    set: "82701 (>K:ROTOR_BRAKE)"
+  # LH LANDING LIGHT CONTROL CB
+  - get: L:dc6_828_obj
+    set: "82801 (>K:ROTOR_BRAKE)"
+  # RH LANDING LIGHT CB
+  - get: L:dc6_829_obj
+    set: "82901 (>K:ROTOR_BRAKE)"
+  # LH LANDING LIGHT CB
+  - get: L:dc6_830_obj
+    set: "83001 (>K:ROTOR_BRAKE)"
+  # CABIN AISLE LIGHTS CB
+  - get: L:dc6_831_obj
+    set: "83101 (>K:ROTOR_BRAKE)"
+  # LOWER COMPTS LIGHTS CB
+  - get: L:dc6_832_obj
+    set: "83201 (>K:ROTOR_BRAKE)"
+  # AFT CABIN READING LIGHTS CB
+  - get: L:dc6_833_obj
+    set: "83301 (>K:ROTOR_BRAKE)"
+  # R FWD CABIN READING LIGHTS CB
+  - get: L:dc6_834_obj
+    set: "83401 (>K:ROTOR_BRAKE)"
+  # L FWD CABIN READING LIGHTS CB
+  - get: L:dc6_835_obj
+    set: "83501 (>K:ROTOR_BRAKE)"
+  # ANTI COLLISION LIGHT CB
+  - get: L:dc6_836_obj
+    set: "83601 (>K:ROTOR_BRAKE)"
+  # FWD COMPT LIGHTS CB
+  - get: L:dc6_837_obj
+    set: "83701 (>K:ROTOR_BRAKE)"
+  - get: L:dc6_838_obj
+  # MJB LIGHTS CB
+  - get: L:dc6_839_obj
+    set: "83901 (>K:ROTOR_BRAKE)"
+  # LAV and CLOSET TAIL COMPARTMENT CB
+  - get: L:dc6_840_obj
+    set: "84001 (>K:ROTOR_BRAKE)"
+  # RADIO and NAV LIGHTS CB
+  - get: L:dc6_841_obj
+    set: "84101 (>K:ROTOR_BRAKE)"
+  # A-12 AP AUTO APPROACH CB
+  - get: L:dc6_842_obj
+    set: "84201 (>K:ROTOR_BRAKE)"
+  # A-12 AP MOTOR GEN CB
+  - get: L:dc6_843_obj
+    set: "84301 (>K:ROTOR_BRAKE)"
+  # A-12 AP FILAMENT CB
+  - get: L:dc6_844_obj
+    set: "84401 (>K:ROTOR_BRAKE)"
+  # A-12 AP INTERLOCK CB
+  - get: L:dc6_845_obj
+    set: "84501 (>K:ROTOR_BRAKE)"
+  # A-12 AP WARN LIGHT CB
+  - get: L:dc6_846_obj
+    set: "84601 (>K:ROTOR_BRAKE)"
+  # GYRO COMPASS CB
+  - get: L:dc6_847_obj
+    set: "84701 (>K:ROTOR_BRAKE)"
+  # RADIO CBs ON TRIPPED MASTER SWITCH CB
+  - get: L:dc6_848_obj
+    set: "84801 (>K:ROTOR_BRAKE)"
+  # XPDR 1 CB
+  - get: L:dc6_849_obj
+    set: "84901 (>K:ROTOR_BRAKE)"
+  # ADF 1 CB
+  - get: L:dc6_850_obj
+    set: "85001 (>K:ROTOR_BRAKE)"
+  # COM 1 CB
+  - get: L:dc6_851_obj
+    set: "85101 (>K:ROTOR_BRAKE)"
+  # GPS CB
+  - get: L:dc6_852_obj
+    set: "85201 (>K:ROTOR_BRAKE)"
+  # XPDR 2 CB
+  - get: L:dc6_853_obj
+    set: "85301 (>K:ROTOR_BRAKE)"
+  # DME CB
+  - get: L:dc6_854_obj
+    set: "85401 (>K:ROTOR_BRAKE)"
+  # COM 2 CB
+  - get: L:dc6_855_obj
+    set: "85501 (>K:ROTOR_BRAKE)"
+  # ADF 2 CB
+  - get: L:dc6_856_obj
+    set: "85601 (>K:ROTOR_BRAKE)"
+  - get: L:dc6_1551_obj
+  - get: L:dc6_2711_obj
+  - get: L:dc6_1331_obj
+  - get: L:dc6_1341_obj
+  - get: L:dc6_1351_obj
+  - get: L:dc6_1361_obj
+  - get: L:dc6_1371_obj
+  - get: L:dc6_1391_obj
+  - get: L:dc6_1401_obj
+  - get: L:dc6_1411_obj
+  - get: L:dc6_1421_obj
+  - get: L:dc6_1431_obj
+  - get: L:dc6_1442_obj
+  - get: L:dc6_1443_obj
+  - get: L:dc6_1451_obj
+  - get: L:dc6_1461_obj
+  - get: L:dc6_1471_obj
+  - get: L:dc6_1481_obj
+  - get: L:dc6_1491_obj
+  - get: L:dc6_1501_obj
+  - get: L:dc6_1511_obj
+  - get: L:dc6_1521_obj
+  - get: L:dc6_1532_obj
+  - get: L:dc6_1533_obj
+  - get: L:dc6_1541_obj
+  - get: L:dc6_1552_obj
+  - get: L:dc6_1561_obj
+  - get: L:dc6_1571_obj
+  - get: L:dc6_1603_obj
+  - get: L:dc6_1613_obj
+  - get: L:dc6_4671_obj
+  - get: L:dc6_4681_obj
+  - get: L:dc6_4691_obj
+  - get: L:dc6_4721_obj
+  - get: L:dc6_4731_obj
+  - get: L:dc6_4741_obj
+  - get: L:dc6_4751_obj
+  - get: L:dc6_1641_obj
+  - get: L:dc6_1651_obj
+  - get: L:dc6_1661_obj
+  - get: L:dc6_1681_obj
+  - get: L:dc6_1691_obj
+  - get: L:dc6_1701_obj
+  - get: L:dc6_1711_obj
+  - get: L:dc6_5501_obj
+  - get: L:dc6_5521_obj
+  - get: L:dc6_5571_obj
+  - get: L:dc6_5581_obj
+  - get: L:dc6_5591_obj
+  - get: L:dc6_5601_obj
+  - get: L:dc6_9701_obj
+  - get: L:dc6_9721_obj
+  - get: L:dc6_9771_obj
+  - get: L:dc6_9781_obj
+  - get: L:dc6_9791_obj
+  - get: L:dc6_9801_obj
+  - get: L:dc6_5611_obj
+  - get: L:dc6_5621_obj
+  - get: L:dc6_5631_obj
+  - get: L:dc6_5641_obj
+  - get: L:dc6_5651_obj
+  - get: L:dc6_5661_obj
+  - get: L:dc6_5671_obj
+  - get: L:dc6_5681_obj
+  - get: L:dc6_5691_obj
+  - get: L:dc6_5701_obj
+  - get: L:dc6_5781_obj
+  - get: L:dc6_5791_obj
+  - get: L:dc6_2641_obj
+  - get: L:dc6_2761_obj
+  - get: L:dc6_2821_obj
+  - get: L:dc6_2881_obj
+  - get: L:dc6_3101_obj
+  - get: L:dc6_5151_obj
+  - get: L:dc6_4061_obj
+  - get: L:dc6_5181_obj
+  - get: L:dc6_5491_obj
+  - get: L:dc6_5801_obj
+  - get: L:dc6_5811_obj
+  - get: L:dc6_5821_obj
+  - get: L:dc6_5831_obj
+  - get: L:dc6_4111_obj
+  # GPS DRIVES NAV1 Switch
+  - get: L:dc6_477_obj
+    set: "47701 (>K:ROTOR_BRAKE)"
+  - get: L:dc6_449_obj
+  - get: L:dc6_450_obj
+  # Main Cabin Exit Stairs for B, Cargo Entrance for A (EFB)
+  - get: L:dc6_453_obj
+  # Main Cabin Exit for B, Main Cargo Doors for A (EFB)
+  - get: L:dc6_454_obj
+  # Tablet Page
+  - get: L:TabletMode
+  - get: L:TabletPowerButton
+  - get: L:IncTT
+  # Tablet Drag Position
+  - get: L:dc6_tab_drag_h
+  - get: L:dc6_tab_stow_h
+  # Take Off Cabin Low Press Warning Cutout
+  - get: L:dc6_079_obj
+    set: "7901 (>K:ROTOR_BRAKE)"
+  # ADF XFR Button (animation)
+  - get: L:dc6_135_obj
+  # ADF FLT Button (animation)
+  - get: L:dc6_136_obj
+  # ADF RST Button (animation)
+  - get: L:dc6_137_obj
+  # ADF FRQ Outer (animation)
+  - get: L:dc6_139_obj
+  # ADF FRQ Inner (animation)
+  - get: L:dc6_140_obj
+  # COM2 XFR Button (animation)
+  - get: L:dc6_164_obj
+  # COM2 FRQ Outer (animation)
+  - get: L:dc6_165_obj
+  # COM2 FRQ Inner (animation)
+  - get: L:dc6_166_obj
+  # NAV2 XFR Button (animation)
+  - get: L:dc6_169_obj
+  # NAV2 FRQ Outer (animation)
+  - get: L:dc6_170_obj
+  # NAV2 FRQ Inner (animation)
+  - get: L:dc6_171_obj
+  # COM1 XFR Button (animation)
+  - get: L:dc6_467_obj
+  # COM1 FRQ Outer (animation)
+  - get: L:dc6_468_obj
+  # COM1 FRQ Inner (animation)
+  - get: L:dc6_469_obj
+  # NAV1 XFR Button (animation)
+  - get: L:dc6_473_obj
+  # NAV1 FRQ Outer (animation)
+  - get: L:dc6_474_obj
+  # NAV1 FRQ Inner (animation)
+  - get: L:dc6_475_obj
+  # CPT VOR1 knob (animation)
+  - get: L:dc6_288_obj
+  # CPT ADF knob (animation)
+  - get: L:dc6_310_obj
+  # FO VOR2 knob (animation)
+  - get: L:dc6_377_obj
+  # FO ADF knob (animation)
+  - get: L:dc6_390_obj
+  # CPT IDENT button
+  - get: L:dc6_552_obj
+  # CPT XPDR 1000 knob
+  - get: L:dc6_557_obj
+  # CPT XPDR 100 knob
+  - get: L:dc6_558_obj
+  # CPT XPDR 10 knob
+  - get: L:dc6_559_obj
+  # CPT XPDR 1 knob
+  - get: L:dc6_560_obj
+  # CPT/FO COM1 Button
+  - get: L:dc6_562_obj
+  # CPT/FO COM2 Button
+  - get: L:dc6_563_obj
+  # CPT/FO NAV1 Button
+  - get: L:dc6_564_obj
+  # CPT/FO NAV2 Button
+  - get: L:dc6_565_obj
+  # CPT/FO DME Button
+  - get: L:dc6_566_obj
+  # CPT/FO MKR Button
+  - get: L:dc6_567_obj
+  # CPT/FO ADF1 Button
+  - get: L:dc6_568_obj
+  # CPT/FO ADF2 Button
+  - get: L:dc6_569_obj
+  # CPT/FO BOTH Button
+  - get: L:dc6_570_obj
+  # CPT/FO Speaker On/Off
+  - get: L:dc6_578_obj
+  # FO IDENT button
+  - get: L:dc6_972_obj
+  # FOXPDR 1000 knob
+  - get: L:dc6_977_obj
+  # FO XPDR 100 knob
+  - get: L:dc6_978_obj
+  # FO XPDR 10 knob
+  - get: L:dc6_979_obj
+  # FO XPDR 1 knob
+  - get: L:dc6_980_obj
+  - get: L:StopwatchMode
+  - get: L:ZuluTime
+  - get: L:dc6_clock_left_knob
+  - get: L:dc6_clock_right_knob
+  # DC Power Source Knob
+  - get: L:dc6_001_obj
+  # Performance Table Popup Switch
+  - get: L:dc6_008_obj
+    set: "100801 (>K:ROTOR_BRAKE)"
+  # Oil Cooler Door 1 Switch
+  - get: L:dc6_009_obj
+    set: "100901 (>K:ROTOR_BRAKE)"
+  # Oil Cooler Door 2 Switch
+  - get: L:dc6_010_obj
+    set: "101001 (>K:ROTOR_BRAKE)"
+  # Oil Cooler Door 3 Switch
+  - get: L:dc6_011_obj
+    set: "101101 (>K:ROTOR_BRAKE)"
+  # Oil Cooler Door 4 Switch
+  - get: L:dc6_012_obj
+    set: "101201 (>K:ROTOR_BRAKE)"
+  # Cowl Flaps Eng 1 Switch
+  - get: L:dc6_013_obj
+  # Cowl Flaps Eng 2 Switch
+  - get: L:dc6_014_obj
+  # Cowl Flaps Eng 3 Switch
+  - get: L:dc6_015_obj
+  # Cowl Flaps Eng 4 Switch
+  - get: L:dc6_016_obj
+  # Pressurization Altimeter InHg Disc
+  - get: L:dc6_244_obj
+  # Cooling Turbine Switch
+  - get: L:dc6_257_obj
+    set: "25701 (>K:ROTOR_BRAKE)"
+  # Manifold Pressure Engine 1 AFE
+  - get: L:dc6_3251_obj
+  # Manifold Pressure Engine 2 AFE
+  - get: L:dc6_3261_obj
+  # Manifold Pressure Engine 3 AFE
+  - get: L:dc6_3271_obj
+  # Manifold Pressure Engine 4 AFE
+  - get: L:dc6_3281_obj
+  # Engine 1 RPM AFE
+  - get: L:dc6_3371_obj
+  # Engine 2 RPM AFE
+  - get: L:dc6_3381_obj
+  # Engine 3 RPM AFE
+  - get: L:dc6_3391_obj
+  # Engine 4 RPM AFE
+  - get: L:dc6_3401_obj
+  # FUEL DUMP CONTROLS Lid
+  - get: L:dc6_416_obj
+    set: "41601 (>K:ROTOR_BRAKE)"
+  - get: L:PICYokeUpDown
+  - get: L:CPYokeUpDown
+  # EMER HYD PUMP Switch
+  - get: L:dc6_586_obj
+    set: "58601 (>K:ROTOR_BRAKE)"
+
+  #IGNITION & MAGNETOS
+  # Ignition Magneto 1
+  - get: L:dc6_052_obj
+  # Ignition Magneto 2
+  - get: L:dc6_053_obj
+  # Ignition Magneto 3
+  - get: L:dc6_054_obj
+  # Ignition Magneto 4
+  - get: L:dc6_055_obj
+  - get: L:StartEngines
+  #ENGINE INSTRUMENTS
+  # Supercharger Oil Temp Annunciator
+  - get: L:dc6_108_obj
+  - get: L:SuperChargerOilTempAnnuciator
+  # Supercharger Oil Pressure Annunciator
+  - get: L:dc6_109_obj
+  - get: L:SuperChargerOilPressAnnuciator
+  # Fuel Pressure Low Annunciator
+  - get: L:dc6_1545_obj
+  # Oil Pressure Low Annunciator
+  - get: L:dc6_1547_obj
+  - get: L:OilPressureLowAnnunciator
+  - get: L:Overboost_Eng1
+  - get: L:Overboost_Eng2
+  - get: L:Overboost_Eng3
+  - get: L:Overboost_Eng4
+  - get: L:MixtureTooLean_Eng1
+  - get: L:MixtureTooLean_Eng2
+  - get: L:MixtureTooLean_Eng3
+  - get: L:MixtureTooLean_Eng4
+  - get: L:ExcessiveRPM_Eng1
+  - get: L:ExcessiveRPM_Eng2
+  - get: L:ExcessiveRPM_Eng3
+  - get: L:ExcessiveRPM_Eng4
+  - get: L:CylinderHeadTemp_Eng1
+  - get: L:CylinderHeadTemp_Eng2
+  - get: L:CylinderHeadTemp_Eng3
+  - get: L:CylinderHeadTemp_Eng4
+  - get: L:CarbTemp_Eng1
+  - get: L:CarbTemp_Eng2
+  - get: L:CarbTemp_Eng3
+  - get: L:CarbTemp_Eng4
+  - get: L:OilTemp_Eng1
+  - get: L:OilTemp_Eng2
+  - get: L:OilTemp_Eng3
+  - get: L:OilTemp_Eng4
+  - get: L:OilPress_Eng1
+  - get: L:OilPress_Eng2
+  - get: L:OilPress_Eng3
+  - get: L:OilPress_Eng4
+  # Cabin Supercharger Gearbox 1 Oil Temp Needle
+  - get: L:dc6_106_obj
+  # Cabin Supercharger Gearbox 2 Oil Temp Needle
+  - get: L:dc6_105_obj
+  # Cabin Supercharger Gearbox 1 Oil Press Needle
+  - get: L:dc6_111_obj
+  # Cabin Supercharger Gearbox 2 Oil Press Needle
+  - get: L:dc6_110_obj
+  # Oil Pressure Eng 1
+  - get: L:dc6_333_obj
+  # Oil Pressure Eng 2
+  - get: L:dc6_334_obj
+  # Oil Pressure Eng 3
+  - get: L:dc6_335_obj
+  # Oil Pressure Eng 4
+  - get: L:dc6_336_obj
+  # Oil Temp Eng 1
+  - get: L:dc6_343_obj
+  # Oil Temp Eng 2
+  - get: L:dc6_344_obj
+  # Oil Temp Eng 3
+  - get: L:dc6_345_obj
+  # Oil Temp Eng 4
+  - get: L:dc6_346_obj
+  # Oil Qty Engine 1 Needle
+  - get: L:dc6_991_obj
+  # Oil Qty Engine 2 Needle
+  - get: L:dc6_992_obj
+  # Oil Qty Engine 3 Needle
+  - get: L:dc6_1011_obj
+  # Oil Qty Engine 4 Needle
+  - get: L:dc6_1012_obj
+  # Fuel Flow Eng 1 Needle
+  - get: L:dc6_329_obj
+  # Fuel Flow Eng 2 Needle
+  - get: L:dc6_330_obj
+  # Fuel Flow Eng 3 Needle
+  - get: L:dc6_331_obj
+  # Fuel Flow Eng 4 Needle
+  - get: L:dc6_332_obj
+  # MAIN 1 Fuel Qty Needle
+  - get: L:dc6_116_obj
+  # ALT 1 Fuel Qty Needle
+  - get: L:dc6_115_obj
+  # MAIN 2 Fuel Qty Needle
+  - get: L:dc6_117_obj
+  # ALT 2 Fuel Qty Needle
+  - get: L:dc6_114_obj
+  # MAIN 3 Fuel Qty Needle
+  - get: L:dc6_118_obj
+  # ALT 3 Fuel Qty Needle
+  - get: L:dc6_113_obj
+  # MAIN 4 Fuel Qty Needle
+  - get: L:dc6_119_obj
+  # ALT 4 Fuel Qty Needle
+  - get: L:dc6_112_obj
+  # Fuel Pressure Engine 1 Needle
+  - get: L:dc6_321_obj
+  # Fuel Pressure Engine 2 Needle
+  - get: L:dc6_322_obj
+  # Fuel Pressure Engine 3 Needle
+  - get: L:dc6_323_obj
+  # Fuel Pressure Engine 4 Needle
+  - get: L:dc6_324_obj
+  # Carb Air Temp Eng 1 Needle
+  - get: L:dc6_355_obj
+  # Carb Air Temp Eng 2 Needle
+  - get: L:dc6_356_obj
+  # Carb Air Temp Eng 3 Needle
+  - get: L:dc6_357_obj
+  # Carb Air Temp Eng 4 Needle
+  - get: L:dc6_358_obj
+  # Cabin Heater Fuel Pressure Needle
+  - get: L:dc6_201_obj
+  # Tail Heater Fuel Pressure Needle
+  - get: L:dc6_202_obj
+  # Left Wing Heater Fuel Pressure Needle
+  - get: L:dc6_203_obj
+  # Right Wing Heater Fuel Pressure Needle
+  - get: L:dc6_204_obj
+  # Manifold Pressure Engine 1 Needle
+  - get: L:dc6_325_obj
+  # Manifold Pressure Engine 2 Needle
+  - get: L:dc6_326_obj
+  # Manifold Pressure Engine 3 Needle
+  - get: L:dc6_327_obj
+  # Manifold Pressure Engine 4 Needle
+  - get: L:dc6_328_obj
+  # Manifold Pressure 1 Needle
+  - get: L:dc6_237_obj
+  # Manifold Pressure 2 Needle
+  - get: L:dc6_238_obj
+  # Engine 1 RPM Needle
+  - get: L:dc6_337_obj
+  # Engine 2 RPM Needle
+  - get: L:dc6_338_obj
+  # Engine 3 RPM Needle
+  - get: L:dc6_339_obj
+  # Engine 4 RPM Needle
+  - get: L:dc6_340_obj
+  # Cylinder Head Temp Engine 1 Needle
+  - get: L:dc6_347_obj
+  # Cylinder Head Temp Engine 2 Needle
+  - get: L:dc6_348_obj
+  # Cylinder Head Temp Engine 3 Needle
+  - get: L:dc6_349_obj
+  # Cylinder Head Temp Engine 4 Needle
+  - get: L:dc6_350_obj
+  # BMEP Engine 1 Needle
+  - get: L:dc6_317_obj
+  # BMEP Engine 2 Needle
+  - get: L:dc6_318_obj
+  # BMEP Engine 3 Needle
+  - get: L:dc6_319_obj
+  # BMEP Engine 4 Needle
+  - get: L:dc6_320_obj
+  # Free Air Temp Needle
+  - get: L:dc6_342_obj
+  #THROTTLE LEVERS (FE Panel)
+  # THROTTLE LEVER Engine 1-2
+  - get: L:dc6_5111_obj
+  # THROTTLE LEVER Engine 2-2
+  - get: L:dc6_5121_obj
+  # THROTTLE LEVER Engine 3-2
+  - get: L:dc6_5131_obj
+  # THROTTLE LEVER Engine 4-2
+  - get: L:dc6_5141_obj
+  #ELECTRICAL
+  # Volts AC Needle
+  - get: L:dc6_234_obj
+  # Volts DC Needle
+  - get: L:dc6_235_obj
+  # DC AMP Generator 1 Needle
+  - get: L:dc6_229_obj
+  # DC AMP Generator 2 Needle
+  - get: L:dc6_230_obj
+  # DC AMP Generator 3 Needle
+  - get: L:dc6_231_obj
+  # DC AMP Generator 4 Needle
+  - get: L:dc6_232_obj
+  # CA FLT INSTRUMENT POWER FAILURE ANNUNCIATOR
+  - get: L:dc6_272_obj
+  # FO FLT INSTRUMENT POWER FAILURE ANNUNCIATOR
+  - get: L:dc6_359_obj
+  #SUPERCHARGER & PRESSURIZATION
+  # CABIN RATE VS Needle
+  - get: L:dc6_252_obj
+  # Cabin Differential Pressure Needle
+  - get: L:dc6_239_obj
+  # CABIN PRESS CONTROLLER CABIN Needle
+  - get: L:dc6_248_obj
+  # CABIN PRESS CONTROLLER FLIGHT Needle
+  - get: L:dc6_247_obj
+  # Cabin Press Start Marker Needle
+  - get: L:dc6_2472_obj
+  # CABIN ALTIMETER HUNDRED Needle
+  - get: L:dc6_242_obj
+  # CABIN ALTIMETER 1 THOUSAND Needle
+  - get: L:dc6_241_obj
+  # CABIN ALTIMETER 10 THOUSAND Needle
+  - get: L:dc6_240_obj
+  # SUPERCHARGER AIRFLOW RATE 1 Needle
+  - get: L:dc6_249_obj
+  # SUPERCHARGER AIRFLOW RATE 2 Needle
+  - get: L:dc6_250_obj
+  # Pressurization Altimeter Kohlsman Disc
+  - get: L:dc6_243_obj
+  #FIRE WARNING
+  # FIRE WARN LIGHT FWD BAG
+  - get: L:dc6_2601_obj
+  # FIRE WARN LIGHT HYD ACC COMPT
+  - get: L:dc6_2611_obj
+  # ENG 1 Fire Annunciator
+  - get: L:dc6_2621_obj
+  # ENG 2 Fire Annunciator
+  - get: L:dc6_2631_obj
+  # ENG 3 Fire Annunciator
+  - get: L:dc6_2651_obj
+  # ENG 4 Fire Annunciator
+  - get: L:dc6_2661_obj
+  # FIRE WARN LIGHT HTR COMPT
+  - get: L:dc6_2671_obj
+  # FIRE WARN LIGHT AFT BAG
+  - get: L:dc6_2681_obj
+  # CO2 DISCHARGE LIGHT
+  - get: L:dc6_2691_obj
+  # FIRE WARN LIGHT LEFT WING
+  - get: L:dc6_190_obj
+  # FIRE WARN LIGHT RIGHT WING
+  - get: L:dc6_191_obj
+  # FIRE WARN LIGHT CABIN HEATER
+  - get: L:dc6_192_obj
+  # FIRE WARN LIGHT TAIL HEATER
+  - get: L:dc6_193_obj
+  #ICE PROTECTION & HEATING
+  # Prop Deice Ammeter Needle
+  - get: L:dc6_002_obj
+  # Anti Icing Fluid Needle
+  - get: L:dc6_098_obj
+  # Pitot and Scoop Heater Ammeter Needle
+  - get: L:dc6_097_obj
+  # Cabin Heater Temp Celcius Needle
+  - get: L:dc6_197_obj
+  # Tail Heater Temp Celcius Needle
+  - get: L:dc6_198_obj
+  # Left Wing Heater Temp Celcius Needle
+  - get: L:dc6_199_obj
+  # Right Wing Heater Temp Celcius Needle
+  - get: L:dc6_200_obj
+  #FLIGHT INSTRUMENTS CPT
+  - get: L:ADFOuterIncrease
+  - get: L:ADFInnerIncrease
+  # Whiskey Compass
+  - get: L:dc6_571_obj
+  # CPT IAS
+  - get: L:dc6_273_obj
+  # CPT Attitude Indicator Pitch
+  - get: L:dc6_2740_obj
+  # CPT Attitude Indicator Bank
+  - get: L:dc6_274_obj
+  # CPT Attitude Bars
+  - get: L:dc6_275_obj
+  # CPT Attitude Bars Adjust Knob
+  - get: L:dc6_276_obj
+  # CPT Altimeter Hundreds Needle
+  - get: L:dc6_277_obj
+  # CPT Altimeter Thousands Needle
+  - get: L:dc6_278_obj
+  # CPT Altimeter Ten Thousands Needle
+  - get: L:dc6_279_obj
+  # CPT Altimeter Kohlsman Millibar
+  - get: L:dc6_280_obj
+  # CPT Altimeter start
+  - get: L:dc6_2801_obj
+  # CPT Altimeter kohlsman knob
+  - get: L:dc6_282_obj
+  # CPT Turn Coordinator Needle
+  - get: L:dc6_286_obj
+  # CPT Turn Coordinator Ball
+  - get: L:dc6_287_obj
+  # CPT VS Needle
+  - get: L:dc6_298_obj
+  # CPT Compass Heading Card
+  - get: L:dc6_311_obj
+  - get: L:IncrCAKohlsman
+  - get: L:IncrFOKohlsman
+  # CPT Compass Reciprocal Card
+  - get: L:dc6_312_obj
+  #FLIGHT INSTRUMENTS FO
+  # FO IAS
+  - get: L:dc6_360_obj
+  # FO Attitude Indicator Pitch
+  - get: L:dc6_3610_obj
+  # FO Attitude Indicator Bank
+  - get: L:dc6_361_obj
+  # FO Attitude Bars
+  - get: L:dc6_362_obj
+  # FO Attitude Bars Adjust Knob
+  - get: L:dc6_363_obj
+  # FO Altimeter Hundreds Needle
+  - get: L:dc6_364_obj
+  # FO Altimeter Thousands Needle
+  - get: L:dc6_365_obj
+  # FO Altimeter Ten Thousands Needle
+  - get: L:dc6_366_obj
+  # FO Altimeter Millibar Disc
+  - get: L:dc6_367_obj
+  # FO Altimeter inHg Disc
+  - get: L:dc6_3671_obj
+  # FO Altimeter Kohlsman knob
+  - get: L:dc6_369_obj
+  # FO Turn Coordinator Needle
+  - get: L:dc6_370_obj
+  # FO Turn Coordinator Ball
+  - get: L:dc6_371_obj
+  # FO VS Needle
+  - get: L:dc6_378_obj
+  # FO Compass Heading Card
+  - get: L:dc6_391_obj
+  #NAVIGATION INSTRUMENTS
+  # CPT ADF A ADF1 Needle
+  - get: L:dc6_283_obj
+  # CPT ADF A ADF2 Needle
+  - get: L:dc6_284_obj
+  # CPT ADF A ADF Card
+  - get: L:dc6_285_obj
+  # CPT VOR A VOR1 Needle
+  - get: L:dc6_307_obj
+  # CPT VOR A VOR2 Needle
+  - get: L:dc6_306_obj
+  # CPT VOR A Card
+  - get: L:dc6_305_obj
+  # FO ADF A ADF1 Needle
+  - get: L:dc6_383_obj
+  # FO ADF A ADF2 Needle
+  - get: L:dc6_384_obj
+  # FO ADF A ADF Card
+  - get: L:dc6_382_obj
+  # FO VOR A VOR1 Needle
+  - get: L:dc6_386_obj
+  # FO VOR A VOR2 Needle
+  - get: L:dc6_387_obj
+  # FO VOR A Card
+  - get: L:dc6_385_obj
+  # CPT ADF B Card
+  - get: L:dc6_308_obj
+  # CPT ADF B Needle
+  - get: L:dc6_309_obj
+  # FO ADF B Card
+  - get: L:dc6_388_obj
+  # FO ADF B Needle
+  - get: L:dc6_389_obj
+  # CPT VOR1 Card
+  - get: L:dc6_289_obj
+  # CPT VOR1 LOC Needle
+  - get: L:dc6_291_obj
+  # CPT VOR1 GS Needle
+  - get: L:dc6_292_obj
+  # CPT VOR1 GS Flag
+  - get: L:dc6_293_obj
+  # CPT VOR1 TO FROM Indicators
+  - get: L:dc6_294_obj
+  # CPT VOR1 NAV Flag
+  - get: L:dc6_290_obj
+  # FO VOR1 Card
+  - get: L:dc6_372_obj
+  # FO VOR1 LOC Needle
+  - get: L:dc6_373_obj
+  # FO VOR2 GS Needle
+  - get: L:dc6_374_obj
+  # FO VOR2 GS Flag
+  - get: L:dc6_375_obj
+  # FO VOR2 NAV Flag
+  - get: L:dc6_376_obj
+  #ANNUNCIATORS & LIGHTS
+  # Eng 1 Water Pressure Safe Annunciator
+  - get: L:dc6_313_obj
+  # Eng 2 Water Pressure Safe Annunciator
+  - get: L:dc6_314_obj
+  # Eng 3 Water Pressure Safe Annunciator
+  - get: L:dc6_315_obj
+  # Eng 4 Water Pressure Safe Annunciator
+  - get: L:dc6_316_obj
+  # AUTOPILOT ON Light
+  - get: L:dc6_443_obj
+  # APPROACH READY Light
+  - get: L:dc6_444_obj
+  # Eng 1 Reverse Annunciator
+  - get: L:dc6_524_obj
+  # Eng 2 Reverse Annunciator
+  - get: L:dc6_525_obj
+  # Eng 3 Reverse Annunciator
+  - get: L:dc6_526_obj
+  # Eng 4 Reverse Annunciator
+  - get: L:dc6_527_obj
+  # Eng 1 Governor High-Low Limit Light
+  - get: L:dc6_528_obj
+  # Eng 2 Governor High-Low Limit Light
+  - get: L:dc6_529_obj
+  # Eng 3 Governor High-Low Limit Light
+  - get: L:dc6_530_obj
+  # Eng 4 Governor High-Low Limit Light
+  - get: L:dc6_531_obj
+  # DOOR WARNING CABIN AND COCKPIT LIGHT
+  - get: L:dc6_251_obj
+  # DOOR WARNING BELLY LIGHT
+  - get: L:dc6_253_obj
+  # Artifical Flight Engineer
+  - get: L:AFEMode
+  # Eng 1 Feather Switch Light
+  - get: L:dc6_476_obj
+  # Eng 2 Feather Switch Light
+  - get: L:dc6_471_obj
+  # Eng 3 Feather Switch Light
+  - get: L:dc6_881_obj
+  # Eng 4 Feather Switch Light
+  - get: L:dc6_891_obj
+  # ENG 1 AUTOFEATHER ANNUN
+  - get: L:dc6_921_obj
+  # ENG 2 AUTOFEATHER ANNUN
+  - get: L:dc6_922_obj
+  # ENG 3 AUTOFEATHER ANNUN
+  - get: L:dc6_923_obj
+  # ENG 4 AUTOFEATHER ANNUN
+  - get: L:dc6_924_obj
+  # CPT VOR1 NAV Annunciator
+  - get: L:dc6_295_obj
+  # CPT VOR1 VLOC Annunciator
+  - get: L:dc6_296_obj
+  # CPT VOR1 GPS Annunciator
+  - get: L:dc6_297_obj
+  # CA OM ANNUNCIATOR
+  - get: L:dc6_299_obj
+  # CA MM ANNUNCIATOR
+  - get: L:dc6_300_obj
+  # CA IM ANNUNCIATOR
+  - get: L:dc6_301_obj
+  # FO OM ANNUNCIATOR
+  - get: L:dc6_379_obj
+  # FO MM ANNUNCIATOR
+  - get: L:dc6_380_obj
+  # FO IM ANNUNCIATOR
+  - get: L:dc6_381_obj
+  # GEAR UNSAFE Light
+  - get: L:dc6_394_obj
+  # LEFT MAIN GEAR Light
+  - get: L:dc6_395_obj
+  # NOSE GEAR Light
+  - get: L:dc6_396_obj
+  # RIGHT MAIN GEAR Light
+  - get: L:dc6_397_obj
+  #LANDING GEAR & HYDRAULICS
+  - get: L:ParkBrakeSet
+  - get: L:ParkBrakeRelease
+  # FLAP INDICATOR Needle
+  - get: L:dc6_341_obj
+  # PARKING BRAKE lever
+  - get: L:dc6_549_obj
+  # Hydraulic Reservoir Needle
+  - get: L:dc6_102_obj
+  # Hydraulic System Pressure Needle
+  - get: L:dc6_580_obj
+  # Emergency Air Brakes Pressure Needle
+  - get: L:dc6_581_obj
+  # FLAP INDICATOR Needle
+  - get: L:dc6_3410_obj
+  #TRIM & FLIGHT CONTROLS
+  # Yoke Forward/Back
+  - get: L:dc6_612_obj
+  # Yoke Left/Right
+  - get: L:dc6_613_obj
+  # ELEVATOR TRIM Wheel
+  - get: L:dc6_515_obj
+  # ELEVATOR TRIM NEEDLE
+  - get: L:dc6_516_obj
+  # AILERON TRIM Wheel
+  - get: L:dc6_406_obj
+  # AILERON TRIM NEEDLE
+  - get: L:dc6_407_obj
+  # RUDDER TRIM Wheel
+  - get: L:dc6_2640_obj
+  # RUDDER TAB NOSE
+  - get: L:dc6_264_obj
+  - get: L:RudderPos
+  - get: L:AileronPos
+  - get: L:ElevatorPos
+  # RUDDER TRIM NEEDLE
+  - get: L:dc6_437_obj
+  # AILERON TRIM NEEDLE
+  - get: L:dc6_438_obj
+  # ELEVATOR TRIM NEEDLE
+  - get: L:dc6_439_obj
+  - get: L:RudderTrimWheel
+  - get: L:AileronTrimWheel
+  - get: L:ElevTrimWheel
+  #PROPELLER
+  - get: L:Prop1Stop
+  - get: L:Prop2Stop
+  - get: L:Prop3Stop
+  - get: L:Prop4Stop
+  - get: L:Propeller1Hours
+  - get: L:Propeller2Hours
+  - get: L:Propeller3Hours
+  - get: L:Propeller4Hours
+  - get: L:Prop1Feather
+  - get: L:Prop2Feather
+  - get: L:Prop3Feather
+  - get: L:Prop4Feather
+  - get: L:Prop1Start
+  - get: L:Prop2Start
+  - get: L:Prop3Start
+  - get: L:Prop4Start
+  #EXHAUST EFFECTS
+  # High pressure exhaust flame effect engine 1
+  - get: L:dc6_953_obj
+  # High pressure exhaust flame effect engine 2
+  - get: L:dc6_954_obj
+  # High pressure exhaust flame effect engine 3
+  - get: L:dc6_955_obj
+  # High pressure exhaust flame effect engine 4
+  - get: L:dc6_956_obj
+  # Low pressure exhaust effect engine 1
+  - get: L:dc6_959_obj
+  # Low pressure exhaust effect engine 2
+  - get: L:dc6_960_obj
+  # Low pressure exhaust effect engine 3
+  - get: L:dc6_961_obj
+  # Low pressure exhaust effect engine 4
+  - get: L:dc6_962_obj
+  # Needle Shake
+  - get: L:dc6_706_obj
+  # Engine 1 Shake Animation
+  - get: L:dc6_7061_obj
+  # Engine 2 Shake Animation
+  - get: L:dc6_7062_obj
+  # Engine 3 Shake Animation
+  - get: L:dc6_7063_obj
+  # Engine 4 Shake Animation
+  - get: L:dc6_7064_obj
+  # Small low pressure exhaust effect engine 1
+  - get: L:dc6_981_obj
+  # Small low pressure exhaust effect engine 2
+  - get: L:dc6_982_obj
+  # Small low pressure exhaust effect engine 3
+  - get: L:dc6_983_obj
+  # Small low pressure exhaust effect engine 4
+  - get: L:dc6_984_obj
+  # Cockpit Shake
+  - get: L:dc6_7065_obj
+  #CARGO & DOORS
+  # Cargo pax lower 50
+  - get: L:dc6_877_obj
+  # Cargo pax lower 100
+  - get: L:dc6_878_obj
+  # Cargo boxes 25
+  - get: L:dc6_871_obj
+  # Cargo boxes 50
+  - get: L:dc6_872_obj
+  # Cargo boxes 75
+  - get: L:dc6_873_obj
+  # Cargo boxes 100
+  - get: L:dc6_874_obj
+  # Cargo lower 50
+  - get: L:dc6_875_obj
+  # Cargo lower 100
+  - get: L:dc6_876_obj
+  #LIGHTING
+  - get: L:LeftLLBrightness
+  - get: L:RightLLBrightness
+  - get: L:lights_beacon
+  - get: L:lights_nav
+  - get: L:LLExtRet
+  - get: L:LandLightsRfT
+  - get: L:LandLightsCaD
+  - get: L:LeftLandLight
+  - get: L:RightLandLight
+  #WIPERS
+  # Left Wiper Animation
+  - get: L:dc6_930_obj
+  # Right Wiper Animation
+  - get: L:dc6_931_obj
+  #AUTOPILOT & AFE
+  - get: L:AfeBeforeStart
+  - get: L:AfeAfterStart
+  - get: L:AfeBeforeTakeoff
+  - get: L:AfeTakeoffDry
+  - get: L:AfeTakeoffWet
+  - get: L:AfeCruise
+  - get: L:AfeDescent
+  - get: L:AfeInrange
+  - get: L:AfeBeforeLanding
+  - get: L:AfeAfterLanding
+  - get: L:AfeParking
+  #XMLVAR SWITCHES
+  - get: L:XMLVAR_IsDeiceAirFrame
+  - get: L:XMLVAR_IsDeiceAirFrame2
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+  - get: L:XMLVAR_LeverFlapsHidden
+  - get: L:XMLVAR_APTrim
+  - get: L:XMLVAR_Gear_Light_Test
+  - get: L:XMLVAR_LandingGearLightTesting
+  - get: L:XMLVAR_LandingGearLightBlink
+  - get: L:XMLVAR_LightDimmer
+  - get: L:XMLVAR_Press_DUMP_cover
+  - get: L:XMLVAR_LTS_Test
+  - get: L:XMLVAR_ThrottlePos_XAxis
+  - get: L:XMLVAR_ThrottlePos_YAxis
+  - get: L:XMLVAR_Starter
+  - get: L:XMLVAR_Ignition
+  - get: L:XMLVAR_FuelSelectorAuto
+  - get: L:XMLVAR_BoostFuelPump
+  - get: L:XMLVAR_ELT_STATE
+  - get: L:XMLVAR_CrashLeverPos
+  - get: L:XMLVAR_ElecGen
+  - get: L:XMLVAR_ElecSource
+  - get: L:XMLVAR_Pitot_1
+  - get: L:XMLVAR_Pitot_2
+  - get: L:XMLVAR_AirSpeedIsInMach
+  - get: L:XMLVAR_VNAVButtonValue
+  - get: L:XMLVAR_PushXFR
+  - get: L:XMLVAR_InertSep1_Switch
+  #MISC
+  - get: L:DcInstrumentsPowered
+  - get: L:DFCStart
+  - get: L:DFCElapsed
+  - get: L:dc6_141_obj
+  - get: L:ELVTrim
+  - get: L:voltreg_indicator_dim
+  - get: L:wing_illum_dim
+  - get: L:wheel_well_dim
+  - get: L:ground_power_dim
+  - get: L:emerg_exit_dim
+  - get: L:supercharger_oil_temp_dim
+  - get: L:supercharger_oil_press_dim
+  - get: L:fuel_pressure_low_dim
+  - get: L:oil_pressure_low_dim
+  - get: L:dc6_299_obj_dim
+  - get: L:dc6_300_obj_dim
+  - get: L:dc6_301_obj_dim
+  - get: L:dc6_379_obj_dim
+  - get: L:dc6_380_obj_dim
+  - get: L:dc6_381_obj_dim
+  - get: L:dc6_313_obj_dim
+  - get: L:dc6_314_obj_dim
+  - get: L:dc6_315_obj_dim
+  - get: L:dc6_316_obj_dim
+  - get: L:dc6_443_obj_dim
+  - get: L:dc6_444_obj_dim
+  - get: L:dc6_524_obj_dim
+  - get: L:dc6_525_obj_dim
+  - get: L:dc6_526_obj_dim
+  - get: L:dc6_527_obj_dim
+  - get: L:dc6_528_obj_dim
+  - get: L:dc6_529_obj_dim
+  - get: L:dc6_530_obj_dim
+  - get: L:dc6_531_obj_dim
+  - get: L:LandingLightPos
+  - get: L:dc6_610_obj
+  - get: L:dc6_611_obj
+  - get: L:SetLeftLL
+  - get: L:SetRightLL
+  - get: L:VoltRegAnnuciator
+  - get: L:dc6_077_obj
+  - get: L:PlaneBattAnnuciator
+  - get: L:PlaneBattAnnuciatorTest
+  - get: L:WingIllumAnnuciator
+  - get: L:light_wing_illum_vis
+  - get: L:WheelWellAnnuciator
+  - get: L:light_wheelwell_vis
+  - get: L:EmerExitAnnuciator
+  - get: L:FuelPressureLowAnnunciator
+  - get: L:dc6_313_obj_annunciator
+  - get: L:dc6_314_obj_annunciator
+  - get: L:dc6_315_obj_annunciator
+  - get: L:dc6_316_obj_annunciator
+  - get: L:dc6_299_obj_annunciator
+  - get: L:dc6_300_obj_annunciator
+  - get: L:dc6_301_obj_annunciator
+  - get: L:dc6_379_obj_annunciator
+  - get: L:dc6_380_obj_annunciator
+  - get: L:dc6_381_obj_annunciator
+  - get: L:dc6_443_obj_annunciator
+  - get: L:dc6_444_obj_annunciator
+  - get: L:dc6_524_obj_annunciator
+  - get: L:dc6_525_obj_annunciator
+  - get: L:dc6_526_obj_annunciator
+  - get: L:dc6_527_obj_annunciator
+  - get: L:dc6_528_obj_annunciator
+  - get: L:dc6_529_obj_annunciator
+  - get: L:dc6_530_obj_annunciator
+  - get: L:dc6_531_obj_annunciator
+  - get: L:RadioBacklighting
+  - get: L:XPDRLightCA
+  - get: L:XPDRLightFO
+  - get: L:ADFOuterDecrease
+  - get: L:ADFInnerDecrease
+  - get: L:Engine1Health
+  - get: L:Engine2Health
+  - get: L:Engine3Health
+  - get: L:Engine4Health
+  - get: L:Engine1Hours
+  - get: L:Engine2Hours
+  - get: L:Engine3Hours
+  - get: L:Engine4Hours
+  - get: L:Eng1OilQty
+  - get: L:Eng2OilQty
+  - get: L:Eng3OilQty
+  - get: L:Eng4OilQty
+  - get: L:Adi1WaterQty
+  - get: L:Adi2WaterQty
+  - get: L:Adi3WaterQty
+  - get: L:Adi4WaterQty
+  - get: L:AuxOilQty
+  - get: L:AntiIceQty
+  - get: L:AirframeHrs
+  - get: L:LEVER_MAN_OVRD
+  - get: L:_FuelTankShiftPressed
+  # WA Tank Engine 1 Needle
+  - get: L:dc6_1031_obj
+  # WA Tank Engine 2 Needle
+  - get: L:dc6_1032_obj
+  # WA Tank Engine 3 Needle
+  - get: L:dc6_1041_obj
+  # WA Tank Engine 4 Needle
+  - get: L:dc6_1042_obj
+  # Water Pressure Eng 1
+  - get: L:dc6_351_obj
+  # Water Pressure Eng 2
+  - get: L:dc6_352_obj
+  # Water Pressure Eng 3
+  - get: L:dc6_353_obj
+  # Water Pressure Eng 4
+  - get: L:dc6_354_obj
+  # Auxiliary Oil Needle
+  - get: L:dc6_100_obj
+  - get: L:BrakesLoud
+  - get: L:BrakesSoft
+  - get: L:wipers_slow
+  - get: L:wipers_fast
+  # Fuel dump chute engine 1
+  - get: L:dc6_865_obj
+  # Fuel dump chute engine 2
+  - get: L:dc6_866_obj
+  # Fuel dump chute engine 3
+  - get: L:dc6_867_obj
+  # Fuel dump chute engine 4
+  - get: L:dc6_868_obj
+  # Fuel dump effect engine 1
+  - get: L:dc6_461_obj
+  # Fuel dump effect engine 2
+  - get: L:dc6_462_obj
+  # Fuel dump effect engine 3
+  - get: L:dc6_463_obj
+  # Fuel dump effect engine 4
+  - get: L:dc6_464_obj
+  - get: L:dc6_28011_obj
+  - get: L:dc6_614_obj
+  - get: L:dc6_2591_obj
+  # Cabin Temp Fahrenheit Needle
+  - get: L:dc6_223_obj
+  # Cabin Temp Mix Valve Position
+  - get: L:dc6_224_obj
+  - get: L:dc6_kill_ramp_gpu
+  - get: L:dc6_282_obj_old
+  - get: L:dc6_369_obj_old
+

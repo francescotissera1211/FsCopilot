@@ -1,0 +1,580 @@
+# Original author: https://discord.com/channels/1454265644416765974/1556030216948940840/1556816548272803922
+# Updated: 2026-10-05 23:53:29
+
+#BlueMesh Latecoere 631 Seaplane - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: Dkgolfnut
+# Special Thanks: 
+# Initial Release: 10/5/2026 
+# Updated: N/A
+
+# Known Issues:
+ # - GNS530 is functional, but there seems to be a bug in the GPS duplicating entered waypoints. it seems to sequence fine, but there is no way to select GPS/VLOC reliably so I dont think this plane is really configured for it from Asobo/Microsoft/Bluemesh. 
+ # - All functions on the Tablet/Clipboard are functional and working with the exception of the ** Passenger lights **.
+# - I am not familiar with the intriccies of this plane so please report any issues so I can validate and fix if possible. 
+
+# FIXED:
+  # - 10/5/2026
+   # - Initial release  
+
+include:
+  - modules/AS_GNS530.yaml
+  - modules/fuel.yaml
+  - modules/payload.yaml
+
+master: 
+  - get: L:HANDLING_AileronsTrim, Position 16k
+    set: (>K:AILERON_TRIM_SET_EX1)
+  - get: L:HANDLING_ElevatorTrim, Position 16k
+    set: (>K:ELEVATOR_TRIM_SET)
+  - get: L:HANDLING_RudderTrim, Position 16k
+    set: (>K:RUDDER_TRIM_SET_EX1)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:2, position 16k # Throttle 2 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:3, position 16k # Throttle 3 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:4, position 16k # Throttle 4 LEVER
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:5, position 16k # Throttle 5 LEVER   
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:6, position 16k # Throttle 6 LEVER 
+  - get: A:BRAKE LEFT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_LEFT_BRAKE_SET)`"
+  - get: A:BRAKE RIGHT POSITION EX1, Position 32k
+    set: "`${value - 16384} (>K:AXIS_RIGHT_BRAKE_SET)`"
+shared:
+  - get: A:KOHLSMAN SETTING MB:0, Millibars # BARO
+    set: "`0 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:1, Millibars # BARO
+    set: "`1 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:2, Millibars # BARO
+    set: "`2 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:3, Millibars # BARO
+    set: "`3 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+  - get: A:KOHLSMAN SETTING MB:4, Millibars # BARO
+    set: "`4 ${value * 16} (>K:2:KOHLSMAN_SET)`"  
+
+
+######### Engineer LEFT ENG STATION  #########
+  - get: B:ENGINE_Magneto_1
+    set: (>B:ENGINE_Magneto_1_Set)
+  - get: B:ENGINE_Magneto_2
+    set: (>B:ENGINE_Magneto_2_Set)
+  - get: B:ENGINE_Magneto_3
+    set: (>B:ENGINE_Magneto_3_Set)  
+  - get: B:ENGINE_Magneto_4
+    set: (>B:ENGINE_Magneto_4_Set)
+  - get: B:ENGINE_Magneto_5
+    set: (>B:ENGINE_Magneto_5_Set)
+  - get: B:ENGINE_Magneto_6
+    set: (>B:ENGINE_Magneto_6_Set)
+  - get: B:INSTRUMENT_Switch_Oil_T_1 # OIL TEMP INDICATOR SW 1
+    set: (>B:INSTRUMENT_Switch_Oil_T_1_Set)
+  - get: B:INSTRUMENT_Switch_Oil_T_2 # OIL TEMP INDICATOR SW 2
+    set: (>B:INSTRUMENT_Switch_Oil_T_2_Set)
+  - get: B:INSTRUMENT_Switch_Oil_T_3 # OIL TEMP INDICATOR SW 3
+    set: (>B:INSTRUMENT_Switch_Oil_T_3_Set)
+  - get: B:INSTRUMENT_Switch_Oil_T_4 # OIL TEMP INDICATOR SW 4
+    set: (>B:INSTRUMENT_Switch_Oil_T_4_Set)
+  - get: B:INSTRUMENT_Switch_Oil_T_5 # OIL TEMP INDICATOR SW 5
+    set: (>B:INSTRUMENT_Switch_Oil_T_5_Set)
+  - get: B:INSTRUMENT_Switch_Oil_T_6 # OIL TEMP INDICATOR SW 6
+    set: (>B:INSTRUMENT_Switch_Oil_T_6_Set)
+  - get: B:INSTRUMENT_Switch_Dump_3, Bool # DUMP SWITCH 3
+    set: (>B:INSTRUMENT_Switch_Dump_3_Set)
+  - get: B:INSTRUMENT_Switch_Dump_4, Bool # DUMP SWITCH 4
+    set: (>B:INSTRUMENT_Switch_Dump_4_Set)
+  - get: B:INSTRUMENT_Switch_Dump_5, Bool # DUMP SWITCH 5
+    set: (>B:INSTRUMENT_Switch_Dump_5_Set)
+  - get: B:INSTRUMENT_Switch_Dump_9, Bool # DUMP SWITCH 9
+    set: (>B:INSTRUMENT_Switch_Dump_9_Set)
+  - get: B:DEICE_Engine_1 # DEICE ENGINE 1
+    set: (>B:DEICE_Engine_1_Set)
+  - get: B:DEICE_Engine_2 # DEICE ENGINE 2
+    set: (>B:DEICE_Engine_2_Set)
+  - get: B:DEICE_Engine_3 # DEICE ENGINE 3
+    set: (>B:DEICE_Engine_3_Set)
+  - get: B:INSTRUMENT_Cowl_Switch_1, Bool # COWL SWITCH 1
+    set: (>B:INSTRUMENT_Cowl_Switch_1_Set)
+  - get: B:INSTRUMENT_Cowl_Switch_2, Bool # COWL SWITCH 2
+    set: (>B:INSTRUMENT_Cowl_Switch_2_Set)
+  - get: B:INSTRUMENT_Cowl_Switch_3, Bool # COWL SWITCH 3
+    set: (>B:INSTRUMENT_Cowl_Switch_3_Set) 
+  - get: B:FUEL_Mixture_1 # FUEL MIXTURE 1
+    set: (>B:FUEL_Mixture_1_Set)
+  - get: B:FUEL_Mixture_2 # FUEL MIXTURE 2
+    set: (>B:FUEL_Mixture_2_Set)
+  - get: B:FUEL_Mixture_3 # FUEL MIXTURE 3
+    set: (>B:FUEL_Mixture_3_Set)
+  - get: B:ENGINE_Propeller_1, Percent # ENGINE PROPELLER 1
+    set: (>B:ENGINE_Propeller_1_Set)
+  - get: B:ENGINE_Propeller_2 # ENGINE PROPELLER 2
+    set: (>B:ENGINE_Propeller_2_Set)
+  - get: B:ENGINE_Propeller_3 # ENGINE PROPELLER 3
+    set: (>B:ENGINE_Propeller_3_Set)
+#  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, Position 16k
+#    set: (>K:PROP_PITCH1_SET)
+#  - get: A:GENERAL ENG PROPELLER LEVER POSITION:2, Position 16k
+#    set: (>K:PROP_PITCH2_SET)
+#  - get: A:GENERAL ENG PROPELLER LEVER POSITION:3, Position 16k
+#    set: (>K:PROP_PITCH3_SET) 
+  - get: B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_1, percent
+    set: "`${value*100} (>B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_1_Set)`"
+  - get: B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_2, percent
+    set: "`${value*100} (>B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_2_Set)`"
+  - get: B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_3, percent
+    set: "`${value*100} (>B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_3_Set)`"
+  - get: B:FUEL_Valve_17, Bool # FUEL VALVE 17  
+    set: (>B:FUEL_Valve_17_Set)
+  - get: B:FUEL_Valve_18, Bool # FUEL VALVE 18  
+    set: (>B:FUEL_Valve_18_Set)
+  - get: B:FUEL_Valve_19, Bool # FUEL VALVE 19  
+    set: (>B:FUEL_Valve_19_Set)
+  - get: B:FUEL_Valve_20, Bool # FUEL VALVE 20  
+    set: (>B:FUEL_Valve_20_Set)
+  - get: B:FUEL_Valve_21, Bool # FUEL VALVE 21  
+    set: (>B:FUEL_Valve_21_Set)  
+######### Engineer RIGHT ENG STATION  #########
+  - get: L:INSTRUMENT_Altimeter_4 # Altimeter 4
+    set: (>B:INSTRUMENT_Altimeter_4_Set)
+  - get: B:ELECTRICAL_Starter_1, Bool # STARTER 1
+    set: (>B:ELECTRICAL_Starter_1_Set)
+  - get: B:ELECTRICAL_Starter_2, Bool # STARTER 2
+    set: (>B:ELECTRICAL_Starter_2_Set)
+  - get: B:ELECTRICAL_Starter_3, Bool # STARTER 3
+    set: (>B:ELECTRICAL_Starter_3_Set)
+  - get: B:ELECTRICAL_Starter_4, Bool # STARTER 4
+    set: (>B:ELECTRICAL_Starter_4_Set)
+  - get: B:ELECTRICAL_Starter_5, Bool # STARTER 5
+    set: (>B:ELECTRICAL_Starter_5_Set)
+  - get: B:ELECTRICAL_Starter_6, Bool # STARTER 6
+    set: (>B:ELECTRICAL_Starter_6_Set)  
+  - get: B:INSTRUMENT_Switch_Relais_Starter, Bool # RELAIS STARTER
+    set: (>B:INSTRUMENT_Switch_Relais_Starter_Set)
+  - get: B:ELECTRICAL_Battery_1, Number # BATTERY 1
+    set: (>B:ELECTRICAL_Battery_1_Set)
+  - get: B:INSTRUMENT_Switch_Heat_Oil_1, Bool # HEAT OIL 1
+    set: (>B:INSTRUMENT_Switch_Heat_Oil_1_Set)
+  - get: B:INSTRUMENT_Switch_Heat_Oil_2, Bool # HEAT OIL 2
+    set: (>B:INSTRUMENT_Switch_Heat_Oil_2_Set)
+  - get: B:INSTRUMENT_Switch_Heat_Oil_3, Bool # HEAT OIL 3
+    set: (>B:INSTRUMENT_Switch_Heat_Oil_3_Set)
+  - get: B:INSTRUMENT_Switch_Heat_Oil_4, Bool # HEAT OIL 4
+    set: (>B:INSTRUMENT_Switch_Heat_Oil_4_Set)
+  - get: B:INSTRUMENT_Switch_Heat_Oil_5, Bool # HEAT OIL 5
+    set: (>B:INSTRUMENT_Switch_Heat_Oil_5_Set)
+  - get: B:INSTRUMENT_Switch_Heat_Oil_6, Bool # HEAT OIL 6
+    set: (>B:INSTRUMENT_Switch_Heat_Oil_6_Set)
+  - get: B:LIGHTING_PANEL_3, Number # PANEL 3 Lighting
+    set: (>B:LIGHTING_PANEL_3_Set)
+  - get: B:INSTRUMENT_Switch_Supply_INST_1, Bool # SUPPLY INST 1
+    set: (>B:INSTRUMENT_Switch_Supply_INST_1_Set)
+  - get: B:INSTRUMENT_Switch_Supply_INST_2, Bool # SUPPLY INST 2
+    set: (>B:INSTRUMENT_Switch_Supply_INST_2_Set)
+  - get: B:INSTRUMENT_Switch_Telephone_Mic_4, Bool # TELEPHONE MIC 4
+    set: (>B:INSTRUMENT_Switch_Telephone_Mic_4_Set)
+  - get: B:INSTRUMENT_Switch_Telephone_Sup_4, Bool # TELEPHONE SUP 4
+    set: (>B:INSTRUMENT_Switch_Telephone_Sup_4_Set)  
+  - get: B:INSTRUMENT_Switch_Dump_6, Bool # DUMP SWITCH 6
+    set: (>B:INSTRUMENT_Switch_Dump_6_Set)
+  - get: B:INSTRUMENT_Switch_Dump_7, Bool # DUMP SWITCH 7
+    set: (>B:INSTRUMENT_Switch_Dump_7_Set)
+  - get: B:INSTRUMENT_Switch_Dump_8, Bool # DUMP SWITCH 8
+    set: (>B:INSTRUMENT_Switch_Dump_5_Set)
+  - get: B:INSTRUMENT_Switch_Dump_10, Bool # DUMP SWITCH 10
+    set: (>B:INSTRUMENT_Switch_Dump_10_Set)
+  - get: B:ENGINE_Propeller_4 # ENGINE PROPELLER 4
+    set: (>B:ENGINE_Propeller_4_Set)
+  - get: B:ENGINE_Propeller_5 # ENGINE PROPELLER 5
+    set: (>B:ENGINE_Propeller_5_Set)
+  - get: B:ENGINE_Propeller_6 # ENGINE PROPELLER 6
+    set: (>B:ENGINE_Propeller_6_Set)
+  - get: B:FUEL_Mixture_4 # FUEL MIXTURE 4
+    set: (>B:FUEL_Mixture_4_Set)
+  - get: B:FUEL_Mixture_5 # FUEL MIXTURE 5
+    set: (>B:FUEL_Mixture_5_Set)
+  - get: B:FUEL_Mixture_6 # FUEL MIXTURE 6
+    set: (>B:FUEL_Mixture_6_Set)
+  - get: B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_4, percent
+    set: "`${value*100} (>B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_4_Set)`"
+  - get: B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_5, percent
+    set: "`${value*100} (>B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_5_Set)`"
+  - get: B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_6, percent
+    set: "`${value*100} (>B:LATE631_Oil_Cooling_Lever_ENGINE_Lever_Oil_Flaps_6_Set)`"
+  - get: B:FUEL_Valve_22, Bool # FUEL VALVE 22  
+    set: (>B:FUEL_Valve_22_Set)
+  - get: B:FUEL_Valve_23, Bool # FUEL VALVE 23  
+    set: (>B:FUEL_Valve_23_Set)
+  - get: B:FUEL_Valve_24, Bool # FUEL VALVE 24  
+    set: (>B:FUEL_Valve_24_Set)
+  - get: B:FUEL_Valve_25, Bool # FUEL VALVE 25  
+    set: (>B:FUEL_Valve_25_Set)
+  - get: B:FUEL_Valve_26, Bool # FUEL VALVE 26
+    set: (>B:FUEL_Valve_26_Set)        
+######### Engineer RIGHT REAR BULKHEAD #########
+# - # PROP DEICE Switches ####
+  - get: B:INSTRUMENT_Switch_Deice_Prop_1, Bool # PROP DEICE 1
+    set: (>B:INSTRUMENT_Switch_Deice_Prop_1_Set)
+  - get: B:INSTRUMENT_Switch_Deice_Prop_2, Bool # PROP DEICE 2
+    set: (>B:INSTRUMENT_Switch_Deice_Prop_2_Set)
+  - get: B:INSTRUMENT_Switch_Deice_Prop_3, Bool # PROP DEICE 3
+    set: (>B:INSTRUMENT_Switch_Deice_Prop_3_Set)
+  - get: B:INSTRUMENT_Switch_prop_Warning_1, Bool # PROP WARNING 1
+    set: (>B:INSTRUMENT_Switch_prop_Warning_1_Set)
+  - get: B:INSTRUMENT_Switch_prop_Warning_2, Bool # PROP WARNING 2
+    set: (>B:INSTRUMENT_Switch_prop_Warning_2_Set)
+  - get: B:INSTRUMENT_Switch_prop_Warning_3, Bool # PROP WARNING 3
+    set: (>B:INSTRUMENT_Switch_prop_Warning_3_Set)
+  - get: B:INSTRUMENT_Switch_prop_Warning_4, Bool # PROP WARNING 4
+    set: (>B:INSTRUMENT_Switch_prop_Warning_4_Set)
+  - get: B:INSTRUMENT_Switch_prop_Warning_5, Bool # PROP WARNING 5
+    set: (>B:INSTRUMENT_Switch_prop_Warning_5_Set)
+  - get: B:INSTRUMENT_Switch_prop_Warning_6, Bool # PROP WARNING 6
+    set: (>B:INSTRUMENT_Switch_prop_Warning_6_Set)  
+# - # VOLTAGE SELECTOR Switche ####
+  - get: L:Local_Bus_Selector, Number # BUS SELECTOR
+    set: (>B:INSTRUMENT_Bus_Volts_Selector_L631_Set)
+# - # ALTERNATOR Switches ####
+  - get: B:ELECTRICAL_Alternator_1, Bool # ALTERNATOR 1
+    set: (>B:ELECTRICAL_Alternator_1_Set)
+  - get: B:ELECTRICAL_Alternator_2, Bool # ALTERNATOR 2
+    set: (>B:ELECTRICAL_Alternator_2_Set)
+  - get: B:ELECTRICAL_Alternator_3, Bool # ALTERNATOR 3
+    set: (>B:ELECTRICAL_Alternator_3_Set)
+  - get: B:ELECTRICAL_Alternator_4, Bool # ALTERNATOR 4
+    set: (>B:ELECTRICAL_Alternator_4_Set)
+  - get: B:ELECTRICAL_Alternator_5, Bool # ALTERNATOR 5
+    set: (>B:ELECTRICAL_Alternator_5_Set)
+  - get: B:ELECTRICAL_Alternator_6, Bool # ALTERNATOR 6
+    set: (>B:ELECTRICAL_Alternator_6_Set)
+  - get: B:ELECTRICAL_Alternator_7, Bool # ALTERNATOR 7
+    set: (>B:ELECTRICAL_Alternator_7_Set)
+  - get: B:ELECTRICAL_Alternator_8, Bool # ALTERNATOR 8
+    set: (>B:ELECTRICAL_Alternator_8_Set)
+  - get: B:ELECTRICAL_Alternator_9, Bool # ALTERNATOR 9
+    set: (>B:ELECTRICAL_Alternator_9_Set)  
+# - # Electric COUPLING Switches ####
+  - get: B:INSTRUMENT_Switch_Couplage_Elec, Bool # ALTERNATOR COUPLAGE (Coupling)
+    set: (>B:INSTRUMENT_Switch_Couplage_Elec_Set)
+# - # Manual Pump Switch ####
+  - get: B:FUEL_Manual_Pump_8 # MANUAL PUMP 1
+  - get: K:MANUAL_FUEL_PRESSURE_PUMP
+# - # PRIMER KNOB & Fuel Valve 1, 2 Switches ####
+  - get: B:INSTRUMENT_Switch_Valve_Primer, Bool # PRIMER KNOB
+    set: (>B:INSTRUMENT_Switch_Valve_Primer_Set)
+  - get: B:FUEL_Valve_1, Bool # FUEL VALVE 1 
+    set: (>B:FUEL_Valve_1_Set)
+  - get: B:FUEL_Valve_2, Bool # FUEL VALVE 2 
+    set: (>B:FUEL_Valve_2_Set) 
+# - # FUEL PUMP SELECTOR Switch ####
+  - get: B:FUEL_Pump_7, Number  # Fuel Pump Selector
+    set: (>B:FUEL_Pump_7_Set)
+# - # Hatch Door to Cabin ####
+  - get: B:INSTRUMENT_Hatch_Door, Bool # Hatch Door to Cabin
+    set: (>B:INSTRUMENT_Hatch_Door_Set)
+######### RADIO STATION PANELS #########
+# - # Gonio and LIGHTING Switches ####
+  - get: L:GONIO_Antenna_Angle
+    set: |
+      `${value} (>B:INSTRUMENT_KNOB_GONIO_Set)
+       ${value} (>L:Gonio_Antenna_Angle)`
+  - get: B:LIGHTING_CABIN_1
+    set: (>B:LIGHTING_CABIN_1_Set)
+  - get: B:LIGHTING_CABIN_2
+    set: (>B:LIGHTING_CABIN_2_Set)
+  - get: B:LIGHTING_CABIN_3
+    set: (>B:LIGHTING_CABIN_3_Set)
+  - get: B:LIGHTING_CABIN_4
+    set: (>B:LIGHTING_CABIN_4_Set)
+  - get: B:LIGHTING_CABIN_5
+    set: (>B:LIGHTING_CABIN_5_Set)
+# - # Telegraph 1, 2, 3 and COM 2 Switches ####
+  - get: L:Morse_Push_1
+    set: (>B:INSTRUMENT_Morse_Push_Switch_1_Set)
+  - get: L:Morse_Push_2
+    set: (>B:INSTRUMENT_Morse_Push_Switch_2_Set)
+  - get: L:Morse_Push_3
+    set: (>B:INSTRUMENT_Morse_Push_Switch_3_Set)
+  - get: A:COM VOLUME:2, Percent # VOL
+    set: (>K:COM2_VOLUME_SET)
+  - get: A:COM ACTIVE FREQUENCY:2, Hz # COM ACTIVE
+    set: (>K:COM2_RADIO_SET_HZ)
+######### MAP STATION  #########
+  - get: B:INSTRUMENT_Handle_Casier_Nav_1 # Small door on Cabinet
+    set: (>B:INSTRUMENT_Handle_Casier_Nav_1_Set)
+  - get: B:INSTRUMENT_BlueMesh_Switch_Supply_Nav_1 # Anemometer Power Switch
+    set: (>B:INSTRUMENT_BlueMesh_Switch_Supply_Nav_1_Set)
+  - get: B:INSTRUMENT_BlueMesh_Switch_Supply_Nav_2 # Electrical Conection
+    set: (>B:INSTRUMENT_BlueMesh_Switch_Supply_Nav_2_Set)
+  - get: B:INSTRUMENT_BlueMesh_Switch_Supply_Nav_3 # Compass Power INSTRUMENT_Switch_Servo_2
+    set: (>B:INSTRUMENT_BlueMesh_Switch_Supply_Nav_3_Set)
+  - get: L:INSTRUMENT_Altimeter_3 # Altimeter 3
+    set: (>B:INSTRUMENT_Altimeter_3_Set)
+  - get: L:Compas_Cap_3 # Compass 3
+  - get: B:INSTRUMENT_Clock_Ajustment_Target # Clock
+    set: (>B:INSTRUMENT_Clock_Ajustment_Target_Set)
+  - get: B:INSTRUMENT_Clock_Time # Clock Time not adjustable
+  - get: B:INSTRUMENT_Switch_Telephone_Sup_3 # Telephone SQ
+    set: (>B:INSTRUMENT_Switch_Telephone_Sup_3_Set)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######### MAIN INSTRUMENT PANEL #########
+  - get: B:INSTRUMENT_Switch_Servo_1, Bool
+    set: (>B:INSTRUMENT_Switch_Servo_1_Set)
+  - get: B:INSTRUMENT_Switch_Servo_2, Bool
+    set: (>B:INSTRUMENT_Switch_Servo_2_Set)
+  - get: B:LIGHTING_LANDING_1
+    set: (>B:LIGHTING_LANDING_1_Set)
+  - get: B:LIGHTING_NAV_1
+    set: (>B:LIGHTING_NAV_1_Set)
+  - get: L:INSTRUMENT_Altimeter_1 # Altimeter 1
+    set: (>B:INSTRUMENT_Altimeter_1_Set)
+  - get: L:Compas_Cap_1 # Compass 1
+    set: |
+      `1 ${value} (>K:2:HEADING_BUG_SET)
+       ${value} (>L:Compas_Cap_1)`
+  - get: L:Compas_Cap_2 # Compass 2 
+  - get: L:INSTRUMENT_Altimeter_2 # Altimeter 2
+    set: (>B:INSTRUMENT_Altimeter_2_Set)
+  - get: L:Hohe_Var_Altitude
+    set: (>B:INSTRUMENT_Hohe_Switch_Set)
+  - get: L:LIGHTING_PANEL_1, Bool
+    set: (>B:LIGHTING_PANEL_1_Set)
+  - get: L:LIGHTING_PANEL_2, Bool
+    set: (>B:LIGHTING_PANEL_2_Set)
+  - get: L:SIF_FREQUENCE
+######### PEDISTAL AREA #########
+  - get: B:INSTRUMENT_Switch_Flaps, Bool
+    set: (>B:INSTRUMENT_Switch_Flaps_Set)
+  - get: B:INSTRUMENT_Switch_Floats, Bool 
+    set: (>B:INSTRUMENT_Switch_Floats_Set)  
+  - get: B:INSTRUMENT_AP_GYRO_SWITCH, Bool
+    set: (>B:INSTRUMENT_AP_GYRO_SWITCH_Set) 
+  - get: B:INSTRUMENT_AP_MAIN_SWITCH, Bool 
+    set: (>B:INSTRUMENT_AP_MAIN_SWITCH_Set)  
+  - get: B:INSTRUMENT_AP_HOLD_ALTITUDE, Bool
+    set: (>B:INSTRUMENT_AP_HOLD_ALTITUDE_Set)
+  - get: B:INSTRUMENT_AP_HOLD_HEADING, Bool
+    set: (>B:INSTRUMENT_AP_HOLD_HEADING_Set)     
+  - get: A:AUTOPILOT HEADING LOCK DIR:1, degrees
+    set: "`1 ${value} (>K:2:HEADING_BUG_SET)`"  
+######### MISCELLANEOUS ITEMS #########
+  - get: L:XMLVAR_YokeHidden1, Bool
+  - get: L:XMLVAR_YokeHidden2, Bool
+  - get: L:Local_Sunshade_L, Bool # SUNSHADE
+    set: (>B:INSTRUMENT_Visor_Sunshade_L_Set)
+  - get: L:Local_Sunshade_R, Bool # SUNSHADE
+    set: (>B:INSTRUMENT_Visor_Sunshade_R_Set)
+  - get: L:L_Side_Window # Pilot Window
+  - get: L:R_Side_Window # Copilot Window
+  - get: L:My_Throttle_Friction
+  - get: L:Armset_State_Left_Seat_Armset
+    set: (>B:INSTRUMENT_Armset_Switch_Left_Seat_Armset_Set)
+  - get: L:L_Seat_L_Handle
+    set: (>B:INSTRUMENT_Seat_Rot_Seat_L_Handle_Set)  
+  - get: L:L_Seat_L_Translation
+    set: (>B:INSTRUMENT_Seat_Tr_Handle_Seat_L_Translation_Set)
+  - get: L:Armset_State_Right_Seat_Armset
+    set: (>B:INSTRUMENT_Armset_Switch_Right_Seat_Armset_Set)
+  - get: L:R_Seat_R_Handle
+    set: (>B:INSTRUMENT_Seat_Rot_Seat_R_Handle_Set)
+  - get: L:L_Seat_R_Translation
+    set: (>B:INSTRUMENT_Seat_Tr_Handle_Seat_R_Translation_Set)
+######### CLIP BOARD OPTIONS #########
+  - get: L:Clipboard_Position_L, Bool # SHOW/HIDE CLIPBOARD
+  - get: L:MENU_1, Bool
+  - get: L:MENU_2, Bool
+  - get: L:MENU_3, Bool
+  - get: L:MENU_4, Bool
+# - # GENERAL TAB ####
+  - get: L:STATE_COLDARK, Bool
+  - get: L:STATE_AUTOSTART, Bool
+  - get: L:STATE_AUTOSHUT, Bool
+  - get: A:INTERACTIVE POINT GOAL:0, Bool
+    set: 1 (>K:TOGGLE_AIRCRAFT_EXIT)
+  - get: A:INTERACTIVE POINT GOAL:1, Bool
+    set: 2 (>K:TOGGLE_AIRCRAFT_EXIT) 
+  - get: A:INTERACTIVE POINT GOAL:2, Bool
+    set: 3 (>K:TOGGLE_AIRCRAFT_EXIT)
+  - get: A:INTERACTIVE POINT GOAL:3, Bool
+    set: 4 (>K:TOGGLE_AIRCRAFT_EXIT)   
+  - get: L:FLAG_SET, Bool
+  - get: L:DOCK_SET, Bool
+  - get: L:ANCHOR_SET, Bool
+  - get: L:COVERS_SET, Bool
+# - # ENGINE TAB ####
+  - get: L:REFUEL_MAIN, Bool
+  - get: L:REFUEL_AUX, Bool
+  - get: L:REFUEL_OIL, Bool
+# - # ELECTRIC TAB - GENERATORS ####
+  - get: A:GENERAL ENG MASTER ALTERNATOR:1, Bool # GENERATOR 1
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_1_Set)`"  
+  - get: A:GENERAL ENG MASTER ALTERNATOR:2, Bool # GENERATOR 2
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_2_Set)`"  
+  - get: A:GENERAL ENG MASTER ALTERNATOR:3, Bool # GENERATOR 3
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_3_Set)`"  
+  - get: A:GENERAL ENG MASTER ALTERNATOR:4, Bool # GENERATOR 4
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_4_Set)`"  
+  - get: A:GENERAL ENG MASTER ALTERNATOR:5, Bool # GENERATOR 5
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_5_Set)`"  
+  - get: A:GENERAL ENG MASTER ALTERNATOR:6, Bool # GENERATOR 6
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_6_Set)`"
+# - # ELECTRIC TAB - APU's ####
+  - get: A:GENERAL ENG MASTER ALTERNATOR:7, Bool # APU 1
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_7_Set)`"  
+  - get: A:GENERAL ENG MASTER ALTERNATOR:8, Bool # APU 2
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_8_Set)`"  
+  - get: A:GENERAL ENG MASTER ALTERNATOR:9, Bool # APU 3 
+    set: "`${value} (>B:ELECTRICAL_ALTERNATOR_9_Set)`"
+  - get: K:APU_STARTER
+  - get: K:APU_OFF_SWITCH
+# - # ELECTRIC TAB - LIGHTS ####
+  - get: A:LIGHT CABIN:1, Bool # Cockpit LIGHTS
+  - get: A:LIGHT CABIN:2, Bool # Cockpit LIGHTS
+  - get: A:LIGHT CABIN:3, Bool # Cockpit LIGHTS
+  - get: A:LIGHT CABIN:4, Bool # Cockpit LIGHTS
+  - get: A:LIGHT CABIN:5, Bool # Cockpit LIGHTS
+  - get: A:LIGHT_LOGO
+    set: (>K:TOGGLE_LOGO_LIGHTS) # PASENGER CABIN LIGHTS
+# - # ELECTRIC TAB - AVIONICS GPS ####
+  - get: L:AVIONIC_SET, Bool
+# - # TOWING TAB  ####
+  - get: L:CARRIAGE_SET, Bool
+  - get: L:CARRIAGE_FORWARD, Bool
+  - get: L:CARRIAGE_BACKWARD, Bool
+  - get: L:CARRIAGE_LEFT, Bool
+  - get: L:CARRIAGE_RIGHT, Bool
+  - get: L:CARRIAGE_STUCK_PERMISSION, Bool
+  - get: L:TUG_BOAT_SET, Bool
+  - get: L:Clipboard_Throttle_Boat_Command_bis, Percent
+  - get: L:Clipboard_Wheel_Boat_Command, Percent
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

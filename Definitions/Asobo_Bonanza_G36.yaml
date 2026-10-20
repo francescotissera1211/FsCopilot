@@ -1,0 +1,165 @@
+# Original author: https://discord.com/channels/1454265644416765974/1557363728339570739/1557364830841868358
+# Updated: 2026-10-07 12:11:54
+
+# Asobo Bonanza G36 - FsCopilot YAML Configuration
+# Version: 0.0.1
+# Created By: Zonder & Dkgolfnut Collaboration
+# Special Thanks: Zonder for the initial variable work. 
+# Initial Release: 10/6/2026 
+# Updated: N/A
+
+# Known Issues:
+ # - please report any issues
+
+# FIXES:
+   # - 
+
+
+include:
+  - modules/AS_G1000_NXi.yaml
+  - modules/payload.yaml
+  - modules/fuel.yaml
+master:
+  - get: L:HANDLING_ElevatorTrim, Percent scaler 16k # ELEVATOR TRIM
+    set: (>K:ELEVATOR_TRIM_SET)
+#  - get: A:AILERON TRIM PCT, Percent scaler 16k # AILERON TRIM
+  - get: L:HANDLING_AileronsTrim
+    set: (>K:AILERON_TRIM_SET_EX1)
+  - get: B:HANDLING_AileronsTrim_1, Number # AILERON TRIM
+    set: (>B:HANDLING_AileronsTrim_1_Set)
+  - get: A:GENERAL ENG THROTTLE LEVER POSITION:1, position 16k # Throttle 1 LEVER
+    set: (>K:THROTTLE1_SET)
+  - get: A:GENERAL ENG PROPELLER LEVER POSITION:1, position 16k # Prop
+    set: (>K:PROP_PITCH1_SET)
+  - get: A:GENERAL ENG MIXTURE LEVER POSITION:1, position 16k # Mix
+    set: (>K:MIXTURE1_SET)    
+
+shared:
+##########  Miscelleneous ##########
+  - get: L:XMLVAR_YokeHidden1
+  - get: L:XMLVAR_YokeHidden2
+  - get: B:FUEL_Selector_1, Number # FUEL SELECTOR
+    set: (>B:FUEL_Selector_1_Set)
+  - get: B:VISOR_LEFT_OPEN_VISOR_LEFT, Bool # SUNVISOR LEFT
+    set: (>B:VISOR_LEFT_OPEN_VISOR_LEFT_Set)
+  - get: B:VISOR_RIGHT_OPEN_VISOR_RIGHT, Bool # SUNVISOR RIGHT 
+    set: (>B:VISOR_RIGHT_OPEN_VISOR_RIGHT_Set)  
+  - get: B:AUTOPILOT_AP_DISCONNECT_1 # AP DISCONNECT
+    set: (>B:AUTOPILOT_AP_DISCONNECT_1_Set)
+  - get: K:XPNDR_IDENT_ON # XPNDR IDENT
+##########  LOWER FRONT PANEL ##########
+# - # MASTER POWER and Starter
+  - get: B:ELECTRICAL_Battery_1, Number # BATTERY 1
+    set: (>B:ELECTRICAL_Battery_1_Set)
+  - get: B:ELECTRICAL_Battery_2, Number # BATTERY 2
+    set: (>B:ELECTRICAL_Battery_2_Set)
+  - get: B:ELECTRICAL_Alternator_1, Number # ALTERNATOR 1
+    set: (>B:ELECTRICAL_Alternator_1_Set)
+  - get: B:ELECTRICAL_Alternator_2, Number # ALTERNATOR 2
+    set: (>B:ELECTRICAL_Alternator_2_Set)
+  - get: B:ENGINE_Magneto_1, Number # IGNITION / MAGNETO SWITCH
+    set: |
+      switch (value) {
+          case  0: return '(>B:ENGINE_Magneto_1_Off)'
+          case  1: return '(>B:ENGINE_Magneto_1_Right)'
+          case  2: return '(>B:ENGINE_Magneto_1_Left)'
+          case  3: return '(>B:ENGINE_Magneto_1_Both)'
+          case  4: return '(>B:ENGINE_Magneto_1_Start) 1 (>L:XMLVAR_Magneto_Starter_IsHeld)'
+          default: return ''
+      }    
+# - # AVIONICS MASTER
+  - get: A:CIRCUIT SWITCH ON:22, Bool # AVIONICS
+    set: (>B:ELECTRICAL_Avionics_Bus_1_Toggle)
+  - get: B:ELECTRICAL_Avionics_Bus_1, Bool
+    set: (>B:ELECTRICAL_Avionics_Bus_1_Set)
+# - # PITOT HEAT & DEICE
+  - get: B:DEICE_PITOT_1, Bool # PITOT HEAT
+    set: (>B:DEICE_PITOT_1_Set)
+  - get: B:DEICE_PROPELLER_1, Bool # PROPELLER HEAT
+    set: (>B:DEICE_PROPELLER_1_Set)
+# - # EXTERIOR LIGHTS
+  - get: B:LIGHTING_STROBE_1, Bool # STROBE LIGHT
+    set: (>B:LIGHTING_STROBE_1_Set)
+  - get: B:LIGHTING_BEACON_1, Bool # BEACON LIGHT
+    set: (>B:LIGHTING_BEACON_1_Set)
+  - get: B:LIGHTING_NAV_1, Bool # NAV LIGHT
+    set: (>B:LIGHTING_NAV_1_Set)
+# - # INTERIOR LIGHTS
+  - get: B:LIGHTING_CABIN_1, Bool # OVERHEAD CABIN LIGHT 1
+    set: (>B:LIGHTING_CABIN_1_Set)
+  - get: B:LIGHTING_CABIN_2, Bool # OVERHEAD CABIN LIGHT 2
+    set: (>B:LIGHTING_CABIN_2_Set)
+  - get: B:LIGHTING_CABIN_3, Bool # OVERHEAD CABIN LIGHT 3
+    set: (>B:LIGHTING_CABIN_3_Set)
+  - get: B:LIGHTING_GLARESHIELD_1, Bool # FLOOD LIGHT
+    set: (>B:LIGHTING_GLARESHIELD_1_Set)
+  - get: B:LIGHTING_PANEL_1, Bool # PANEL LIGHT
+    set: (>B:LIGHTING_PANEL_1_Set)
+  - get: B:LIGHTING_TAXI_1, Bool # TAXI LIGHT
+    set: (>B:LIGHTING_TAXI_1_Set)
+  - get: B:LIGHTING_LANDING_1, Bool # LANDING LIGHT
+    set: (>B:LIGHTING_LANDING_1_Set)
+# - # FUEL PUMP & LANDING GEAR
+  - get: B:FUEL_PUMP_1, Number # AUX FUEL PUMP
+    set: (>B:FUEL_PUMP_1_Set)
+  - get: B:LANDING_GEAR_GEAR, Number # LANDING GEAR
+    set: (>B:LANDING_GEAR_Gear_Set)
+# - # CABIN AIR/HEAT
+  - get: B:PASSENGER_CABIN_HEAT_1, Number # CABIN HEAT
+    set: "value > current ? '1 (>B:PASSENGER_CABIN_HEAT_1_Inc)' : '1 (>B:PASSENGER_CABIN_HEAT_1_Dec)'"
+  - get: B:PASSENGER_CABIN_HEAT_2, Number # CABIN HEAT
+    set: "value > current ? '1 (>B:PASSENGER_CABIN_HEAT_2_Inc)' : '1 (>B:PASSENGER_CABIN_HEAT_2_Dec)'"
+  - get: B:PASSENGER_CABIN_HEAT_3, Number # CABIN HEAT
+    set: "value > current ? '1 (>B:PASSENGER_CABIN_HEAT_3_Inc)' : '1 (>B:PASSENGER_CABIN_HEAT_3_Dec)'"
+  - get: A:GENERAL ENG ANTI ICE POSITION:1, position 16k # DEFROST ENG DEICE KNOB
+    set: (>K:ANTI_ICE_GRADUAL_SET_ENG1)
+# - #  PARKING BRAKE
+  - get: B:LANDING_GEAR_PARKINGBRAKE, Number # PARKING BRAKE
+    set: (>B:LANDING_GEAR_ParkingBrake_Set)
+##########  UPPER CoPilot FRONT PANEL ##########
+  - get: B:SAFETY_ELT_1, Number # SAFETY SWITCH
+    set: |
+      switch (value) {
+          case  0: return '(>B:SAFETY_ELT_1_On)'
+          case  1: return '(>B:SAFETY_ELT_1_Arm)'
+          case  2: return '(>B:SAFETY_ELT_1_Test)'
+          default: return ''
+      }     
+  - get: B:INSTRUMENT_ATTITUDE_CAGE, Number # ATTITUDE CAGE
+    set: (>B:INSTRUMENT_ATTITUDE_Cage_Set)
+  - get: B:INSTRUMENT_HORIZON_BAR, Number # HORIZON BAR
+    set: "value > current ? '1 (>B:INSTRUMENT_Horizon_Bar_Inc)' : '1 (>B:INSTRUMENT_Horizon_Bar_Dec)'"
+  - get: A:KOHLSMAN SETTING MB:0, millibars # KOHLSMAN
+    set: "`0 ${value * 16} (>K:2:KOHLSMAN_SET)`"
+########## Lower CoPilot FRONT PANEL ##########
+  - get: B:LIGHTING_POTENTIOMETER_14_POWER_SETTING, Number # FLIGHT INSTRUMENT DIMMING
+    set: (>B:LIGHTING_POTENTIOMETER_14_POWER_SETTING_Set)
+  - get: L:LIGHTING_POTENTIOMETER_14_POWER_SETTING
+    set: "`${value} 14 (>K:2:LIGHT_POTENTIOMETER_SET)`"
+  - get: B:LIGHTING_GLARESHIELD_1_POWER_SETTING, Number # INSTRUMENT FLOOD DIMMING
+    set: (>B:LIGHTING_GLARESHIELD_1_POWER_SETTING_Set)
+  - get: B:LIGHTING_PANEL_1_POWER_SETTING, Number # STBY LIGHT DIMMING
+    set: (>B:LIGHTING_PANEL_1_POWER_SETTING_Set)
+  - get: B:LIGHTING_POTENTIOMETER_2, Number # SUB PANEL DIMMING 
+    set: (>B:LIGHTING_POTENTIOMETER_2_Set)
+  - get: B:GLOVE_COMPARTMENT_R_GLOVE_COMPARTMENT_R, Number # GLOVE COMPARTMENT
+    set: (>B:GLOVE_COMPARTMENT_R_Glove_Compartment_R_Set)
+  - get: A:FLAPS HANDLE PERCENT, Position 16k # FLAPS
+    set: (>K:FLAPS_SET)
+
+##########  Pedestal PANEL ##########
+  - get: A:RECIP ENG COWL FLAP POSITION:1, position 16k  # COWL FLAP 1
+    set: (>K:COWLFLAP1_SET)
+
+  # EXTERIOR
+  - get: A:COVER ON:0, Bool
+    set: "`${value} 0 (>K:2:COVER_SET)`" 
+  - get: A:COVER ON:1, Bool
+    set: "`${value} 1 (>K:2:COVER_SET)`" 
+  - get: A:COVER ON:2, Bool
+    set: "`${value} 2 (>K:2:COVER_SET)`" 
+  - get: A:COVER ON:3, Bool
+    set: "`${value} 3 (>K:2:COVER_SET)`"  
+  - get: L:1:Engine_Cover_Open_Amount
+  - get: L:1:Engine_Cover_Open_Amount_R
+
