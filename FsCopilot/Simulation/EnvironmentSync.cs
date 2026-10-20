@@ -39,6 +39,7 @@ public class EnvironmentSync : IDisposable
     private volatile bool _leaving;
     private volatile bool _hasAircraft;
     private volatile int _peerCount;
+    private DateTime _peerLeftAt = DateTime.MinValue;
 
     private double? _zuluSeconds;
     private double? _dayOfYear;
@@ -100,8 +101,14 @@ public class EnvironmentSync : IDisposable
 
         var peersChanged = new Subject<int>();
         PeersChanged = peersChanged;
+        // A peer that left on purpose says so (PeerLeft); one that vanished does not. Only the
+        // second is a lost connection worth pausing the sim for.
+        _d.Add(net.PeerLeft.Subscribe(_ => _peerLeftAt = DateTime.UtcNow));
+
+        // Connected peers only: a direct link shows up while still handshaking, and counting it
+        // would announce a session that may never form, then a "lost connection" when it fails.
         _d.Add(net.Peers
-            .Select(p => p.Count)
+            .Select(p => p.Count(peer => peer.Connected))
             .DistinctUntilChanged()
             .Scan((Prev: 0, Curr: 0), (s, c) => (s.Curr, c))
             .Subscribe(x =>
@@ -194,6 +201,14 @@ public class EnvironmentSync : IDisposable
             if (_leaving)
             {
                 Write(SyncLevel.Info, "Left the session");
+                return;
+            }
+
+            // The other pilot left: the session ended, nothing was lost. The main window says
+            // who left, so this is not spoken again.
+            if (DateTime.UtcNow - _peerLeftAt < TimeSpan.FromSeconds(5))
+            {
+                Write(SyncLevel.Info, "The other pilot left the session", announce: false);
                 return;
             }
 
