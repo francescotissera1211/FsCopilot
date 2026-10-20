@@ -34,7 +34,8 @@ If this saved you a flight, you can buy me a coffee:
 
 - PayPal: [paypal.me/Grainlin](https://paypal.me/Grainlin)
 - Payoneer: [link](https://link.payoneer.com/Token?t=B65D3C4D79EC4A8A8D19EFD0D8734841&src=dpl)
-- WECHAT and ALI PAY:https://github.com/GrainLin-0507/FsCopilot-IP-direct-connect/blob/main/.github/ALI%20and%20wechat%20pay.jpg
+- WECHAT and ALI PAY:
+- ![image](.github/ALI and wechat pay.jpg)
 
 Bug reports: open an issue on this fork. Upstream support for the original app: their Discord./Or you can contact me:graingrl@outlook.com
 
@@ -73,7 +74,8 @@ Tailscale、WireGuard……）里的 IP。下载：[latest release](https://gith
 
 - PayPal：[paypal.me/Grainlin](https://paypal.me/Grainlin)
 - Payoneer：[点此](https://link.payoneer.com/Token?t=B65D3C4D79EC4A8A8D19EFD0D8734841&src=dpl)
-- 微信/支付宝：https://github.com/GrainLin-0507/FsCopilot-IP-direct-connect/blob/main/.github/ALI%20and%20wechat%20pay.jpg
+- 微信/支付宝：
+- ![image](.github/ALI and wechat pay.jpg)
 
 问题反馈请在本分支提 issue；原版应用本身的问题请找作者的 Discord。我的邮箱：graingrl@outlook.com
 
